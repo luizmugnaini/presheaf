@@ -4,6 +4,9 @@
 
 namespace psh {
     template <typename T>
+    concept NotLValueRef = !std::is_lvalue_reference_v<T>;
+
+    template <typename T>
     concept TriviallyCopyable = std::is_trivially_copyable_v<T>;
 
     template <typename T>
@@ -35,4 +38,17 @@ namespace psh {
 
     template <typename T>
     concept Reflexive = requires(T x, T y) { x == y; };
+
+    template <typename T>
+    struct RemoveRef {
+        using Type = T;
+    };
+    template <typename T>
+    struct RemoveRef<T&> {
+        using Type = T;
+    };
+    template <typename T>
+    struct RemoveRef<T&&> {
+        using Type = T;
+    };
 }  // namespace psh
