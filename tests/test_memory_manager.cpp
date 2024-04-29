@@ -17,9 +17,6 @@
 
 using namespace psh;
 
-constexpr usize STACK_HEADER_SIZE = sizeof(StackHeader);
-constexpr usize ZERO              = static_cast<usize>(0);
-
 void zeroed_at_initialization() {
     StrPtr const        header = "[zeroed_at_initialization]";
     MemoryManager const memory_manager{1024};
@@ -29,12 +26,12 @@ void zeroed_at_initialization() {
     psh_assert(mem_ptr != nullptr);
 
     psh_assert(memory_manager.used_memory == static_cast<i64>(0));
-    psh_assert(memory_manager.allocation_count == ZERO);
+    psh_assert(memory_manager.allocation_count == 0ull);
 
     // Check allocator.
     psh_assert(memory_manager.allocator.memory == reinterpret_cast<u8*>(mem_ptr));
-    psh_assert(memory_manager.allocator.offset == ZERO);
-    psh_assert(memory_manager.allocator.previous_offset == ZERO);
+    psh_assert(memory_manager.allocator.offset == 0ull);
+    psh_assert(memory_manager.allocator.previous_offset == 0ull);
     psh_assert(memory_manager.allocator.capacity == static_cast<usize>(1024));
     log_passed(header);
 }
@@ -61,7 +58,7 @@ void initialization_and_shutdown() {
     uptr const block_actual_addr = reinterpret_cast<uptr>(block);
     uptr const block_via_allocator_actual_addr =
         mem_sys_alloc_mem_actual_addr + memory_manager.allocator.previous_offset;
-    uptr const block_expected_addr = mem_sys_alloc_mem_actual_addr + STACK_HEADER_SIZE;
+    uptr const block_expected_addr = mem_sys_alloc_mem_actual_addr + sizeof(StackHeader);
     psh_assert(block_actual_addr == block_expected_addr);
     psh_assert(block_via_allocator_actual_addr == block_expected_addr);
 
@@ -86,11 +83,11 @@ void memory_statistics() {
     /** Expected statistics. **/
 
     constexpr usize expected_string_at_least =
-        array_size<char>(40 + 34 + 55) + 3 * STACK_HEADER_SIZE;
+        sizeof(char) * (40 + 34 + 55) + 3 * sizeof(StackHeader);
     constexpr usize expected_misc_at_least =
-        array_size<char>(90) + array_size<u64>(72) + 2 * STACK_HEADER_SIZE;
-    constexpr usize arena_data_size           = array_size<usize>(33) + array_size<f32>(45);
-    constexpr usize expected_arena            = STACK_HEADER_SIZE + arena_data_size;
+        sizeof(char) * 90 + sizeof(u64) * 72 + 2 * sizeof(StackHeader);
+    constexpr usize arena_data_size           = sizeof(usize) * 33 + sizeof(f32) * 45;
+    constexpr usize expected_arena            = sizeof(StackHeader) + arena_data_size;
     constexpr usize expected_allocation_count = 6;  // NOTE: 3 strings, 1 arena, 2 misc.
     constexpr usize expected_total_at_least =
         expected_arena + expected_string_at_least + expected_misc_at_least;
@@ -124,7 +121,7 @@ void memory_statistics() {
 
     auto const b = DynArray<usize>(&arena, 33);
     psh_discard(b);
-    constexpr usize b_size = array_size<usize>(33);
+    constexpr usize b_size = sizeof(usize) * 33;
     psh_assert(
         memory_manager.used_memory == used);  // The manager shouldn't have a bump in its usage.
     psh_assert(arena.offset == b_size);       // Expect no alignment from first allocation
@@ -138,7 +135,7 @@ void memory_statistics() {
 
     auto const d = DynArray<f32>(&arena, 45);
     psh_discard(d);
-    constexpr usize d_size = array_size<f32>(45);
+    constexpr usize d_size = sizeof(f32) * 45;
     psh_assert(memory_manager.used_memory == used);  // Expect no change in the manager.
     psh_assert(arena.offset >= b_size + d_size);     // Alignment may have happened
     psh_assert(memory_manager.allocation_count == static_cast<usize>(3));
@@ -198,8 +195,8 @@ void memory_statistics() {
 
     // Pop `arena`
     memory_manager.pop();
-    psh_assert(memory_manager.allocation_count == ZERO);
-    psh_assert(memory_manager.used_memory == ZERO);
+    psh_assert(memory_manager.allocation_count == 0ull);
+    psh_assert(memory_manager.used_memory == 0ull);
 
     // TODO: in the future, check that the memory from the arena is correctly handled by the manager
     // when freeing `b` and `d`.

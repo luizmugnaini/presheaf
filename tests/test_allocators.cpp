@@ -14,10 +14,6 @@
 
 using namespace psh;
 
-constexpr usize ZERO                   = 0;
-constexpr usize STACK_HEADER_SIZE      = sizeof(StackHeader);
-constexpr usize STACK_HEADER_ALIGNMENT = alignof(StackHeader);
-
 struct Foo {
     f64 a;
     u32 b;
@@ -230,7 +226,7 @@ void stack_allocation_with_default_alignment() {
     for (usize i = 0; i < 5; ++i) {
         test_vec_u8[i] = expected_u8_vec[i];
     }
-    salloc_min_expected_size += STACK_HEADER_SIZE + expected_u8_vec_capacity;
+    salloc_min_expected_size += sizeof(StackHeader) + expected_u8_vec_capacity;
 
     // The first allocation has a zero alignment so we can check for equality.
     psh_assert(salloc.used() == salloc_min_expected_size);
@@ -242,7 +238,7 @@ void stack_allocation_with_default_alignment() {
     for (usize i = 0; i < 3; ++i) {
         test_vec_u32[i] = expected_u32_vec[i];
     }
-    salloc_min_expected_size += STACK_HEADER_SIZE + expected_u32_vec_capacity;
+    salloc_min_expected_size += sizeof(StackHeader) + expected_u32_vec_capacity;
 
     psh_assert(salloc.used() >= salloc_min_expected_size);
 
@@ -270,7 +266,7 @@ void stack_allocation_with_default_alignment() {
     auto const* const th_u8 = salloc.top_header();
     psh_assert(th_u8 != nullptr);
     usize const actual_u8_vec_capacity = th_u8->capacity;
-    psh_assert(actual_u8_vec_capacity == static_cast<usize>(5));
+    psh_assert(actual_u8_vec_capacity == 5ull);
 
     u8* const actual_u8_vec = salloc.top();
     psh_assert(actual_u8_vec != nullptr);
@@ -284,8 +280,8 @@ void stack_allocation_with_default_alignment() {
         salloc.pop(),
         "Expected StackAlloc to be able to pop the top memory in the stack");
 
-    psh_assert_msg(salloc.offset == ZERO, "Expected empty StackAlloc");
-    psh_assert_msg(salloc.previous_offset == ZERO, "%s Expected empty StackAlloc");
+    psh_assert_msg(salloc.offset == 0ull, "Expected empty StackAlloc");
+    psh_assert_msg(salloc.previous_offset == 0ull, "%s Expected empty StackAlloc");
 
     std::free(buf);
     log_passed(header);
@@ -313,7 +309,7 @@ void stack_offsets_reads_and_writes() {
     }
 
     // Check correctness of the `array1` offset.
-    constexpr usize array1_expected_padding = STACK_HEADER_SIZE;
+    constexpr usize array1_expected_padding = sizeof(StackHeader);
     constexpr usize array1_expected_offset  = array1_expected_padding;
     psh_assert(stack.previous_offset == array1_expected_offset);
 
@@ -321,19 +317,18 @@ void stack_offsets_reads_and_writes() {
 
     // Check the correctness of the `array1` header.
     auto const* const array1_header =
-        reinterpret_cast<StackHeader const*>(array1_addr - STACK_HEADER_SIZE);
+        reinterpret_cast<StackHeader const*>(array1_addr - sizeof(StackHeader));
     usize const array1_actual_padding         = array1_header->padding;
     usize const array1_actual_previous_offset = array1_header->previous_offset;
     psh_assert(array1_actual_padding == array1_expected_padding);
     psh_assert_msg(
-        array1_actual_previous_offset == ZERO,
+        array1_actual_previous_offset == 0ull,
         "Expected `array1` header to have a previous offset of zero");
 
     // Manually read from `stack.buf` checking for the values of `array1`.
     for (usize idx = 0; idx < array1_len; ++idx) {
-        u64 const         expected = 64 * static_cast<uptr>(idx);
-        auto const* const actual =
-            reinterpret_cast<u64*>(array1_addr + static_cast<uptr>(idx * array1_alignment));
+        u64 const         expected = 64 * idx;
+        auto const* const actual   = reinterpret_cast<u64*>(array1_addr + idx * array1_alignment);
         psh_assert(actual != nullptr);
         psh_assert(*actual == expected);
     }
@@ -359,16 +354,16 @@ void stack_offsets_reads_and_writes() {
     usize const array2_alignment_modifier = after_array1_expected_offset % array2_alignment;
     usize const array2_expected_padding =
         (array2_alignment_modifier == 0)
-            ? STACK_HEADER_SIZE
-            : array2_alignment - array2_alignment_modifier + STACK_HEADER_SIZE;
+            ? sizeof(StackHeader)
+            : array2_alignment - array2_alignment_modifier + sizeof(StackHeader);
     usize const array2_expected_offset = after_array1_expected_offset + array2_expected_padding;
     psh_assert(stack.previous_offset == array2_expected_offset);
 
-    uptr const array2_addr = buf_start_addr + static_cast<uptr>(array2_expected_offset);
+    uptr const array2_addr = buf_start_addr + array2_expected_offset;
 
     // Check the correctness of the `array2` header.
     auto const* const array2_header =
-        reinterpret_cast<StackHeader const*>(array2_addr - static_cast<uptr>(STACK_HEADER_SIZE));
+        reinterpret_cast<StackHeader const*>(array2_addr - sizeof(StackHeader));
     usize const array2_actual_padding = array2_header->padding;
     psh_assert(array2_actual_padding == array2_expected_padding);
     auto const  array2_expected_previous_offset = static_cast<usize>(array1_addr - buf_start_addr);
@@ -378,7 +373,7 @@ void stack_offsets_reads_and_writes() {
     // Manually read from `stack.buf` checking for the values of `array2`.
     for (usize idx = 0; idx < array2_len; ++idx) {
         int const* const actual =
-            reinterpret_cast<int const*>(array2_addr + static_cast<uptr>(idx * array2_alignment));
+            reinterpret_cast<int const*>(array2_addr + idx * array2_alignment);
         psh_assert(actual != nullptr);
         psh_assert(*actual == array2_constant_value);
     }
@@ -399,12 +394,12 @@ void stack_memory_stress_and_free() {
     Stack           stack{buf, capacity};
 
     iptr const  stack_buf_diff = reinterpret_cast<iptr>(stack.memory);
-    usize const zero           = ZERO;
+    usize const zero           = 0ull;
 
     constexpr usize a1_alignment = sizeof(StrPtr);
     StrPtr          a1           = stack.alloc<char>(50);
     psh_assert(a1 != nullptr);
-    psh_assert((stack.previous_offset - STACK_HEADER_SIZE) % STACK_HEADER_ALIGNMENT == zero);
+    psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
     psh_assert(stack.previous_offset % a1_alignment == zero);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a1) - stack_buf_diff);
@@ -412,7 +407,7 @@ void stack_memory_stress_and_free() {
     constexpr usize a2_alignment = sizeof(i32);
     i32* const      a2           = stack.alloc<i32>(100);
     psh_assert(a2 != nullptr);
-    psh_assert((stack.previous_offset - STACK_HEADER_SIZE) % STACK_HEADER_ALIGNMENT == zero);
+    psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
     psh_assert(stack.previous_offset % a2_alignment == zero);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a2) - stack_buf_diff);
@@ -420,7 +415,7 @@ void stack_memory_stress_and_free() {
     constexpr usize a3_alignment = sizeof(u64);
     u64* const      a3           = stack.alloc<u64>(33);
     psh_assert(a3 != nullptr);
-    psh_assert((stack.previous_offset - STACK_HEADER_SIZE) % STACK_HEADER_ALIGNMENT == zero);
+    psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
     psh_assert(stack.previous_offset % a3_alignment == zero);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a3) - stack_buf_diff);
@@ -428,7 +423,7 @@ void stack_memory_stress_and_free() {
     constexpr usize a4_alignment = sizeof(u8);
     u8* const       a4           = stack.alloc<u8>(49);
     psh_assert(a4 != nullptr);
-    psh_assert((stack.previous_offset - STACK_HEADER_SIZE) % STACK_HEADER_ALIGNMENT == zero);
+    psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
     psh_assert(stack.previous_offset % a4_alignment == zero);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a4) - stack_buf_diff);
@@ -436,7 +431,7 @@ void stack_memory_stress_and_free() {
     constexpr usize a5_alignment = sizeof(u32);
     u32* const      a5           = stack.alloc<u32>(8);
     psh_assert(a5 != nullptr);
-    psh_assert((stack.previous_offset - STACK_HEADER_SIZE) % STACK_HEADER_ALIGNMENT == zero);
+    psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
     psh_assert(stack.previous_offset % a5_alignment == zero);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a5) - stack_buf_diff);
@@ -444,7 +439,7 @@ void stack_memory_stress_and_free() {
     constexpr usize a6_alignment = sizeof(StrPtr);
     StrPtr const    a6           = stack.alloc<char>(14);
     psh_assert(a6 != nullptr);
-    psh_assert((stack.previous_offset - STACK_HEADER_SIZE) % STACK_HEADER_ALIGNMENT == zero);
+    psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
     psh_assert(stack.previous_offset % a6_alignment == zero);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a6) - stack_buf_diff);
@@ -507,10 +502,10 @@ void free_all() {
     psh_assert(salloc.used() >= expected_min_size);
 
     salloc.clear();
-    psh_assert(salloc.used() == ZERO);
+    psh_assert(salloc.used() == 0ull);
 
-    psh_assert_msg(salloc.offset == ZERO, "Expected empty StackAlloc");
-    psh_assert_msg(salloc.previous_offset == ZERO, "Expected empty StackAlloc");
+    psh_assert_msg(salloc.offset == 0ull, "Expected empty StackAlloc");
+    psh_assert_msg(salloc.previous_offset == 0ull, "Expected empty StackAlloc");
 
     std::free(buf);
     log_passed(header);
