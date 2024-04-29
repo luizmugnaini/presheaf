@@ -53,7 +53,7 @@ namespace psh {
             uptr const new_block_addr = align_forward(memory_addr + offset, alignof(T));
 
             // Check if there is enough memory.
-            usize const size = array_size<T>(length);
+            usize const size = sizeof(T) * length;
             if (new_block_addr + size > capacity + memory_addr) {
                 log_fmt(
                     LogLevel::Error,

@@ -12,18 +12,13 @@
 namespace psh {
     MemoryManager::MemoryManager(usize _capacity) noexcept
         : capacity{_capacity},
-          allocator{
-              reinterpret_cast<u8*>(std::malloc(_capacity)),
-              _capacity,
-          } {}
+          allocator{reinterpret_cast<u8*>(std::malloc(_capacity)), _capacity} {}
 
     MemoryManager::~MemoryManager() noexcept {
         std::free(allocator.memory);
     }
 
     void MemoryManager::init(usize _capacity) noexcept {
-        // TODO: Don't use malloc, instead, use native virtual memory allocation calls like
-        //       `VirtualAlloc` on Windows.
         allocator.init(reinterpret_cast<u8*>(std::malloc(_capacity)), _capacity);
     }
 

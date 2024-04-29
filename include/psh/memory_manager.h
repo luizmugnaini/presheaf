@@ -56,7 +56,7 @@ namespace psh {
                 log_fmt(
                     LogLevel::Error,
                     "MemoryManager::alloc unable to allocate %zu bytes.",
-                    array_size<T>(length));
+                    sizeof(T) * length);
                 return nullptr;
             }
 
@@ -82,7 +82,7 @@ namespace psh {
                 log_fmt(
                     LogLevel::Error,
                     "MemoryManager::realloc unable to allocate %zu bytes.",
-                    array_size<T>(new_length));
+                    sizeof(T) * new_length);
                 return nullptr;
             }
 

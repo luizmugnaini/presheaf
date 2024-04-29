@@ -62,18 +62,12 @@ namespace psh {
         return found;
     }
 
-    /// Compute the size of a contiguous array of instances of a given type.
-    template <typename T>
-        requires std::is_object_v<T>
-    [[nodiscard]] constexpr usize array_size(usize length) noexcept {
-        return length * sizeof(T);
-    }
-
     /// Simple wrapper around `std::memset` that automatically deals with null values.
     ///
     /// Does nothing if `ptr` is a null pointer.
     void memory_set(FatPtr<u8> fat_ptr, i32 fill) noexcept;
 
+    /// Override the contents of a fat pointer with a given element.
     template <typename T>
         requires TriviallyCopyable<T>
     void fill(FatPtr<T> fat_ptr, T _fill) noexcept {

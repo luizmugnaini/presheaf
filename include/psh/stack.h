@@ -195,7 +195,7 @@ namespace psh {
                 return nullptr;
             }
 
-            usize const new_block_size = array_size<T>(length);
+            usize const new_block_size = sizeof(T) * length;
 
             u8* const   free_mem = memory + offset;
             usize const padding  = padding_with_header(
@@ -245,7 +245,7 @@ namespace psh {
                 log_fmt(
                     LogLevel::Error,
                     "StackAlloc::zero_alloc unable to allocate %zu bytes of memory.",
-                    array_size<T>(length));
+                    sizeof(T) * length);
                 return nullptr;
             }
 
@@ -267,7 +267,7 @@ namespace psh {
                 return nullptr;
             }
 
-            usize const new_size = array_size<T>(new_length);
+            usize const new_size = sizeof(T) * new_length;
 
             // If `ptr` is the last allocated block, just adjust the offsets.
             if (ublock == top()) {

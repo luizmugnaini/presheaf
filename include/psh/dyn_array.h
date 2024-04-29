@@ -80,7 +80,7 @@ namespace psh {
             memory_copy(
                 reinterpret_cast<u8*>(buf_),
                 reinterpret_cast<u8 const*>(list.begin()),
-                array_size<T>(list.size()));
+                sizeof(T) * list.size());
         }
 
         /// Construct a dynamic array with the contents of an initializer list, and optionally
