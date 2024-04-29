@@ -52,7 +52,7 @@ namespace psh {
 
     /// Add two values wrapping the result to the corresponding maximal numeric limit.
     template <typename T>
-        requires Addable<T> && std::is_unsigned_v<T> && TriviallyCopyable<T>
+        requires Addable<T> && IsSigned<T> && TriviallyCopyable<T>
     [[nodiscard]] constexpr T wrap_add(T a, T b) noexcept {
         T const c = a + b;
         return (c >= a) ? c : std::numeric_limits<T>::max();
@@ -60,7 +60,7 @@ namespace psh {
 
     /// Subtract two values wrapping the result to the corresponding minimal numeric limit.
     template <typename T>
-        requires Addable<T> && std::is_unsigned_v<T> && TriviallyCopyable<T>
+        requires Addable<T> && IsUnsigned<T> && TriviallyCopyable<T>
     [[nodiscard]] constexpr T wrap_sub(T a, T b) noexcept {
         T const c = a - b;
         return (c <= a) ? c : std::numeric_limits<T>::min();

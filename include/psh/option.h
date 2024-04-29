@@ -11,7 +11,7 @@ namespace psh {
         T    val_{};
         bool has_val_ = false;
 
-        constexpr Option() = default;
+        constexpr Option() noexcept = default;
         constexpr Option(T _val) noexcept : val_{_val}, has_val_{true} {}
         constexpr Option& operator=(T _val) noexcept {
             val_     = _val;

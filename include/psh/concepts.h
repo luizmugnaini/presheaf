@@ -13,19 +13,25 @@ namespace psh {
     concept NotTriviallyCopyable = !std::is_trivially_copyable_v<T>;
 
     template <typename T>
+    concept IsObject = std::is_object_v<T>;
+
+    template <typename T>
+    concept IsPointer = std::is_pointer_v<T>;
+
+    template <typename T>
+    concept NotPointer = !std::is_pointer_v<T>;
+
+    template <typename T>
     concept Integral = std::is_integral_v<T>;
 
     template <typename T>
     concept Numeric = std::is_integral_v<T> || std::is_floating_point_v<T>;
 
     template <typename T>
-    concept IsObject = std::is_object_v<T>;
+    concept IsSigned = std::is_signed_v<T>;
 
     template <typename T>
-    concept Pointer = std::is_pointer_v<T>;
-
-    template <typename T>
-    concept NotPointer = !std::is_pointer_v<T>;
+    concept IsUnsigned = std::is_unsigned_v<T>;
 
     template <typename T>
     concept Addable = requires(T x) { x + x; };

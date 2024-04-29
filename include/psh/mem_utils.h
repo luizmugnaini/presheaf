@@ -36,7 +36,7 @@ namespace psh {
 
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
-        requires std::is_object_v<T> && TriviallyCopyable<T>
+        requires IsObject<T> && TriviallyCopyable<T>
     [[nodiscard]] bool contains(T match, FatPtr<T> container, NotNull<MatchFn<T>> match_fn) {
         bool found = false;
         for (auto const& m : container) {
@@ -50,7 +50,7 @@ namespace psh {
 
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
-        requires std::is_object_v<T> && TriviallyCopyable<T> && Reflexive<T>
+        requires IsObject<T> && TriviallyCopyable<T> && Reflexive<T>
     [[nodiscard]] bool contains(T match, FatPtr<T> container) {
         bool found = false;
         for (auto const& m : container) {

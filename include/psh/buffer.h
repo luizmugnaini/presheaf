@@ -3,15 +3,14 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 #pragma once
 
+#include <psh/concepts.h>
 #include <psh/fat_ptr.h>
 #include <psh/types.h>
-
-#include <type_traits>
 
 namespace psh {
     /// Buffer with a compile-time known size.
     template <typename T, usize size_>
-        requires std::is_object_v<T>
+        requires IsObject<T>
     struct Buffer {
         T buf_[size_]{};
 
