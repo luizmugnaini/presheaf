@@ -4,7 +4,6 @@
 #pragma once
 
 #include <psh/types.h>
-#include "../compile_options.h"
 
 #include <cassert>
 #include <cstdio>
@@ -54,27 +53,26 @@ namespace psh {
     /// ```
     template <typename... Arg>
     void log_fmt(LogInfo const& info, StringLiteral fmt, Arg const&... args) noexcept {
-        if constexpr (LOGGING_ENABLED) {
-            constexpr usize max_msg_len = 8192;
+#if defined(PSH_DEBUG) || defined(PSH_ENABLE_LOGGING)
+        constexpr usize max_msg_len = 8192;
 
-            // Format the string with the given arguments.
-            char      msg[max_msg_len];
-            i32 const res_len = std::snprintf(msg, max_msg_len, fmt.str, args...);
-            assert(
-                res_len != -1 && "std::snptrintf unable to parse the format string and arguments");
+        // Format the string with the given arguments.
+        char      msg[max_msg_len];
+        i32 const res_len = std::snprintf(msg, max_msg_len, fmt.str, args...);
+        assert(res_len != -1 && "std::snptrintf unable to parse the format string and arguments");
 
-            // Stamp the message with a null-terminator.
-            auto const  ures_len = static_cast<usize>(res_len);
-            usize const msg_len  = ures_len < max_msg_len ? ures_len : max_msg_len;
-            msg[msg_len]         = 0;
+        // Stamp the message with a null-terminator.
+        auto const  ures_len = static_cast<usize>(res_len);
+        usize const msg_len  = ures_len < max_msg_len ? ures_len : max_msg_len;
+        msg[msg_len]         = 0;
 
-            (void)std::fprintf(
-                stderr,
-                "%s [%s:%d] %s\n",
-                log_level_str(info.lvl),
-                info.file,
-                info.line,
-                msg);
-        }
+        (void)std::fprintf(
+            stderr,
+            "%s [%s:%d] %s\n",
+            log_level_str(info.lvl),
+            info.file,
+            info.line,
+            msg);
+#endif
     }
 }  // namespace psh

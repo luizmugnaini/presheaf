@@ -3,7 +3,6 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 #include <psh/io.h>
 
-#include <compile_options.h>
 #include <psh/assert.h>
 #include <psh/types.h>
 
@@ -29,14 +28,14 @@ namespace psh {
     }
 
     void log(LogInfo&& info, StrPtr msg) {
-        if constexpr (LOGGING_ENABLED) {
-            psh_discard(std::fprintf(
-                stderr,
-                "%s [%s:%d] %s\n",
-                log_level_str(info.lvl),
-                info.file,
-                info.line,
-                msg));
-        }
+#if defined(PSH_DEBUG) || defined(PSH_ENABLE_LOGGING)
+        psh_discard(std::fprintf(
+            stderr,
+            "%s [%s:%d] %s\n",
+            log_level_str(info.lvl),
+            info.file,
+            info.line,
+            msg));
+#endif
     }
 }  // namespace psh

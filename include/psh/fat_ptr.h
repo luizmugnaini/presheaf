@@ -2,7 +2,6 @@
 
 #include <psh/assert.h>
 #include <psh/types.h>
-#include "../compile_options.h"
 
 namespace psh {
     /// Fat pointer.
@@ -44,16 +43,16 @@ namespace psh {
         }
 
         [[nodiscard]] constexpr T& operator[](usize idx) noexcept {
-            if constexpr (CHECK_BOUNDS) {
-                psh_assert_msg(idx < size_, "Index out of bounds for fat pointer");
-            }
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+            psh_assert_msg(idx < size_, "Index out of bounds for fat pointer");
+#endif
             return buf_[idx];
         }
 
         [[nodiscard]] constexpr T const& operator[](usize idx) const noexcept {
-            if constexpr (CHECK_BOUNDS) {
-                psh_assert_msg(idx < size_, "Index out of bounds for fat pointer");
-            }
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+            psh_assert_msg(idx < size_, "Index out of bounds for fat pointer");
+#endif
             return buf_[idx];
         }
     };

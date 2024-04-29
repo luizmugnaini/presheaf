@@ -7,7 +7,6 @@
 #include <psh/concepts.h>
 #include <psh/mem_utils.h>
 #include <psh/types.h>
-#include "../compile_options.h"
 
 #include <initializer_list>
 
@@ -138,16 +137,16 @@ namespace psh {
         }
 
         [[nodiscard]] constexpr T& operator[](usize index) noexcept {
-            if constexpr (CHECK_BOUNDS) {
-                psh_assert_msg(index < size_, "Array::operator[] index out of bounds");
-            }
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+            psh_assert_msg(index < size_, "Array::operator[] index out of bounds");
+#endif
             return buf_[index];
         }
 
         [[nodiscard]] constexpr T const& operator[](usize index) const noexcept {
-            if constexpr (CHECK_BOUNDS) {
-                psh_assert_msg(index < size_, "Array::operator[] index out of bounds");
-            }
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+            psh_assert_msg(index < size_, "Array::operator[] index out of bounds");
+#endif
             return buf_[index];
         }
     };

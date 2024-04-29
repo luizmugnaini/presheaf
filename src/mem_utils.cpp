@@ -3,7 +3,6 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 #include <psh/mem_utils.h>
 
-#include <compile_options.h>
 #include <psh/assert.h>
 #include <psh/math.h>
 
@@ -22,13 +21,13 @@ namespace psh {
             return;
         }
 
-        if constexpr (CHECK_MEMCPY_OVERLAP) {
-            auto const dest_addr = reinterpret_cast<uptr>(dest);
-            auto const src_addr  = reinterpret_cast<uptr>(src);
-            psh_assert_msg(
-                (dest_addr + size > src_addr) || (dest_addr < src_addr + size),
-                "memcpy called but source and destination overlap, which produces UB");
-        }
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_MEMCPY_OVERLAP)
+        auto const dest_addr = reinterpret_cast<uptr>(dest);
+        auto const src_addr  = reinterpret_cast<uptr>(src);
+        psh_assert_msg(
+            (dest_addr + size > src_addr) || (dest_addr < src_addr + size),
+            "memcpy called but source and destination overlap, which produces UB");
+#endif
 
         psh_discard(std::memcpy(dest, src, size));
     }
@@ -45,11 +44,11 @@ namespace psh {
         usize alignment,
         usize header_size,
         usize header_alignment) noexcept {
-        if constexpr (CHECK_ALIGNMENT) {
-            psh_assert_msg(
-                is_power_of_two(alignment) && is_power_of_two(header_alignment),
-                "padding_with_header expected the alignments to be powers of two");
-        }
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_ALIGNMENT)
+        psh_assert_msg(
+            is_power_of_two(alignment) && is_power_of_two(header_alignment),
+            "padding_with_header expected the alignments to be powers of two");
+#endif
 
         uptr padding = 0;
 
@@ -76,11 +75,11 @@ namespace psh {
     }
 
     usize align_forward(uptr ptr, usize alignment) noexcept {
-        if constexpr (CHECK_ALIGNMENT) {
-            psh_assert_msg(
-                is_power_of_two(alignment),
-                "align_forward expected the alignment to be a power of two");
-        }
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_ALIGNMENT)
+        psh_assert_msg(
+            is_power_of_two(alignment),
+            "align_forward expected the alignment to be a power of two");
+#endif
 
         uptr const align     = static_cast<uptr>(alignment);
         uptr const mod_align = ptr & (align - 1);

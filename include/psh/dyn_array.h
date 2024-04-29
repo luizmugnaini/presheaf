@@ -183,16 +183,16 @@ namespace psh {
         }
 
         [[nodiscard]] T& operator[](usize idx) noexcept {
-            if constexpr (CHECK_BOUNDS) {
-                psh_assert_msg(idx < size_, "Index out of bounds for dynamic array");
-            }
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+            psh_assert_msg(idx < size_, "Index out of bounds for dynamic array");
+#endif
             return buf_[idx];
         }
 
         [[nodiscard]] T const& operator[](usize idx) const noexcept {
-            if constexpr (CHECK_BOUNDS) {
-                psh_assert_msg(idx < size_, "Index out of bounds for dynamic array");
-            }
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+            psh_assert_msg(idx < size_, "Index out of bounds for dynamic array");
+#endif
             return buf_[idx];
         }
 
@@ -246,17 +246,17 @@ namespace psh {
 
         /// Try to remove a dynamic array element at a given index.
         bool remove(usize idx) noexcept {
-            if constexpr (CHECK_BOUNDS) {
-                if (idx >= size_) {
-                    log_fmt(
-                        LogLevel::Error,
-                        "DynArray::remove index %zu is out of bounds for dynamic array of size "
-                        "%zu.",
-                        idx,
-                        size_);
-                    return false;
-                }
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+            if (idx >= size_) {
+                log_fmt(
+                    LogLevel::Error,
+                    "DynArray::remove index %zu is out of bounds for dynamic array of size "
+                    "%zu.",
+                    idx,
+                    size_);
+                return false;
             }
+#endif
 
             if (idx != size_ - 1) {
                 // If the element isn't the last we have copy the array content with overlap.

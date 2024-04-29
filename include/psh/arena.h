@@ -129,8 +129,8 @@ namespace psh {
                 return nullptr;
             }
 
-            usize const current_size = array_size<T>(current_capacity);
-            usize const new_size     = array_size<T>(new_capacity);
+            usize const current_size = sizeof(T) * current_capacity;
+            usize const new_size     = sizeof(T) * new_capacity;
 
             // If the block is the last allocated, just bump the offset.
             if (block_addr == wrap_sub(start_free_addr, current_size)) {
