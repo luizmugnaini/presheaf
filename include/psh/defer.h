@@ -1,4 +1,22 @@
-/// Scope-based code deferrer.
+///                          Presheaf Library
+///    Copyright (C) 2024 Luiz Gustavo Mugnaini Anselmo
+///
+///    This program is free software; you can redistribute it and/or modify
+///    it under the terms of the GNU General Public License as published by
+///    the Free Software Foundation; either version 2 of the License, or
+///    (at your option) any later version.
+///
+///    This program is distributed in the hope that it will be useful,
+///    but WITHOUT ANY WARRANTY; without even the implied warranty of
+///    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+///    GNU General Public License for more details.
+///
+///    You should have received a copy of the GNU General Public License along
+///    with this program; if not, write to the Free Software Foundation, Inc.,
+///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+///
+/// Description: Scope-based code deferrer.
+/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 ///
 /// Usage example:
 /// ```
@@ -20,8 +38,7 @@
 /// Here the shader modules will be automatically destroyed at the end of the scope. Notice that the
 /// macro `psh_defer` can accept a block of code to be run, or a single function call like
 /// `psh_defer(bar_fn(x, y, z))`.
-///
-/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
+
 #pragma once
 
 #include <psh/concepts.h>
