@@ -54,7 +54,7 @@ namespace psh {
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
         requires IsObject<T> && TriviallyCopyable<T>
-    bool contains(T match, FatPtr<T> container, NotNull<MatchFn<T>> match_fn) {
+    bool contains(T match, FatPtr<T const> container, NotNull<MatchFn<T>> match_fn) {
         bool found = false;
         for (auto const& m : container) {
             if (match_fn.ptr(match, m)) {
@@ -68,7 +68,7 @@ namespace psh {
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
         requires IsObject<T> && TriviallyCopyable<T> && Reflexive<T>
-    bool contains(T match, FatPtr<T> container) {
+    bool contains(T match, FatPtr<T const> container) {
         bool found = false;
         for (auto const& m : container) {
             if (match == m) {
@@ -85,6 +85,9 @@ namespace psh {
     void memory_set(FatPtr<u8> fat_ptr, i32 fill) noexcept;
 
     /// Override the contents of a fat pointer with a given element.
+    ///
+    /// This is the virtually same as `memory_set` but can copy elements of any type. However it
+    /// will be slower.
     template <typename T>
         requires TriviallyCopyable<T>
     void fill(FatPtr<T> fat_ptr, T _fill) noexcept {
