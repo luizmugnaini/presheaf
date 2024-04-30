@@ -63,7 +63,9 @@ namespace psh {
         ///     * length: Number of entities of type `T` that should fit in the new block.
         template <typename T>
         T* alloc(usize length) noexcept {
-            if (length == 0 || capacity == 0) return nullptr;
+            if (length == 0 || capacity == 0) {
+                return nullptr;
+            }
 
             uptr const memory_addr    = reinterpret_cast<uptr>(memory);
             uptr const new_block_addr = align_forward(memory_addr + offset, alignof(T));
@@ -81,7 +83,8 @@ namespace psh {
                 return nullptr;
             }
 
-            offset = wrap_sub(size + new_block_addr, memory_addr);
+            offset = static_cast<usize>(size + new_block_addr - memory_addr);
+
             return reinterpret_cast<T*>(new_block_addr);
         }
 
@@ -96,8 +99,6 @@ namespace psh {
         template <typename T>
         T* zero_alloc(usize length) noexcept {
             T* const ptr = alloc<T>(length);
-            if (ptr == nullptr) return nullptr;
-
             memory_set(fat_ptr_as_bytes(ptr, length), 0);
             return ptr;
         }
@@ -114,31 +115,29 @@ namespace psh {
         ///       able to contain.
         template <typename T>
         T* realloc(T* block, usize current_capacity, usize new_capacity) noexcept {
-            // Arena allocators cannot deallocate willy-nilly.
-            psh_assert_msg(
-                new_capacity != 0,
-                "ArenaAlloc::realloc called with a zero `new_capacity` parameter");
-
             // Check if there is any memory at all.
-            if (capacity == 0 || memory == nullptr) return nullptr;
+            if (capacity == 0 || memory == nullptr || new_capacity == 0) {
+                return nullptr;
+            }
 
             // Check if the user wants to allocate a completely new block.
-            if (block == nullptr || current_capacity == 0) return alloc<T>(new_capacity);
+            if (block == nullptr || current_capacity == 0) {
+                return alloc<T>(new_capacity);
+            }
 
-            auto const block_addr      = reinterpret_cast<uptr>(block);
-            auto const memory_start    = reinterpret_cast<uptr>(memory);
-            auto const memory_end      = memory_start + capacity;
-            auto const start_free_addr = memory_start + offset;
+            u8* const block_bytes = reinterpret_cast<u8*>(block);
+            u8* const mem_end     = memory + capacity;
+            u8* const free_mem    = memory + offset;
 
             // Check if the block lies within the allocator's memory.
-            if (block_addr < memory_start || block_addr >= memory_end) {
+            if (block_bytes < memory || block_bytes >= memory + capacity) {
                 log(LogLevel::Error,
                     "ArenaAlloc::realloc called with pointer outside of its domain.");
                 return nullptr;
             }
 
             // Check if the block is already free.
-            if (block_addr >= start_free_addr) {
+            if (block_bytes >= free_mem) {
                 log(LogLevel::Error,
                     "ArenaAlloc::realloc called with a pointer to a free address of the arena "
                     "domain.");
@@ -148,10 +147,15 @@ namespace psh {
             usize const current_size = sizeof(T) * current_capacity;
             usize const new_size     = sizeof(T) * new_capacity;
 
+            psh_assert_msg(
+                current_size <= offset,
+                "Arena::realloc called with current_size surpassing the current offset of the "
+                "arena, which isn't possible");
+
             // If the block is the last allocated, just bump the offset.
-            if (block_addr == wrap_sub(start_free_addr, current_size)) {
+            if (block_bytes == free_mem - current_size) {
                 // Check if there is enough space.
-                if (block_addr + new_size > memory_end) {
+                if (block_bytes + new_size > mem_end) {
                     log_fmt(
                         LogLevel::Error,
                         "ArenaAlloc::realloc unable to reallocate block from %zu bytes to %zu "
@@ -160,21 +164,19 @@ namespace psh {
                         new_size);
                     return nullptr;
                 }
-                offset += wrap_sub(new_size, current_size);
+
+                offset = static_cast<usize>(
+                    static_cast<isize>(offset) + static_cast<isize>(new_size - current_size));
                 return block;
             }
 
-            T* const new_mem = zero_alloc<T>(new_capacity);
-            if (new_mem == nullptr) return nullptr;
+            auto* const new_mem = zero_alloc<u8>(new_capacity);
 
             // Copy the existing data to the new block.
             usize const copy_size = min(current_size, new_size);
-            memory_copy(
-                reinterpret_cast<u8*>(new_mem),
-                reinterpret_cast<u8 const*>(block),
-                copy_size);
+            memory_copy(new_mem, block_bytes, copy_size);
 
-            return new_mem;
+            return reinterpret_cast<T*>(new_mem);
         }
 
         /// Scratch arena.
@@ -185,33 +187,23 @@ namespace psh {
         /// You can nest many scratch arenas throughout different lifetimes by decoupling the
         /// current scratch arena into a new one.
         struct Scratch {
-            Arena* parent_;
-            usize  saved_offset_ = 0;
+            Arena* arena;
+            usize  saved_offset = 0;
 
             Scratch(Scratch&&) = default;
 
             /// Create a new scratch arena out of an existing arena.
             constexpr explicit Scratch(Arena* parent) noexcept
-                : parent_{parent}, saved_offset_{parent->offset} {}
+                : arena{parent}, saved_offset{parent->offset} {}
 
             /// Reset the parent offset.
             ~Scratch() noexcept {
-                parent_->offset = saved_offset_;
-            }
-
-            /// The parent arena associated to the scratch arena.
-            Arena* arena() const noexcept {
-                return parent_;
-            }
-
-            /// The offset of the parent arena at the time of creation of the scratch arena.
-            usize saved_offset() const noexcept {
-                return saved_offset_;
+                arena->offset = saved_offset;
             }
 
             /// Create a new scratch arena with the current state of the parent.
             Scratch decouple() const noexcept {
-                return Scratch{parent_};
+                return Scratch{arena};
             }
 
             // The scratch arena should never be passed around by reference because it defeats its

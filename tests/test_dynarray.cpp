@@ -38,14 +38,14 @@ void size_and_capacity(MemoryManager& mem_manager) {
 
     v.push(Foo{0});
 
-    usize last_capacity = v.capacity();
+    usize last_capacity = v.capacity;
     for (i32 i = 2; i < 50; ++i) {
         v.push(Foo{i});
 
-        usize const size = v.size();
+        usize const size = v.size;
         psh_assert(size == static_cast<usize>(i));
 
-        usize const current_capacity = v.capacity();
+        usize const current_capacity = v.capacity;
         if (i == static_cast<i32>(last_capacity + 1)) {
             usize const expected_capacity = 2 * last_capacity;
             psh_assert(current_capacity == expected_capacity);
@@ -79,7 +79,7 @@ void peek_and_pop(MemoryManager& mem_manager) {
     psh_assert((p != nullptr) && (*p == 4));
     psh_assert(v.pop());
 
-    psh_assert(v.size() == 0ull);
+    psh_assert(v.size == 0ull);
 
     mem_manager.pop();
     log_passed(header);
@@ -93,7 +93,7 @@ void remove(MemoryManager& mem_manager) {
     v.push(4), v.push(7), v.push(8), v.push(9), v.push(55);
     i32* p = nullptr;
 
-    psh_assert(v.size() == 5ull);
+    psh_assert(v.size == 5ull);
     psh_assert(v[0] == 4);
     psh_assert(v[1] == 7);
     psh_assert(v[2] == 8);
@@ -103,7 +103,7 @@ void remove(MemoryManager& mem_manager) {
     psh_assert((p != nullptr) && (*p == 55));
 
     psh_assert(v.remove(1));
-    psh_assert(v.size() == 4ull);
+    psh_assert(v.size == 4ull);
     psh_assert(v[0] == 4);
     psh_assert(v[1] == 8);
     psh_assert(v[2] == 9);
@@ -112,7 +112,7 @@ void remove(MemoryManager& mem_manager) {
     psh_assert((p != nullptr) && (*p == 55));
 
     psh_assert(v.remove(2));
-    psh_assert(v.size() == 3ull);
+    psh_assert(v.size == 3ull);
     psh_assert(v[0] == 4);
     psh_assert(v[1] == 8);
     psh_assert(v[2] == 55);
@@ -120,20 +120,20 @@ void remove(MemoryManager& mem_manager) {
     psh_assert((p != nullptr) && (*p == 55));
 
     psh_assert(v.remove(0));
-    psh_assert(v.size() == 2ull);
+    psh_assert(v.size == 2ull);
     psh_assert(v[0] == 8);
     psh_assert(v[1] == 55);
     p = v.peek();
     psh_assert((p != nullptr) && (*p == 55));
 
     psh_assert(v.remove(1));
-    psh_assert(v.size() == 1ull);
+    psh_assert(v.size == 1ull);
     psh_assert(v[0] == 8);
     p = v.peek();
     psh_assert((p != nullptr) && (*p == 8));
 
     psh_assert(v.remove(0));
-    psh_assert(v.size() == 0ull);
+    psh_assert(v.size == 0ull);
 
     mem_manager.pop();
     log_passed(header);
@@ -145,9 +145,9 @@ void clear(MemoryManager& mem_manager) {
     auto          arena = mem_manager.make_arena(sizeof(f32) * 4).demand();
     DynArray<f32> v{&arena, 4};
     v.push(7.0f), v.push(4.8f), v.push(6.1f), v.push(3.14f);
-    psh_assert_msg(v.size() == static_cast<usize>(4), "Expected vector size to be 4");
+    psh_assert_msg(v.size == static_cast<usize>(4), "Expected vector size to be 4");
     v.clear();
-    psh_assert_msg(v.size() == 0ull, "Expected vector size to be zero after clean");
+    psh_assert_msg(v.size == 0ull, "Expected vector size to be zero after clean");
 
     mem_manager.pop();
     log_passed(header);

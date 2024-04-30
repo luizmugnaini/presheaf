@@ -28,40 +28,26 @@ namespace psh {
     template <typename T>
         requires NotPointer<T>
     struct Option {
-        T    val_{};
-        bool has_val_ = false;
+        T    val{};
+        bool has_val = false;
 
         constexpr Option() noexcept = default;
-        constexpr Option(T _val) noexcept : val_{_val}, has_val_{true} {}
+
+        constexpr Option(T _val) noexcept : val{_val}, has_val{true} {}
+
         constexpr Option& operator=(T _val) noexcept {
-            val_     = _val;
-            has_val_ = true;
+            val     = _val;
+            has_val = true;
             return *this;
         }
 
-        bool is_some() const noexcept {
-            return has_val_;
-        }
-
-        bool is_none() const noexcept {
-            return !has_val_;
-        }
-
         T const& val_or(T const& default_val = {}) const noexcept {
-            return has_val_ ? val_ : default_val;
+            return has_val ? val : default_val;
         }
 
         T const& demand(StrPtr msg = "Option::demand failed") const noexcept {
-            psh_assert_msg(has_val_, msg);
-            return val_;
-        }
-
-        T val_unchecked() const noexcept {
-            return val_;
-        }
-
-        T const& val_ref_unchecked() const noexcept {
-            return val_;
+            psh_assert_msg(has_val, msg);
+            return val;
         }
     };
 }  // namespace psh

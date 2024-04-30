@@ -22,15 +22,16 @@
 
 #include <psh/assert.h>
 #include <psh/math.h>
+#include <psh/types.h>
 
 #include <cstring>
 
 namespace psh {
-    void memory_set(FatPtr<u8> fat_ptr, i32 fill) noexcept {
-        if (fat_ptr.buf() == nullptr) {
+    void memory_set(FatPtr<u8> fptr, i32 fill) noexcept {
+        if (fptr.buf == nullptr) {
             return;
         }
-        psh_discard(std::memset(fat_ptr.buf(), fill, fat_ptr.size()));
+        psh_discard(std::memset(fptr.buf, fill, fptr.size));
     }
 
     void memory_copy(u8* dest, u8 const* src, usize size) noexcept {

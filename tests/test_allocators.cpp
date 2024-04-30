@@ -50,16 +50,16 @@ void arena_scratch() {
         usize          last_offset = base_offset;
 
         // Check consistency while allocating within a scratch arena.
-        psh_assert(s1.arena() == &arena);
-        psh_assert(s1.saved_offset() == base_offset);
+        psh_assert(s1.arena == &arena);
+        psh_assert(s1.saved_offset == base_offset);
         {
             constexpr usize a1_size = 32;
-            u8*             a1      = s1.arena()->alloc<u8>(a1_size);
+            u8*             a1      = s1.arena->alloc<u8>(a1_size);
             psh_assert(a1 != nullptr);
             last_offset += a1_size;
 
             constexpr usize a2_size = 32;
-            u8*             a2      = s1.arena()->alloc<u8>(a2_size);
+            u8*             a2      = s1.arena->alloc<u8>(a2_size);
             psh_assert(a2 != nullptr);
             last_offset += a2_size;
 
@@ -67,8 +67,8 @@ void arena_scratch() {
             psh_discard(a1);
             psh_discard(a2);
         }
-        psh_assert(s1.saved_offset() == base_offset);
-        psh_assert(s1.arena() == &arena);
+        psh_assert(s1.saved_offset == base_offset);
+        psh_assert(s1.arena == &arena);
         psh_assert(arena.offset == last_offset);
 
         // ---------------------------------------------------------------------------------
@@ -79,16 +79,16 @@ void arena_scratch() {
             Arena::Scratch s2 = s1.decouple();
 
             // Check if this new scratch has a working allocation scheme.
-            psh_assert(s2.arena() == &arena);
-            psh_assert(s2.saved_offset() == s2_base_offset);
+            psh_assert(s2.arena == &arena);
+            psh_assert(s2.saved_offset == s2_base_offset);
             {
                 constexpr usize b1_size = 32;
-                u8*             b1      = s2.arena()->alloc<u8>(b1_size);
+                u8*             b1      = s2.arena->alloc<u8>(b1_size);
                 psh_assert(b1 != nullptr);
                 last_offset += b1_size;
 
                 constexpr usize b2_size = 64;
-                u8*             b2      = s2.arena()->alloc<u8>(b2_size);
+                u8*             b2      = s2.arena->alloc<u8>(b2_size);
                 psh_assert(b2 != nullptr);
                 last_offset += b2_size;
 
@@ -96,8 +96,8 @@ void arena_scratch() {
                 psh_discard(b1);
                 psh_discard(b2);
             }
-            psh_assert(s2.arena() == &arena);
-            psh_assert(s2.saved_offset() == s2_base_offset);
+            psh_assert(s2.arena == &arena);
+            psh_assert(s2.saved_offset == s2_base_offset);
 
             // ---------------------------------------------------------------------------------
             // Create another scratch arena from `s1` within the same lifetime of `s2`.
@@ -106,17 +106,17 @@ void arena_scratch() {
             Arena::Scratch s3 = s1.decouple();
 
             // Check if this new scratch has a working allocation scheme.
-            psh_assert(s3.arena() == &arena);
-            psh_assert(s3.saved_offset() == last_offset);
+            psh_assert(s3.arena == &arena);
+            psh_assert(s3.saved_offset == last_offset);
             usize const s3_base_offset = last_offset;
             {
                 constexpr usize c1_size = 16;
-                u8*             c1      = s3.arena()->alloc<u8>(c1_size);
+                u8*             c1      = s3.arena->alloc<u8>(c1_size);
                 psh_assert(c1 != nullptr);
                 last_offset += c1_size;
 
                 constexpr usize c2_size = 128;
-                u8*             c2      = s3.arena()->alloc<u8>(c2_size);
+                u8*             c2      = s3.arena->alloc<u8>(c2_size);
                 psh_assert(c2 != nullptr);
                 last_offset += c2_size;
 
@@ -124,8 +124,8 @@ void arena_scratch() {
                 psh_discard(c1);
                 psh_discard(c2);
             }
-            psh_assert(s3.arena() == &arena);
-            psh_assert(s3.saved_offset() == s3_base_offset);
+            psh_assert(s3.arena == &arena);
+            psh_assert(s3.saved_offset == s3_base_offset);
 
             // ---------------------------------------------------------------------------------
             // Create another scratch arena from `s2` within the same lifetime of `s2` and `s3`.
@@ -134,17 +134,17 @@ void arena_scratch() {
             Arena::Scratch s4 = s2.decouple();
 
             // Check if this new scratch has a working allocation scheme.
-            psh_assert(s4.arena() == &arena);
-            psh_assert(s4.saved_offset() == last_offset);
+            psh_assert(s4.arena == &arena);
+            psh_assert(s4.saved_offset == last_offset);
             usize const s4_base_offset = last_offset;
             {
                 constexpr usize c1_size = 16;
-                u8*             c1      = s4.arena()->alloc<u8>(c1_size);
+                u8*             c1      = s4.arena->alloc<u8>(c1_size);
                 psh_assert(c1 != nullptr);
                 last_offset += c1_size;
 
                 constexpr usize c2_size = 128;
-                u8*             c2      = s4.arena()->alloc<u8>(c2_size);
+                u8*             c2      = s4.arena->alloc<u8>(c2_size);
                 psh_assert(c2 != nullptr);
                 last_offset += c2_size;
 
@@ -152,8 +152,8 @@ void arena_scratch() {
                 psh_discard(c1);
                 psh_discard(c2);
             }
-            psh_assert(s4.arena() == &arena);
-            psh_assert(s4.saved_offset() == s4_base_offset);
+            psh_assert(s4.arena == &arena);
+            psh_assert(s4.saved_offset == s4_base_offset);
 
             // ---------------------------------------------------------------------------------
             // Create a scratch arena from `s4`
@@ -164,27 +164,27 @@ void arena_scratch() {
                 Arena::Scratch s5 = s4.decouple();
 
                 // Check if this new scratch has a working allocation scheme.
-                psh_assert(s5.arena() == &arena);
-                psh_assert(s5.saved_offset() == last_offset);
+                psh_assert(s5.arena == &arena);
+                psh_assert(s5.saved_offset == last_offset);
                 {
                     constexpr usize d1_size = 16;
-                    u8*             d1      = s5.arena()->alloc<u8>(d1_size);
+                    u8*             d1      = s5.arena->alloc<u8>(d1_size);
                     psh_assert(d1 != nullptr);
                     last_offset += d1_size;
-                    psh_assert(s1.arena()->offset == last_offset);
+                    psh_assert(s1.arena->offset == last_offset);
 
                     constexpr usize c2_size = 128;
-                    u8*             c2      = s5.arena()->alloc<u8>(c2_size);
+                    u8*             c2      = s5.arena->alloc<u8>(c2_size);
                     psh_assert(c2 != nullptr);
                     last_offset += c2_size;
-                    psh_assert(s1.arena()->offset == last_offset);
+                    psh_assert(s1.arena->offset == last_offset);
 
                     // Throw away.
                     psh_discard(d1);
                     psh_discard(c2);
                 }
-                psh_assert(s5.arena() == &arena);
-                psh_assert(s5.saved_offset() == s5_base_offset);
+                psh_assert(s5.arena == &arena);
+                psh_assert(s5.saved_offset == s5_base_offset);
             }
 
             // `s5` destroyed.
@@ -194,8 +194,8 @@ void arena_scratch() {
         psh_assert(arena.offset == s2_base_offset);
 
         // Check the state of `s1`.
-        psh_assert(s1.saved_offset() == base_offset);
-        psh_assert(s1.arena() == &arena);
+        psh_assert(s1.saved_offset == base_offset);
+        psh_assert(s1.arena == &arena);
     }
     psh_assert(arena.offset == base_offset);
 

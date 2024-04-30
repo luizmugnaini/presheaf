@@ -29,15 +29,7 @@ namespace psh {
     template <typename T, usize size_>
         requires IsObject<T>
     struct Buffer {
-        T buf_[size_]{};
-
-        constexpr T* buf() noexcept {
-            return static_cast<T*>(buf_);
-        }
-
-        constexpr T const* const_buf() const noexcept {
-            return static_cast<T const*>(buf_);
-        }
+        T buf[size_]{};
 
         constexpr usize size() const noexcept {
             return size_;
@@ -47,36 +39,36 @@ namespace psh {
             return sizeof(T) * size_;
         }
 
-        FatPtr<T> as_fat_ptr() noexcept {
-            return FatPtr{buf_, size_};
+        FatPtr<T> fat_ptr() noexcept {
+            return FatPtr{buf, size_};
         }
 
-        constexpr FatPtr<T const> as_const_fat_ptr() const noexcept {
-            return FatPtr{static_cast<T const*>(buf_), size_};
+        constexpr FatPtr<T const> const_fat_ptr() const noexcept {
+            return FatPtr{static_cast<T const*>(buf), size_};
         }
 
         constexpr T* begin() noexcept {
-            return static_cast<T*>(buf_);
+            return static_cast<T*>(buf);
         }
 
         constexpr T const* begin() const noexcept {
-            return static_cast<T const*>(buf_);
+            return static_cast<T const*>(buf);
         }
 
         constexpr T* end() noexcept {
-            return static_cast<T*>(buf_) + size_;
+            return static_cast<T*>(buf) + size_;
         }
 
         constexpr T const* end() const noexcept {
-            return static_cast<T const*>(buf_) + size_;
+            return static_cast<T const*>(buf) + size_;
         }
 
         constexpr T& operator[](usize idx) noexcept {
-            return buf_[idx];
+            return buf[idx];
         }
 
         constexpr T const& operator[](usize idx) const noexcept {
-            return buf_[idx];
+            return buf[idx];
         }
     };
 }  // namespace psh

@@ -34,21 +34,21 @@ namespace psh {
     template <typename T>
         requires IsObject<T>
     struct Array {
-        usize size_ = 0;
-        T*    buf_  = nullptr;
+        usize size = 0;
+        T*    buf  = nullptr;
 
         explicit constexpr Array() noexcept = default;
 
         /// Initialize the array with a given size.
         void init(Arena* _arena, usize _size) noexcept {
-            size_ = _size;
-            if (size_ != 0) {
+            size = _size;
+            if (size != 0) {
                 psh_assert_msg(
                     _arena != nullptr,
                     "Array::init called with non-zero size but null arena");
 
-                buf_ = _arena->zero_alloc<T>(_size);
-                psh_assert_msg(buf_ != nullptr, "Array::init unable to allocate enough memory");
+                buf = _arena->zero_alloc<T>(_size);
+                psh_assert_msg(buf != nullptr, "Array::init unable to allocate enough memory");
             }
         }
 
@@ -59,21 +59,21 @@ namespace psh {
 
         /// Initialize the array with the contents of an initializer list.
         void init(std::initializer_list<T> list, Arena* _arena) noexcept {
-            size_ = list.size();
-            if (size_ != 0) {
+            size = list.size;
+            if (size != 0) {
                 psh_assert_msg(
                     _arena != nullptr,
                     "Array::init called with non-zero size but null arena");
 
-                buf_ = _arena->alloc<T>(size_);
-                psh_assert_msg(buf_ != nullptr, "Array unable to allocate enough memory");
+                buf = _arena->alloc<T>(size);
+                psh_assert_msg(buf != nullptr, "Array unable to allocate enough memory");
             }
 
             // Copy initializer list content.
             memory_copy(
-                reinterpret_cast<u8*>(buf_),
+                reinterpret_cast<u8*>(buf),
                 reinterpret_cast<u8 const*>(list.begin()),
-                sizeof(T) * list.size());
+                sizeof(T) * list.size);
         }
 
         /// Construct an array with the contents of an initializer list.
@@ -83,19 +83,19 @@ namespace psh {
 
         /// Initialize the array with the contents of a fat pointer.
         void init(FatPtr<T> const& fptr, Arena* _arena) noexcept {
-            size_ = fptr.size;
-            if (size_ != 0) {
+            size = fptr.size;
+            if (size != 0) {
                 psh_assert_msg(
                     _arena != nullptr,
                     "Array::init called with non-zero size but null arena");
 
-                buf_ = _arena->alloc<T>(fptr.size);
-                psh_assert_msg(buf_ != nullptr, "Array unable to allocate enough memory");
+                buf = _arena->alloc<T>(fptr.size);
+                psh_assert_msg(buf != nullptr, "Array unable to allocate enough memory");
             }
 
             // Copy buffer content.
             memory_copy(
-                reinterpret_cast<u8*>(buf_),
+                reinterpret_cast<u8*>(buf),
                 reinterpret_cast<u8 const*>(fptr.buf),
                 fptr.size_bytes());
         }
@@ -105,68 +105,56 @@ namespace psh {
             this->init(fptr, _arena);
         }
 
-        constexpr T* buf() noexcept {
-            return buf_;
-        }
-
-        constexpr T const* const_buf() const noexcept {
-            return buf_;
-        }
-
-        constexpr usize size() const noexcept {
-            return size_;
-        }
-
         constexpr bool is_empty() const noexcept {
-            return (size_ == 0);
+            return (size == 0);
         }
 
         constexpr usize size_bytes() const noexcept {
-            return sizeof(T) * size_;
+            return sizeof(T) * size;
         }
 
-        constexpr FatPtr<T> as_fat_ptr() noexcept {
-            return FatPtr{buf_, size_};
+        constexpr FatPtr<T> fat_ptr() noexcept {
+            return FatPtr{buf, size};
         }
 
-        constexpr FatPtr<T const> as_const_fat_ptr() const noexcept {
-            return FatPtr{static_cast<T const*>(buf_), size_};
+        constexpr FatPtr<T const> const_fat_ptr() const noexcept {
+            return FatPtr{static_cast<T const*>(buf), size};
         }
 
         void fill(T _fill) noexcept
             requires TriviallyCopyable<T>
         {
-            psh::fill(this->as_fat_ptr(), _fill);
+            psh::fill(FatPtr{buf, size}, _fill);
         }
 
         constexpr T* begin() noexcept {
-            return buf_;
+            return buf;
         }
 
         constexpr T const* begin() const noexcept {
-            return static_cast<T const*>(buf_);
+            return static_cast<T const*>(buf);
         }
 
         constexpr T* end() noexcept {
-            return ptr_add(buf_, size_);
+            return ptr_add(buf, size);
         }
 
         constexpr T const* end() const noexcept {
-            return ptr_add(static_cast<T const*>(buf_), size_);
+            return ptr_add(static_cast<T const*>(buf), size);
         }
 
         constexpr T& operator[](usize index) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(index < size_, "Array::operator[] index out of bounds");
+            psh_assert_msg(index < size, "Array::operator[] index out of bounds");
 #endif
-            return buf_[index];
+            return buf[index];
         }
 
         constexpr T const& operator[](usize index) const noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(index < size_, "Array::operator[] index out of bounds");
+            psh_assert_msg(index < size, "Array::operator[] index out of bounds");
 #endif
-            return buf_[index];
+            return buf[index];
         }
     };
 }  // namespace psh

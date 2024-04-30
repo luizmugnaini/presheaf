@@ -31,16 +31,20 @@ namespace psh {
     struct Set {
         DynArray<T> data;
 
-        Set(FatPtr<T const> fptr, Arena* arena) noexcept : data{arena, fptr.size()} {
+        Set(FatPtr<T const> fptr, Arena* arena) noexcept : data{arena, fptr.size} {
             for (auto elem : fptr) {
-                if (linear_search(fptr, elem).is_none()) data.push(elem);
+                if (linear_search(fptr, elem).has_val) {
+                    data.push(elem);
+                }
             }
         }
 
-        Set(std::initializer_list<T> elems, Arena* arena) noexcept : data{arena, elems.size()} {
-            FatPtr<T> fptr{elems.begin(), elems.size()};
+        Set(std::initializer_list<T> elems, Arena* arena) noexcept : data{arena, elems.size} {
+            FatPtr<T> fptr{elems.begin(), elems.size};
             for (auto elem : fptr) {
-                if (linear_search(fptr, elem).is_none()) data.push(elem);
+                if (linear_search(fptr, elem).has_val) {
+                    data.push(elem);
+                }
             }
         }
     };
