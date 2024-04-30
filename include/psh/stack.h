@@ -129,20 +129,13 @@ namespace psh {
 
         /// Gets a pointer to the memory of the last allocated memory block of the stack.
         u8* top() const noexcept {
-            if (memory == nullptr || previous_offset == 0) {
-                return nullptr;
-            }
-            return memory + previous_offset;
+            return ptr_add(memory, previous_offset);
         }
 
         /// Gets a pointer to the header associated to the top memory block of the stack.
         StackHeader const* top_header() const noexcept {
-            if (memory == nullptr || previous_offset == 0) {
-                return nullptr;
-            }
-
             return reinterpret_cast<StackHeader const*>(
-                memory + previous_offset - sizeof(StackHeader));
+                ptr_add(memory, previous_offset - sizeof(StackHeader)));
         }
 
         /// Get the capacity of the top memory block.
@@ -221,16 +214,17 @@ namespace psh {
                 sizeof(StackHeader),
                 alignof(StackHeader));
 
-            if (usize req = padding + new_block_size, avail = wrap_sub(capacity, offset);
-                req > avail) {
+            usize const required  = padding + new_block_size;
+            usize const available = capacity - offset;
+            if (required > available) {
                 log_fmt(
                     LogLevel::Error,
                     "StackAlloc::alloc unable to allocate %zu bytes of memory (%zu bytes required "
                     "due to alignment and padding). The stack allocator has only %zu bytes "
                     "remaining.",
                     new_block_size,
-                    req,
-                    avail);
+                    required,
+                    available);
                 return nullptr;
             }
 
@@ -258,14 +252,6 @@ namespace psh {
         template <typename T>
         T* zero_alloc(usize length) noexcept {
             auto* const ptr = alloc<T>(length);
-            if (ptr == nullptr) {
-                log_fmt(
-                    LogLevel::Error,
-                    "StackAlloc::zero_alloc unable to allocate %zu bytes of memory.",
-                    sizeof(T) * length);
-                return nullptr;
-            }
-
             memory_set(fat_ptr_as_bytes(ptr, length), 0);
             return ptr;
         }
@@ -287,7 +273,7 @@ namespace psh {
             usize const new_size = sizeof(T) * new_length;
 
             // If `ptr` is the last allocated block, just adjust the offsets.
-            if (ublock == top()) {
+            if (ublock == this->top()) {
                 offset = previous_offset + new_size;
                 return block;
             }
@@ -321,14 +307,15 @@ namespace psh {
             }
 
             // Check memory availability.
-            if (usize const avail = wrap_sub(capacity, offset); new_size > avail) {
+            usize const available = capacity - offset;
+            if (new_size > available) {
                 log_fmt(
                     LogLevel::Error,
                     "StackAlloc::realloc cannot reallocate memory from size %zu to %zu. Only %zu "
                     "bytes of memory remaining.",
                     header->capacity,
                     new_size,
-                    avail);
+                    available);
                 return nullptr;
             }
 

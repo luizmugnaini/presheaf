@@ -32,9 +32,7 @@ namespace psh {
     /// Note: any method returning a pointer should be checked for nullity, since allocation may
     ///       fail.
     struct MemoryManager {
-        usize capacity         = 0;
         usize allocation_count = 0;
-        usize used_memory      = 0;
         Stack allocator{};
 
         /// Make a default empty memory manager.
@@ -48,11 +46,6 @@ namespace psh {
         /// Initialize an empty memory manager.
         void init(usize capacity) noexcept;
 
-        /// Get a raw pointer to the block of memory administrated by the memory manager.
-        constexpr u8* raw_memory() const noexcept {
-            return allocator.memory;
-        }
-
         /// Make a new arena allocator with a given size.
         Option<Arena> make_arena(usize size) noexcept;
 
@@ -63,23 +56,10 @@ namespace psh {
         ///                 region.
         template <typename T>
         T* alloc(usize length) noexcept {
-            if (length == 0) {
-                return nullptr;
+            T* const new_mem = allocator.alloc<T>(length);
+            if (new_mem != nullptr) {
+                ++allocation_count;
             }
-
-            usize const previous_offset = allocator.offset;
-            T* const    new_mem         = allocator.alloc<T>(length);
-            if (new_mem == nullptr) {
-                log_fmt(
-                    LogLevel::Error,
-                    "MemoryManager::alloc unable to allocate %zu bytes.",
-                    sizeof(T) * length);
-                return nullptr;
-            }
-
-            ++allocation_count;
-            used_memory += wrap_sub(allocator.offset, previous_offset);
-
             return new_mem;
         }
 
@@ -92,24 +72,10 @@ namespace psh {
         ///                     type `T`).
         template <typename T>
         T* realloc(T* block, usize new_length) noexcept {
-            usize const last_offset = allocator.offset;
-
             T* const new_mem = allocator.realloc<T>(block, new_length);
-            if (new_mem == nullptr) {
-                log_fmt(
-                    LogLevel::Error,
-                    "MemoryManager::realloc unable to allocate %zu bytes.",
-                    sizeof(T) * new_length);
-                return nullptr;
-            }
-
-            used_memory += wrap_sub(allocator.offset, last_offset);
-
-            // A new allocation occurred only if the pointer's address differs.
             if (new_mem != block) {
                 allocation_count += 1;
             }
-
             return new_mem;
         }
 

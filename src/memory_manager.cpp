@@ -27,69 +27,60 @@
 #include <cstdlib>
 
 namespace psh {
-    MemoryManager::MemoryManager(usize _capacity) noexcept
-        : capacity{_capacity},
-          allocator{reinterpret_cast<u8*>(std::malloc(_capacity)), _capacity} {}
+    void MemoryManager::init(usize capacity) noexcept {
+        allocator.init(reinterpret_cast<u8*>(std::malloc(capacity)), capacity);
+    }
+
+    MemoryManager::MemoryManager(usize capacity) noexcept {
+        this->init(capacity);
+    }
 
     MemoryManager::~MemoryManager() noexcept {
         std::free(allocator.memory);
     }
 
-    void MemoryManager::init(usize _capacity) noexcept {
-        allocator.init(reinterpret_cast<u8*>(std::malloc(_capacity)), _capacity);
-    }
-
     Option<Arena> MemoryManager::make_arena(usize size) noexcept {
         u8* mem = alloc<u8>(size);
-        if (mem == nullptr) {
-            return {};
-        }
-        return Option<Arena>{Arena{mem, size}};
+        return mem == nullptr ? Option<Arena>{} : Option{Arena{mem, size}};
     }
 
     bool MemoryManager::pop() noexcept {
-        usize const previous_offset = allocator.offset;
-        if (!allocator.pop()) {
-            return false;
+        bool result = allocator.pop();
+        if (result) {
+            --allocation_count;
         }
-
-        used_memory = wrap_sub(used_memory, wrap_sub(previous_offset, allocator.offset));
-        --allocation_count;
-
-        return true;
+        return result;
     }
 
     bool MemoryManager::clear_until(u8 const* block) noexcept {
+        u8 const* const mem_start = allocator.memory;
+
         // Check if the block lies within the allocator's memory.
-        u8 const* const memory = allocator.memory;
-        if (block < memory || block > memory + allocator.previous_offset) {
-            if (block > memory + allocator.capacity) {
+        if (block < mem_start || block > mem_start + allocator.previous_offset) {
+            if (block > mem_start + allocator.capacity) {
                 log(LogLevel::Error,
                     "MemoryManager::clear_until called with a pointer outside of the stack "
-                    "allocator memory region.");
+                    "mem_start region.");
                 return false;
             }
 
             log(LogLevel::Error,
                 "MemoryManager::clear_until called with a pointer to an already free region "
-                "of the stack allocator memory.");
+                "of the stack mem_start.");
             return false;
         }
 
         // Pop the top memory block until popping `block` or reaching the end of the allocator.
+        //
+        // NOTE: If we were given the incorrect address, we end up clearing the whole memory.
         for (;;) {
             u8 const* top_block = allocator.top();
-            if (top_block == nullptr) {
+            if (top_block == mem_start) {
                 break;
             }
-
-            usize const last_offset = allocator.offset;
-            psh_discard(allocator.pop());
-
-            used_memory = wrap_sub(used_memory, wrap_sub(last_offset, allocator.offset));
-            --allocation_count;
-
-            // This is never true if the user gives an incorrect address.
+            if (allocator.pop()) {
+                --allocation_count;
+            }
             if (top_block == block) {
                 break;
             }
@@ -99,12 +90,8 @@ namespace psh {
     }
 
     void MemoryManager::reset() noexcept {
-        // Zero all but `allocator.memory`.
-        capacity                  = 0;
-        allocation_count          = 0;
-        used_memory               = 0;
-        allocator.capacity        = 0;
-        allocator.offset          = 0;
-        allocator.previous_offset = 0;
+        u8* mem = allocator.memory;
+        zero_struct(this);
+        allocator.memory = mem;
     }
 }  // namespace psh
