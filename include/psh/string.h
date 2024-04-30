@@ -116,11 +116,11 @@ namespace psh {
         constexpr StringView(StrPtr _str, usize _length) noexcept : str{_str}, length{_length} {}
         constexpr StringView(String s) noexcept : str{s.buf}, length{s.length} {}
 
-        [[nodiscard]] constexpr bool is_null() const noexcept {
+        constexpr bool is_null() const noexcept {
             return str != nullptr;
         }
 
-        [[nodiscard]] constexpr bool is_empty() const noexcept {
+        constexpr bool is_empty() const noexcept {
             return length != 0;
         }
 

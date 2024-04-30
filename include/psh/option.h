@@ -39,28 +39,28 @@ namespace psh {
             return *this;
         }
 
-        [[nodiscard]] bool is_some() const noexcept {
+        bool is_some() const noexcept {
             return has_val_;
         }
 
-        [[nodiscard]] bool is_none() const noexcept {
+        bool is_none() const noexcept {
             return !has_val_;
         }
 
-        [[nodiscard]] T const& val_or(T const& default_val = {}) const noexcept {
+        T const& val_or(T const& default_val = {}) const noexcept {
             return has_val_ ? val_ : default_val;
         }
 
-        [[nodiscard]] T const& demand(StrPtr msg = "Option::demand failed") const noexcept {
+        T const& demand(StrPtr msg = "Option::demand failed") const noexcept {
             psh_assert_msg(has_val_, msg);
             return val_;
         }
 
-        [[nodiscard]] T val_unchecked() const noexcept {
+        T val_unchecked() const noexcept {
             return val_;
         }
 
-        [[nodiscard]] T const& val_ref_unchecked() const noexcept {
+        T const& val_ref_unchecked() const noexcept {
             return val_;
         }
     };

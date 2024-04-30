@@ -31,7 +31,7 @@ namespace psh {
     /// If the pointer is null then a null pointer is returned, otherwise we return the resulting
     /// pointer addition.
     template <typename T>
-    [[nodiscard]] constexpr T* ptr_add(T* ptr, uptr offset) noexcept {
+    constexpr T* ptr_add(T* ptr, uptr offset) noexcept {
         return (ptr == nullptr) ? nullptr : ptr + offset;
     }
 
@@ -40,11 +40,11 @@ namespace psh {
     /// If the pointer is null then a null pointer is returned, otherwise we return the resulting
     /// pointer subtraction.
     template <typename T>
-    [[nodiscard]] constexpr T* ptr_sub(T* ptr, uptr offset) noexcept {
+    constexpr T* ptr_sub(T* ptr, uptr offset) noexcept {
         return (ptr == nullptr) ? nullptr : ptr - offset;
     }
 
-    [[nodiscard]] constexpr i32 bit(i32 n) noexcept {
+    constexpr i32 bit(i32 n) noexcept {
         return 1 << n;
     }
 
@@ -54,7 +54,7 @@ namespace psh {
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
         requires IsObject<T> && TriviallyCopyable<T>
-    [[nodiscard]] bool contains(T match, FatPtr<T> container, NotNull<MatchFn<T>> match_fn) {
+    bool contains(T match, FatPtr<T> container, NotNull<MatchFn<T>> match_fn) {
         bool found = false;
         for (auto const& m : container) {
             if (match_fn.ptr(match, m)) {
@@ -68,7 +68,7 @@ namespace psh {
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
         requires IsObject<T> && TriviallyCopyable<T> && Reflexive<T>
-    [[nodiscard]] bool contains(T match, FatPtr<T> container) {
+    bool contains(T match, FatPtr<T> container) {
         bool found = false;
         for (auto const& m : container) {
             if (match == m) {

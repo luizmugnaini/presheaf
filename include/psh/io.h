@@ -50,7 +50,7 @@ namespace psh {
             : file{_file}, line{_line}, lvl{_lvl} {}
     };
 
-    [[nodiscard]] StrPtr log_level_str(LogLevel level);
+    StrPtr log_level_str(LogLevel level);
 
     [[noreturn]] void abort_program() noexcept;
 

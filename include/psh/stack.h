@@ -123,12 +123,12 @@ namespace psh {
         }
 
         /// Gets the total size, in bytes, of the memory used by the allocator.
-        [[nodiscard]] usize used() const noexcept {
+        usize used() const noexcept {
             return offset;
         }
 
         /// Gets a pointer to the memory of the last allocated memory block of the stack.
-        [[nodiscard]] u8* top() const noexcept {
+        u8* top() const noexcept {
             if (memory == nullptr || previous_offset == 0) {
                 return nullptr;
             }
@@ -136,7 +136,7 @@ namespace psh {
         }
 
         /// Gets a pointer to the header associated to the top memory block of the stack.
-        [[nodiscard]] StackHeader const* top_header() const noexcept {
+        StackHeader const* top_header() const noexcept {
             if (memory == nullptr || previous_offset == 0) {
                 return nullptr;
             }
@@ -146,19 +146,19 @@ namespace psh {
         }
 
         /// Get the capacity of the top memory block.
-        [[nodiscard]] usize top_capacity() const noexcept {
+        usize top_capacity() const noexcept {
             auto* const header = top_header();
             return (header == nullptr) ? 0 : header->capacity;
         }
 
         /// Get the previous offset of the top memory block.
-        [[nodiscard]] usize top_previous_offset() const noexcept {
+        usize top_previous_offset() const noexcept {
             auto* const header = top_header();
             return (header == nullptr) ? 0 : header->previous_offset;
         }
 
         /// Gets a pointer to the header associated to the given memory block.
-        [[nodiscard]] StackHeader const* header_of(u8 const* block) const noexcept {
+        StackHeader const* header_of(u8 const* block) const noexcept {
             if (block == nullptr) {
                 return nullptr;
             }
@@ -191,13 +191,13 @@ namespace psh {
         }
 
         /// Get the capacity of the given memory block.
-        [[nodiscard]] usize capacity_of(u8 const* mem) const noexcept {
+        usize capacity_of(u8 const* mem) const noexcept {
             auto* const header = header_of(mem);
             return (header == nullptr) ? 0 : header->capacity;
         }
 
         /// Get the previous offset of the given memory block.
-        [[nodiscard]] usize previous_offset_of(u8 const* mem) const noexcept {
+        usize previous_offset_of(u8 const* mem) const noexcept {
             auto* const header = header_of(mem);
             return (header == nullptr) ? 0 : header->previous_offset;
         }

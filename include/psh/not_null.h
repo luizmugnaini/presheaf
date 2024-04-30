@@ -33,11 +33,11 @@ namespace psh {
             psh_assert_msg(ptr != nullptr, "NotNull created with a null pointer");
         }
 
-        [[nodiscard]] T& operator*() noexcept {
+        T& operator*() noexcept {
             return *ptr;
         }
 
-        [[nodiscard]] T* operator->() noexcept {
+        T* operator->() noexcept {
             return ptr;
         }
 

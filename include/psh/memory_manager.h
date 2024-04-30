@@ -49,12 +49,12 @@ namespace psh {
         void init(usize capacity) noexcept;
 
         /// Get a raw pointer to the block of memory administrated by the memory manager.
-        [[nodiscard]] constexpr u8* raw_memory() const noexcept {
+        constexpr u8* raw_memory() const noexcept {
             return allocator.memory;
         }
 
         /// Make a new arena allocator with a given size.
-        [[nodiscard]] Option<Arena> make_arena(usize size) noexcept;
+        Option<Arena> make_arena(usize size) noexcept;
 
         /// Request a region of memory of a given type `T`.
         ///
@@ -62,7 +62,7 @@ namespace psh {
         ///     * `length`: Number of entities of type `T` that should fit in the requested memory
         ///                 region.
         template <typename T>
-        [[nodiscard]] T* alloc(usize length) noexcept {
+        T* alloc(usize length) noexcept {
             if (length == 0) {
                 return nullptr;
             }
@@ -91,7 +91,7 @@ namespace psh {
         ///                     new memory block should be able to contain `new_length` entities of
         ///                     type `T`).
         template <typename T>
-        [[nodiscard]] T* realloc(T* block, usize new_length) noexcept {
+        T* realloc(T* block, usize new_length) noexcept {
             usize const last_offset = allocator.offset;
 
             T* const new_mem = allocator.realloc<T>(block, new_length);

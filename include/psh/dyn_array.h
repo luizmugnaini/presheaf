@@ -142,71 +142,71 @@ namespace psh {
             this->init(fptr, _arena, _capacity);
         }
 
-        [[nodiscard]] T* buf() noexcept {
+        T* buf() noexcept {
             return buf_;
         }
 
-        [[nodiscard]] T const* const_buf() const noexcept {
+        T const* const_buf() const noexcept {
             return static_cast<T const*>(buf_);
         }
 
-        [[nodiscard]] usize size() const noexcept {
+        usize size() const noexcept {
             return size_;
         }
 
-        [[nodiscard]] usize capacity() const noexcept {
+        usize capacity() const noexcept {
             return capacity_;
         }
 
-        [[nodiscard]] bool is_empty() const noexcept {
+        bool is_empty() const noexcept {
             return (size_ == 0);
         }
 
-        [[nodiscard]] usize size_bytes() noexcept {
+        usize size_bytes() noexcept {
             return size_ * sizeof(T);
         }
 
-        [[nodiscard]] usize capacity_bytes() const noexcept {
+        usize capacity_bytes() const noexcept {
             return capacity_ * sizeof(T);
         }
 
-        [[nodiscard]] FatPtr<T> as_fat_ptr() noexcept {
+        FatPtr<T> as_fat_ptr() noexcept {
             return FatPtr{buf_, size_};
         }
 
-        [[nodiscard]] FatPtr<T const> as_const_fat_ptr() const noexcept {
+        FatPtr<T const> as_const_fat_ptr() const noexcept {
             return FatPtr{static_cast<T const*>(buf_), size_};
         }
 
         /// Get a pointer to the last element of the dynamic array.
-        [[nodiscard]] T* peek() const noexcept {
+        T* peek() const noexcept {
             return this->is_empty() ? nullptr : &buf_[size_ - 1];
         }
 
-        [[nodiscard]] T* begin() noexcept {
+        T* begin() noexcept {
             return buf_;
         }
 
-        [[nodiscard]] T const* begin() const noexcept {
+        T const* begin() const noexcept {
             return static_cast<T const*>(buf_);
         }
 
-        [[nodiscard]] T* end() noexcept {
+        T* end() noexcept {
             return ptr_add(buf_, size_);
         }
 
-        [[nodiscard]] T const* end() const noexcept {
+        T const* end() const noexcept {
             return ptr_add(static_cast<T const*>(buf_), size_);
         }
 
-        [[nodiscard]] T& operator[](usize idx) noexcept {
+        T& operator[](usize idx) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(idx < size_, "Index out of bounds for dynamic array");
 #endif
             return buf_[idx];
         }
 
-        [[nodiscard]] T const& operator[](usize idx) const noexcept {
+        T const& operator[](usize idx) const noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(idx < size_, "Index out of bounds for dynamic array");
 #endif

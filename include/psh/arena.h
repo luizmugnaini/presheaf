@@ -200,17 +200,17 @@ namespace psh {
             }
 
             /// The parent arena associated to the scratch arena.
-            [[nodiscard]] Arena* arena() const noexcept {
+            Arena* arena() const noexcept {
                 return parent_;
             }
 
             /// The offset of the parent arena at the time of creation of the scratch arena.
-            [[nodiscard]] usize saved_offset() const noexcept {
+            usize saved_offset() const noexcept {
                 return saved_offset_;
             }
 
             /// Create a new scratch arena with the current state of the parent.
-            [[nodiscard]] Scratch decouple() const noexcept {
+            Scratch decouple() const noexcept {
                 return Scratch{parent_};
             }
 

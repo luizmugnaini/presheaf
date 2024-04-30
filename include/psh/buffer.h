@@ -31,51 +31,51 @@ namespace psh {
     struct Buffer {
         T buf_[size_]{};
 
-        [[nodiscard]] constexpr T* buf() noexcept {
+        constexpr T* buf() noexcept {
             return static_cast<T*>(buf_);
         }
 
-        [[nodiscard]] constexpr T const* const_buf() const noexcept {
+        constexpr T const* const_buf() const noexcept {
             return static_cast<T const*>(buf_);
         }
 
-        [[nodiscard]] constexpr usize size() const noexcept {
+        constexpr usize size() const noexcept {
             return size_;
         }
 
-        [[nodiscard]] usize size_bytes() const noexcept {
+        usize size_bytes() const noexcept {
             return sizeof(T) * size_;
         }
 
-        [[nodiscard]] FatPtr<T> as_fat_ptr() noexcept {
+        FatPtr<T> as_fat_ptr() noexcept {
             return FatPtr{buf_, size_};
         }
 
-        [[nodiscard]] constexpr FatPtr<T const> as_const_fat_ptr() const noexcept {
+        constexpr FatPtr<T const> as_const_fat_ptr() const noexcept {
             return FatPtr{static_cast<T const*>(buf_), size_};
         }
 
-        [[nodiscard]] constexpr T* begin() noexcept {
+        constexpr T* begin() noexcept {
             return static_cast<T*>(buf_);
         }
 
-        [[nodiscard]] constexpr T const* begin() const noexcept {
+        constexpr T const* begin() const noexcept {
             return static_cast<T const*>(buf_);
         }
 
-        [[nodiscard]] constexpr T* end() noexcept {
+        constexpr T* end() noexcept {
             return static_cast<T*>(buf_) + size_;
         }
 
-        [[nodiscard]] constexpr T const* end() const noexcept {
+        constexpr T const* end() const noexcept {
             return static_cast<T const*>(buf_) + size_;
         }
 
-        [[nodiscard]] constexpr T& operator[](usize idx) noexcept {
+        constexpr T& operator[](usize idx) noexcept {
             return buf_[idx];
         }
 
-        [[nodiscard]] constexpr T const& operator[](usize idx) const noexcept {
+        constexpr T const& operator[](usize idx) const noexcept {
             return buf_[idx];
         }
     };
