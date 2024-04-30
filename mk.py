@@ -57,7 +57,6 @@ if CURRENT_LINKER == "mold":
 
 
 DEBUG_FLAGS = ["-DCMAKE_BUILD_TYPE=Debug", "-DPSH_DEBUG=On"]
-TIDY_FLAG = "-DGAME_USE_CLANG_TIDY=On"
 RELEASE_FLAGS = ["-DCMAKE_BUILD_TYPE=Release", "-DPSH_DEBUG=Off"]
 
 CPP_SRC_EXTENSION = ".cpp"
@@ -212,11 +211,6 @@ parser.add_argument(
     help="Build the project (default: %(default)s)",
 )
 parser.add_argument(
-    "--tidy-build",
-    action="store_true",
-    help="Build the project in debug mode with Clang-Tidy enabled",
-)
-parser.add_argument(
     "-t",
     "--test",
     nargs="?",
@@ -258,8 +252,7 @@ if args.clear_cache:
 if args.build is not None:
     match args.build:
         case "debug":
-            flags = DEBUG_FLAGS if not args.tidy_build else [*DEBUG_FLAGS, TIDY_FLAG]
-            command_build(build_flags=flags)
+            command_build(build_flags=DEBUG_FLAGS)
         case "release":
             command_build(build_flags=RELEASE_FLAGS)
 if args.test is not None:

@@ -32,7 +32,6 @@ option(PSH_ENABLE_LOGGING       "Compile with logging"                          
 option(PSH_ENABLE_ASSERTS       "Compile with assert checks"                                    OFF)
 option(PSH_CHECK_BOUNDS         "Compile with bound check"                                      OFF)
 option(PSH_CHECK_MEMCPY_OVERLAP "Checks if memcpy is called with overlapping regions of memory" OFF)
-option(PSH_USE_CLANG_TIDY       "Use the clang-tidy tool for linting"                           OFF)
 
 # ------------------------------------------------------------------------------
 # Tooling integration
@@ -40,10 +39,6 @@ option(PSH_USE_CLANG_TIDY       "Use the clang-tidy tool for linting"           
 
 # Enable Clangd LSP integration with the project
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-if(USE_TIDY)
-    set(CMAKE_CXX_CLANG_TIDY "clang-tidy" "--config-file=${PROJECT_SOURCE_DIR}/.clang-tidy")
-endif()
 
 # ------------------------------------------------------------------------------
 # Resulting compiler and linker flags for the build
@@ -271,6 +266,12 @@ set(
     "${PROJECT_SOURCE_DIR}/src/file_system.cpp"
     "${PROJECT_SOURCE_DIR}/src/memory_manager.cpp"
 )
+
+# ------------------------------------------------------------------------------
+# Where the products are going
+# ------------------------------------------------------------------------------
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
 # ------------------------------------------------------------------------------
 # Library.
