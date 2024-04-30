@@ -130,7 +130,7 @@ namespace psh {
         }
 
         [[nodiscard]] T const* const_buf() const noexcept {
-            return reinterpret_cast<T const*>(buf_);
+            return static_cast<T const*>(buf_);
         }
 
         [[nodiscard]] usize size() const noexcept {
@@ -158,7 +158,7 @@ namespace psh {
         }
 
         [[nodiscard]] FatPtr<T const> as_const_fat_ptr() const noexcept {
-            return FatPtr{reinterpret_cast<T const*>(buf_), size_};
+            return FatPtr{static_cast<T const*>(buf_), size_};
         }
 
         /// Get a pointer to the last element of the dynamic array.
@@ -171,7 +171,7 @@ namespace psh {
         }
 
         [[nodiscard]] T const* begin() const noexcept {
-            return reinterpret_cast<T const*>(buf_);
+            return static_cast<T const*>(buf_);
         }
 
         [[nodiscard]] T* end() noexcept {
@@ -179,7 +179,7 @@ namespace psh {
         }
 
         [[nodiscard]] T const* end() const noexcept {
-            return ptr_add(reinterpret_cast<T const*>(buf_), size_);
+            return ptr_add(static_cast<T const*>(buf_), size_);
         }
 
         [[nodiscard]] T& operator[](usize idx) noexcept {

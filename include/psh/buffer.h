@@ -15,11 +15,11 @@ namespace psh {
         T buf_[size_]{};
 
         [[nodiscard]] constexpr T* buf() noexcept {
-            return reinterpret_cast<T*>(buf_);
+            return static_cast<T*>(buf_);
         }
 
         [[nodiscard]] constexpr T const* const_buf() const noexcept {
-            return reinterpret_cast<T const*>(buf_);
+            return static_cast<T const*>(buf_);
         }
 
         [[nodiscard]] constexpr usize size() const noexcept {
@@ -35,23 +35,23 @@ namespace psh {
         }
 
         [[nodiscard]] constexpr FatPtr<T const> as_const_fat_ptr() const noexcept {
-            return FatPtr{reinterpret_cast<T const*>(buf_), size_};
+            return FatPtr{static_cast<T const*>(buf_), size_};
         }
 
         [[nodiscard]] constexpr T* begin() noexcept {
-            return reinterpret_cast<T*>(buf_);
+            return static_cast<T*>(buf_);
         }
 
         [[nodiscard]] constexpr T const* begin() const noexcept {
-            return reinterpret_cast<T const*>(buf_);
+            return static_cast<T const*>(buf_);
         }
 
         [[nodiscard]] constexpr T* end() noexcept {
-            return reinterpret_cast<T*>(buf_) + size_;
+            return static_cast<T*>(buf_) + size_;
         }
 
         [[nodiscard]] constexpr T const* end() const noexcept {
-            return reinterpret_cast<T const*>(buf_) + size_;
+            return static_cast<T const*>(buf_) + size_;
         }
 
         [[nodiscard]] constexpr T& operator[](usize idx) noexcept {

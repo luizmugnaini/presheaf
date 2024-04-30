@@ -111,7 +111,7 @@ namespace psh {
         }
 
         [[nodiscard]] constexpr FatPtr<T const> as_const_fat_ptr() const noexcept {
-            return FatPtr{reinterpret_cast<T const*>(buf_), size_};
+            return FatPtr{static_cast<T const*>(buf_), size_};
         }
 
         void fill(T _fill) noexcept
@@ -125,7 +125,7 @@ namespace psh {
         }
 
         [[nodiscard]] constexpr T const* begin() const noexcept {
-            return reinterpret_cast<T const*>(buf_);
+            return static_cast<T const*>(buf_);
         }
 
         [[nodiscard]] constexpr T* end() noexcept {
@@ -133,7 +133,7 @@ namespace psh {
         }
 
         [[nodiscard]] constexpr T const* end() const noexcept {
-            return ptr_add(reinterpret_cast<T const*>(buf_), size_);
+            return ptr_add(static_cast<T const*>(buf_), size_);
         }
 
         [[nodiscard]] constexpr T& operator[](usize index) noexcept {

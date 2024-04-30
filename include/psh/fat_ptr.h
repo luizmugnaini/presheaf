@@ -31,7 +31,7 @@ namespace psh {
         }
 
         [[nodiscard]] constexpr T const* begin() const noexcept {
-            return reinterpret_cast<T const*>(buf_);
+            return static_cast<T const*>(buf_);
         }
 
         [[nodiscard]] constexpr T* end() noexcept {
@@ -39,7 +39,7 @@ namespace psh {
         }
 
         [[nodiscard]] constexpr T const* end() const noexcept {
-            return (buf_ == nullptr) ? nullptr : reinterpret_cast<T const*>(buf_ + size_);
+            return (buf_ == nullptr) ? nullptr : static_cast<T const*>(buf_ + size_);
         }
 
         [[nodiscard]] constexpr T& operator[](usize idx) noexcept {
