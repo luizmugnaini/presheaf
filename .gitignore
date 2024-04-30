@@ -1,2 +1,5 @@
 /build*
 /.cache
+
+# remedybg session files
+*.rdbg
