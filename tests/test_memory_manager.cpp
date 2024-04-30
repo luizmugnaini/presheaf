@@ -7,7 +7,6 @@
 #include <psh/arena.h>
 #include <psh/assert.h>
 #include <psh/dyn_array.h>
-#include <psh/math.h>
 #include <psh/mem_utils.h>
 #include <psh/memory_manager.h>
 #include <psh/stack.h>
@@ -40,8 +39,7 @@ void initialization_and_shutdown() {
     StrPtr const  header                  = "[initialization_and_shutdown]";
     usize const   memory_manager_capacity = 2048;
     MemoryManager memory_manager{memory_manager_capacity};
-    uptr const    mem_sys_alloc_mem_actual_addr =
-        reinterpret_cast<uptr>(memory_manager.allocator.memory);
+    u8 const*     mem_sys_alloc_mem_actual_addr = memory_manager.allocator.memory;
 
     // Acquire a block of memory and write to it.
     usize const block_length = 60;
@@ -55,10 +53,11 @@ void initialization_and_shutdown() {
     }
 
     // Ensure the addresses where correctly calculated.
-    uptr const block_actual_addr = reinterpret_cast<uptr>(block);
-    uptr const block_via_allocator_actual_addr =
-        mem_sys_alloc_mem_actual_addr + memory_manager.allocator.previous_offset;
-    uptr const block_expected_addr = mem_sys_alloc_mem_actual_addr + sizeof(StackHeader);
+    u64 const* block_actual_addr               = block;
+    u64 const* block_via_allocator_actual_addr = reinterpret_cast<u64 const*>(
+        mem_sys_alloc_mem_actual_addr + memory_manager.allocator.previous_offset);
+    u64 const* block_expected_addr =
+        reinterpret_cast<u64 const*>(mem_sys_alloc_mem_actual_addr + sizeof(StackHeader));
     psh_assert(block_actual_addr == block_expected_addr);
     psh_assert(block_via_allocator_actual_addr == block_expected_addr);
 
@@ -70,7 +69,7 @@ void initialization_and_shutdown() {
     usize const block_stride = sizeof(u64);
     for (usize idx = 0; idx < block_length; ++idx) {
         auto const       expected = static_cast<u64>(idx) * start_value;
-        u64 const* const actual = reinterpret_cast<u64*>(block_expected_addr + idx * block_stride);
+        u64 const* const actual   = block_expected_addr + idx * block_stride;
         psh_assert(*actual == expected);
     }
 
