@@ -44,5 +44,12 @@ namespace psh {
         psh::abort_program();                                              \
     } while (0);
 
+/// Macro used to mark code-paths as unimplemented.
+#define psh_todo()                                                        \
+    do {                                                                  \
+        psh::log(psh::LogLevel::Fatal, "TODO: code-path unimplemented!"); \
+        psh::abort_program();                                             \
+    } while (0);
+
 /// Simple macro discarding an unused result.
 #define psh_discard(x) (void)x
