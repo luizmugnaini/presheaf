@@ -1,35 +1,65 @@
 # Good Practices
 
+- Classes & inheritance: no.
+- No exceptions.
+- No RTTI.
+- No shared pointers, manage your lifetimes.
+- Don't be afraid of pointers, know how to use them and be careful, that's all.
+- Where are my beloved private members? C++ has pointers and even if you have structure with a
+  private member you can still easily read and write to its memory address. In other words... private
+  members are useless and introduce getters and setters which are horrible design patterns. If you
+  are not convinced, please run the following code with any compiler:
+```cpp
+#include <cstdio>
+
+#define stringify(x) #x
+
+class SuperPrivate {
+public:
+  SuperPrivate(char const *name, int id) : name{name}, id{id} {}
+private:
+  char const *name;
+  int id;
+};
+
+int main() {
+  SuperPrivate my_foo{"Super secure private TM", 5};
+  auto *oops = reinterpret_cast<char *>(&my_foo);
+  std::printf("%s { name: %s, id: %d }",
+              stringify(my_foo),
+              *reinterpret_cast<char const **>(oops),
+              *reinterpret_cast<int *>(oops + sizeof(char const *)));
+  return 0;
+}
+```
 - Your templates should be as simple as possible, and should not be overused.
-- Don't use inheritance, instead share behaviour via concepts.
 - Use the least amount of STL you can - possibly don't use it at all as it can introduce
   considerable bloat to the software and worsen both the compile time and runtime, as well as a
   larger memory footprint.
-- Don't be afraid of pointers, know how to use them and be careful, that's all.
+- Unfortunately, some STL constructs (`std::initializer_list` for instance) are compiler intrinsic
+  are mingled inside of the STL. 
 - Prefer the C++ wrappers for the libc headers, like `<cstdio>`. This keeps the namespace clean.
 - Don't use third-party code when you can easily write it yourself.
-- Always provide useful documentation.
+- Always provide useful documentation. Note however that some docs may not be really that relevant:
+  for instance, the method `psh::Array::size_bytes` is obvious, it simply returns the size of the
+  array in bytes.
 - Don't write in a comment what can be clearly stated in code.
 - Don't try to be clever, be pragmatic and simple.
 - Use the following comment tags (BUG, FIXME, TODO, NOTE) for an easier way to search them later.
 - Write fault tolerant code, if some value fails to meet some expectation, try to find a way to make
   it a default value if possible.
 - In case there is no possible default value, don't be shy of asserts! If you **are** going to fail,
-  fail as fast as possible and report the error.
-- Always use the type aliases declared in `psh/types.h`.
-- Don't use mutable global variables. In an application, these might even serve some purpose, but
-  not in a library.
+  fail as fast as possible.
+- Always use the type aliases declared in `<psh/types.h>`.
 
 # Formatting
 
-- For C and C++ files: just use `clang-format` with the custom `./.clang-format` configuration file.
+- For C and C++ files: just use `clang-format` with the custom `.clang-format` configuration file.
 
 # Regarding `auto`
 
-Almost never `auto`, however in case you have a cast you may use `auto` to avoid repetition or
-trivially known return types:
+Almost never `auto`, however in case you have a cast you may use `auto` to avoid repetition:
 ```cpp
-auto scratch_arena = arena.make_scratch();
 auto* const memory = reinterpret_cast<u8*>(some_ptr);
 ```
 Notice that `auto` should only be used for the **base** type, that is, qualifiers such as `*` or
@@ -43,14 +73,21 @@ Notice that `auto` should only be used for the **base** type, that is, qualifier
 
 # The `constexpr` qualifier
 
-Prefer using `constexpr` over a `#define` as it permits type safety.
+Prefer using `constexpr` over a `#define` as it permits type safety. You should, however, not abuse
+the use of `constexpr`'s for functions that will clearly never be invoked at compile time.
+
+# The `[[nodiscard]]` attribute
+
+I opted out of the use of the `nodiscard` attribute simply because it litters the codebase and
+decreases significantly the readability of the code just because of noise. Moreover, the kinds of
+bugs that `nodiscard` prevents are actually pretty uninteresting and should be uncommon in any well
+written code.
 
 # Strings
 
-- Raw string pointers should always have the type `char const* const` (`StrPtr` seen in `psh/types.h`),
-  that is, a constant pointer to an array of constant characters. If a string is being returned
-  from a function, the return type should be `char const*` since we can't ensure that the caller
-  won't change the pointer itself.
+- Raw string pointers should always have the type `char const* const`, that is, a constant pointer
+  to an array of constant characters. If a string is being returned from a function, the return type
+  should be `char const*` since we can't ensure that the caller won't change the pointer itself.
 
 # Naming Conventions
 
@@ -65,6 +102,8 @@ We mostly follow the advice given by the [C++ Core Guidelines](https://isocpp.gi
 - **Common variables** should be named using snake case: `my_variable`.
 - **Global constants** (declared with `const` and `constexpr`) should be all
   caps and in snake case: `MY_CONSTANT_VAR`.
+- **Global mutable variables** should be named with a starting `g` and in a snake case style:
+  `g_my_mutable_global_var`.
 
 ## Functions
 
@@ -88,6 +127,7 @@ appended by one underscore: `my_internal_function_`.
 
 # Enums
 
+- Prefer enum classes as they provide some safety.
 - **Enums and its members** should be capitalized in each first letter of a word:
   ```cpp
   enum MyEnum {
@@ -104,24 +144,6 @@ appended by one underscore: `my_internal_function_`.
 - Handle all of your errors through enumerations and switch statements.
 - Always document if a function or method may return an error, and which errors might be returned.
 - Don't ignore possible errors.
-
-# Function declarations
-
-We all know that `const` in a declaration doesn't have any effect on the variable, after all, it's
-only a declaration. However, it **serves as documentation**. Therefore, if a function definition
-uses `const` parameters, its declaration should mention that:
-```cpp
-int do_some_computation(float const a, int const b);
-
-...
-
-int do_some_computation(float const a, int const b) {
-
-    ...
-
-    return result;
-}
-```
 
 # Recommended reads
 
