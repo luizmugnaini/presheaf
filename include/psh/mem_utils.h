@@ -44,8 +44,19 @@ namespace psh {
         return (ptr == nullptr) ? nullptr : ptr - offset;
     }
 
+    /// Return a number with all bits set to 0 but the one at position `n`.
     constexpr i32 bit(i32 n) noexcept {
         return 1 << n;
+    }
+
+    /// Return a number with all bits set to 1 but the one at position `n`.
+    constexpr u32 clear_bit(u32 n) noexcept {
+        return ~(1u << n);
+    }
+
+    /// Return the given byte as the high byte of a 16 bit unsigned integer.
+    constexpr u16 as_high_u16(u8 b) {
+        return static_cast<u16>(b << 8);
     }
 
     template <typename T>
@@ -54,10 +65,11 @@ namespace psh {
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
         requires IsObject<T> && TriviallyCopyable<T>
-    bool contains(T match, FatPtr<T const> container, NotNull<MatchFn<T>> match_fn) {
+    bool contains(T match, FatPtr<T const> container, MatchFn<T>* match_fn) {
+        psh_assert_msg(match_fn != nullptr, "contains expected a valid match function");
         bool found = false;
         for (auto const& m : container) {
-            if (match_fn.ptr(match, m)) {
+            if (match_fn(match, m)) {
                 found = true;
                 break;
             }
