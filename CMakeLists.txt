@@ -259,12 +259,12 @@ message(STATUS "Presheaf C++ sanitizer flags: ${PSH_CXX_SAN_FLAGS}")
 
 set(
     PSH_SOURCES
-    "${PROJECT_SOURCE_DIR}/src/mem_utils.cpp"
-    "${PROJECT_SOURCE_DIR}/src/io.cpp"
-    "${PROJECT_SOURCE_DIR}/src/assert.cpp"
-    "${PROJECT_SOURCE_DIR}/src/string.cpp"
-    "${PROJECT_SOURCE_DIR}/src/file_system.cpp"
-    "${PROJECT_SOURCE_DIR}/src/memory_manager.cpp"
+    "${PROJECT_SOURCE_DIR}/src/mem_utils.cc"
+    "${PROJECT_SOURCE_DIR}/src/io.cc"
+    "${PROJECT_SOURCE_DIR}/src/assert.cc"
+    "${PROJECT_SOURCE_DIR}/src/string.cc"
+    "${PROJECT_SOURCE_DIR}/src/file_system.cc"
+    "${PROJECT_SOURCE_DIR}/src/memory_manager.cc"
 )
 
 # ------------------------------------------------------------------------------
@@ -300,7 +300,7 @@ list(
 )
 
 foreach(t IN LISTS TESTS)
-    add_executable(${t} "${PROJECT_SOURCE_DIR}/tests/${t}.cpp")
+    add_executable(${t} "${PROJECT_SOURCE_DIR}/tests/${t}.cc")
     target_compile_options(${t} PRIVATE ${PSH_CXX_FLAGS})
     target_link_libraries(${t} PUBLIC presheaf)
     add_test(NAME ${t} COMMAND ${t})
