@@ -45,7 +45,7 @@ namespace psh {
             return has_val ? val : default_val;
         }
 
-        T const& demand(StrPtr msg = "Option::demand failed") const noexcept {
+        T const& demand(strptr msg = "Option::demand failed") const noexcept {
             psh_assert_msg(has_val, msg);
             return val;
         }

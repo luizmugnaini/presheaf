@@ -23,7 +23,7 @@
 #include <cstring>
 
 namespace psh {
-    StrCmpResult str_cmp(StrPtr lhs, StrPtr rhs) {
+    StrCmpResult str_cmp(strptr lhs, strptr rhs) {
         i32 const cmp = std::strcmp(lhs, rhs);
 
         StrCmpResult res;
@@ -38,7 +38,7 @@ namespace psh {
         return res;
     }
 
-    bool str_equal(StrPtr lhs, StrPtr rhs) {
+    bool str_equal(strptr lhs, strptr rhs) {
         return (std::strcmp(lhs, rhs) == 0);
     }
 }  // namespace psh

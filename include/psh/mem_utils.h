@@ -158,6 +158,3 @@ namespace psh {
     ///         by `alignment`.
     usize align_forward(uptr ptr, usize alignment) noexcept;
 }  // namespace psh
-
-/// Simple macro discarding an unused result.
-#define psh_discard(x) (void)x

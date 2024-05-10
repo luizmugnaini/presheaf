@@ -11,7 +11,7 @@
 using namespace psh;
 
 void expected_size_types() {
-    StrPtr const header = "[expected_size_types]";
+    strptr const header = "[expected_size_types]";
     psh_assert(sizeof(u8) == static_cast<usize>(1));
     psh_assert(sizeof(u16) == static_cast<usize>(2));
     psh_assert(sizeof(u32) == static_cast<usize>(4));

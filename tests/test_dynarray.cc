@@ -16,7 +16,7 @@ struct Foo {
 };
 
 void push_elements(MemoryManager& mem_manager) {
-    StrPtr const  header = "[push_elements]";
+    strptr const  header = "[push_elements]";
     auto          arena  = mem_manager.make_arena(sizeof(i32) * 1024).demand();
     DynArray<i32> v{&arena};
     for (i32 i = 0; i < 100; ++i) {
@@ -32,7 +32,7 @@ void push_elements(MemoryManager& mem_manager) {
 }
 
 void size_and_capacity(MemoryManager& mem_manager) {
-    StrPtr const  header = "[size_and_capacity]";
+    strptr const  header = "[size_and_capacity]";
     Arena         arena  = mem_manager.make_arena(sizeof(Foo) * 100).demand();
     DynArray<Foo> v{&arena};
 
@@ -60,7 +60,7 @@ void size_and_capacity(MemoryManager& mem_manager) {
 }
 
 void peek_and_pop(MemoryManager& mem_manager) {
-    StrPtr const header = "[peek_and_pop]";
+    strptr const header = "[peek_and_pop]";
 
     auto          arena = mem_manager.make_arena(sizeof(i32) * 3).demand();
     DynArray<i32> v{&arena, 3};
@@ -86,7 +86,7 @@ void peek_and_pop(MemoryManager& mem_manager) {
 }
 
 void remove(MemoryManager& mem_manager) {
-    StrPtr const header = "[remove]";
+    strptr const header = "[remove]";
 
     auto          arena = mem_manager.make_arena(sizeof(i32) * 5).demand();
     DynArray<i32> v{&arena, 5};
@@ -140,7 +140,7 @@ void remove(MemoryManager& mem_manager) {
 }
 
 void clear(MemoryManager& mem_manager) {
-    StrPtr const header = "[clear]";
+    strptr const header = "[clear]";
 
     auto          arena = mem_manager.make_arena(sizeof(f32) * 4).demand();
     DynArray<f32> v{&arena, 4};

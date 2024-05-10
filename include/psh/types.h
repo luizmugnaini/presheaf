@@ -54,14 +54,14 @@ namespace psh {
     /// Immutable zero-terminated string type
     ///
     /// A pointer to a contiguous array of constant character values.
-    using StrPtr = char const*;
+    using strptr = char const*;
 
     /// String literal type.
     struct StringLiteral {
-        StrPtr str;
+        strptr str;
 
         template <usize N>
-        consteval StringLiteral(char const (&_str)[N]) : str{_str} {}
+        consteval StringLiteral(char const (&_str)[N]) noexcept : str{_str} {}
     };
 #if defined(PSH_NAMESPACED_TYPES)
 }

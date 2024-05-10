@@ -21,6 +21,7 @@
 #include <psh/io.h>
 
 #include <psh/assert.h>
+#include <psh/intrinsics.h>
 #include <psh/types.h>
 
 #include <cstdio>
@@ -32,8 +33,8 @@ namespace psh {
         std::abort();
     }
 
-    StrPtr log_level_str(LogLevel level) {
-        StrPtr s;
+    strptr log_level_str(LogLevel level) {
+        strptr s;
         switch (level) {
             case LogLevel::Fatal:   s = "\x1b[1;41m[FATAL]\x1b[0m";
             case LogLevel::Error:   s = "\x1b[1;31m[ERROR]\x1b[0m";
@@ -44,7 +45,7 @@ namespace psh {
         return s;
     }
 
-    void log(LogInfo&& info, StrPtr msg) {
+    void log(LogInfo&& info, strptr msg) {
 #if defined(PSH_DEBUG) || defined(PSH_ENABLE_LOGGING)
         psh_discard(std::fprintf(
             stderr,

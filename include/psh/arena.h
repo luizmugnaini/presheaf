@@ -20,6 +20,7 @@
 #pragma once
 
 #include <psh/assert.h>
+#include <psh/intrinsics.h>
 #include <psh/io.h>
 #include <psh/math.h>
 #include <psh/mem_utils.h>
@@ -45,7 +46,7 @@ namespace psh {
         /// Create an arena with a given block of memory and capacity.
         explicit Arena(u8* _memory, usize _capacity) noexcept
             : memory{_memory}, capacity{_capacity} {
-            if (capacity != 0) {
+            if (psh_likely(capacity != 0)) {
                 psh_assert_msg(
                     memory != nullptr,
                     "Arena created with inconsistent data: non-zero capacity but null memory");
@@ -63,16 +64,16 @@ namespace psh {
         ///     * length: Number of entities of type `T` that should fit in the new block.
         template <typename T>
         T* alloc(usize length) noexcept {
-            if (length == 0 || capacity == 0) {
+            if (psh_unlikely(length == 0 || capacity == 0)) {
                 return nullptr;
             }
 
-            uptr const memory_addr    = reinterpret_cast<uptr>(memory);
-            uptr const new_block_addr = align_forward(memory_addr + offset, alignof(T));
+            uptr const  memory_addr    = reinterpret_cast<uptr>(memory);
+            uptr const  new_block_addr = align_forward(memory_addr + offset, alignof(T));
+            usize const size           = sizeof(T) * length;
 
             // Check if there is enough memory.
-            usize const size = sizeof(T) * length;
-            if (new_block_addr + size > capacity + memory_addr) {
+            if (psh_unlikely(new_block_addr + size > capacity + memory_addr)) {
                 log_fmt(
                     LogLevel::Error,
                     "ArenaAlloc::alloc unable to allocate %zu bytes of memory (%zu bytes required "
@@ -83,6 +84,7 @@ namespace psh {
                 return nullptr;
             }
 
+            // Commit the new block of memory.
             offset = static_cast<usize>(size + new_block_addr - memory_addr);
 
             return reinterpret_cast<T*>(new_block_addr);
@@ -116,12 +118,12 @@ namespace psh {
         template <typename T>
         T* realloc(T* block, usize current_capacity, usize new_capacity) noexcept {
             // Check if there is any memory at all.
-            if (capacity == 0 || memory == nullptr || new_capacity == 0) {
+            if (psh_unlikely(capacity == 0 || memory == nullptr || new_capacity == 0)) {
                 return nullptr;
             }
 
             // Check if the user wants to allocate a completely new block.
-            if (block == nullptr || current_capacity == 0) {
+            if (psh_unlikely(block == nullptr || current_capacity == 0)) {
                 return alloc<T>(new_capacity);
             }
 
@@ -130,14 +132,14 @@ namespace psh {
             u8* const free_mem    = memory + offset;
 
             // Check if the block lies within the allocator's memory.
-            if (block_bytes < memory || block_bytes >= memory + capacity) {
+            if (psh_unlikely((block_bytes < memory) || (block_bytes >= memory + capacity))) {
                 log(LogLevel::Error,
                     "ArenaAlloc::realloc called with pointer outside of its domain.");
                 return nullptr;
             }
 
             // Check if the block is already free.
-            if (block_bytes >= free_mem) {
+            if (psh_unlikely(block_bytes >= free_mem)) {
                 log(LogLevel::Error,
                     "ArenaAlloc::realloc called with a pointer to a free address of the arena "
                     "domain.");
@@ -155,7 +157,7 @@ namespace psh {
             // If the block is the last allocated, just bump the offset.
             if (block_bytes == free_mem - current_size) {
                 // Check if there is enough space.
-                if (block_bytes + new_size > mem_end) {
+                if (psh_unlikely(block_bytes + new_size > mem_end)) {
                     log_fmt(
                         LogLevel::Error,
                         "ArenaAlloc::realloc unable to reallocate block from %zu bytes to %zu "
@@ -173,7 +175,7 @@ namespace psh {
             auto* const new_mem = zero_alloc<u8>(new_capacity);
 
             // Copy the existing data to the new block.
-            usize const copy_size = min(current_size, new_size);
+            usize const copy_size = psh_min(current_size, new_size);
             memory_copy(new_mem, block_bytes, copy_size);
 
             return reinterpret_cast<T*>(new_mem);

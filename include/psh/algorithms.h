@@ -22,6 +22,7 @@
 
 #include <psh/concepts.h>
 #include <psh/fat_ptr.h>
+#include <psh/intrinsics.h>
 #include <psh/option.h>
 
 namespace psh {
@@ -46,20 +47,26 @@ namespace psh {
     template <typename T>
         requires PartiallyOrdered<T> && TriviallyCopyable<T>
     Option<usize> binary_search(FatPtr<T const> fptr, T match) noexcept {
-        if (fptr.is_empty()) return {};
+        if (psh_unlikely(fptr.is_empty())) {
+            return {};
+        }
 
-        T* low = fptr.begin();
-        T* hi  = fptr.end();
-        T* mid = (low + hi) / 2;
+        T* low      = fptr.begin();
+        T* hi       = fptr.end();
+        T* mid      = (low + hi) / 2;
+        T  mid_elem = *mid;
 
-        T mid_elem = *mid;
+        // Found.
         if (mid_elem == match) {
             return Option{static_cast<usize>(mid - low)};
-        } else if (mid_elem < match) {
-            // Search the left side.
+        }
+
+        // Search the left side.
+        if (mid_elem < match) {
             T* new_low = mid + 1;
             return impl_binary_search(FatPtr{new_low, static_cast<usize>(hi - new_low)}, match);
         }
+
         // Search the right side.
         T* new_hi = mid - 1;
         return impl_binary_search(FatPtr{low, static_cast<usize>(new_hi - low)}, match);

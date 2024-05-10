@@ -7,6 +7,7 @@
 #include <psh/arena.h>
 #include <psh/assert.h>
 #include <psh/dyn_array.h>
+#include <psh/intrinsics.h>
 #include <psh/mem_utils.h>
 #include <psh/memory_manager.h>
 #include <psh/stack.h>
@@ -17,7 +18,7 @@
 using namespace psh;
 
 void zeroed_at_initialization() {
-    StrPtr const        header = "[zeroed_at_initialization]";
+    strptr const        header = "[zeroed_at_initialization]";
     MemoryManager const memory_manager{1024};
 
     // Check validity.
@@ -36,7 +37,7 @@ void zeroed_at_initialization() {
 }
 
 void initialization_and_shutdown() {
-    StrPtr const  header                  = "[initialization_and_shutdown]";
+    strptr const  header                  = "[initialization_and_shutdown]";
     usize const   memory_manager_capacity = 2048;
     MemoryManager memory_manager{memory_manager_capacity};
     u8 const*     mem_sys_alloc_mem_actual_addr = memory_manager.allocator.memory;
@@ -77,7 +78,7 @@ void initialization_and_shutdown() {
 }
 
 void memory_statistics() {
-    StrPtr const header = "[memory_statistics]";
+    strptr const header = "[memory_statistics]";
 
     /** Expected statistics. **/
 
@@ -112,7 +113,7 @@ void memory_statistics() {
     psh_assert(used == expected_arena);
     psh_assert(memory_manager.allocation_count == static_cast<usize>(1));
 
-    StrPtr const a = memory_manager.alloc<char>(40);
+    strptr const a = memory_manager.alloc<char>(40);
     psh_assert(a != nullptr);
     usize const a_size = wrap_sub(memory_manager.allocator.offset, used);
     used               = memory_manager.allocator.offset;
@@ -127,7 +128,7 @@ void memory_statistics() {
     psh_assert(arena.offset == b_size);
     psh_assert(memory_manager.allocation_count == static_cast<usize>(2));
 
-    StrPtr const c = memory_manager.alloc<char>(34);
+    strptr const c = memory_manager.alloc<char>(34);
     psh_assert(c != nullptr);
     usize const c_size = wrap_sub(memory_manager.allocator.offset, used);
     used               = memory_manager.allocator.offset;
@@ -142,13 +143,13 @@ void memory_statistics() {
     psh_assert(arena.offset >= b_size + d_size);
     psh_assert(memory_manager.allocation_count == static_cast<usize>(3));
 
-    StrPtr const e = memory_manager.alloc<char>(90);
+    strptr const e = memory_manager.alloc<char>(90);
     psh_assert(e != nullptr);
     usize const e_size = wrap_sub(memory_manager.allocator.offset, used);
     used               = memory_manager.allocator.offset;
     psh_assert(memory_manager.allocation_count == static_cast<usize>(4));
 
-    StrPtr f = memory_manager.alloc<char>(55);
+    strptr f = memory_manager.alloc<char>(55);
     psh_assert(f != nullptr);
     usize const f_size = wrap_sub(memory_manager.allocator.offset, used);
     used               = memory_manager.allocator.offset;

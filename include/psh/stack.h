@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <psh/intrinsics.h>
 #include <psh/io.h>
 #include <psh/math.h>
 #include <psh/mem_utils.h>
@@ -105,7 +106,7 @@ namespace psh {
 
         explicit Stack(u8* _memory, usize _capacity) noexcept
             : memory{_memory}, capacity{_capacity} {
-            if (capacity != 0) {
+            if (psh_likely(capacity != 0)) {
                 psh_assert_msg(
                     memory != nullptr,
                     "Stack constructed with non-zero capacity but null memory");
@@ -115,7 +116,7 @@ namespace psh {
         void init(u8* _memory, usize _capacity) noexcept {
             memory   = _memory;
             capacity = _capacity;
-            if (capacity != 0) {
+            if (psh_likely(capacity != 0)) {
                 psh_assert_msg(
                     memory != nullptr,
                     "Stack::init called with non-zero capacity but null memory");
@@ -152,12 +153,12 @@ namespace psh {
 
         /// Gets a pointer to the header associated to the given memory block.
         StackHeader const* header_of(u8 const* block) const noexcept {
-            if (block == nullptr) {
+            if (psh_unlikely(block == nullptr)) {
                 return nullptr;
             }
 
             // Ensure the memory address is within the allocator memory.
-            if (block < memory || block >= memory + capacity) {
+            if (psh_unlikely((block < memory) || (block >= memory + capacity))) {
                 log(LogLevel::Error,
                     "StackAlloc::header_of called with a pointer to a block of memory outside "
                     "of the stack allocator scope.");
@@ -165,15 +166,16 @@ namespace psh {
             }
 
             // Ensure the block isn't free.
-            if (block > memory + previous_offset) {
+            if (psh_unlikely(block > memory + previous_offset)) {
                 log(LogLevel::Error,
                     "StackAlloc::header_of called with a pointer to a freed block of memory.");
                 return nullptr;
             }
 
-            // Ensure the header address is valid.
             u8 const* const block_header = block + sizeof(StackHeader);
-            if (block_header < memory) {
+
+            // Ensure the header address is valid.
+            if (psh_unlikely(block_header < memory)) {
                 log(LogLevel::Error,
                     "StackAlloc::header_of expected the memory block header to be contained in "
                     "the stack allocator scope.");
@@ -201,7 +203,7 @@ namespace psh {
         ///     * `length`: Number of entities of type `T` that should fit in the new block.
         template <typename T>
         T* alloc(usize length) noexcept {
-            if (length == 0) {
+            if (psh_unlikely(length == 0)) {
                 return nullptr;
             }
 
@@ -216,7 +218,8 @@ namespace psh {
 
             usize const required  = padding + new_block_size;
             usize const available = capacity - offset;
-            if (required > available) {
+
+            if (psh_unlikely(required > available)) {
                 log_fmt(
                     LogLevel::Error,
                     "StackAlloc::alloc unable to allocate %zu bytes of memory (%zu bytes required "
@@ -262,10 +265,14 @@ namespace psh {
         ///     * `block`: Pointer to the start of the memory block to be resized.
         ///     * `new_length`: Number of entities of type `T` that the new memory block should be
         ///                     able to contain.
+        ///
+        /// Note: If the new length is zero, we proceed to clean the whole stack up until the given
+        ///       block.
         template <typename T>
         T* realloc(T const* block, usize new_length) noexcept {
             u8 const* ublock = reinterpret_cast<u8*>(block);
-            if (new_length == 0) {
+
+            if (psh_unlikely(new_length == 0)) {
                 clear_at(ublock);
                 return nullptr;
             }
@@ -279,7 +286,7 @@ namespace psh {
             }
 
             // Check if the address is within the allocator's memory.
-            if (ublock < memory || ublock >= memory + capacity) {
+            if (psh_unlikely((ublock < memory) || (ublock >= memory + capacity))) {
                 log(LogLevel::Error,
                     "StackAlloc::realloc called with a pointer outside of the memory region "
                     "managed by the stack allocator.");
@@ -287,7 +294,7 @@ namespace psh {
             }
 
             // Check if the address is already free.
-            if (ublock >= memory + offset) {
+            if (psh_unlikely(ublock >= memory + offset)) {
                 log(LogLevel::Error,
                     "StackAlloc::realloc called with a free block of memory (use-after-free "
                     "error).");
@@ -297,7 +304,7 @@ namespace psh {
             auto const* const header =
                 reinterpret_cast<StackHeader const*>(ublock - sizeof(StackHeader));
 
-            if (header->capacity == new_size) {
+            if (psh_unlikely(header->capacity == new_size)) {
                 log_fmt(
                     LogLevel::Warning,
                     "StackAlloc::realloc called to reallocate to resize a block with its own "
@@ -308,7 +315,7 @@ namespace psh {
 
             // Check memory availability.
             usize const available = capacity - offset;
-            if (new_size > available) {
+            if (psh_unlikely(new_size > available)) {
                 log_fmt(
                     LogLevel::Error,
                     "StackAlloc::realloc cannot reallocate memory from size %zu to %zu. Only %zu "
@@ -319,20 +326,13 @@ namespace psh {
                 return nullptr;
             }
 
-            // Allocate the new block.
             auto* const new_mem = alloc<T>(new_length);
-            if (new_mem == nullptr) {
-                log(LogLevel::Error,
-                    "StackAlloc::realloc unable to resize the given block of memory.");
-                return nullptr;
-            }
 
-            // Copy the data to the new address.
-            usize const min_size = min(header->capacity, new_size);
+            usize const copy_size = min(header->capacity, new_size);
             memory_copy(
                 reinterpret_cast<u8*>(new_mem),
                 reinterpret_cast<u8 const*>(block),
-                min_size);
+                copy_size);
 
             return new_mem;
         }
@@ -341,7 +341,7 @@ namespace psh {
         ///
         /// This function won't panic if the stack is empty, it will simply return false.
         bool pop() noexcept {
-            if (previous_offset == 0) {
+            if (psh_unlikely(previous_offset == 0)) {
                 return false;
             }
 
@@ -367,12 +367,12 @@ namespace psh {
         ///       match its location and therefore we'll end up clearing the entirety of the stack.
         ///       If this is your goal, prefer using StackAlloc::clear() instead.
         bool clear_at(u8 const* block) noexcept {
-            if (block == nullptr) {
+            if (psh_unlikely(block == nullptr)) {
                 return false;
             }
 
             // Check if the block is within the allocator's memory.
-            if (block < memory || block > memory + previous_offset) {
+            if (psh_unlikely((block < memory) || (block > memory + previous_offset))) {
                 if (block > memory + capacity) {
                     log(LogLevel::Error,
                         "StackAlloc::free_at called with a pointer outside of the stack "

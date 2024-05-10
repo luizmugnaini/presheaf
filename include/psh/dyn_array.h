@@ -52,7 +52,7 @@ namespace psh {
             arena    = _arena;
             capacity = _capacity;
 
-            if (capacity != 0) {
+            if (psh_likely(capacity != 0)) {
                 psh_assert_msg(
                     arena != nullptr,
                     "DynArray::init called with non-zero capacity but an empty arena");
@@ -85,7 +85,7 @@ namespace psh {
                 size <= capacity,
                 "DynArray::init called with inconsistent data: capacity less than the size");
 
-            if (capacity != 0) {
+            if (psh_likely(capacity != 0)) {
                 psh_assert_msg(
                     arena != nullptr,
                     "DynArray::init called with non-zero capacity but an empty arena");
@@ -121,7 +121,7 @@ namespace psh {
                 size <= capacity,
                 "DynArray::init called with inconsistent data: capacity less than the size");
 
-            if (capacity != 0) {
+            if (psh_likely(capacity != 0)) {
                 psh_assert_msg(
                     arena != nullptr,
                     "DynArray::init called with non-zero capacity but an empty arena");
@@ -238,7 +238,7 @@ namespace psh {
         /// Try to pop the last element of the dynamic array.
         bool pop() noexcept {
             bool op = false;
-            if (size > 0) {
+            if (psh_likely(size > 0)) {
                 --size;
                 op = true;
             }
@@ -248,7 +248,7 @@ namespace psh {
         /// Try to remove a dynamic array element at a given index.
         bool remove(usize idx) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            if (idx >= size) {
+            if (psh_unlikely(idx >= size)) {
                 log_fmt(
                     LogLevel::Error,
                     "DynArray::remove index %zu is out of bounds for dynamic array of size "

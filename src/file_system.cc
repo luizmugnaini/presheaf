@@ -20,56 +20,73 @@
 
 #include <psh/file_system.h>
 
+#include <psh/intrinsics.h>
+
+// TODO(luiz): Substitute the `std::perror` calls with `psh::log_fmt` taking the error strings via a
+//       thread safe alternative to `std::strerror`.
+
 namespace psh {
-    String read_file(Arena* arena, StrPtr path) noexcept {
-        if (path == nullptr) {
-            return String{};
+    File::File(strptr path_, strptr flags_) noexcept : path{path_}, flags{flags_} {
+        if (psh_unlikely(path == nullptr || flags == nullptr)) {
+            return;
         }
 
-        std::FILE* const file = std::fopen(path, "rb");
-        if (file == nullptr) {
-            std::perror("Couldn't open file.\n");
-            return String{};
-        }
-        if (arena == nullptr) {
-            log(LogLevel::Error, "read_file called with a null arena.");
-            return String{};
+        handle = std::fopen(path, flags);
+        if (psh_unlikely(handle == nullptr)) {
+            validity = FileValidity::FailedToOpen;
+            return;
         }
 
-        // Find the file size.
-        if (std::fseek(file, 0, SEEK_END) == -1) {
+        if (psh_unlikely(std::fseek(handle, 0, SEEK_END) == -1)) {
             std::perror("Couldn't seek end of file.");
-            return String{};
-        }
-        isize const file_size = std::ftell(file);
-        if (file_size == -1) {
-            std::perror("Couldn't tell the size of the file.\n");
-            return String{};
-        }
-        if (std::fseek(file, 0, SEEK_SET) == -1) {
-            std::perror("Couldn't seek start of file.\n");
-            return String{};
+            validity = FileValidity::FailedToRead;
+            return;
         }
 
+        isize const file_size = std::ftell(handle);
+
+        if (psh_unlikely(file_size == -1)) {
+            std::perror("Couldn't tell the size of the file.\n");
+            validity = FileValidity::SizeUnknown;
+            return;
+        }
+        if (psh_unlikely(std::fseek(handle, 0, SEEK_SET) == -1)) {
+            std::perror("Couldn't seek start of file.\n");
+            validity = FileValidity::FailedToRead;
+            return;
+        }
+    }
+
+    File::~File() noexcept {
+        if (psh_unlikely(handle == nullptr)) {
+            return;
+        }
+
+        i32 res = std::fclose(handle);
+        if (psh_unlikely(res == EOF)) {
+            log_fmt(LogLevel::Error, "File %s failed to be closed.", path);
+        }
+    }
+
+    FileReadResult File::read(Arena* arena) noexcept {
         // Acquire memory for the buffer.
-        auto const  buf_size = static_cast<usize>(file_size);
-        char* const buf      = arena->alloc<char>(buf_size + 1);
-        psh_assert_msg(
-            buf != nullptr,
-            "read_file unable to acquire enough memory to store the file content into a "
-            "buffer.");
+        char* const buf = arena->alloc<char>(size + 1);
+        if (psh_unlikely(buf == nullptr)) {
+            return {.valid = FileValidity::OutOfMemory};
+        }
 
         // Read the whole file into the buffer.
-        usize const read_count = std::fread(buf, 1, buf_size, file);
-        if (std::ferror(file) != 0) {
+        usize const read_count = std::fread(buf, 1, size, handle);
+        if (psh_unlikely(std::ferror(handle) != 0)) {
             std::perror("Couldn't read file.\n");
-        } else {
-            buf[read_count] = 0;  // TODO: We don't even need a zero terminated string here since we
-                                  //       are returning a String. Should we still do it anyway?
+            return {.valid = FileValidity::FailedToRead};
         }
 
-        psh_discard(std::fclose(file));
+        buf[read_count] = 0;  // Ensure the string is null terminated.
 
-        return String{arena, buf_size, buf};
+        return FileReadResult{
+            .content = String{arena, size, buf},
+            .valid   = FileValidity::OK,
+        };
     }
 }  // namespace psh

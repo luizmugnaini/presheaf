@@ -46,7 +46,7 @@ namespace psh {
 
     bool MemoryManager::pop() noexcept {
         bool result = allocator.pop();
-        if (result) {
+        if (psh_likely(result)) {
             --allocation_count;
         }
         return result;
@@ -56,7 +56,7 @@ namespace psh {
         u8 const* const mem_start = allocator.memory;
 
         // Check if the block lies within the allocator's memory.
-        if (block < mem_start || block > mem_start + allocator.previous_offset) {
+        if (psh_unlikely((block < mem_start) || (block > mem_start + allocator.previous_offset))) {
             if (block > mem_start + allocator.capacity) {
                 log(LogLevel::Error,
                     "MemoryManager::clear_until called with a pointer outside of the stack "
@@ -75,13 +75,15 @@ namespace psh {
         // NOTE: If we were given the incorrect address, we end up clearing the whole memory.
         for (;;) {
             u8 const* top_block = allocator.top();
-            if (top_block == mem_start) {
+            if (psh_unlikely(top_block == mem_start)) {
                 break;
             }
-            if (allocator.pop()) {
+
+            if (psh_likely(allocator.pop())) {
                 --allocation_count;
             }
-            if (top_block == block) {
+
+            if (psh_unlikely(top_block == block)) {
                 break;
             }
         }

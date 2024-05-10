@@ -3,6 +3,7 @@
 /// @author Luiz G. Mugnaini. A. <luizmugnaini@gmail.com>
 #include <psh/arena.h>
 #include <psh/assert.h>
+#include <psh/intrinsics.h>
 #include <psh/mem_utils.h>
 #include <psh/stack.h>
 #include <psh/types.h>
@@ -20,7 +21,7 @@ struct Foo {
 };
 
 void arena_scratch() {
-    constexpr StrPtr header   = "[arena_scratch]";
+    constexpr strptr header   = "[arena_scratch]";
     constexpr usize  capacity = 1024;
     auto* const      buf      = reinterpret_cast<u8*>(std::malloc(capacity));
     Arena            arena{buf, capacity};
@@ -213,7 +214,7 @@ void print_stack_info(Stack const& stack) {
 }
 
 void stack_allocation_with_default_alignment() {
-    constexpr StrPtr header                   = "[stack_allocation_with_default_alignment]";
+    constexpr strptr header                   = "[stack_allocation_with_default_alignment]";
     usize            salloc_min_expected_size = 0;
     constexpr usize  expected_alloc_capacity  = 512;
     auto* const      buf = reinterpret_cast<u8*>(std::malloc(expected_alloc_capacity));
@@ -288,7 +289,7 @@ void stack_allocation_with_default_alignment() {
 }
 
 void stack_offsets_reads_and_writes() {
-    constexpr StrPtr header = "[stack_offsets_reads_and_writes]";
+    constexpr strptr header = "[stack_offsets_reads_and_writes]";
 
     constexpr usize capacity = 1024;
     u8* const       buf      = reinterpret_cast<u8*>(std::malloc(capacity));
@@ -387,7 +388,7 @@ void stack_offsets_reads_and_writes() {
 }
 
 void stack_memory_stress_and_free() {
-    constexpr StrPtr header = "[stack_memory_stress_and_free]";
+    constexpr strptr header = "[stack_memory_stress_and_free]";
 
     constexpr usize capacity = 2048;
     u8* const       buf      = reinterpret_cast<u8*>(std::malloc(capacity));
@@ -396,8 +397,8 @@ void stack_memory_stress_and_free() {
     iptr const  stack_buf_diff = reinterpret_cast<iptr>(stack.memory);
     usize const zero           = 0ull;
 
-    constexpr usize a1_alignment = sizeof(StrPtr);
-    StrPtr          a1           = stack.alloc<char>(50);
+    constexpr usize a1_alignment = sizeof(strptr);
+    strptr          a1           = stack.alloc<char>(50);
     psh_assert(a1 != nullptr);
     psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
     psh_assert(stack.previous_offset % a1_alignment == zero);
@@ -436,8 +437,8 @@ void stack_memory_stress_and_free() {
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a5) - stack_buf_diff);
 
-    constexpr usize a6_alignment = sizeof(StrPtr);
-    StrPtr const    a6           = stack.alloc<char>(14);
+    constexpr usize a6_alignment = sizeof(strptr);
+    strptr const    a6           = stack.alloc<char>(14);
     psh_assert(a6 != nullptr);
     psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
     psh_assert(stack.previous_offset % a6_alignment == zero);
@@ -471,7 +472,7 @@ void stack_memory_stress_and_free() {
 }
 
 void free_all() {
-    constexpr StrPtr header = "[free_all]";
+    constexpr strptr header = "[free_all]";
 
     usize const capacity = 512;
     u8* const   buf      = reinterpret_cast<u8*>(std::malloc(capacity));

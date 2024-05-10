@@ -39,18 +39,18 @@ namespace psh {
     };
 
     struct LogInfo {
-        StrPtr const   file;  ///< Source file name.
+        strptr const   file;  ///< Source file name.
         u32 const      line;  ///< Source current line.
         LogLevel const lvl;   ///< Severity level.
 
         consteval LogInfo(
             LogLevel _lvl,
-            StrPtr   _file = __builtin_FILE(),
+            strptr   _file = __builtin_FILE(),
             u32      _line = __builtin_LINE())
             : file{_file}, line{_line}, lvl{_lvl} {}
     };
 
-    StrPtr log_level_str(LogLevel level);
+    strptr log_level_str(LogLevel level);
 
     [[noreturn]] void abort_program() noexcept;
 
@@ -60,7 +60,7 @@ namespace psh {
     /// ```
     /// psh::log(psh::LogLevel::Error, "Got an error!");
     /// ```
-    void log(LogInfo&& info, StrPtr msg);
+    void log(LogInfo&& info, strptr msg);
 
     /// Log a formatted message to the standard error stream.
     ///

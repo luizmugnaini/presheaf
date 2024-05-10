@@ -26,8 +26,8 @@ namespace psh {
     // Internal definition of the assert macros
     void assert_(
         bool      expr_res,
-        StrPtr    expr_str,
-        StrPtr    msg  = "",
+        strptr    expr_str,
+        strptr    msg  = "",
         LogInfo&& info = LogInfo{LogLevel::Fatal});
 }  // namespace psh
 
@@ -50,6 +50,3 @@ namespace psh {
         psh::log(psh::LogLevel::Fatal, "TODO: code-path unimplemented!"); \
         psh::abort_program();                                             \
     } while (0);
-
-/// Simple macro discarding an unused result.
-#define psh_discard(x) (void)x

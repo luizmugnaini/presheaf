@@ -21,6 +21,7 @@
 #include <psh/mem_utils.h>
 
 #include <psh/assert.h>
+#include <psh/intrinsics.h>
 #include <psh/math.h>
 #include <psh/types.h>
 
@@ -28,14 +29,14 @@
 
 namespace psh {
     void memory_set(FatPtr<u8> fptr, i32 fill) noexcept {
-        if (fptr.buf == nullptr) {
+        if (psh_unlikely(fptr.buf == nullptr)) {
             return;
         }
         psh_discard(std::memset(fptr.buf, fill, fptr.size));
     }
 
     void memory_copy(u8* dest, u8 const* src, usize size) noexcept {
-        if (dest == nullptr || src == nullptr) {
+        if (psh_unlikely(dest == nullptr || src == nullptr)) {
             return;
         }
 
@@ -51,7 +52,7 @@ namespace psh {
     }
 
     void memory_move(u8* dest, u8 const* src, usize size) noexcept {
-        if (dest == nullptr || src == nullptr) {
+        if (psh_unlikely(dest == nullptr || src == nullptr)) {
             return;
         }
         psh_discard(std::memmove(dest, src, size));
@@ -64,7 +65,7 @@ namespace psh {
         usize header_alignment) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_ALIGNMENT)
         psh_assert_msg(
-            is_power_of_two(alignment) && is_power_of_two(header_alignment),
+            psh_is_pow_of_two(alignment) && psh_is_pow_of_two(header_alignment),
             "padding_with_header expected the alignments to be powers of two");
 #endif
 
@@ -95,7 +96,7 @@ namespace psh {
     usize align_forward(uptr ptr, usize alignment) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_ALIGNMENT)
         psh_assert_msg(
-            is_power_of_two(alignment),
+            psh_is_pow_of_two(alignment),
             "align_forward expected the alignment to be a power of two");
 #endif
 

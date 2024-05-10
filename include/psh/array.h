@@ -42,7 +42,7 @@ namespace psh {
         /// Initialize the array with a given size.
         void init(Arena* _arena, usize _size) noexcept {
             size = _size;
-            if (size != 0) {
+            if (psh_likely(size != 0)) {
                 psh_assert_msg(
                     _arena != nullptr,
                     "Array::init called with non-zero size but null arena");
@@ -60,7 +60,7 @@ namespace psh {
         /// Initialize the array with the contents of an initializer list.
         void init(std::initializer_list<T> list, Arena* _arena) noexcept {
             size = list.size;
-            if (size != 0) {
+            if (psh_likely(size != 0)) {
                 psh_assert_msg(
                     _arena != nullptr,
                     "Array::init called with non-zero size but null arena");
@@ -84,7 +84,7 @@ namespace psh {
         /// Initialize the array with the contents of a fat pointer.
         void init(FatPtr<T> const& fptr, Arena* _arena) noexcept {
             size = fptr.size;
-            if (size != 0) {
+            if (psh_likely(size != 0)) {
                 psh_assert_msg(
                     _arena != nullptr,
                     "Array::init called with non-zero size but null arena");

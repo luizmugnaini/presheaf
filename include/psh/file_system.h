@@ -20,12 +20,36 @@
 
 #pragma once
 
+#include <psh/buffer.h>
+#include <psh/option.h>
 #include <psh/string.h>
 #include <psh/types.h>
 
 namespace psh {
-    /// Read a file to a string buffer.
-    ///
-    /// If the operation fails, an empty string is returned.
-    String read_file(Arena* arena, StrPtr path) noexcept;
+    enum class FileValidity {
+        FailedToRead,
+        FailedToOpen,
+        FailedToClose,
+        OutOfMemory,
+        SizeUnknown,
+        OK,
+    };
+
+    struct FileReadResult {
+        String       content{};
+        FileValidity valid = FileValidity::FailedToRead;
+    };
+
+    struct File {
+        std::FILE*   handle   = nullptr;
+        strptr       path     = nullptr;
+        strptr       flags    = nullptr;
+        usize        size     = 0;
+        FileValidity validity = FileValidity::FailedToRead;
+
+        File(strptr path_, strptr flags_ = "rb") noexcept;
+        ~File() noexcept;
+
+        FileReadResult read(Arena* arena) noexcept;
+    };
 }  // namespace psh
