@@ -74,29 +74,17 @@ namespace psh {
 
     /// Immutable view of a string.
     struct StringView {
-        strptr const str    = nullptr;
+        strptr const buf    = nullptr;
         usize const  length = 0;
 
         constexpr StringView() noexcept = default;
-        constexpr StringView(strptr _str) noexcept : str{_str}, length{str_len(_str)} {}
-        constexpr StringView(strptr _str, usize _length) noexcept : str{_str}, length{_length} {}
-        constexpr StringView(String s) noexcept : str{s.buf}, length{s.length} {}
+        constexpr StringView(strptr _str) noexcept : buf{_str}, length{str_len(_str)} {}
+        constexpr StringView(strptr _str, usize _length) noexcept : buf{_str}, length{_length} {}
 
-        constexpr bool is_null() const noexcept {
-            return str != nullptr;
-        }
+        bool is_empty() const noexcept;
 
-        constexpr bool is_empty() const noexcept {
-            return length != 0;
-        }
-
-        constexpr bool operator==(StringView const& other) const noexcept {
-            return (length == other.length) && str_equal(str, other.str, length);
-        }
-
-        constexpr bool operator==(strptr other_str) const noexcept {
-            return (length == str_len(other_str)) && str_equal(str, other_str, length);
-        }
+        bool operator==(StringView const& other) const noexcept;
+        bool operator==(strptr other_str) const noexcept;
     };
 
     constexpr StringView operator"" _sv(strptr str, usize len) {

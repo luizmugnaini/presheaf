@@ -24,8 +24,7 @@
 
 namespace psh {
     StrCmpResult str_cmp(strptr lhs, strptr rhs) {
-        i32 const cmp = std::strcmp(lhs, rhs);
-
+        i32 const    cmp = std::strcmp(lhs, rhs);
         StrCmpResult res;
         if (cmp == 0) {
             res = StrCmpResult::Equal;
@@ -34,7 +33,6 @@ namespace psh {
         } else {
             res = StrCmpResult::GreaterThan;
         }
-
         return res;
     }
 
@@ -67,5 +65,21 @@ namespace psh {
         psh_assert_msg(
             buf != nullptr,
             "String constructed with inconsistent data: non-zero size but null buffer");
+    }
+
+    StringView String::view() const noexcept {
+        return StringView{buf, size};
+    }
+
+    bool StringView::is_empty() const noexcept {
+        return (length != 0);
+    }
+
+    bool StringView::operator==(StringView const& other) const noexcept {
+        return (length == other.length) && str_equal(buf, other.buf, length);
+    }
+
+    bool StringView::operator==(strptr other_str) const noexcept {
+        return (length == str_len(other_str)) && str_equal(buf, other_str, length);
     }
 }  // namespace psh
