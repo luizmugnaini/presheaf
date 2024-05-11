@@ -219,7 +219,7 @@ namespace psh {
 
         /// Resize the dynamic array underlying buffer.
         void grow(u32 factor = DYNARRAY_RESIZE_CAPACITY_FACTOR) noexcept {
-            if (buf != nullptr) {
+            if (psh_likely(buf != nullptr)) {
                 // Reallocate the existing buffer.
                 usize const previous_capacity = capacity;
                 capacity *= factor;
@@ -230,7 +230,7 @@ namespace psh {
                 buf      = arena->zero_alloc<T>(capacity);
             }
 
-            if (capacity != 0) {
+            if (psh_likely(capacity != 0)) {
                 psh_assert_msg(buf != nullptr, "DynArray::grow unable to rellocate buffer");
             }
         }
