@@ -54,59 +54,20 @@ namespace psh {
     /// Runtime equivalent of `str_equal`.
     bool str_equal(strptr lhs, strptr rhs);
 
+    struct StringView;
+
     /// Dynamically allocated string.
     struct String {
-        Arena* arena  = nullptr;
-        char*  buf    = nullptr;
-        usize  length = 0;
+        Arena* arena    = nullptr;
+        usize  size     = 0;
+        usize  capacity = 0;
+        char*  buf      = nullptr;
 
         explicit constexpr String() = default;
+        explicit String(Arena* _arena, usize _capacity) noexcept;
+        explicit String(Arena* _arena, usize _size, usize _capacity, char* _buf) noexcept;
 
-        explicit String(Arena* _arena, usize _length) noexcept : arena{_arena} {
-            if (psh_unlikely(_length == 0)) {
-                return;
-            }
-
-            psh_assert_msg(
-                arena != nullptr,
-                "String constructed with inconsistent data: non-zero length but null arena.");
-
-            length = _length;
-            buf    = arena->alloc<char>(_length);
-            psh_assert_msg(buf != nullptr, "String unable to acquire enough memory");
-        }
-
-        explicit String(Arena* _arena, usize _length, char* _buf) noexcept
-            : arena{_arena}, buf{_buf}, length{_length} {
-            if (psh_unlikely(length == 0)) {
-                return;
-            }
-
-            psh_assert_msg(
-                arena != nullptr,
-                "String constructed with inconsistent data: non-zero length but null arena.");
-            psh_assert_msg(
-                buf != nullptr,
-                "String constructed with inconsistent data: non-zero length but null buffer.");
-        }
-
-        template <typename... Arg>
-        explicit String(Arena* _arena, usize _length, strptr fmt, Arg const&... args) noexcept
-            : arena{_arena} {
-            if (psh_unlikely(_length == 0)) {
-                return;
-            }
-
-            psh_assert_msg(
-                arena != nullptr,
-                "String constructed with inconsistent data: non-zero length but null arena.");
-
-            length = _length;
-            buf    = arena->alloc<char>(length);
-            psh_assert_msg(buf != nullptr, "String unable to allocate enough memory");
-
-            psh_discard(std::snprintf(buf, length, fmt, args...));
-        }
+        StringView view() const noexcept;
 
         // TODO(luiz): formatting functions.
     };

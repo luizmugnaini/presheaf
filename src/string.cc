@@ -41,4 +41,31 @@ namespace psh {
     bool str_equal(strptr lhs, strptr rhs) {
         return (std::strcmp(lhs, rhs) == 0);
     }
+
+    String::String(Arena* _arena, usize _capacity) noexcept : arena{_arena}, capacity{_capacity} {
+        if (psh_unlikely(capacity == 0)) return;
+
+        psh_assert_msg(
+            arena != nullptr,
+            "String constructed with inconsistent data: non-zero size but null arena");
+
+        buf = arena->alloc<char>(capacity);
+        psh_assert_msg(buf != nullptr, "String unable to acquire enough memory");
+    }
+
+    String::String(Arena* _arena, usize _size, usize _capacity, char* _buf) noexcept
+        : arena{_arena}, size{_size}, capacity{_capacity}, buf{_buf} {
+        psh_assert_msg(
+            size <= capacity,
+            "String constructed with inconsistent data: size greater than capacity");
+
+        if (psh_unlikely(size == 0)) return;
+
+        psh_assert_msg(
+            arena != nullptr,
+            "String constructed with inconsistent data: non-zero size but null arena");
+        psh_assert_msg(
+            buf != nullptr,
+            "String constructed with inconsistent data: non-zero size but null buffer");
+    }
 }  // namespace psh
