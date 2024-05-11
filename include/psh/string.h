@@ -38,12 +38,8 @@ namespace psh {
     /// Compare two strings lexicographically up to `size` bytes.
     constexpr StrCmpResult str_cmp(strptr lhs, strptr rhs, usize size) {
         i32 const res = std::char_traits<char>::compare(lhs, rhs, size);
-        if (res == 0) {
-            return StrCmpResult::Equal;
-        }
-        if (res < 0) {
-            return StrCmpResult::LessThan;
-        }
+        if (res == 0) return StrCmpResult::Equal;
+        if (res < 0) return StrCmpResult::LessThan;
         return StrCmpResult::GreaterThan;
     }
 

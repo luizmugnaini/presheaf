@@ -52,4 +52,6 @@ namespace psh {
 
         FileReadResult read(Arena* arena) noexcept;
     };
+
+    FileReadResult read_file(Arena* arena, strptr path) noexcept;
 }  // namespace psh

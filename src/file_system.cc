@@ -44,12 +44,14 @@ namespace psh {
         }
 
         isize const file_size = std::ftell(handle);
-
         if (psh_unlikely(file_size == -1)) {
             std::perror("Couldn't tell the size of the file.\n");
             validity = FileValidity::SizeUnknown;
             return;
         }
+
+        size = static_cast<usize>(file_size);
+
         if (psh_unlikely(std::fseek(handle, 0, SEEK_SET) == -1)) {
             std::perror("Couldn't seek start of file.\n");
             validity = FileValidity::FailedToRead;
@@ -85,8 +87,12 @@ namespace psh {
         buf[read_count] = 0;  // Ensure the string is null terminated.
 
         return FileReadResult{
-            .content = String{arena, size, buf},
+            .content = String{arena, size, size, buf},
             .valid   = FileValidity::OK,
         };
+    }
+
+    FileReadResult read_file(Arena* arena, strptr path) noexcept {
+        return File{path, "rb"}.read(arena);
     }
 }  // namespace psh
