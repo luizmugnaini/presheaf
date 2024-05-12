@@ -24,10 +24,14 @@
 #include <psh/intrinsics.h>
 #include <psh/types.h>
 
+#include <cassert>
+#include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 
 namespace psh {
+    constexpr char const* LOG_FMT = "%s [%s:%d] %s\n";
+
     void abort_program() noexcept {
         psh_discard(std::fprintf(stderr, "Aborting program...\n"));
         std::abort();
@@ -45,15 +49,40 @@ namespace psh {
         return s;
     }
 
-    void log(LogInfo&& info, strptr msg) {
+    void log(LogInfo info, strptr msg) {
 #if defined(PSH_DEBUG) || defined(PSH_ENABLE_LOGGING)
-        psh_discard(std::fprintf(
+        psh_discard(
+            std::fprintf(stderr, LOG_FMT, log_level_str(info.lvl), info.file, info.line, msg));
+#endif
+    }
+
+    void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept {
+#if defined(PSH_DEBUG) || defined(PSH_ENABLE_LOGGING)
+        constexpr usize MAX_MSG_LEN = 8192;
+        char            msg[MAX_MSG_LEN];
+
+        va_list args;
+        va_start(args, fmt);
+        {
+            // Format the message with the given arguments.
+            i32 const res_len = std::vsnprintf(msg, MAX_MSG_LEN, fmt, args);
+            assert(
+                res_len != -1 && "std::snptrintf unable to parse the format string and arguments");
+
+            // Stamp the message with a null-terminator.
+            auto const  ures_len = static_cast<usize>(res_len);
+            usize const msg_len  = ures_len < MAX_MSG_LEN ? ures_len : MAX_MSG_LEN;
+            msg[msg_len]         = 0;
+        }
+        va_end(args);
+
+        (void)std::fprintf(
             stderr,
             "%s [%s:%d] %s\n",
             log_level_str(info.lvl),
             info.file,
             info.line,
-            msg));
+            msg);
 #endif
     }
 }  // namespace psh

@@ -23,6 +23,8 @@
 #define psh_likely(expr)   __builtin_expect(!!(static_cast<long>(static_cast<bool>(expr))), 1)
 #define psh_unlikely(expr) __builtin_expect(!!(static_cast<long>(static_cast<bool>(expr))), 0)
 
+#define psh_attr_fmt(fmt_pos, args_pos) __attribute__((__format__(__printf__, fmt_pos, args_pos)))
+
 #define psh_stringify(x) #x
 
 #define psh_discard(x) (void)(x)
