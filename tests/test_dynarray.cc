@@ -82,15 +82,15 @@ void peek_and_pop(MemoryManager& mem_manager) {
 
     p = v.peek();
     psh_assert((p != nullptr) && (*p == 6));
-    psh_assert(v.pop());
+    psh_assert(v.pop() == Status::OK);
 
     p = v.peek();
     psh_assert((p != nullptr) && (*p == 5));
-    psh_assert(v.pop());
+    psh_assert(v.pop() == Status::OK);
 
     p = v.peek();
     psh_assert((p != nullptr) && (*p == 4));
-    psh_assert(v.pop());
+    psh_assert(v.pop() == Status::OK);
 
     psh_assert(v.size == 0ull);
 
@@ -113,7 +113,7 @@ void remove(MemoryManager& mem_manager) {
     p = v.peek();
     psh_assert((p != nullptr) && (*p == 55));
 
-    psh_assert(v.remove(1));
+    psh_assert(v.remove(1) == Status::OK);
     psh_assert(v.size == 4ull);
     psh_assert(v[0] == 4);
     psh_assert(v[1] == 8);
@@ -122,7 +122,7 @@ void remove(MemoryManager& mem_manager) {
     p = v.peek();
     psh_assert((p != nullptr) && (*p == 55));
 
-    psh_assert(v.remove(2));
+    psh_assert(v.remove(2) == Status::OK);
     psh_assert(v.size == 3ull);
     psh_assert(v[0] == 4);
     psh_assert(v[1] == 8);
@@ -130,20 +130,20 @@ void remove(MemoryManager& mem_manager) {
     p = v.peek();
     psh_assert((p != nullptr) && (*p == 55));
 
-    psh_assert(v.remove(0));
+    psh_assert(v.remove(0) == Status::OK);
     psh_assert(v.size == 2ull);
     psh_assert(v[0] == 8);
     psh_assert(v[1] == 55);
     p = v.peek();
     psh_assert((p != nullptr) && (*p == 55));
 
-    psh_assert(v.remove(1));
+    psh_assert(v.remove(1) == Status::OK);
     psh_assert(v.size == 1ull);
     psh_assert(v[0] == 8);
     p = v.peek();
     psh_assert((p != nullptr) && (*p == 8));
 
-    psh_assert(v.remove(0));
+    psh_assert(v.remove(0) == Status::OK);
     psh_assert(v.size == 0ull);
 
     mem_manager.pop();

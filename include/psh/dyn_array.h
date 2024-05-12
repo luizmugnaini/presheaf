@@ -167,7 +167,7 @@ namespace psh {
 
         /// Get a pointer to the last element of the dynamic array.
         T* peek() const noexcept {
-            return this->size == 0 ? nullptr : &buf[size - 1];
+            return (this->size == 0) ? nullptr : &buf[size - 1];
         }
 
         T* begin() noexcept {
@@ -238,7 +238,7 @@ namespace psh {
             }
         }
 
-        Result resize(usize new_capacity) noexcept {
+        Status resize(usize new_capacity) noexcept {
             T* new_buf = arena->realloc<T>(buf, capacity, new_capacity);
 
             if (psh_unlikely(new_buf == nullptr)) {
@@ -247,28 +247,28 @@ namespace psh {
                     "DynArray::resize failed to resize capacity from %zu to %zu",
                     capacity,
                     new_capacity);
-                return Result::Failed;
+                return Status::Failed;
             }
 
             // Commit the resizing.
             buf      = new_buf;
             capacity = new_capacity;
 
-            return Result::OK;
+            return Status::OK;
         }
 
         /// Try to pop the last element of the dynamic array.
-        bool pop() noexcept {
-            bool op = false;
+        Status pop() noexcept {
+            Status res = Status::Failed;
             if (psh_likely(size > 0)) {
                 --size;
-                op = true;
+                res = Status::OK;
             }
-            return op;
+            return res;
         }
 
         /// Try to remove a dynamic array element at a given index.
-        bool remove(usize idx) noexcept {
+        Status remove(usize idx) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
             if (psh_unlikely(idx >= size)) {
                 log_fmt(
@@ -277,7 +277,7 @@ namespace psh {
                     "%zu.",
                     idx,
                     size);
-                return false;
+                return Status::Failed;
             }
 #endif
 
@@ -288,11 +288,11 @@ namespace psh {
                 memory_move(dest, src, sizeof(T) * (size - idx - 1));
             }
             --size;
-            return true;
+            return Status::OK;
         }
 
         /// Clear the dynamic array data, resetting its size.
-        constexpr void clear() noexcept {
+        void clear() noexcept {
             size = 0;
         }
     };

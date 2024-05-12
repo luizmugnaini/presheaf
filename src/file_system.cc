@@ -32,20 +32,20 @@ namespace psh {
 
         handle = std::fopen(path.data.buf, flags_);
         if (psh_unlikely(handle == nullptr)) {
-            validity = FileValidity::FailedToOpen;
+            validity = FileStatus::FailedToOpen;
             return;
         }
 
         if (psh_unlikely(std::fseek(handle, 0, SEEK_END) == -1)) {
             std::perror("Couldn't seek end of file.");
-            validity = FileValidity::FailedToRead;
+            validity = FileStatus::FailedToRead;
             return;
         }
 
         isize const file_size = std::ftell(handle);
         if (psh_unlikely(file_size == -1)) {
             std::perror("Couldn't tell the size of the file.\n");
-            validity = FileValidity::SizeUnknown;
+            validity = FileStatus::SizeUnknown;
             return;
         }
 
@@ -53,7 +53,7 @@ namespace psh {
 
         if (psh_unlikely(std::fseek(handle, 0, SEEK_SET) == -1)) {
             std::perror("Couldn't seek start of file.\n");
-            validity = FileValidity::FailedToRead;
+            validity = FileStatus::FailedToRead;
             return;
         }
     }
@@ -73,26 +73,21 @@ namespace psh {
         // Acquire memory for the buffer.
         char* const buf = arena->alloc<char>(size + 1);
         if (psh_unlikely(buf == nullptr)) {
-            return {.valid = FileValidity::OutOfMemory};
+            return {.status = FileStatus::OutOfMemory};
         }
 
         // Read the whole file into the buffer.
         usize const read_count = std::fread(buf, 1, size, handle);
         if (psh_unlikely(std::ferror(handle) != 0)) {
             std::perror("Couldn't read file.\n");
-            return {.valid = FileValidity::FailedToRead};
+            return {.status = FileStatus::FailedToRead};
         }
 
         buf[read_count] = 0;  // Ensure the string is null terminated.
 
         return FileReadResult{
             .content = String{arena, StringView{buf, size}},
-            .valid   = FileValidity::OK,
+            .status  = FileStatus::OK,
         };
-    }
-
-    FileReadResult read_file(Arena* arena, StringView path) noexcept {
-        File file{arena, path, "rb"};
-        return file.read(arena);
     }
 }  // namespace psh

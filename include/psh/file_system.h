@@ -26,7 +26,7 @@
 #include <psh/types.h>
 
 namespace psh {
-    enum class FileValidity {
+    enum class FileStatus {
         FailedToRead,
         FailedToOpen,
         FailedToClose,
@@ -36,21 +36,19 @@ namespace psh {
     };
 
     struct FileReadResult {
-        String       content{};
-        FileValidity valid = FileValidity::FailedToRead;
+        String     content{};
+        FileStatus status = FileStatus::FailedToRead;
     };
 
     struct File {
-        std::FILE*   handle = nullptr;
-        String       path{};
-        usize        size     = 0;
-        FileValidity validity = FileValidity::FailedToRead;
+        std::FILE* handle = nullptr;
+        String     path{};
+        usize      size     = 0;
+        FileStatus validity = FileStatus::FailedToRead;
 
         File(Arena* arena, StringView path_, strptr flags_ = "rb") noexcept;
         ~File() noexcept;
 
         FileReadResult read(Arena* arena) noexcept;
     };
-
-    FileReadResult read_file(Arena* arena, StringView path) noexcept;
 }  // namespace psh

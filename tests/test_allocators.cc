@@ -275,7 +275,7 @@ void stack_allocation_with_default_alignment() {
     }
 
     psh_assert_msg(
-        salloc.pop(),
+        salloc.pop() == Status::OK,
         "Expected StackAlloc to be able to pop the top memory in the stack");
 
     auto const* const th_u8 = salloc.top_header();
@@ -292,7 +292,7 @@ void stack_allocation_with_default_alignment() {
     }
 
     psh_assert_msg(
-        salloc.pop(),
+        salloc.pop() == Status::OK,
         "Expected StackAlloc to be able to pop the top memory in the stack");
 
     psh_assert_msg(salloc.offset == 0ull, "Expected empty StackAlloc");
@@ -463,7 +463,7 @@ void stack_memory_stress_and_free() {
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a5) - stack_buf_diff);
 
     // Free a3, a4, and a5 (they should all be dangling after the free).
-    psh_assert(stack.clear_at(reinterpret_cast<u8*>(a3)));
+    psh_assert(stack.clear_at(reinterpret_cast<u8*>(a3)) == Status::OK);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a2) - stack_buf_diff);
 

@@ -92,7 +92,7 @@ namespace psh {
         return StringView{data.buf, data.size};
     }
 
-    Result String::join(FatPtr<StringView const> strs, strptr join_cstr) noexcept {
+    Status String::join(FatPtr<StringView const> strs, strptr join_cstr) noexcept {
         Option<StringView> join_sv{join_cstr};
         bool const         was_empty = (data.size == 0);
 
@@ -114,8 +114,8 @@ namespace psh {
         usize new_capacity = data.size + additional_size;
 
         if (data.capacity < new_capacity) {
-            if (psh_unlikely(data.resize(new_capacity) == Result::Failed)) {
-                return Result::Failed;
+            if (psh_unlikely(data.resize(new_capacity) == Status::Failed)) {
+                return Status::Failed;
             }
         }
 
@@ -149,10 +149,10 @@ namespace psh {
         // Append a null terminator.
         data.buf[data.size] = 0;
 
-        return Result::OK;
+        return Status::OK;
     }
 
-    Result String::join(std::initializer_list<StringView> strs, strptr sjoin) noexcept {
+    Status String::join(std::initializer_list<StringView> strs, strptr sjoin) noexcept {
         return this->join(FatPtr{strs.begin(), strs.size()}, sjoin);
     }
 }  // namespace psh

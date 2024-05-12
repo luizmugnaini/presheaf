@@ -104,7 +104,7 @@ void test_string_join() {
     {
         // Empty string.
         String estr{&arena, 20};
-        psh_assert(estr.join(views1.const_fat_ptr(), ", ") == Result::OK);
+        psh_assert(estr.join(views1.const_fat_ptr(), ", ") == Status::OK);
 
         psh_assert(str_equal(estr.data.buf, check_str1.buf));
         psh_assert(estr.data.size == check_str1.size());
@@ -113,14 +113,14 @@ void test_string_join() {
 
         // Non-empty string.
         String nestr{&arena, views2[0]};
-        psh_assert(nestr.join(FatPtr{&views2[1], views2.size() - 1}) == Result::OK);
+        psh_assert(nestr.join(FatPtr{&views2[1], views2.size() - 1}) == Status::OK);
         psh_assert(str_equal(nestr.data.buf, check_str2.buf));
         psh_assert(nestr.data.capacity == nestr.data.size + 1);
         psh_assert(nestr.data.buf[nestr.data.size] == 0);
 
         // With initializer list.
         psh::String s{&arena, "Hello"};
-        psh_assert(s.join({"Middle", "Earth"}, " ++ ") == Result::OK);
+        psh_assert(s.join({"Middle", "Earth"}, " ++ ") == Status::OK);
         psh_assert(str_equal(s.data.buf, "Hello ++ Middle ++ Earth"));
     }
     std::free(arena.memory);

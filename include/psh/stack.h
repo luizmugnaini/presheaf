@@ -24,6 +24,7 @@
 #include <psh/io.h>
 #include <psh/math.h>
 #include <psh/mem_utils.h>
+#include <psh/option.h>
 #include <psh/types.h>
 
 namespace psh {
@@ -340,9 +341,9 @@ namespace psh {
         /// Tries to pop the last memory block allocated by the given stack.
         ///
         /// This function won't panic if the stack is empty, it will simply return false.
-        bool pop() noexcept {
+        Status pop() noexcept {
             if (psh_unlikely(previous_offset == 0)) {
-                return false;
+                return Status::Failed;
             }
 
             u8 const* const   top = memory + previous_offset;
@@ -351,24 +352,23 @@ namespace psh {
 
             offset          = previous_offset - top_header->padding;
             previous_offset = top_header->previous_offset;
-            return true;
+            return Status::OK;
         }
 
         /// Tries to reset the office to the start of the header of the block pointed by `ptr`.
         ///
         /// Parameters:
         ///     * `block`: Pointer to the memory block that should be freed (all blocks above `ptr`
-        ///     will
-        ///              also be freed).
+        ///                will also be freed).
         ///
         /// Note:
         ///     * If `block` is null, we simply return `false`.
         ///     * If `block` doesn't correspond to a correct memory block we'll never be able to
         ///       match its location and therefore we'll end up clearing the entirety of the stack.
         ///       If this is your goal, prefer using StackAlloc::clear() instead.
-        bool clear_at(u8 const* block) noexcept {
+        Status clear_at(u8 const* block) noexcept {
             if (psh_unlikely(block == nullptr)) {
-                return false;
+                return Status::Failed;
             }
 
             // Check if the block is within the allocator's memory.
@@ -377,12 +377,12 @@ namespace psh {
                     log(LogLevel::Error,
                         "StackAlloc::free_at called with a pointer outside of the stack "
                         "allocator memory region.");
-                    return false;
+                    return Status::Failed;
                 }
                 log(LogLevel::Error,
                     "StackAlloc::free_at called with a pointer to an already free region of the "
                     "stack allocator memory.");
-                return false;
+                return Status::Failed;
             }
 
             auto const* const header =
@@ -393,7 +393,7 @@ namespace psh {
                 reinterpret_cast<uptr>(memory));
             previous_offset = header->previous_offset;
 
-            return true;
+            return Status::OK;
         }
 
         /// Reset the allocator's offset.

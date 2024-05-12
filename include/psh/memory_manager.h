@@ -80,7 +80,7 @@ namespace psh {
         }
 
         /// Try to free the last allocated block of memory.
-        bool pop() noexcept;
+        Status pop() noexcept;
 
         /// Try to reset the allocator offset until the specified memory block.
         ///
@@ -92,7 +92,7 @@ namespace psh {
         ///                the given one will also be freed). If this pointer is null, outside of
         ///                the stack allocator buffer, or already free, the program return false and
         ///                won't panic.
-        bool clear_until(u8 const* block) noexcept;
+        Status clear_until(u8 const* block) noexcept;
 
         /// Resets the manager by zeroing the memory offset and statistics.
         void reset() noexcept;
