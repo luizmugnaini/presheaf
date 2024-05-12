@@ -112,7 +112,7 @@ namespace psh {
         /// Initialize the dynamic array with the contents of a fat pointer, and optionally reserve
         /// a given capacity.
         void
-        init(FatPtr<T> const& fptr, Arena* _arena, Option<usize> const& _capacity = {}) noexcept {
+        init(FatPtr<T const> fptr, Arena* _arena, Option<usize> const& _capacity = {}) noexcept {
             arena    = _arena;
             size     = fptr.size;
             capacity = _capacity.val_or(DYNARRAY_RESIZE_CAPACITY_FACTOR * size);
@@ -138,7 +138,10 @@ namespace psh {
 
         /// Construct a dynamic array with the contents of a fat pointer, and optionally reserve a
         /// given capacity.
-        explicit DynArray(FatPtr<T> fptr, Arena* _arena, Option<usize> _capacity = {}) noexcept {
+        explicit DynArray(
+            FatPtr<T const> fptr,
+            Arena*          _arena,
+            Option<usize>   _capacity = {}) noexcept {
             this->init(fptr, _arena, _capacity);
         }
 
@@ -233,6 +236,25 @@ namespace psh {
             if (psh_likely(capacity != 0)) {
                 psh_assert_msg(buf != nullptr, "DynArray::grow unable to rellocate buffer");
             }
+        }
+
+        Result resize(usize new_capacity) noexcept {
+            T* new_buf = arena->realloc<T>(buf, capacity, new_capacity);
+
+            if (psh_unlikely(new_buf == nullptr)) {
+                log_fmt(
+                    LogLevel::Error,
+                    "DynArray::resize failed to resize capacity from %zu to %zu",
+                    capacity,
+                    new_capacity);
+                return Result::Failed;
+            }
+
+            // Commit the resizing.
+            buf      = new_buf;
+            capacity = new_capacity;
+
+            return Result::OK;
         }
 
         /// Try to pop the last element of the dynamic array.
