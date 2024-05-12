@@ -1,6 +1,22 @@
-/// Tests for the stack memory allocator.
+///                          Presheaf Library
+///    Copyright (C) 2024 Luiz Gustavo Mugnaini Anselmo
 ///
-/// @author Luiz G. Mugnaini. A. <luizmugnaini@gmail.com>
+///    This program is free software; you can redistribute it and/or modify
+///    it under the terms of the GNU General Public License as published by
+///    the Free Software Foundation; either version 2 of the License, or
+///    (at your option) any later version.
+///
+///    This program is distributed in the hope that it will be useful,
+///    but WITHOUT ANY WARRANTY; without even the implied warranty of
+///    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+///    GNU General Public License for more details.
+///
+///    You should have received a copy of the GNU General Public License along
+///    with this program; if not, write to the Free Software Foundation, Inc.,
+///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+///
+/// Description: Tests for the stack memory allocator.
+/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 #include <psh/arena.h>
 #include <psh/assert.h>
 #include <psh/intrinsics.h>
@@ -21,11 +37,10 @@ struct Foo {
 };
 
 void arena_scratch() {
-    constexpr strptr header   = "[arena_scratch]";
-    constexpr usize  capacity = 1024;
-    auto* const      buf      = reinterpret_cast<u8*>(std::malloc(capacity));
-    Arena            arena{buf, capacity};
-    constexpr usize  base_offset = 0;
+    constexpr usize capacity = 1024;
+    auto* const     buf      = reinterpret_cast<u8*>(std::malloc(capacity));
+    Arena           arena{buf, capacity};
+    constexpr usize base_offset = 0;
 
     // Test 1
     //
@@ -201,7 +216,7 @@ void arena_scratch() {
     psh_assert(arena.offset == base_offset);
 
     std::free(buf);
-    log_passed(header);
+    test_passed();
 }
 
 void print_stack_info(Stack const& stack) {
@@ -214,11 +229,10 @@ void print_stack_info(Stack const& stack) {
 }
 
 void stack_allocation_with_default_alignment() {
-    constexpr strptr header                   = "[stack_allocation_with_default_alignment]";
-    usize            salloc_min_expected_size = 0;
-    constexpr usize  expected_alloc_capacity  = 512;
-    auto* const      buf = reinterpret_cast<u8*>(std::malloc(expected_alloc_capacity));
-    Stack            salloc{buf, expected_alloc_capacity};
+    usize           salloc_min_expected_size = 0;
+    constexpr usize expected_alloc_capacity  = 512;
+    auto* const     buf = reinterpret_cast<u8*>(std::malloc(expected_alloc_capacity));
+    Stack           salloc{buf, expected_alloc_capacity};
 
     u8 const    expected_u8_vec[5]       = {51, 102, 153, 204, 255};
     usize const expected_u8_vec_capacity = 5 * sizeof(u8);  // 5 bytes
@@ -285,17 +299,15 @@ void stack_allocation_with_default_alignment() {
     psh_assert_msg(salloc.previous_offset == 0ull, "%s Expected empty StackAlloc");
 
     std::free(buf);
-    log_passed(header);
+    test_passed()
 }
 
 void stack_offsets_reads_and_writes() {
-    constexpr strptr header = "[stack_offsets_reads_and_writes]";
-
     constexpr usize capacity = 1024;
     u8* const       buf      = reinterpret_cast<u8*>(std::malloc(capacity));
     Stack           stack{buf, capacity};
 
-    uptr const buf_start_addr = reinterpret_cast<uptr>(buf);
+    u8* const buf_start = buf;
 
     // Create an array of `uint64_t`.
     usize const array1_len       = 70;
@@ -314,7 +326,7 @@ void stack_offsets_reads_and_writes() {
     constexpr usize array1_expected_offset  = array1_expected_padding;
     psh_assert(stack.previous_offset == array1_expected_offset);
 
-    uptr const array1_addr = buf_start_addr + array1_expected_offset;
+    u8* const array1_addr = buf_start + array1_expected_offset;
 
     // Check the correctness of the `array1` header.
     auto const* const array1_header =
@@ -360,14 +372,14 @@ void stack_offsets_reads_and_writes() {
     usize const array2_expected_offset = after_array1_expected_offset + array2_expected_padding;
     psh_assert(stack.previous_offset == array2_expected_offset);
 
-    uptr const array2_addr = buf_start_addr + array2_expected_offset;
+    u8* const array2_addr = buf_start + array2_expected_offset;
 
     // Check the correctness of the `array2` header.
     auto const* const array2_header =
         reinterpret_cast<StackHeader const*>(array2_addr - sizeof(StackHeader));
     usize const array2_actual_padding = array2_header->padding;
     psh_assert(array2_actual_padding == array2_expected_padding);
-    auto const  array2_expected_previous_offset = static_cast<usize>(array1_addr - buf_start_addr);
+    auto const  array2_expected_previous_offset = static_cast<usize>(array1_addr - buf_start);
     usize const array2_actual_previous_offset   = array2_header->previous_offset;
     psh_assert(array2_actual_previous_offset == array2_expected_previous_offset);
 
@@ -380,16 +392,16 @@ void stack_offsets_reads_and_writes() {
     }
 
     // Check offset to the free memory in the stack.
-    usize const after_array2_expected_offset = array2_addr + array2_size - buf_start_addr;
+    iptr const after_array2_expected_offset = reinterpret_cast<iptr>(array2_addr) +
+                                              static_cast<iptr>(array2_size) -
+                                              reinterpret_cast<iptr>(buf_start);
     psh_assert(stack.offset == after_array2_expected_offset);
 
     free(buf);
-    log_passed(header);
+    test_passed();
 }
 
 void stack_memory_stress_and_free() {
-    constexpr strptr header = "[stack_memory_stress_and_free]";
-
     constexpr usize capacity = 2048;
     u8* const       buf      = reinterpret_cast<u8*>(std::malloc(capacity));
     Stack           stack{buf, capacity};
@@ -468,12 +480,10 @@ void stack_memory_stress_and_free() {
     psh_assert(b2 != nullptr);
 
     std::free(buf);
-    log_passed(header);
+    test_passed();
 }
 
 void free_all() {
-    constexpr strptr header = "[free_all]";
-
     usize const capacity = 512;
     u8* const   buf      = reinterpret_cast<u8*>(std::malloc(capacity));
     Stack       salloc{buf, capacity};
@@ -509,7 +519,7 @@ void free_all() {
     psh_assert_msg(salloc.previous_offset == 0ull, "Expected empty StackAlloc");
 
     std::free(buf);
-    log_passed(header);
+    test_passed();
 }
 
 int main() {

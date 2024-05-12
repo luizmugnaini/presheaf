@@ -1,24 +1,40 @@
-/// Tests for the memory manager system.
+///                          Presheaf Library
+///    Copyright (C) 2024 Luiz Gustavo Mugnaini Anselmo
+///
+///    This program is free software; you can redistribute it and/or modify
+///    it under the terms of the GNU General Public License as published by
+///    the Free Software Foundation; either version 2 of the License, or
+///    (at your option) any later version.
+///
+///    This program is distributed in the hope that it will be useful,
+///    but WITHOUT ANY WARRANTY; without even the implied warranty of
+///    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+///    GNU General Public License for more details.
+///
+///    You should have received a copy of the GNU General Public License along
+///    with this program; if not, write to the Free Software Foundation, Inc.,
+///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+///
+/// Description: Tests for the memory manager system.
+/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 ///
 /// This test should be ran with sanitizer flags on in order to detect possible memory leaks that
 /// may go unseen.
-///
-/// @author Luiz G. Mugnaini. A. <luizmugnaini@gmail.com>
+
+#include <psh/memory_manager.h>
+
 #include <psh/arena.h>
 #include <psh/assert.h>
 #include <psh/dyn_array.h>
 #include <psh/intrinsics.h>
 #include <psh/mem_utils.h>
-#include <psh/memory_manager.h>
 #include <psh/stack.h>
 #include <psh/types.h>
-
 #include "utils.h"
 
 using namespace psh;
 
 void zeroed_at_initialization() {
-    strptr const        header = "[zeroed_at_initialization]";
     MemoryManager const memory_manager{1024};
 
     // Check validity.
@@ -33,11 +49,10 @@ void zeroed_at_initialization() {
     psh_assert(memory_manager.allocator.offset == 0ull);
     psh_assert(memory_manager.allocator.previous_offset == 0ull);
     psh_assert(memory_manager.allocator.capacity == static_cast<usize>(1024));
-    log_passed(header);
+    test_passed();
 }
 
 void initialization_and_shutdown() {
-    strptr const  header                  = "[initialization_and_shutdown]";
     usize const   memory_manager_capacity = 2048;
     MemoryManager memory_manager{memory_manager_capacity};
     u8 const*     mem_sys_alloc_mem_actual_addr = memory_manager.allocator.memory;
@@ -74,12 +89,10 @@ void initialization_and_shutdown() {
         psh_assert(*actual == expected);
     }
 
-    log_passed(header);
+    test_passed();
 }
 
 void memory_statistics() {
-    strptr const header = "[memory_statistics]";
-
     /** Expected statistics. **/
 
     constexpr usize expected_string_at_least =
@@ -201,7 +214,7 @@ void memory_statistics() {
     psh_assert(memory_manager.allocation_count == 0ull);
     psh_assert(memory_manager.allocator.offset == 0ull);
 
-    log_passed(header);
+    test_passed();
 }
 
 int main() {

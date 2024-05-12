@@ -1,36 +1,45 @@
-/// Tests for the internal types.
+///                          Presheaf Library
+///    Copyright (C) 2024 Luiz Gustavo Mugnaini Anselmo
 ///
-/// Tests for the expected sizes of the type definitions used by the internals.
+///    This program is free software; you can redistribute it and/or modify
+///    it under the terms of the GNU General Public License as published by
+///    the Free Software Foundation; either version 2 of the License, or
+///    (at your option) any later version.
 ///
-/// @author Luiz G. Mugnaini. A. <luizmugnaini@gmail.com>
-#include <psh/assert.h>
+///    This program is distributed in the hope that it will be useful,
+///    but WITHOUT ANY WARRANTY; without even the implied warranty of
+///    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+///    GNU General Public License for more details.
+///
+///    You should have received a copy of the GNU General Public License along
+///    with this program; if not, write to the Free Software Foundation, Inc.,
+///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+///
+/// Description: Tests for the fundamental types.
+/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
+
 #include <psh/types.h>
 
+#include <psh/assert.h>
 #include "utils.h"
 
 using namespace psh;
 
 void expected_size_types() {
-    strptr const header = "[expected_size_types]";
-    psh_assert(sizeof(u8) == static_cast<usize>(1));
-    psh_assert(sizeof(u16) == static_cast<usize>(2));
-    psh_assert(sizeof(u32) == static_cast<usize>(4));
-    psh_assert(sizeof(u64) == static_cast<usize>(8));
-
-    psh_assert(sizeof(usize) == static_cast<usize>(8));
-
-    psh_assert(sizeof(i8) == static_cast<usize>(1));
-    psh_assert(sizeof(i16) == static_cast<usize>(2));
-    psh_assert(sizeof(i32) == static_cast<usize>(4));
-    psh_assert(sizeof(i64) == static_cast<usize>(8));
-
-    psh_assert(sizeof(f32) == static_cast<usize>(4));
-    psh_assert(sizeof(f64) == static_cast<usize>(8));
-
-    psh_assert(sizeof(uptr) == static_cast<usize>(8));
-    psh_assert(sizeof(iptr) == static_cast<usize>(8));
-
-    log_passed(header);
+    psh_assert(sizeof(u8) == 1);
+    psh_assert(sizeof(u16) == 2);
+    psh_assert(sizeof(u32) == 4);
+    psh_assert(sizeof(u64) == 8);
+    psh_assert(sizeof(usize) == 8);
+    psh_assert(sizeof(i8) == 1);
+    psh_assert(sizeof(i16) == 2);
+    psh_assert(sizeof(i32) == 4);
+    psh_assert(sizeof(i64) == 8);
+    psh_assert(sizeof(f32) == 4);
+    psh_assert(sizeof(f64) == 8);
+    psh_assert(sizeof(uptr) == 8);
+    psh_assert(sizeof(iptr) == 8);
+    test_passed();
 }
 
 int main() {

@@ -1,12 +1,29 @@
-/// Tests for the dynamic array type (vector).
+///                          Presheaf Library
+///    Copyright (C) 2024 Luiz Gustavo Mugnaini Anselmo
 ///
-/// @author Luiz G. Mugnaini. A. <luizmugnaini@gmail.com>
-#include <psh/assert.h>
+///    This program is free software; you can redistribute it and/or modify
+///    it under the terms of the GNU General Public License as published by
+///    the Free Software Foundation; either version 2 of the License, or
+///    (at your option) any later version.
+///
+///    This program is distributed in the hope that it will be useful,
+///    but WITHOUT ANY WARRANTY; without even the implied warranty of
+///    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+///    GNU General Public License for more details.
+///
+///    You should have received a copy of the GNU General Public License along
+///    with this program; if not, write to the Free Software Foundation, Inc.,
+///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+///
+/// Description: Tests for the dynamic array.
+/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
+
 #include <psh/dyn_array.h>
+
+#include <psh/assert.h>
 #include <psh/mem_utils.h>
 #include <psh/memory_manager.h>
 #include <psh/types.h>
-
 #include "utils.h"
 
 using namespace psh;
@@ -16,8 +33,7 @@ struct Foo {
 };
 
 void push_elements(MemoryManager& mem_manager) {
-    strptr const  header = "[push_elements]";
-    auto          arena  = mem_manager.make_arena(sizeof(i32) * 1024).demand();
+    auto          arena = mem_manager.make_arena(sizeof(i32) * 1024).demand();
     DynArray<i32> v{&arena};
     for (i32 i = 0; i < 100; ++i) {
         v.push(i);
@@ -28,12 +44,11 @@ void push_elements(MemoryManager& mem_manager) {
     }
 
     mem_manager.pop();
-    log_passed(header);
+    test_passed();
 }
 
 void size_and_capacity(MemoryManager& mem_manager) {
-    strptr const  header = "[size_and_capacity]";
-    Arena         arena  = mem_manager.make_arena(sizeof(Foo) * 100).demand();
+    Arena         arena = mem_manager.make_arena(sizeof(Foo) * 100).demand();
     DynArray<Foo> v{&arena};
 
     v.push(Foo{0});
@@ -56,12 +71,10 @@ void size_and_capacity(MemoryManager& mem_manager) {
     }
 
     mem_manager.pop();
-    log_passed(header);
+    test_passed();
 }
 
 void peek_and_pop(MemoryManager& mem_manager) {
-    strptr const header = "[peek_and_pop]";
-
     auto          arena = mem_manager.make_arena(sizeof(i32) * 3).demand();
     DynArray<i32> v{&arena, 3};
     v.push(4), v.push(5), v.push(6);
@@ -82,12 +95,10 @@ void peek_and_pop(MemoryManager& mem_manager) {
     psh_assert(v.size == 0ull);
 
     mem_manager.pop();
-    log_passed(header);
+    test_passed();
 }
 
 void remove(MemoryManager& mem_manager) {
-    strptr const header = "[remove]";
-
     auto          arena = mem_manager.make_arena(sizeof(i32) * 5).demand();
     DynArray<i32> v{&arena, 5};
     v.push(4), v.push(7), v.push(8), v.push(9), v.push(55);
@@ -136,12 +147,10 @@ void remove(MemoryManager& mem_manager) {
     psh_assert(v.size == 0ull);
 
     mem_manager.pop();
-    log_passed(header);
+    test_passed();
 }
 
 void clear(MemoryManager& mem_manager) {
-    strptr const header = "[clear]";
-
     auto          arena = mem_manager.make_arena(sizeof(f32) * 4).demand();
     DynArray<f32> v{&arena, 4};
     v.push(7.0f), v.push(4.8f), v.push(6.1f), v.push(3.14f);
@@ -150,7 +159,7 @@ void clear(MemoryManager& mem_manager) {
     psh_assert_msg(v.size == 0ull, "Expected vector size to be zero after clean");
 
     mem_manager.pop();
-    log_passed(header);
+    test_passed();
 }
 
 i32 main() {
