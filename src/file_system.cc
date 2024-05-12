@@ -21,17 +21,16 @@
 #include <psh/file_system.h>
 
 #include <psh/intrinsics.h>
+#include <cstdio>
 
 // TODO(luiz): Substitute the `std::perror` calls with `psh::log_fmt` taking the error strings via a
 //       thread safe alternative to `std::strerror`.
 
 namespace psh {
-    File::File(strptr path_, strptr flags_) noexcept : path{path_}, flags{flags_} {
-        if (psh_unlikely(path == nullptr || flags == nullptr)) {
-            return;
-        }
+    File::File(Arena* arena, StringView path_, strptr flags_) noexcept {
+        path.init(arena, path_);
 
-        handle = std::fopen(path, flags);
+        handle = std::fopen(path.data.buf, flags_);
         if (psh_unlikely(handle == nullptr)) {
             validity = FileValidity::FailedToOpen;
             return;
@@ -66,7 +65,7 @@ namespace psh {
 
         i32 res = std::fclose(handle);
         if (psh_unlikely(res == EOF)) {
-            log_fmt(LogLevel::Error, "File %s failed to be closed.", path);
+            log_fmt(LogLevel::Error, "File %s failed to be closed.", path.data.buf);
         }
     }
 
@@ -87,12 +86,13 @@ namespace psh {
         buf[read_count] = 0;  // Ensure the string is null terminated.
 
         return FileReadResult{
-            .content = String{arena, size, size, buf},
+            .content = String{arena, StringView{buf, size}},
             .valid   = FileValidity::OK,
         };
     }
 
-    FileReadResult read_file(Arena* arena, strptr path) noexcept {
-        return File{path, "rb"}.read(arena);
+    FileReadResult read_file(Arena* arena, StringView path) noexcept {
+        File file{arena, path, "rb"};
+        return file.read(arena);
     }
 }  // namespace psh

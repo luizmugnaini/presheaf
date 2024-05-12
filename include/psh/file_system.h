@@ -41,17 +41,16 @@ namespace psh {
     };
 
     struct File {
-        std::FILE*   handle   = nullptr;
-        strptr       path     = nullptr;
-        strptr       flags    = nullptr;
+        std::FILE*   handle = nullptr;
+        String       path{};
         usize        size     = 0;
         FileValidity validity = FileValidity::FailedToRead;
 
-        File(strptr path_, strptr flags_ = "rb") noexcept;
+        File(Arena* arena, StringView path_, strptr flags_ = "rb") noexcept;
         ~File() noexcept;
 
         FileReadResult read(Arena* arena) noexcept;
     };
 
-    FileReadResult read_file(Arena* arena, strptr path) noexcept;
+    FileReadResult read_file(Arena* arena, StringView path) noexcept;
 }  // namespace psh
