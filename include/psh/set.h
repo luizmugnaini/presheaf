@@ -25,27 +25,23 @@
 #include <psh/dyn_array.h>
 #include <initializer_list>
 
+// TODO(luiz): implement a set type.
 namespace psh {
     /// Collection of non-repeating elements.
     template <typename T>
     struct Set {
         DynArray<T> data;
 
-        Set(FatPtr<T const> fptr, Arena* arena) noexcept : data{arena, fptr.size} {
-            for (auto elem : fptr) {
-                if (linear_search(fptr, elem).has_val) {
-                    data.push(elem);
-                }
-            }
+        Set(FatPtr<T const>, Arena*) noexcept {
+            psh_todo();
         }
 
-        Set(std::initializer_list<T> elems, Arena* arena) noexcept : data{arena, elems.size} {
-            FatPtr<T> fptr{elems.begin(), elems.size};
-            for (auto elem : fptr) {
-                if (linear_search(fptr, elem).has_val) {
-                    data.push(elem);
-                }
-            }
+        Set(std::initializer_list<T>, Arena*) noexcept {
+            psh_todo();
+        }
+
+        bool push(T) noexcept {
+            psh_todo();
         }
     };
 }  // namespace psh
