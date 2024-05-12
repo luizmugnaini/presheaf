@@ -296,6 +296,7 @@ list(
         "test_allocators"
         "test_memory_manager"
         "test_dynarray"
+        "test_string"
 )
 
 foreach(t IN LISTS TESTS)

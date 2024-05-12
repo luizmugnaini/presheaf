@@ -22,72 +22,91 @@
 
 #include <psh/arena.h>
 #include <psh/assert.h>
+#include <psh/dyn_array.h>
 #include <psh/intrinsics.h>
+#include <psh/option.h>
 #include <psh/types.h>
 
-#include <string>
+/// Create a string literal and a string view at compile time from a given C-string literal.
+///
+/// Note: Use this macro with care, you should only use it with literal strings, otherwise the
+///       length of the string won't be computed corrected by the compile and you'll obtain the
+///       size of a pointer as the length of the string.
+#define psh_str(cstr_literal)          \
+    psh::Str<sizeof((cstr_literal))> { \
+        (cstr_literal)                 \
+    }
+#define psh_string_view(cstr_literal)              \
+    psh::StringView {                              \
+        (cstr_literal), sizeof((cstr_literal)) - 1 \
+    }
 
 namespace psh {
-    /// Compute the length of a zero-terminated non-null string.
-    constexpr usize str_len(strptr str) noexcept {
-        return std::char_traits<char>::length(str);
-    }
-
     enum class StrCmpResult { Unknown, LessThan, Equal, GreaterThan };
 
-    /// Compare two strings lexicographically up to `size` bytes.
-    constexpr StrCmpResult str_cmp(strptr lhs, strptr rhs, usize size) {
-        i32 const res = std::char_traits<char>::compare(lhs, rhs, size);
-        if (res == 0) return StrCmpResult::Equal;
-        if (res < 0) return StrCmpResult::LessThan;
-        return StrCmpResult::GreaterThan;
-    }
+    [[nodiscard]] usize        str_size(strptr str) noexcept;
+    [[nodiscard]] StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept;
+    [[nodiscard]] bool         str_equal(strptr lhs, strptr rhs) noexcept;
+    [[nodiscard]] bool         is_utf8(char c) noexcept;
 
-    /// Runtime equivalent of `str_cmp`.
-    StrCmpResult str_cmp(strptr lhs, strptr rhs);
+    /// A string with guaranteed compile-time known size.
+    ///
+    /// Note: It is way more ergonomic to use the macro `psh_str` than specifying the length of the
+    ///       string, which is silly.
+    ///
+    /// Example:
+    /// ```cpp
+    /// psh::Str my_str = psh_str("hey this is a compile time array of constant characters");
+    /// ```
+    template <usize size_>
+    struct Str {
+        char const buf[size_];
 
-    /// Check if two strings are equal up to `size` bytes.
-    constexpr bool str_equal(strptr lhs, strptr rhs, usize size) {
-        return (std::char_traits<char>::compare(lhs, rhs, size) == 0);
-    }
-
-    /// Runtime equivalent of `str_equal`.
-    bool str_equal(strptr lhs, strptr rhs);
-
-    struct StringView;
-
-    /// Dynamically allocated string.
-    struct String {
-        Arena* arena    = nullptr;
-        usize  size     = 0;
-        usize  capacity = 0;
-        char*  buf      = nullptr;
-
-        explicit constexpr String() = default;
-        explicit String(Arena* _arena, usize _capacity) noexcept;
-        explicit String(Arena* _arena, usize _size, usize _capacity, char* _buf) noexcept;
-
-        StringView view() const noexcept;
-
-        // TODO(luiz): formatting functions.
+        /// The size of the string, disregarding its null-terminator.
+        [[nodiscard]] constexpr usize size() const noexcept {
+            return size_ - 1;
+        }
     };
 
     /// Immutable view of a string.
     struct StringView {
-        strptr const buf    = nullptr;
-        usize const  length = 0;
+        FatPtr<char const> const data;
 
-        constexpr StringView() noexcept = default;
-        constexpr StringView(strptr _str) noexcept : buf{_str}, length{str_len(_str)} {}
-        constexpr StringView(strptr _str, usize _length) noexcept : buf{_str}, length{_length} {}
-
-        bool is_empty() const noexcept;
-
-        bool operator==(StringView const& other) const noexcept;
-        bool operator==(strptr other_str) const noexcept;
+        constexpr explicit StringView() noexcept = default;
+        constexpr explicit StringView(strptr _str, usize _length) noexcept : data{_str, _length} {}
+        StringView(strptr _str) noexcept;
     };
 
-    constexpr StringView operator"" _sv(strptr str, usize len) {
-        return StringView{str, len};
-    }
+    /// Dynamically allocated string.
+    struct String {
+        DynArray<char> data;
+
+        explicit constexpr String() = default;
+        explicit String(Arena* arena, usize capacity) noexcept;
+        explicit String(Arena* arena, StringView sv) noexcept;
+        void init(Arena* arena, usize capacity) noexcept;
+        void init(Arena* arena, StringView sv) noexcept;
+
+        /// Make a view from the string.
+        [[nodiscard]] StringView view() const noexcept;
+
+        // Join an array of string views to the current string data. You can also provide a string
+        // to be attached to the end of each join.
+        //
+        // Example:
+        // ```cpp
+        // psh::Arena arena{...};
+        // psh::String s{&arena, "Hello"};
+        // assert(s.join({"World", "Earth", "Terra"}, ", ") == psh::Result::OK);
+        // assert(std::strcmp(s.data.buf, "Hello, World, Earth, Terra") == 0);
+        // ```
+        // Although this example uses initializer lists, you can also achieve the same using the
+        // implementation based on `psh::FatPtr`.
+        [[nodiscard]] Result join(
+            FatPtr<StringView const> strs,
+            strptr                   join_cstr = nullptr) noexcept;
+        [[nodiscard]] Result join(
+            std::initializer_list<StringView> strs,
+            strptr                            join_cstr = nullptr) noexcept;
+    };
 }  // namespace psh

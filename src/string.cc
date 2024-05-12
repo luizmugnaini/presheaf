@@ -20,10 +20,24 @@
 
 #include <psh/string.h>
 
+#include <psh/option.h>
 #include <cstring>
+#include <string>
 
 namespace psh {
-    StrCmpResult str_cmp(strptr lhs, strptr rhs) {
+    ///////////////////////////////////////////////////////////////////////////
+    // String utilities implementation.
+    ///////////////////////////////////////////////////////////////////////////
+
+    usize str_size(strptr str) noexcept {
+        usize res = 0;
+        if (psh_likely(str != nullptr)) {
+            res = std::char_traits<char>::length(str);
+        }
+        return res;
+    }
+
+    StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept {
         i32 const    cmp = std::strcmp(lhs, rhs);
         StrCmpResult res;
         if (cmp == 0) {
@@ -36,50 +50,109 @@ namespace psh {
         return res;
     }
 
-    bool str_equal(strptr lhs, strptr rhs) {
+    bool str_equal(strptr lhs, strptr rhs) noexcept {
         return (std::strcmp(lhs, rhs) == 0);
     }
 
-    String::String(Arena* _arena, usize _capacity) noexcept : arena{_arena}, capacity{_capacity} {
-        if (psh_unlikely(capacity == 0)) return;
-
-        psh_assert_msg(
-            arena != nullptr,
-            "String constructed with inconsistent data: non-zero size but null arena");
-
-        buf = arena->alloc<char>(capacity);
-        psh_assert_msg(buf != nullptr, "String unable to acquire enough memory");
+    bool is_utf8(char c) noexcept {
+        return (0x1F < c && c < 0x7F);
     }
 
-    String::String(Arena* _arena, usize _size, usize _capacity, char* _buf) noexcept
-        : arena{_arena}, size{_size}, capacity{_capacity}, buf{_buf} {
-        psh_assert_msg(
-            size <= capacity,
-            "String constructed with inconsistent data: size greater than capacity");
+    ///////////////////////////////////////////////////////////////////////////
+    // String view implementation.
+    ///////////////////////////////////////////////////////////////////////////
 
-        if (psh_unlikely(size == 0)) return;
+    StringView::StringView(strptr str) noexcept : data{str, str_size(str)} {}
 
-        psh_assert_msg(
-            arena != nullptr,
-            "String constructed with inconsistent data: non-zero size but null arena");
-        psh_assert_msg(
-            buf != nullptr,
-            "String constructed with inconsistent data: non-zero size but null buffer");
+    ///////////////////////////////////////////////////////////////////////////
+    // String implementation.
+    ///////////////////////////////////////////////////////////////////////////
+
+    void String::init(Arena* arena, usize capacity) noexcept {
+        data.init(arena, capacity);
+    }
+
+    void String::init(Arena* arena, StringView sv) noexcept {
+        // We need to account for the null terminator.
+        data.init(arena, sv.data.size + 1);
+        std::memcpy(data.buf, sv.data.buf, sv.data.size);
+        data.buf[sv.data.size + 1] = 0;
+        data.size                  = sv.data.size;
+    }
+
+    String::String(Arena* _arena, usize _capacity) noexcept {
+        this->init(_arena, _capacity);
+    }
+
+    String::String(Arena* arena, StringView sv) noexcept {
+        this->init(arena, sv);
     }
 
     StringView String::view() const noexcept {
-        return StringView{buf, size};
+        return StringView{data.buf, data.size};
     }
 
-    bool StringView::is_empty() const noexcept {
-        return (length != 0);
+    Result String::join(FatPtr<StringView const> strs, strptr join_cstr) noexcept {
+        Option<StringView> join_sv{join_cstr};
+        bool const         was_empty = (data.size == 0);
+
+        usize additional_size = 1;  // Account for the null terminator.
+        {
+            if (join_sv.has_val) {
+                // Regarding the join string: if the string is currently empty, we are only going to
+                // use the total number of `strs` to be joined minus one. Otherwise, we shall add a
+                // join string to the end of the current string data, and just then join `strs`.
+                additional_size += was_empty ? ((strs.size - 1) * join_sv.val.data.size)
+                                             : (strs.size * join_sv.val.data.size);
+            }
+
+            // Account for the size of each of the strings.
+            for (StringView const& s : strs) {
+                additional_size += s.data.size;
+            }
+        }
+        usize new_capacity = data.size + additional_size;
+
+        if (data.capacity < new_capacity) {
+            if (psh_unlikely(data.resize(new_capacity) == Result::Failed)) {
+                return Result::Failed;
+            }
+        }
+
+        if (join_sv.has_val) {
+            usize init_idx = 0;
+
+            // If the string was empty, we omit the first `sjoin`.
+            if (was_empty) {
+                StringView const& s0 = strs[0];
+                std::memcpy(data.buf + data.size, s0.data.buf, s0.data.size);
+                data.size += s0.data.size;
+                init_idx += 1;
+            }
+
+            for (usize idx = init_idx; idx < strs.size; ++idx) {
+                StringView const& si = strs[idx];
+                std::memcpy(data.buf + data.size, join_sv.val.data.buf, join_sv.val.data.size);
+                std::memcpy(
+                    data.buf + data.size + join_sv.val.data.size,
+                    si.data.buf,
+                    si.data.size);
+                data.size += join_sv.val.data.size + si.data.size;
+            }
+        } else {
+            for (StringView const& s : strs) {
+                std::memcpy(data.buf + data.size, s.data.buf, s.data.size);
+                data.size += s.data.size;
+            }
+        }
+
+        // Append a null terminator.
+        data.buf[data.size] = 0;
+
+        return Result::OK;
     }
 
-    bool StringView::operator==(StringView const& other) const noexcept {
-        return (length == other.length) && str_equal(buf, other.buf, length);
-    }
-
-    bool StringView::operator==(strptr other_str) const noexcept {
-        return (length == str_len(other_str)) && str_equal(buf, other_str, length);
+    Result String::join(std::initializer_list<StringView> strs, strptr sjoin) noexcept {
+        return this->join(FatPtr{strs.begin(), strs.size()}, sjoin);
     }
 }  // namespace psh
