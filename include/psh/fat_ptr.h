@@ -35,6 +35,10 @@ namespace psh {
             return sizeof(T) * size;
         }
 
+        constexpr bool is_empty() const noexcept {
+            return (size == 0);
+        }
+
         constexpr T* begin() noexcept {
             return buf;
         }
