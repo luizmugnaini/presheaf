@@ -23,19 +23,28 @@
 #include <psh/io.h>
 
 namespace psh {
-    // Internal definition of the assert macros
-    void assert_(
-        bool      expr_res,
-        strptr    expr_str,
-        strptr    msg  = "",
-        LogInfo&& info = LogInfo{LogLevel::Fatal});
-}  // namespace psh
+    [[maybe_unused]] constexpr strptr ASSERT_FMT = "Assertion failed: %s, msg: %s";
+}
 
-/// Assert that an expression evaluates to true.
-#define psh_assert(expr) psh::assert_(expr, #expr)
-
-/// Assert that an expression evaluates to true and write a descriptive message in case of failure.
-#define psh_assert_msg(expr, msg) psh::assert_(expr, #expr, msg)
+#if defined(PSH_DEBUG) || defined(PSH_ENABLE_ASSERTS)
+#    define psh_assert(expr)                                                         \
+        do {                                                                         \
+            if (!(expr)) {                                                           \
+                psh::log_fmt(LogLevel::Fatal, psh::ASSERT_FMT, #expr, "no message"); \
+                psh::abort_program();                                                \
+            }                                                                        \
+        } while (0)
+#    define psh_assert_msg(expr, msg)                                         \
+        do {                                                                  \
+            if (!(expr)) {                                                    \
+                psh::log_fmt(LogLevel::Fatal, psh::ASSERT_FMT, #expr, (msg)); \
+                psh::abort_program();                                         \
+            }                                                                 \
+        } while (0)
+#else
+#    define psh_assert(expr)          (void)(expr)
+#    define psh_assert_msg(expr, msg) (void)(expr)
+#endif
 
 /// Macro used to mark code-paths as unreachable.
 #define psh_unreachable()                                                  \

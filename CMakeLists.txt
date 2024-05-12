@@ -261,7 +261,6 @@ set(
     PSH_SOURCES
     "${PROJECT_SOURCE_DIR}/src/mem_utils.cc"
     "${PROJECT_SOURCE_DIR}/src/io.cc"
-    "${PROJECT_SOURCE_DIR}/src/assert.cc"
     "${PROJECT_SOURCE_DIR}/src/string.cc"
     "${PROJECT_SOURCE_DIR}/src/file_system.cc"
     "${PROJECT_SOURCE_DIR}/src/memory_manager.cc"
