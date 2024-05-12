@@ -24,6 +24,11 @@
 #include <psh/concepts.h>
 
 namespace psh {
+    enum class Result {
+        OK,
+        Failed,
+    };
+
     /// Option type.
     template <typename T>
         requires NotPointer<T>
