@@ -44,10 +44,10 @@
 namespace psh {
     enum class StrCmpResult { Unknown, LessThan, Equal, GreaterThan };
 
-    [[nodiscard]] usize        str_size(strptr str) noexcept;
-    [[nodiscard]] StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept;
-    [[nodiscard]] bool         str_equal(strptr lhs, strptr rhs) noexcept;
-    [[nodiscard]] bool         is_utf8(char c) noexcept;
+    usize        str_size(strptr str) noexcept;
+    StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept;
+    bool         str_equal(strptr lhs, strptr rhs) noexcept;
+    bool         is_utf8(char c) noexcept;
 
     /// A string with guaranteed compile-time known size.
     ///
@@ -63,7 +63,7 @@ namespace psh {
         char const buf[size_];
 
         /// The size of the string, disregarding its null-terminator.
-        [[nodiscard]] constexpr usize size() const noexcept {
+        constexpr usize size() const noexcept {
             return size_ - 1;
         }
     };
@@ -88,7 +88,7 @@ namespace psh {
         void init(Arena* arena, StringView sv) noexcept;
 
         /// Make a view from the string.
-        [[nodiscard]] StringView view() const noexcept;
+        StringView view() const noexcept;
 
         // Join an array of string views to the current string data. You can also provide a string
         // to be attached to the end of each join.
@@ -102,11 +102,7 @@ namespace psh {
         // ```
         // Although this example uses initializer lists, you can also achieve the same using the
         // implementation based on `psh::FatPtr`.
-        [[nodiscard]] Result join(
-            FatPtr<StringView const> strs,
-            strptr                   join_cstr = nullptr) noexcept;
-        [[nodiscard]] Result join(
-            std::initializer_list<StringView> strs,
-            strptr                            join_cstr = nullptr) noexcept;
+        Status join(FatPtr<StringView const> strs, strptr join_cstr = nullptr) noexcept;
+        Status join(std::initializer_list<StringView> strs, strptr join_cstr = nullptr) noexcept;
     };
 }  // namespace psh
