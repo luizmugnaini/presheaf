@@ -30,7 +30,7 @@
 #include <cstdlib>
 
 namespace psh {
-    constexpr char const* LOG_FMT = "%s [%s:%d] %s\n";
+    [[maybe_unused]] constexpr strptr LOG_FMT = "%s [%s:%d] %s\n";
 
     void abort_program() noexcept {
         psh_discard(std::fprintf(stderr, "Aborting program...\n"));
@@ -40,11 +40,11 @@ namespace psh {
     strptr log_level_str(LogLevel level) {
         strptr s;
         switch (level) {
-            case LogLevel::Fatal:   s = "\x1b[1;41m[FATAL]\x1b[0m";
-            case LogLevel::Error:   s = "\x1b[1;31m[ERROR]\x1b[0m";
-            case LogLevel::Warning: s = "\x1b[1;33m[WARNING]\x1b[0m";
-            case LogLevel::Info:    s = "\x1b[1;32m[INFO]\x1b[0m";
-            case LogLevel::Debug:   s = "\x1b[1;34m[DEBUG]\x1b[0m";
+            case LogLevel::Fatal:   s = "\x1b[1;41m[FATAL]\x1b[0m"; break;
+            case LogLevel::Error:   s = "\x1b[1;31m[ERROR]\x1b[0m"; break;
+            case LogLevel::Warning: s = "\x1b[1;33m[WARNING]\x1b[0m"; break;
+            case LogLevel::Info:    s = "\x1b[1;32m[INFO]\x1b[0m"; break;
+            case LogLevel::Debug:   s = "\x1b[1;34m[DEBUG]\x1b[0m"; break;
         }
         return s;
     }
@@ -53,6 +53,9 @@ namespace psh {
 #if defined(PSH_DEBUG) || defined(PSH_ENABLE_LOGGING)
         psh_discard(
             std::fprintf(stderr, LOG_FMT, log_level_str(info.lvl), info.file, info.line, msg));
+#else
+        psh_discard(info);
+        psh_discard(msg);
 #endif
     }
 
@@ -83,6 +86,9 @@ namespace psh {
             info.file,
             info.line,
             msg);
+#else
+        psh_discard(info);
+        psh_discard(msg);
 #endif
     }
 }  // namespace psh
