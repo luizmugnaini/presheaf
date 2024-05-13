@@ -32,20 +32,20 @@ namespace psh {
 
         handle = std::fopen(path.data.buf, flags_);
         if (psh_unlikely(handle == nullptr)) {
-            validity = FileStatus::FailedToOpen;
+            status = FileStatus::FailedToOpen;
             return;
         }
 
         if (psh_unlikely(std::fseek(handle, 0, SEEK_END) == -1)) {
             std::perror("Couldn't seek end of file.");
-            validity = FileStatus::FailedToRead;
+            status = FileStatus::FailedToRead;
             return;
         }
 
         isize const file_size = std::ftell(handle);
         if (psh_unlikely(file_size == -1)) {
             std::perror("Couldn't tell the size of the file.\n");
-            validity = FileStatus::SizeUnknown;
+            status = FileStatus::SizeUnknown;
             return;
         }
 
@@ -53,7 +53,7 @@ namespace psh {
 
         if (psh_unlikely(std::fseek(handle, 0, SEEK_SET) == -1)) {
             std::perror("Couldn't seek start of file.\n");
-            validity = FileStatus::FailedToRead;
+            status = FileStatus::FailedToRead;
             return;
         }
     }
@@ -70,6 +70,51 @@ namespace psh {
     }
 
     FileReadResult File::read(Arena* arena) noexcept {
+        // Acquire memory for the buffer.
+        char* const buf = arena->alloc<char>(size + 1);
+        if (psh_unlikely(buf == nullptr)) {
+            return {.status = FileStatus::OutOfMemory};
+        }
+
+        // Read the whole file into the buffer.
+        usize const read_count = std::fread(buf, 1, size, handle);
+        if (psh_unlikely(std::ferror(handle) != 0)) {
+            std::perror("Couldn't read file.\n");
+            return {.status = FileStatus::FailedToRead};
+        }
+
+        buf[read_count] = 0;  // Ensure the string is null terminated.
+
+        return FileReadResult{
+            .content = String{arena, StringView{buf, size}},
+            .status  = FileStatus::OK,
+        };
+    }
+
+    FileReadResult read_file(Arena* arena, strptr path) noexcept {
+        FILE* handle = std::fopen(path, "rb");
+        if (psh_unlikely(handle == nullptr)) {
+            return {.status = FileStatus::FailedToOpen};
+        }
+
+        if (psh_unlikely(std::fseek(handle, 0, SEEK_END) == -1)) {
+            std::perror("Couldn't seek end of file.");
+            return {.status = FileStatus::FailedToRead};
+        }
+
+        isize const file_size = std::ftell(handle);
+        if (psh_unlikely(file_size == -1)) {
+            std::perror("Couldn't tell the size of the file.\n");
+            return {.status = FileStatus::SizeUnknown};
+        }
+
+        auto size = static_cast<usize>(file_size);
+
+        if (psh_unlikely(std::fseek(handle, 0, SEEK_SET) == -1)) {
+            std::perror("Couldn't seek start of file.\n");
+            return {.status = FileStatus::FailedToRead};
+        }
+
         // Acquire memory for the buffer.
         char* const buf = arena->alloc<char>(size + 1);
         if (psh_unlikely(buf == nullptr)) {

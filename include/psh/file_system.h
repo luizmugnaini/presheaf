@@ -43,12 +43,14 @@ namespace psh {
     struct File {
         std::FILE* handle = nullptr;
         String     path{};
-        usize      size     = 0;
-        FileStatus validity = FileStatus::FailedToRead;
+        usize      size   = 0;
+        FileStatus status = FileStatus::FailedToRead;
 
         File(Arena* arena, StringView path_, strptr flags_ = "rb") noexcept;
         ~File() noexcept;
 
         FileReadResult read(Arena* arena) noexcept;
     };
+
+    FileReadResult read_file(Arena* arena, strptr path) noexcept;
 }  // namespace psh
