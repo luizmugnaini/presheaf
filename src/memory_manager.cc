@@ -71,7 +71,7 @@ namespace psh {
             if (psh_unlikely(top_block == mem_start)) {
                 break;
             }
-            if (psh_likely(allocator.pop())) {
+            if (psh_likely(allocator.pop() == Status::OK)) {
                 --allocation_count;
             }
             if (psh_unlikely(top_block == block)) {

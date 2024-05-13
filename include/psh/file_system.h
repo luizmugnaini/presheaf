@@ -20,12 +20,15 @@
 
 #pragma once
 
+#include <bits/types/FILE.h>
 #include <psh/buffer.h>
 #include <psh/option.h>
 #include <psh/string.h>
 #include <psh/types.h>
 
 namespace psh {
+    using FileHandle = FILE;
+
     enum class FileStatus {
         FailedToRead,
         FailedToOpen,
@@ -41,10 +44,10 @@ namespace psh {
     };
 
     struct File {
-        std::FILE* handle = nullptr;
-        String     path{};
-        usize      size   = 0;
-        FileStatus status = FileStatus::FailedToRead;
+        FileHandle* handle = nullptr;
+        String      path{};
+        usize       size   = 0;
+        FileStatus  status = FileStatus::FailedToRead;
 
         File(Arena* arena, StringView path_, strptr flags_ = "rb") noexcept;
         ~File() noexcept;

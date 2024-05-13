@@ -329,7 +329,7 @@ namespace psh {
 
             auto* const new_mem = alloc<T>(new_length);
 
-            usize const copy_size = min(header->capacity, new_size);
+            usize const copy_size = psh_min(header->capacity, new_size);
             memory_copy(
                 reinterpret_cast<u8*>(new_mem),
                 reinterpret_cast<u8 const*>(block),

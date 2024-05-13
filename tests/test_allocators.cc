@@ -395,7 +395,7 @@ void stack_offsets_reads_and_writes() {
     iptr const after_array2_expected_offset = reinterpret_cast<iptr>(array2_addr) +
                                               static_cast<iptr>(array2_size) -
                                               reinterpret_cast<iptr>(buf_start);
-    psh_assert(stack.offset == after_array2_expected_offset);
+    psh_assert(static_cast<iptr>(stack.offset) == after_array2_expected_offset);
 
     free(buf);
     test_passed();
