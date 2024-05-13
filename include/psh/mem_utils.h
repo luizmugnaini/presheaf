@@ -59,6 +59,10 @@ namespace psh {
         return static_cast<u16>(b << 8);
     }
 
+    constexpr u16 make_u16(u8 hi, u8 lo) {
+        return static_cast<u16>(hi << 8) + static_cast<u16>(lo);
+    }
+
     template <typename T>
     using MatchFn = bool(T lhs, T rhs);
 
