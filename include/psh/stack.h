@@ -26,6 +26,7 @@
 #include <psh/mem_utils.h>
 #include <psh/option.h>
 #include <psh/types.h>
+#include <cstring>
 
 namespace psh {
     /// Header associated with each memory block in the stack allocator.
@@ -256,7 +257,7 @@ namespace psh {
         template <typename T>
         T* zero_alloc(usize length) noexcept {
             auto* const ptr = alloc<T>(length);
-            memory_set(fat_ptr_as_bytes(ptr, length), 0);
+            std::memset(ptr, 0, length);
             return ptr;
         }
 

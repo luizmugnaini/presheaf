@@ -25,6 +25,7 @@
 #include <psh/math.h>
 #include <psh/mem_utils.h>
 #include <psh/types.h>
+#include <cstring>
 
 namespace psh {
     /// Arena allocator
@@ -101,7 +102,7 @@ namespace psh {
         template <typename T>
         T* zero_alloc(usize length) noexcept {
             T* const ptr = alloc<T>(length);
-            memory_set(fat_ptr_as_bytes(ptr, length), 0);
+            std::memset(ptr, 0, length);
             return ptr;
         }
 

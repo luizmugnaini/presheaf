@@ -24,6 +24,7 @@
 #include <psh/fat_ptr.h>
 #include <psh/not_null.h>
 #include <psh/types.h>
+#include <cstring>
 
 namespace psh {
     /// Adds an offset to a pointer considering null pointers..
@@ -116,7 +117,7 @@ namespace psh {
     template <typename T>
         requires NotPointer<T>
     void zero_struct(T* obj) noexcept {
-        memory_set(fat_ptr_as_bytes(obj, 1), 0);
+        std::memset(obj, 0, sizeof(T));
     }
 
     /// Simple wrapper around `std::memcpy`.
