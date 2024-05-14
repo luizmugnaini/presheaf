@@ -56,6 +56,8 @@ namespace psh {
             status = FileStatus::FailedToRead;
             return;
         }
+
+        status = FileStatus::OK;
     }
 
     File::~File() noexcept {
@@ -70,6 +72,10 @@ namespace psh {
     }
 
     FileReadResult File::read(Arena* arena) noexcept {
+        if (psh_unlikely(status != FileStatus::OK)) {
+            return {.status = FileStatus::FailedToRead};
+        }
+
         // Acquire memory for the buffer.
         char* const buf = arena->alloc<char>(size + 1);
         if (psh_unlikely(buf == nullptr)) {

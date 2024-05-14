@@ -30,9 +30,9 @@ namespace psh {
     using FileHandle = FILE;
 
     enum class FileStatus {
-        FailedToRead,
         FailedToOpen,
         FailedToClose,
+        FailedToRead,
         OutOfMemory,
         SizeUnknown,
         OK,
@@ -47,7 +47,7 @@ namespace psh {
         FileHandle* handle = nullptr;
         String      path{};
         usize       size   = 0;
-        FileStatus  status = FileStatus::FailedToRead;
+        FileStatus  status = FileStatus::FailedToOpen;
 
         File(Arena* arena, StringView path_, strptr flags_ = "rb") noexcept;
         ~File() noexcept;
