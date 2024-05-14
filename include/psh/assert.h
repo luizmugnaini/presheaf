@@ -42,8 +42,12 @@ namespace psh {
             }                                                                 \
         } while (0)
 #else
-#    define psh_assert(expr)          (void)(expr)
-#    define psh_assert_msg(expr, msg) (void)(expr)
+#    define psh_assert(expr) (void)(expr)
+#    define psh_assert_msg(expr, msg) \
+        do {                          \
+            (void)(expr);             \
+            (void)(msg);              \
+        } while (0)
 #endif
 
 /// Macro used to mark code-paths as unreachable.
@@ -51,11 +55,11 @@ namespace psh {
     do {                                                                   \
         psh::log(psh::LogLevel::Fatal, "Codepath should be unreachable!"); \
         psh::abort_program();                                              \
-    } while (0);
+    } while (0)
 
 /// Macro used to mark code-paths as unimplemented.
 #define psh_todo()                                                        \
     do {                                                                  \
         psh::log(psh::LogLevel::Fatal, "TODO: code-path unimplemented!"); \
         psh::abort_program();                                             \
-    } while (0);
+    } while (0)
