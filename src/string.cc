@@ -73,9 +73,11 @@ namespace psh {
     }
 
     void String::init(Arena* arena, StringView sv) noexcept {
-        // We need to account for the null terminator.
         data.init(arena, sv.data.size + 1);
-        std::memcpy(data.buf, sv.data.buf, sv.data.size);
+        memory_copy(
+            reinterpret_cast<u8*>(data.buf),
+            reinterpret_cast<u8 const*>(sv.data.buf),
+            sv.data.size);
         data.buf[sv.data.size + 1] = 0;
         data.size                  = sv.data.size;
     }
