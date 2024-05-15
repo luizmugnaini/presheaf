@@ -36,13 +36,15 @@ namespace psh {
             return;
         }
 
-        if (psh_unlikely(std::fseek(handle, 0, SEEK_END) == -1)) {
+        FILE* fhandle = reinterpret_cast<FILE*>(handle);
+
+        if (psh_unlikely(std::fseek(fhandle, 0, SEEK_END) == -1)) {
             std::perror("Couldn't seek end of file.");
             status = FileStatus::FailedToRead;
             return;
         }
 
-        isize const file_size = std::ftell(handle);
+        isize const file_size = std::ftell(fhandle);
         if (psh_unlikely(file_size == -1)) {
             std::perror("Couldn't tell the size of the file.\n");
             status = FileStatus::SizeUnknown;
@@ -51,7 +53,7 @@ namespace psh {
 
         size = static_cast<usize>(file_size);
 
-        if (psh_unlikely(std::fseek(handle, 0, SEEK_SET) == -1)) {
+        if (psh_unlikely(std::fseek(fhandle, 0, SEEK_SET) == -1)) {
             std::perror("Couldn't seek start of file.\n");
             status = FileStatus::FailedToRead;
             return;
@@ -65,7 +67,7 @@ namespace psh {
             return;
         }
 
-        i32 res = std::fclose(handle);
+        i32 res = std::fclose(reinterpret_cast<FILE*>(handle));
         if (psh_unlikely(res == EOF)) {
             log_fmt(LogLevel::Error, "File %s failed to be closed.", path.data.buf);
         }
@@ -83,8 +85,9 @@ namespace psh {
         }
 
         // Read the whole file into the buffer.
-        usize const read_count = std::fread(buf, 1, size, handle);
-        if (psh_unlikely(std::ferror(handle) != 0)) {
+        FILE*       fhandle    = reinterpret_cast<FILE*>(handle);
+        usize const read_count = std::fread(buf, 1, size, fhandle);
+        if (psh_unlikely(std::ferror(fhandle) != 0)) {
             std::perror("Couldn't read file.\n");
             return {.status = FileStatus::FailedToRead};
         }
@@ -98,17 +101,17 @@ namespace psh {
     }
 
     FileReadResult read_file(Arena* arena, strptr path) noexcept {
-        FILE* handle = std::fopen(path, "rb");
-        if (psh_unlikely(handle == nullptr)) {
+        FILE* fhandle = std::fopen(path, "rb");
+        if (psh_unlikely(fhandle == nullptr)) {
             return {.status = FileStatus::FailedToOpen};
         }
 
-        if (psh_unlikely(std::fseek(handle, 0, SEEK_END) == -1)) {
+        if (psh_unlikely(std::fseek(fhandle, 0, SEEK_END) == -1)) {
             std::perror("Couldn't seek end of file.");
             return {.status = FileStatus::FailedToRead};
         }
 
-        isize const file_size = std::ftell(handle);
+        isize const file_size = std::ftell(fhandle);
         if (psh_unlikely(file_size == -1)) {
             std::perror("Couldn't tell the size of the file.\n");
             return {.status = FileStatus::SizeUnknown};
@@ -116,7 +119,7 @@ namespace psh {
 
         auto size = static_cast<usize>(file_size);
 
-        if (psh_unlikely(std::fseek(handle, 0, SEEK_SET) == -1)) {
+        if (psh_unlikely(std::fseek(fhandle, 0, SEEK_SET) == -1)) {
             std::perror("Couldn't seek start of file.\n");
             return {.status = FileStatus::FailedToRead};
         }
@@ -128,8 +131,8 @@ namespace psh {
         }
 
         // Read the whole file into the buffer.
-        usize const read_count = std::fread(buf, 1, size, handle);
-        if (psh_unlikely(std::ferror(handle) != 0)) {
+        usize const read_count = std::fread(buf, 1, size, fhandle);
+        if (psh_unlikely(std::ferror(fhandle) != 0)) {
             std::perror("Couldn't read file.\n");
             return {.status = FileStatus::FailedToRead};
         }

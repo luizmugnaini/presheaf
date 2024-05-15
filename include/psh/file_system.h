@@ -20,15 +20,12 @@
 
 #pragma once
 
-#include <bits/types/FILE.h>
 #include <psh/buffer.h>
 #include <psh/option.h>
 #include <psh/string.h>
 #include <psh/types.h>
 
 namespace psh {
-    using FileHandle = FILE;
-
     enum class FileStatus {
         FailedToOpen,
         FailedToClose,
@@ -44,10 +41,10 @@ namespace psh {
     };
 
     struct File {
-        FileHandle* handle = nullptr;
-        String      path{};
-        usize       size   = 0;
-        FileStatus  status = FileStatus::FailedToOpen;
+        void*      handle;
+        String     path{};
+        usize      size   = 0;
+        FileStatus status = FileStatus::FailedToOpen;
 
         File(Arena* arena, StringView path_, strptr flags_ = "rb") noexcept;
         ~File() noexcept;
