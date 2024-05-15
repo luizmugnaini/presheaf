@@ -24,45 +24,16 @@
 #include <psh/fat_ptr.h>
 #include <psh/not_null.h>
 #include <psh/types.h>
-#include <cstring>
+
+#define psh_ptr_add(ptr, offset) ((ptr) == nullptr ? nullptr : (ptr) + (offset))
+#define psh_ptr_sub(ptr, offset) ((ptr) == nullptr ? nullptr : (ptr) - (offset))
 
 namespace psh {
-    /// Adds an offset to a pointer considering null pointers..
+    /// Check whether the current architecture is little-endian or big-endian.
     ///
-    /// If the pointer is null then a null pointer is returned, otherwise we return the resulting
-    /// pointer addition.
-    template <typename T>
-    constexpr T* ptr_add(T* ptr, uptr offset) noexcept {
-        return (ptr == nullptr) ? nullptr : ptr + offset;
-    }
-
-    /// Subtracts an offset to a pointer considering null pointers..
-    ///
-    /// If the pointer is null then a null pointer is returned, otherwise we return the resulting
-    /// pointer subtraction.
-    template <typename T>
-    constexpr T* ptr_sub(T* ptr, uptr offset) noexcept {
-        return (ptr == nullptr) ? nullptr : ptr - offset;
-    }
-
-    /// Return a number with all bits set to 0 but the one at position `n`.
-    constexpr i32 bit(i32 n) noexcept {
-        return 1 << n;
-    }
-
-    /// Return a number with all bits set to 1 but the one at position `n`.
-    constexpr u32 clear_bit(u32 n) noexcept {
-        return ~(1u << n);
-    }
-
-    /// Return the given byte as the high byte of a 16 bit unsigned integer.
-    constexpr u16 as_high_u16(u8 b) {
-        return static_cast<u16>(b << 8);
-    }
-
-    constexpr u16 make_u16(u8 hi, u8 lo) {
-        return static_cast<u16>(hi << 8) + static_cast<u16>(lo);
-    }
+    /// Note: Unfortunately, these checks can only be reliably made at runtime.
+    bool arch_is_little_endian() noexcept;
+    bool arch_is_bit_endian() noexcept;
 
     template <typename T>
     using MatchFn = bool(T lhs, T rhs);
@@ -96,11 +67,6 @@ namespace psh {
         return found;
     }
 
-    /// Simple wrapper around `std::memset` that automatically deals with null values.
-    ///
-    /// Does nothing if `ptr` is a null pointer.
-    void memory_set(FatPtr<u8> fat_ptr, i32 fill) noexcept;
-
     /// Override the contents of a fat pointer with a given element.
     ///
     /// This is the virtually same as `memory_set` but can copy elements of any type. However it
@@ -113,12 +79,10 @@ namespace psh {
         }
     }
 
-    /// Given a pointer to a structure, zeroes every field of said instance.
-    template <typename T>
-        requires NotPointer<T>
-    void zero_struct(T* obj) noexcept {
-        std::memset(obj, 0, sizeof(T));
-    }
+    /// Simple wrapper around `std::memset` that automatically deals with null values.
+    ///
+    /// Does nothing if `ptr` is a null pointer.
+    void memory_set(FatPtr<u8> fat_ptr, i32 fill) noexcept;
 
     /// Simple wrapper around `std::memcpy`.
     ///

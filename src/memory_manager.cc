@@ -21,6 +21,7 @@
 #include <psh/memory_manager.h>
 
 #include <cstdlib>
+#include <cstring>
 
 namespace psh {
     void MemoryManager::init(usize capacity) noexcept {
@@ -84,7 +85,7 @@ namespace psh {
 
     void MemoryManager::reset() noexcept {
         u8* mem = allocator.memory;
-        zero_struct(this);
+        std::memset(this, 0, sizeof(MemoryManager));
         allocator.memory = mem;
     }
 }  // namespace psh

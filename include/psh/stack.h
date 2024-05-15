@@ -132,13 +132,13 @@ namespace psh {
 
         /// Gets a pointer to the memory of the last allocated memory block of the stack.
         u8* top() const noexcept {
-            return ptr_add(memory, previous_offset);
+            return psh_ptr_add(memory, previous_offset);
         }
 
         /// Gets a pointer to the header associated to the top memory block of the stack.
         StackHeader const* top_header() const noexcept {
             return reinterpret_cast<StackHeader const*>(
-                ptr_add(memory, previous_offset - sizeof(StackHeader)));
+                psh_ptr_add(memory, previous_offset - sizeof(StackHeader)));
         }
 
         /// Get the capacity of the top memory block.

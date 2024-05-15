@@ -179,11 +179,11 @@ namespace psh {
         }
 
         T* end() noexcept {
-            return ptr_add(buf, size);
+            return psh_ptr_add(buf, size);
         }
 
         T const* end() const noexcept {
-            return ptr_add(static_cast<T const*>(buf), size);
+            return psh_ptr_add(static_cast<T const*>(buf), size);
         }
 
         T& operator[](usize idx) noexcept {

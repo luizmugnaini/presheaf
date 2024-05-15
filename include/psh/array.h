@@ -136,11 +136,11 @@ namespace psh {
         }
 
         constexpr T* end() noexcept {
-            return ptr_add(buf, size);
+            return psh_ptr_add(buf, size);
         }
 
         constexpr T const* end() const noexcept {
-            return ptr_add(static_cast<T const*>(buf), size);
+            return psh_ptr_add(static_cast<T const*>(buf), size);
         }
 
         constexpr T& operator[](usize index) noexcept {

@@ -28,10 +28,18 @@
 #include <cstring>
 
 namespace psh {
+    bool arch_is_little_endian() noexcept {
+        i32 integer = 1;
+        return static_cast<bool>(*(reinterpret_cast<u8*>(&integer)));
+    }
+
+    bool arch_is_bit_endian() noexcept {
+        i32 integer = 1;
+        return static_cast<bool>(!*(reinterpret_cast<u8*>(&integer)));
+    }
+
     void memory_set(FatPtr<u8> fptr, i32 fill) noexcept {
-        if (psh_unlikely(fptr.buf == nullptr)) {
-            return;
-        }
+        if (psh_unlikely(fptr.buf == nullptr)) return;
         psh_discard(std::memset(fptr.buf, fill, fptr.size));
     }
 
@@ -52,9 +60,7 @@ namespace psh {
     }
 
     void memory_move(u8* dest, u8 const* src, usize size) noexcept {
-        if (psh_unlikely(dest == nullptr || src == nullptr)) {
-            return;
-        }
+        if (psh_unlikely(dest == nullptr || src == nullptr)) return;
         psh_discard(std::memmove(dest, src, size));
     }
 
