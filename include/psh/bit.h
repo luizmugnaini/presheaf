@@ -68,7 +68,7 @@
     (static_cast<unsigned short>((hi_u8) << 8) | static_cast<unsigned short>((lo_u8)))
 
 /// Get the value of the high byte of a word.
-#define psh_u16_hi(val_u16) (0xFF00 & (val_u16))
+#define psh_u16_hi(val_u16) ((val_u16) >> 8)
 
 /// Get the value of the low byte of a word.
 #define psh_u16_lo(val_u16) (0x00FF & (val_u16))
