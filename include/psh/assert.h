@@ -27,19 +27,19 @@ namespace psh {
 }
 
 #if defined(PSH_DEBUG) || defined(PSH_ENABLE_ASSERTS)
-#    define psh_assert(expr)                                                         \
-        do {                                                                         \
-            if (!(expr)) {                                                           \
-                psh::log_fmt(LogLevel::Fatal, psh::ASSERT_FMT, #expr, "no message"); \
-                psh::abort_program();                                                \
-            }                                                                        \
+#    define psh_assert(expr)                                                              \
+        do {                                                                              \
+            if (!(expr)) {                                                                \
+                psh::log_fmt(psh::LogLevel::Fatal, psh::ASSERT_FMT, #expr, "no message"); \
+                psh::abort_program();                                                     \
+            }                                                                             \
         } while (0)
-#    define psh_assert_msg(expr, msg)                                         \
-        do {                                                                  \
-            if (!(expr)) {                                                    \
-                psh::log_fmt(LogLevel::Fatal, psh::ASSERT_FMT, #expr, (msg)); \
-                psh::abort_program();                                         \
-            }                                                                 \
+#    define psh_assert_msg(expr, msg)                                              \
+        do {                                                                       \
+            if (!(expr)) {                                                         \
+                psh::log_fmt(psh::LogLevel::Fatal, psh::ASSERT_FMT, #expr, (msg)); \
+                psh::abort_program();                                              \
+            }                                                                      \
         } while (0)
 #else
 #    define psh_assert(expr) (void)(expr)
