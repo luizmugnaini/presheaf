@@ -36,6 +36,12 @@
         var |= (1 << (n));  \
     } while (0)
 
+/// Set the n-th bit of a variable to 0.
+#define psh_bit_clear(var, n)  \
+    do {                       \
+        var &= psh_not_bit(n); \
+    } while (0)
+
 /// Conditionally set (1) or clear (0) the n-th bit of a variable, without branching.
 #define psh_bit_set_or_clear_if(var, n, cond)                    \
     do {                                                         \
@@ -44,6 +50,14 @@
 
 /// Get the value of the n-th bit of given value.
 #define psh_bit_at(val, n) (((val) >> (n)) & 0b1)
+
+/// Get the number whose first `count` bits are 1's.
+#define psh_bit_ones(count) ((1 << (count)) - 1)
+
+/// Get `count` bits from a number, starting at position `pos` (position starts at 1).
+///
+/// Example: `psh_bits_at(0b10011101, 3, 4)` is `0b0111`.
+#define psh_bits_at(val, pos, count) psh_bit_ones(count) & ((val) >> ((pos) - 1))
 
 ////////////////////////////////////////////////////////////////////////////////
 // Word manipulations.
