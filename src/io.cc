@@ -30,23 +30,25 @@
 #include <cstdlib>
 
 namespace psh {
-    [[maybe_unused]] constexpr strptr LOG_FMT = "%s [%s:%d] %s\n";
+    namespace {
+        [[maybe_unused]] constexpr strptr LOG_FMT = "%s [%s:%d] %s\n";
+
+        strptr log_level_str(LogLevel level) {
+            strptr s;
+            switch (level) {
+                case LogLevel::Fatal:   s = "\x1b[1;41m[FATAL]\x1b[0m"; break;
+                case LogLevel::Error:   s = "\x1b[1;31m[ERROR]\x1b[0m"; break;
+                case LogLevel::Warning: s = "\x1b[1;33m[WARNING]\x1b[0m"; break;
+                case LogLevel::Info:    s = "\x1b[1;32m[INFO]\x1b[0m"; break;
+                case LogLevel::Debug:   s = "\x1b[1;34m[DEBUG]\x1b[0m"; break;
+            }
+            return s;
+        }
+    }  // namespace
 
     void abort_program() noexcept {
         psh_discard(std::fprintf(stderr, "Aborting program...\n"));
         std::abort();
-    }
-
-    strptr log_level_str(LogLevel level) {
-        strptr s;
-        switch (level) {
-            case LogLevel::Fatal:   s = "\x1b[1;41m[FATAL]\x1b[0m"; break;
-            case LogLevel::Error:   s = "\x1b[1;31m[ERROR]\x1b[0m"; break;
-            case LogLevel::Warning: s = "\x1b[1;33m[WARNING]\x1b[0m"; break;
-            case LogLevel::Info:    s = "\x1b[1;32m[INFO]\x1b[0m"; break;
-            case LogLevel::Debug:   s = "\x1b[1;34m[DEBUG]\x1b[0m"; break;
-        }
-        return s;
     }
 
     void log(LogInfo info, strptr msg) {
