@@ -87,10 +87,10 @@ namespace psh {
 #    define psh_info_fmt(fmt, ...)    0
 #endif
 
-#if defined(PSH_DEBUG) && defined(PSH_ENABLE_LOGGING)
-#    define psh_debug(msg)          psh::log(psh::LogLevel::Debug, msg)
-#    define psh_debug_fmt(fmt, ...) psh::log_fmt(psh::LogLevel::Debug, fmt, __VA_ARGS__)
-#else
+#if !defined(PSH_DEBUG) && !defined(PSH_ENABLE_LOGGING)
 #    define psh_debug(msg)          0
 #    define psh_debug_fmt(fmt, ...) 0
+#else
+#    define psh_debug(msg)          psh::log(psh::LogLevel::Debug, msg)
+#    define psh_debug_fmt(fmt, ...) psh::log_fmt(psh::LogLevel::Debug, fmt, __VA_ARGS__)
 #endif

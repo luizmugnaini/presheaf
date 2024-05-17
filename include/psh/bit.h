@@ -22,42 +22,43 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // Bit manipulations.
+//
+// Note: The bit indexing count starts at zero for all macros.
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Get the number whose n-th bit is set to 1 and all other bits are 0.
 #define psh_bit(n) (1 << (n))
 
-/// Get the number whose n-th bit is set to 0 and all other bits are 1.
-#define psh_not_bit(n) (~(1 << (n)))
+/// Get the number of type T whose n-th bit is set to 0 and all other bits are 1.
+#define psh_not_bit(T, n) static_cast<T>((~(1ULL << (n))) & ((1ULL << (sizeof(T) * 8)) - 1))
+
+/// Get the number whose first `count` bits are 1's.
+#define psh_bit_ones(count) ((1ULL << (count)) - 1)
 
 /// Set the n-th bit of a variable to 1.
 #define psh_bit_set(var, n) \
     do {                    \
-        var |= (1 << (n));  \
+        var |= 1ULL << (n); \
     } while (0)
 
 /// Set the n-th bit of a variable to 0.
 #define psh_bit_clear(var, n)  \
     do {                       \
-        var &= psh_not_bit(n); \
+        var &= ~(1ULL << (n)); \
     } while (0)
 
-/// Conditionally set (1) or clear (0) the n-th bit of a variable, without branching.
-#define psh_bit_set_or_clear_if(var, n, cond)                    \
-    do {                                                         \
-        var ^= ((var ^ (-static_cast<int>(cond))) & (1 << (n))); \
+/// Set the n-th bit to 1 if the condition passes, otherwise set the bit to 0.
+#define psh_bit_set_or_clear_if(var, n, cond)                                        \
+    do {                                                                             \
+        decltype(var) mask__ = 1ULL << (n);                                          \
+        var                  = (var & ~mask__) | (-static_cast<int>(cond) & mask__); \
     } while (0)
 
 /// Get the value of the n-th bit of given value.
 #define psh_bit_at(val, n) (((val) >> (n)) & 0b1)
 
-/// Get the number whose first `count` bits are 1's.
-#define psh_bit_ones(count) ((1 << (count)) - 1)
-
-/// Get `count` bits from a number, starting at position `pos` (position starts at 1).
-///
-/// Example: `psh_bits_at(0b10011101, 3, 4)` is `0b0111`.
-#define psh_bits_at(val, pos, count) psh_bit_ones(count) & ((val) >> ((pos) - 1))
+/// Get `count` bits from a number, starting at position `pos`.
+#define psh_bits_at(val, pos, count) (((val) >> pos) & ((1ULL << (count)) - 1))
 
 ////////////////////////////////////////////////////////////////////////////////
 // Word manipulations.
@@ -107,12 +108,8 @@
 /// Check if a given pair of integers has the same sign.
 #define psh_int_opposite_sign(a, b) (((a) ^ (b)) < 0)
 
-////////////////////////////////////////////////////////////////////////////////
-// Variable manipulations.
-////////////////////////////////////////////////////////////////////////////////
-
 /// Swap the value of two variables without branching.
-#define psh_swap(a, b)                                                              \
+#define psh_int_swap(a, b)                                                          \
     do {                                                                            \
         (void)(((a) == (b)) || ((((a) ^ (b)) && ((b) ^= (a) ^= (b), (a) ^= (b))))); \
     } while (0)
