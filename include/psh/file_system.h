@@ -26,7 +26,7 @@
 #include <psh/types.h>
 
 namespace psh {
-    enum class FileStatus {
+    enum struct FileStatus {
         FailedToOpen,
         FailedToClose,
         FailedToRead,

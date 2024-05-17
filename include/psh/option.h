@@ -24,7 +24,7 @@
 #include <psh/concepts.h>
 
 namespace psh {
-    enum class Status {
+    enum struct Status {
         OK,
         Failed,
     };

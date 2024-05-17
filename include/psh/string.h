@@ -42,7 +42,7 @@
     }
 
 namespace psh {
-    enum class StrCmpResult { Unknown, LessThan, Equal, GreaterThan };
+    enum struct StrCmpResult { Unknown, LessThan, Equal, GreaterThan };
 
     usize        str_size(strptr str) noexcept;
     StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept;

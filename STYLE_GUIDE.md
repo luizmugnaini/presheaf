@@ -125,12 +125,12 @@ appended by one underscore: `my_internal_function_`.
 - Regarding **method argument names**, if you need to avoid name collisions with public member
   variables, you can put an underscore to the end of the argument: `_arg_avoiding_collision`.
 
-# Enums
+# Enumerations
 
-- Prefer enum classes as they provide some safety.
+- Prefer enumeration structs as they provide some safety.
 - **Enums and its members** should be capitalized in each first letter of a word:
   ```cpp
-  enum MyEnum {
+  enum struct MyEnum {
       EnumMemberA,
       EnumMemberB,
       EnumMemberC,
