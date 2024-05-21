@@ -33,8 +33,7 @@
 #define psh_bit(n) (1 << (n))
 
 /// Get the number of type T whose n-th bit is set to 0 and all other bits are 1.
-#define psh_not_bit(T, n) \
-    static_cast<T>((~(1ULL << (n))) & ((1ULL << psh_bit_count_type(T))) - 1))
+#define psh_not_bit(T, n) (static_cast<T>((~(1ULL << (n))) & ((1ULL << psh_bit_count_type(T))) - 1))
 
 /// Get the number whose first `count` bits are 1's.
 #define psh_bit_ones(count) ((1ULL << (count)) - 1)
@@ -70,7 +69,7 @@
 
 /// Construct a word with the pair (high byte, low byte).
 #define psh_u16_from_bytes(hi_u8, lo_u8) \
-    static_cast<unsigned short>((hi_u8) << 8) | static_cast<unsigned short>((lo_u8))
+    (static_cast<unsigned short>((hi_u8) << 8) | static_cast<unsigned short>((lo_u8)))
 
 /// Get the value of the high byte of a word.
 #define psh_u16_hi(val_u16) ((val_u16) >> 8)
@@ -79,17 +78,17 @@
 #define psh_u16_lo(val_u16) (0x00FF & (val_u16))
 
 /// Set the value of the high byte of a word.
-#define psh_u16_set_hi(var_u16, hi_u8)                                                      \
-    do {                                                                                    \
-        unsigned short psh_var_lo_ = (var_u16) & 0x00FF;                                    \
-        var_u16                    = static_cast<unsigned short>(hi_u8 << 8) | psh_var_lo_; \
+#define psh_u16_set_hi(var_u16, hi_u8)                                        \
+    do {                                                                      \
+        unsigned short lo__ = (var_u16) & 0x00FF;                             \
+        var_u16             = static_cast<unsigned short>(hi_u8 << 8) | lo__; \
     } while (0)
 
 /// Set the value of the low byte of a word.
-#define psh_u16_set_lo(var_u16, lo_u8)                                                 \
-    do {                                                                               \
-        unsigned short psh_var_hi_ = (var_u16) & 0xFF00;                               \
-        var_u16                    = psh_var_hi_ | static_cast<unsigned short>(lo_u8); \
+#define psh_u16_set_lo(var_u16, lo_u8)                                   \
+    do {                                                                 \
+        unsigned short hi__ = (var_u16) & 0xFF00;                        \
+        var_u16             = hi__ | static_cast<unsigned short>(lo_u8); \
     } while (0)
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -103,10 +102,10 @@
 #define psh_u8_hi(val_u8) (0xF0 & (val_u8))
 
 /// Make a byte from a pair of nibbles.
-#define psh_u8_from_nibbles(hi_nib, lo_nib) static_cast<unsigned char>(((hi_nib) << 4) | lo_nib)
+#define psh_u8_from_nibbles(hi_nib, lo_nib) (static_cast<unsigned char>(((hi_nib) << 4) | lo_nib))
 
 /// Transform a byte into the high byte of a word.
-#define psh_u8_to_u16_hi(val_u8) static_cast<unsigned short>((val_u8) << 8)
+#define psh_u8_to_u16_hi(val_u8) (static_cast<unsigned short>((val_u8) << 8))
 
 ////////////////////////////////////////////////////////////////////////////////
 // Integer manipulations.
@@ -123,8 +122,8 @@
 
 /// Rotate right by `n` digits.
 #define psh_int_rotr(val, n) \
-    static_cast<decltype(val)>((val >> (n)) | (val << (psh_bit_count(val) - (n))))
+    (static_cast<decltype(val)>((val >> (n)) | (val << (psh_bit_count(val) - (n)))))
 
 /// Rotate left by `n` digits.
 #define psh_int_rotl(val, n) \
-    static_cast<decltype(val)>((val << (n)) | (val >> (psh_bit_count(val) - (n))))
+    (static_cast<decltype(val)>((val << (n)) | (val >> (psh_bit_count(val) - (n)))))
