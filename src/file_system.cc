@@ -69,7 +69,7 @@ namespace psh {
 
         i32 res = std::fclose(reinterpret_cast<FILE*>(handle));
         if (psh_unlikely(res == EOF)) {
-            log_fmt(LogLevel::Error, "File %s failed to be closed.", path.data.buf);
+            psh_error_fmt("File %s failed to be closed.", path.data.buf);
         }
     }
 

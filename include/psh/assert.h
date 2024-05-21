@@ -26,20 +26,21 @@ namespace psh {
     [[maybe_unused]] constexpr strptr ASSERT_FMT = "Assertion failed: %s, msg: %s";
 }
 
+// Assertion macros.
 #if defined(PSH_DEBUG) || defined(PSH_ENABLE_ASSERTS)
-#    define psh_assert(expr)                                                              \
-        do {                                                                              \
-            if (!(expr)) {                                                                \
-                psh::log_fmt(psh::LogLevel::Fatal, psh::ASSERT_FMT, #expr, "no message"); \
-                psh::abort_program();                                                     \
-            }                                                                             \
+#    define psh_assert(expr)                                         \
+        do {                                                         \
+            if (!(expr)) {                                           \
+                psh_fatal_fmt(psh::ASSERT_FMT, #expr, "no message"); \
+                psh::abort_program();                                \
+            }                                                        \
         } while (0)
-#    define psh_assert_msg(expr, msg)                                              \
-        do {                                                                       \
-            if (!(expr)) {                                                         \
-                psh::log_fmt(psh::LogLevel::Fatal, psh::ASSERT_FMT, #expr, (msg)); \
-                psh::abort_program();                                              \
-            }                                                                      \
+#    define psh_assert_msg(expr, msg)                         \
+        do {                                                  \
+            if (!(expr)) {                                    \
+                psh_fatal_fmt(psh::ASSERT_FMT, #expr, (msg)); \
+                psh::abort_program();                         \
+            }                                                 \
         } while (0)
 #else
 #    define psh_assert(expr) (void)(expr)
@@ -48,25 +49,22 @@ namespace psh {
             (void)(expr);             \
             (void)(msg);              \
         } while (0)
-#endif
+#endif  // PSH_DEBUG || PSH_ENABLE_ASSERTS
 
-/// Macro used to mark code-paths as unreachable.
-#define psh_unreachable()                                                  \
-    do {                                                                   \
-        psh::log(psh::LogLevel::Fatal, "Codepath should be unreachable!"); \
-        psh::abort_program();                                              \
+#define psh_unreachable()                             \
+    do {                                              \
+        psh_fatal("Codepath should be unreachable!"); \
+        psh::abort_program();                         \
     } while (0)
 
-/// Macro used to mark code-paths as unimplemented.
-#define psh_todo()                                                        \
-    do {                                                                  \
-        psh::log(psh::LogLevel::Fatal, "TODO: code-path unimplemented!"); \
-        psh::abort_program();                                             \
+#define psh_todo()                                   \
+    do {                                             \
+        psh_fatal("TODO: code-path unimplemented!"); \
+        psh::abort_program();                        \
     } while (0)
 
-/// Macro used to mark code-paths as unimplemented.
-#define psh_todo_msg(msg)                                                                  \
-    do {                                                                                   \
-        psh::log_fmt(psh::LogLevel::Fatal, "TODO: code-path unimplemented, msg: %s", msg); \
-        psh::abort_program();                                                              \
+#define psh_todo_msg(msg)                                             \
+    do {                                                              \
+        psh_fatal_fmt("TODO: code-path unimplemented, msg: %s", msg); \
+        psh::abort_program();                                         \
     } while (0)

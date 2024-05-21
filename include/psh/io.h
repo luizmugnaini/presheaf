@@ -51,19 +51,9 @@ namespace psh {
     [[noreturn]] void abort_program() noexcept;
 
     /// Log a message to the standard error stream.
-    ///
-    /// Should be used as follows:
-    /// ```
-    /// psh::log(psh::LogLevel::Error, "Got an error!");
-    /// ```
     void log(LogInfo info, strptr msg);
 
     /// Log a formatted message to the standard error stream.
-    ///
-    /// Should be used as follows:
-    /// ```
-    /// psh::log_fmt(psh::LogLevel::Info, "The result is: %d", 5);
-    /// ```
     psh_attr_fmt(2, 3) void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept;
 }  // namespace psh
 
@@ -87,10 +77,10 @@ namespace psh {
 #    define psh_info_fmt(fmt, ...)    0
 #endif
 
-#if !defined(PSH_DEBUG) && !defined(PSH_ENABLE_LOGGING)
-#    define psh_debug(msg)          0
-#    define psh_debug_fmt(fmt, ...) 0
-#else
+#if defined(PSH_DEBUG) && defined(PSH_ENABLE_LOGGING)
 #    define psh_debug(msg)          psh::log(psh::LogLevel::Debug, msg)
 #    define psh_debug_fmt(fmt, ...) psh::log_fmt(psh::LogLevel::Debug, fmt, __VA_ARGS__)
+#else
+#    define psh_debug(msg)          0
+#    define psh_debug_fmt(fmt, ...) 0
 #endif

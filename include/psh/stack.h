@@ -161,15 +161,14 @@ namespace psh {
 
             // Ensure the memory address is within the allocator memory.
             if (psh_unlikely((block < memory) || (block >= memory + capacity))) {
-                log(LogLevel::Error,
-                    "StackAlloc::header_of called with a pointer to a block of memory outside "
-                    "of the stack allocator scope.");
+                psh_error("StackAlloc::header_of called with a pointer to a block of memory "
+                          "outside of the stack allocator scope.");
                 return nullptr;
             }
 
             // Ensure the block isn't free.
             if (psh_unlikely(block > memory + previous_offset)) {
-                log(LogLevel::Error,
+                psh_error(
                     "StackAlloc::header_of called with a pointer to a freed block of memory.");
                 return nullptr;
             }
@@ -178,9 +177,8 @@ namespace psh {
 
             // Ensure the header address is valid.
             if (psh_unlikely(block_header < memory)) {
-                log(LogLevel::Error,
-                    "StackAlloc::header_of expected the memory block header to be contained in "
-                    "the stack allocator scope.");
+                psh_error("StackAlloc::header_of expected the memory block header to be contained "
+                          "in the stack allocator scope.");
                 return nullptr;
             }
 
@@ -222,8 +220,7 @@ namespace psh {
             usize const available = capacity - offset;
 
             if (psh_unlikely(required > available)) {
-                log_fmt(
-                    LogLevel::Error,
+                psh_error_fmt(
                     "StackAlloc::alloc unable to allocate %zu bytes of memory (%zu bytes required "
                     "due to alignment and padding). The stack allocator has only %zu bytes "
                     "remaining.",
@@ -289,17 +286,15 @@ namespace psh {
 
             // Check if the address is within the allocator's memory.
             if (psh_unlikely((ublock < memory) || (ublock >= memory + capacity))) {
-                log(LogLevel::Error,
-                    "StackAlloc::realloc called with a pointer outside of the memory region "
-                    "managed by the stack allocator.");
+                psh_error("StackAlloc::realloc called with a pointer outside of the memory region "
+                          "managed by the stack allocator.");
                 return nullptr;
             }
 
             // Check if the address is already free.
             if (psh_unlikely(ublock >= memory + offset)) {
-                log(LogLevel::Error,
-                    "StackAlloc::realloc called with a free block of memory (use-after-free "
-                    "error).");
+                psh_error("StackAlloc::realloc called with a free block of memory (use-after-free "
+                          "error).");
                 return nullptr;
             }
 
@@ -307,8 +302,7 @@ namespace psh {
                 reinterpret_cast<StackHeader const*>(ublock - sizeof(StackHeader));
 
             if (psh_unlikely(header->capacity == new_size)) {
-                log_fmt(
-                    LogLevel::Warning,
+                psh_warning_fmt(
                     "StackAlloc::realloc called to reallocate to resize a block with its own "
                     "current size of %zu, which is unneeded.",
                     header->capacity);
@@ -318,8 +312,7 @@ namespace psh {
             // Check memory availability.
             usize const available = capacity - offset;
             if (psh_unlikely(new_size > available)) {
-                log_fmt(
-                    LogLevel::Error,
+                psh_error_fmt(
                     "StackAlloc::realloc cannot reallocate memory from size %zu to %zu. Only %zu "
                     "bytes of memory remaining.",
                     header->capacity,
@@ -375,14 +368,12 @@ namespace psh {
             // Check if the block is within the allocator's memory.
             if (psh_unlikely((block < memory) || (block > memory + previous_offset))) {
                 if (block > memory + capacity) {
-                    log(LogLevel::Error,
-                        "StackAlloc::free_at called with a pointer outside of the stack "
-                        "allocator memory region.");
+                    psh_error("StackAlloc::free_at called with a pointer outside of the stack "
+                              "allocator memory region.");
                     return Status::Failed;
                 }
-                log(LogLevel::Error,
-                    "StackAlloc::free_at called with a pointer to an already free region of the "
-                    "stack allocator memory.");
+                psh_error("StackAlloc::free_at called with a pointer to an already free region of "
+                          "the stack allocator memory.");
                 return Status::Failed;
             }
 

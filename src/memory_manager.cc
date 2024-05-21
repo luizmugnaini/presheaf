@@ -60,7 +60,7 @@ namespace psh {
                       "mem_start region."
                     : "MemoryManager::clear_until called with a pointer to an already free region "
                       "of the stack mem_start.";
-            log(LogLevel::Error, fail_reason);
+            psh_error(fail_reason);
             return Status::Failed;
         }
 

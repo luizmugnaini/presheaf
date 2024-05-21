@@ -75,8 +75,7 @@ namespace psh {
 
             // Check if there is enough memory.
             if (psh_unlikely(new_block_addr + size > capacity + memory_addr)) {
-                log_fmt(
-                    LogLevel::Error,
+                psh_error_fmt(
                     "ArenaAlloc::alloc unable to allocate %zu bytes of memory (%zu bytes required "
                     "due to alignment). The allocator has only %zu bytes remaining.",
                     size,
@@ -134,14 +133,13 @@ namespace psh {
 
             // Check if the block lies within the allocator's memory.
             if (psh_unlikely((block_bytes < memory) || (block_bytes >= memory + capacity))) {
-                log(LogLevel::Error,
-                    "ArenaAlloc::realloc called with pointer outside of its domain.");
+                psh_error("ArenaAlloc::realloc called with pointer outside of its domain.");
                 return nullptr;
             }
 
             // Check if the block is already free.
             if (psh_unlikely(block_bytes >= free_mem)) {
-                log(LogLevel::Error,
+                psh_error(
                     "ArenaAlloc::realloc called with a pointer to a free address of the arena "
                     "domain.");
                 return nullptr;
@@ -159,8 +157,7 @@ namespace psh {
             if (block_bytes == free_mem - current_size) {
                 // Check if there is enough space.
                 if (psh_unlikely(block_bytes + new_size > mem_end)) {
-                    log_fmt(
-                        LogLevel::Error,
+                    psh_error_fmt(
                         "ArenaAlloc::realloc unable to reallocate block from %zu bytes to %zu "
                         "bytes.",
                         current_size,

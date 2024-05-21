@@ -242,8 +242,7 @@ namespace psh {
             T* new_buf = arena->realloc<T>(buf, capacity, new_capacity);
 
             if (psh_unlikely(new_buf == nullptr)) {
-                log_fmt(
-                    LogLevel::Error,
+                psh_error_fmt(
                     "DynArray::resize failed to resize capacity from %zu to %zu",
                     capacity,
                     new_capacity);
@@ -271,8 +270,7 @@ namespace psh {
         Status remove(usize idx) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
             if (psh_unlikely(idx >= size)) {
-                log_fmt(
-                    LogLevel::Error,
+                psh_error_fmt(
                     "DynArray::remove index %zu is out of bounds for dynamic array of size "
                     "%zu.",
                     idx,

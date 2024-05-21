@@ -52,17 +52,11 @@ namespace psh {
     }
 
     void log(LogInfo info, strptr msg) {
-#if defined(PSH_DEBUG) || defined(PSH_ENABLE_LOGGING)
         psh_discard(
             std::fprintf(stderr, LOG_FMT, log_level_str(info.lvl), info.file, info.line, msg));
-#else
-        psh_discard(info);
-        psh_discard(msg);
-#endif
     }
 
     void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept {
-#if defined(PSH_DEBUG) || defined(PSH_ENABLE_LOGGING)
         constexpr usize MAX_MSG_LEN = 8192;
         char            msg[MAX_MSG_LEN];
 
@@ -88,9 +82,5 @@ namespace psh {
             info.file,
             info.line,
             msg);
-#else
-        psh_discard(info);
-        psh_discard(msg);
-#endif
     }
 }  // namespace psh
