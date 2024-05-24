@@ -30,14 +30,14 @@
 #define psh_discard(x) (void)(x)
 
 /// Common Memory sizes
-#define psh_kibibytes(n) (n) * (1 << 10)
-#define psh_mebibytes(n) (n) * (1 << 20)
-#define psh_gibibytes(n) (n) * (1 << 30)
+#define psh_kibibytes(n) ((n) * (1 << 10))
+#define psh_mebibytes(n) ((n) * (1 << 20))
+#define psh_gibibytes(n) ((n) * (1 << 30))
 
-#define psh_min(lhs, rhs) ((lhs < rhs) ? (lhs) : (rhs))
-#define psh_max(lhs, rhs) ((lhs > rhs) ? (lhs) : (rhs))
+#define psh_min(lhs, rhs) (((lhs) < (rhs)) ? (lhs) : (rhs))
+#define psh_max(lhs, rhs) (((lhs) > (rhs)) ? (lhs) : (rhs))
 
-#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n) - 1)))
+#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n)-1)))
 
 #define psh_clamp(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))
 
