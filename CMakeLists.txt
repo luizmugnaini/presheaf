@@ -195,7 +195,6 @@ set(
     "-fsanitize=address"
     "-fsanitize=pointer-compare"
     "-fsanitize=pointer-subtract"
-    "-fsanitize=shadow-call-stack"
     "-fsanitize=undefined"
     "-fstack-protector-strong"
     "-fsanitize=leak"
@@ -302,7 +301,7 @@ list(
 
 foreach(t IN LISTS TESTS)
     add_executable(${t} "${PROJECT_SOURCE_DIR}/tests/${t}.cc")
-    target_compile_options(${t} PRIVATE ${PSH_CXX_FLAGS})
-    target_link_libraries(${t} PUBLIC presheaf)
+    target_compile_options(${t} PRIVATE ${PSH_CXX_FLAGS} ${PSH_SAN_FLAGS})
+    target_link_libraries(${t} PUBLIC ${PSH_SAN_FLAGS} presheaf)
     add_test(NAME ${t} COMMAND ${t})
 endforeach()
