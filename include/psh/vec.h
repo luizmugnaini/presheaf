@@ -19,30 +19,50 @@
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 #pragma once
 
-namespace psh {
-    template <typename T>
-    struct Vec2 {
-        T x = 0;
-        T y = 0;
+#include <psh/types.h>
 
-        constexpr Vec2& operator+=(Vec2 const& other) noexcept {
-            x += other.x;
-            y += other.y;
-            return *this;
-        }
+namespace psh {
+    struct Vec2 {
+        f32 x = 0.0f;
+        f32 y = 0.0f;
+
+        Vec2& operator+=(Vec2 const& other) noexcept;
+    };
+
+    struct Vec3 {
+        f32 x = 0.0f;
+        f32 y = 0.0f;
+        f32 z = 0.0f;
+
+        Vec3& operator+=(Vec3 const& other) noexcept;
+        Vec3& operator-=(Vec3 const& other) noexcept;
+        Vec3& operator*=(Vec3 const& other) noexcept;
+        Vec3& operator*=(f32 scalar) noexcept;
+        Vec3  operator+(Vec3 const& other) const noexcept;
+        Vec3  operator-(Vec3 const& other) const noexcept;
+        Vec3  operator-() const noexcept;
+        Vec3  operator*(Vec3 const& other) const noexcept;
+        Vec3  operator*(f32 scalar) const noexcept;
+
+        Vec3 normalized() const noexcept;
+        f32  dot(Vec3 const& other) const noexcept;
+        Vec3 cross(Vec3 const& other) const noexcept;
     };
 
     template <typename T>
-    struct Vec3 {
-        T x = 0;
-        T y = 0;
-        T z = 0;
+    struct Vec4 {
+        f32 x = 0.0f;
+        f32 y = 0.0f;
+        f32 z = 0.0f;
+        f32 w = 0.0f;
+    };
 
-        constexpr Vec3& operator+=(Vec3 const& other) noexcept {
-            x += other.x;
-            y += other.y;
-            z += other.z;
-            return *this;
-        }
+    struct Mat4 {
+        f32 data[16] = {0.0f};
+
+        f32& at(u32 r, u32 c) noexcept;
+
+        static Mat4 id() noexcept;
+        static Mat4 translation(f32 dx, f32 dy, f32 dz) noexcept;
     };
 }  // namespace psh
