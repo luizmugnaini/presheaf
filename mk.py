@@ -56,10 +56,18 @@ if CURRENT_LINKER == "mold":
     )
 
 
-DEBUG_FLAGS = ["-DCMAKE_BUILD_TYPE=Debug", "-DPSH_DEBUG=On"]
-RELEASE_FLAGS = ["-DCMAKE_BUILD_TYPE=Release", "-DPSH_DEBUG=Off"]
+DEBUG_FLAGS = [
+    "-DCMAKE_BUILD_TYPE=Debug",
+    "-DPSH_DEBUG=On",
+    "-DPSH_ENABLE_LOGGING=On",
+]
+RELEASE_FLAGS = [
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DPSH_DEBUG=Off",
+    "-DPSH_ENABLE_LOGGING=Off",
+]
 
-CPP_SRC_EXTENSION = ".cpp"
+CPP_SRC_EXTENSION = ".cc"
 CPP_HEADER_EXTENSION = ".h"
 BINARY_EXT = os_choose("", ".exe")
 
