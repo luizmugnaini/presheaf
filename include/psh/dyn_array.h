@@ -78,7 +78,7 @@ namespace psh {
             Arena*                          _arena,
             Option<usize> const&            _capacity = {}) noexcept {
             arena    = _arena;
-            size     = list.size;
+            size     = list.size();
             capacity = _capacity.val_or(DYNARRAY_RESIZE_CAPACITY_FACTOR * size);
 
             psh_assert_msg(
@@ -94,10 +94,10 @@ namespace psh {
                 psh_assert_msg(buf != nullptr, "DynArray::init unable to allocate enough memory");
             }
 
-            memory_copy(
+            std::memcpy(
                 reinterpret_cast<u8*>(buf),
                 reinterpret_cast<u8 const*>(list.begin()),
-                sizeof(T) * list.size);
+                sizeof(T) * size);
         }
 
         /// Construct a dynamic array with the contents of an initializer list, and optionally
@@ -130,7 +130,7 @@ namespace psh {
                 psh_assert_msg(buf != nullptr, "DynArray::init unable to allocate enough memory");
             }
 
-            memory_copy(
+            std::memcpy(
                 reinterpret_cast<u8*>(buf),
                 reinterpret_cast<u8 const*>(fptr.begin()),
                 fptr.size_bytes());
