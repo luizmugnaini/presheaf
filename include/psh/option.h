@@ -24,9 +24,9 @@
 #include <psh/concepts.h>
 
 namespace psh {
-    enum struct Status {
-        OK,
-        Failed,
+    enum struct Status : bool {
+        OK     = true,
+        Failed = false,
     };
 
     /// Option type.
