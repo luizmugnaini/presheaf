@@ -37,6 +37,10 @@ namespace psh {
         usize size = 0;
         T*    buf  = nullptr;
 
+        // -----------------------------------------------------------------------------
+        // - Constructors and initializers -
+        // -----------------------------------------------------------------------------
+
         explicit constexpr Array() noexcept = default;
 
         /// Initialize the array with a given size.
@@ -105,6 +109,10 @@ namespace psh {
             this->init(fptr, _arena);
         }
 
+        // -----------------------------------------------------------------------------
+        // - Size related utilities -
+        // -----------------------------------------------------------------------------
+
         constexpr bool is_empty() const noexcept {
             return (size == 0);
         }
@@ -112,6 +120,10 @@ namespace psh {
         constexpr usize size_bytes() const noexcept {
             return sizeof(T) * size;
         }
+
+        // -----------------------------------------------------------------------------
+        // - Generating fat pointers -
+        // -----------------------------------------------------------------------------
 
         constexpr FatPtr<T> fat_ptr() noexcept {
             return FatPtr{buf, size};
@@ -121,11 +133,9 @@ namespace psh {
             return FatPtr{static_cast<T const*>(buf), size};
         }
 
-        void fill(T _fill) noexcept
-            requires TriviallyCopyable<T>
-        {
-            psh::fill(FatPtr{buf, size}, _fill);
-        }
+        // -----------------------------------------------------------------------------
+        // - Iterator utilities -
+        // -----------------------------------------------------------------------------
 
         constexpr T* begin() noexcept {
             return buf;
@@ -142,6 +152,10 @@ namespace psh {
         constexpr T const* end() const noexcept {
             return psh_ptr_add(static_cast<T const*>(buf), size);
         }
+
+        // -----------------------------------------------------------------------------
+        // - Indexed reads -
+        // -----------------------------------------------------------------------------
 
         constexpr T& operator[](usize index) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)

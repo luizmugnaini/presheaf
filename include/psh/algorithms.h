@@ -26,6 +26,42 @@
 #include <psh/option.h>
 
 namespace psh {
+    // -----------------------------------------------------------------------------
+    // - Search algorithms -
+    // -----------------------------------------------------------------------------
+
+    template <typename T>
+    using MatchFn = bool(T lhs, T rhs);
+
+    /// Check if a range given by a fat pointer contains a given `match` element.
+    template <typename T>
+        requires IsObject<T> && TriviallyCopyable<T>
+    bool contains(T match, FatPtr<T const> container, MatchFn<T>* match_fn) {
+        psh_assert_msg(match_fn != nullptr, "contains expected a valid match function");
+        bool found = false;
+        for (auto const& m : container) {
+            if (match_fn(match, m)) {
+                found = true;
+                break;
+            }
+        }
+        return found;
+    }
+
+    /// Check if a range given by a fat pointer contains a given `match` element.
+    template <typename T>
+        requires IsObject<T> && TriviallyCopyable<T> && Reflexive<T>
+    bool contains(T match, FatPtr<T const> container) {
+        bool found = false;
+        for (auto const& m : container) {
+            if (match == m) {
+                found = true;
+                break;
+            }
+        }
+        return found;
+    }
+
     /// Try to find the index of the first match.
     template <typename T>
         requires Reflexive<T>
@@ -71,4 +107,21 @@ namespace psh {
         T* new_hi = mid - 1;
         return impl_binary_search(FatPtr{low, static_cast<usize>(new_hi - low)}, match);
     }
+
+    // -----------------------------------------------------------------------------
+    // - Write-based algorithms -
+    // -----------------------------------------------------------------------------
+
+    /// Override the contents of a fat pointer with a given element.
+    ///
+    /// This is the virtually same as `memory_set` but can copy elements of any type. However it
+    /// will be slower.
+    template <typename T>
+        requires TriviallyCopyable<T>
+    void fill(FatPtr<T> fat_ptr, T _fill) noexcept {
+        for (auto& elem : fat_ptr) {
+            elem = _fill;
+        }
+    }
+
 }  // namespace psh

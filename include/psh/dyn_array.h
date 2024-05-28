@@ -45,6 +45,10 @@ namespace psh {
         usize  capacity = 0;
         T*     buf      = nullptr;
 
+        // -----------------------------------------------------------------------------
+        // - Constructors and initializers -
+        // -----------------------------------------------------------------------------
+
         explicit constexpr DynArray() noexcept = default;
 
         /// Initialize the dynamic array with a given capacity.
@@ -145,6 +149,10 @@ namespace psh {
             this->init(fptr, _arena, _capacity);
         }
 
+        // -----------------------------------------------------------------------------
+        // - Size related utilities -
+        // -----------------------------------------------------------------------------
+
         bool is_empty() const noexcept {
             return (size == 0);
         }
@@ -157,6 +165,10 @@ namespace psh {
             return capacity * sizeof(T);
         }
 
+        // -----------------------------------------------------------------------------
+        // - Generate fat pointers -
+        // -----------------------------------------------------------------------------
+
         FatPtr<T> fat_ptr() noexcept {
             return FatPtr{buf, size};
         }
@@ -165,10 +177,9 @@ namespace psh {
             return FatPtr{static_cast<T const*>(buf), size};
         }
 
-        /// Get a pointer to the last element of the dynamic array.
-        T* peek() const noexcept {
-            return (this->size == 0) ? nullptr : &buf[size - 1];
-        }
+        // -----------------------------------------------------------------------------
+        // - Iterator utilities -
+        // -----------------------------------------------------------------------------
 
         T* begin() noexcept {
             return buf;
@@ -186,6 +197,15 @@ namespace psh {
             return psh_ptr_add(static_cast<T const*>(buf), size);
         }
 
+        /// Get a pointer to the last element of the dynamic array.
+        T* peek() const noexcept {
+            return (this->size == 0) ? nullptr : &buf[size - 1];
+        }
+
+        // -----------------------------------------------------------------------------
+        // - Indexed reads -
+        // -----------------------------------------------------------------------------
+
         T& operator[](usize idx) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(idx < size, "Index out of bounds for dynamic array");
@@ -200,25 +220,9 @@ namespace psh {
             return buf[idx];
         }
 
-        /// Fill the entire dynamic array's buffer (up to its current capacity) with a given
-        /// element.
-        void fill(T _fill) noexcept
-            requires TriviallyCopyable<T>
-        {
-            psh::fill(fat_ptr(*this), _fill);
-            size = capacity;
-        }
-
-        /// Inserts a new element to the end of the dynamic array.
-        ///
-        /// If the dynamic array capacity is full, the capacity is doubled by making a reallocation
-        /// of the underlying memory buffer.
-        void push(T new_element) noexcept {
-            if (capacity == size) {
-                this->grow();
-            }
-            buf[size++] = new_element;
-        }
+        // -----------------------------------------------------------------------------
+        // - Memory resizing methods -
+        // -----------------------------------------------------------------------------
 
         /// Resize the dynamic array underlying buffer.
         void grow(u32 factor = DYNARRAY_RESIZE_CAPACITY_FACTOR) noexcept {
@@ -254,6 +258,21 @@ namespace psh {
             capacity = new_capacity;
 
             return Status::OK;
+        }
+
+        // -----------------------------------------------------------------------------
+        // - Memory manipulation -
+        // -----------------------------------------------------------------------------
+
+        /// Inserts a new element to the end of the dynamic array.
+        ///
+        /// If the dynamic array capacity is full, the capacity is doubled by making a reallocation
+        /// of the underlying memory buffer.
+        void push(T new_element) noexcept {
+            if (capacity == size) {
+                this->grow();
+            }
+            buf[size++] = new_element;
         }
 
         /// Try to pop the last element of the dynamic array.

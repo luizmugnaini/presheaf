@@ -29,6 +29,7 @@
 #if defined(PSH_NAMESPACED_TYPES)
 namespace psh {
 #endif
+
     /// Unsigned integer type.
     using u8    = std::uint8_t;
     using u16   = std::uint16_t;
@@ -56,13 +57,6 @@ namespace psh {
     /// A pointer to a contiguous array of constant character values.
     using strptr = char const*;
 
-    /// String literal type.
-    struct StringLiteral {
-        strptr str;
-
-        template <usize N>
-        consteval StringLiteral(char const (&_str)[N]) noexcept : str{_str} {}
-    };
 #if defined(PSH_NAMESPACED_TYPES)
 }
 #endif
