@@ -143,57 +143,52 @@ namespace psh {
 
         /// Get the capacity of the top memory block.
         usize top_capacity() const noexcept {
-            auto* const header = top_header();
+            StackHeader const* header = this->top_header();
             return (header == nullptr) ? 0 : header->capacity;
         }
 
         /// Get the previous offset of the top memory block.
         usize top_previous_offset() const noexcept {
-            auto* const header = top_header();
+            StackHeader const* header = this->top_header();
             return (header == nullptr) ? 0 : header->previous_offset;
         }
 
         /// Gets a pointer to the header associated to the given memory block.
         StackHeader const* header_of(u8 const* block) const noexcept {
-            if (psh_unlikely(block == nullptr)) {
-                return nullptr;
-            }
+            u8 const* block_header = block + sizeof(StackHeader);
+            bool      valid        = true;
 
-            // Ensure the memory address is within the allocator memory.
+            if (psh_unlikely(block == nullptr)) {
+                valid = false;
+            }
             if (psh_unlikely((block < memory) || (block >= memory + capacity))) {
                 psh_error("StackAlloc::header_of called with a pointer to a block of memory "
                           "outside of the stack allocator scope.");
-                return nullptr;
+                valid = false;
             }
-
-            // Ensure the block isn't free.
             if (psh_unlikely(block > memory + previous_offset)) {
                 psh_error(
                     "StackAlloc::header_of called with a pointer to a freed block of memory.");
-                return nullptr;
+                valid = false;
             }
-
-            u8 const* const block_header = block + sizeof(StackHeader);
-
-            // Ensure the header address is valid.
             if (psh_unlikely(block_header < memory)) {
                 psh_error("StackAlloc::header_of expected the memory block header to be contained "
                           "in the stack allocator scope.");
-                return nullptr;
+                valid = false;
             }
 
-            return reinterpret_cast<StackHeader const*>(block_header);
+            return (!valid) ? nullptr : reinterpret_cast<StackHeader const*>(block_header);
         }
 
         /// Get the capacity of the given memory block.
         usize capacity_of(u8 const* mem) const noexcept {
-            auto* const header = header_of(mem);
+            StackHeader const* header = this->header_of(mem);
             return (header == nullptr) ? 0 : header->capacity;
         }
 
         /// Get the previous offset of the given memory block.
         usize previous_offset_of(u8 const* mem) const noexcept {
-            auto* const header = header_of(mem);
+            auto* const header = this->header_of(mem);
             return (header == nullptr) ? 0 : header->previous_offset;
         }
 
@@ -208,33 +203,30 @@ namespace psh {
             }
 
             usize const new_block_size = sizeof(T) * length;
-
-            u8* const   free_mem = memory + offset;
-            usize const padding  = padding_with_header(
+            u8* const   free_mem       = memory + offset;
+            usize const padding        = padding_with_header(
                 reinterpret_cast<uptr>(free_mem),
                 alignof(T),
                 sizeof(StackHeader),
                 alignof(StackHeader));
+            usize const required = padding + new_block_size;
 
-            usize const required  = padding + new_block_size;
-            usize const available = capacity - offset;
-
-            if (psh_unlikely(required > available)) {
+            if (psh_unlikely(required > capacity - offset)) {
                 psh_error_fmt(
                     "StackAlloc::alloc unable to allocate %zu bytes of memory (%zu bytes required "
                     "due to alignment and padding). The stack allocator has only %zu bytes "
                     "remaining.",
                     new_block_size,
                     required,
-                    available);
+                    capacity - offset);
                 return nullptr;
             }
 
             // Address to the start of the new block of memory.
-            u8* const new_block = free_mem + padding;
+            u8* new_block = free_mem + padding;
 
             // Write to the header associated with the new block of memory.
-            auto* const new_header =
+            StackHeader* new_header =
                 reinterpret_cast<StackHeader*>(new_block - sizeof(StackHeader));
             new_header->padding         = padding;
             new_header->capacity        = new_block_size;
@@ -253,7 +245,7 @@ namespace psh {
         ///     * `length`: Number of entities of type `T` that should fit in the new block.
         template <typename T>
         T* zero_alloc(usize length) noexcept {
-            auto* const ptr = alloc<T>(length);
+            T* ptr = alloc<T>(length);
             std::memset(ptr, 0, length);
             return ptr;
         }
@@ -269,10 +261,10 @@ namespace psh {
         ///       block.
         template <typename T>
         T* realloc(T const* block, usize new_length) noexcept {
-            u8 const* ublock = reinterpret_cast<u8*>(block);
+            u8 const* ublock = reinterpret_cast<u8 const*>(block);
 
             if (psh_unlikely(new_length == 0)) {
-                clear_at(ublock);
+                this->clear_at(ublock);
                 return nullptr;
             }
 
@@ -298,30 +290,21 @@ namespace psh {
                 return nullptr;
             }
 
-            auto const* const header =
+            StackHeader const* header =
                 reinterpret_cast<StackHeader const*>(ublock - sizeof(StackHeader));
 
-            if (psh_unlikely(header->capacity == new_size)) {
-                psh_warning_fmt(
-                    "StackAlloc::realloc called to reallocate to resize a block with its own "
-                    "current size of %zu, which is unneeded.",
-                    header->capacity);
-                return block;
-            }
-
             // Check memory availability.
-            usize const available = capacity - offset;
-            if (psh_unlikely(new_size > available)) {
+            if (psh_unlikely(new_size > capacity - offset)) {
                 psh_error_fmt(
                     "StackAlloc::realloc cannot reallocate memory from size %zu to %zu. Only %zu "
                     "bytes of memory remaining.",
                     header->capacity,
                     new_size,
-                    available);
+                    capacity - offset);
                 return nullptr;
             }
 
-            auto* const new_mem = alloc<T>(new_length);
+            T* new_mem = alloc<T>(new_length);
 
             usize const copy_size = psh_min(header->capacity, new_size);
             memory_copy(
@@ -340,8 +323,8 @@ namespace psh {
                 return Status::Failed;
             }
 
-            u8 const* const   top = memory + previous_offset;
-            auto const* const top_header =
+            u8 const*          top = memory + previous_offset;
+            StackHeader const* top_header =
                 reinterpret_cast<StackHeader const*>(top - sizeof(StackHeader));
 
             offset          = previous_offset - top_header->padding;
@@ -367,17 +350,17 @@ namespace psh {
 
             // Check if the block is within the allocator's memory.
             if (psh_unlikely((block < memory) || (block > memory + previous_offset))) {
-                if (block > memory + capacity) {
-                    psh_error("StackAlloc::free_at called with a pointer outside of the stack "
-                              "allocator memory region.");
-                    return Status::Failed;
-                }
-                psh_error("StackAlloc::free_at called with a pointer to an already free region of "
-                          "the stack allocator memory.");
+                strptr fail_reason =
+                    (block > memory + capacity)
+                        ? "StackAlloc::free_at called with a pointer outside of the stack "
+                          "allocator memory region."
+                        : "StackAlloc::free_at called with a pointer to an already free region of "
+                          "the stack allocator memory.";
+                psh_error(fail_reason);
                 return Status::Failed;
             }
 
-            auto const* const header =
+            StackHeader const* header =
                 reinterpret_cast<StackHeader const*>(block - sizeof(StackHeader));
 
             offset = wrap_sub(
