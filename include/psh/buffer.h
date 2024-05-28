@@ -31,6 +31,10 @@ namespace psh {
     struct Buffer {
         T buf[size_]{};
 
+        // -----------------------------------------------------------------------------
+        // - Size related utilities -
+        // -----------------------------------------------------------------------------
+
         constexpr usize size() const noexcept {
             return size_;
         }
@@ -39,6 +43,10 @@ namespace psh {
             return sizeof(T) * size_;
         }
 
+        // -----------------------------------------------------------------------------
+        // - Generating fat pointers -
+        // -----------------------------------------------------------------------------
+
         FatPtr<T> fat_ptr() noexcept {
             return FatPtr{buf, size_};
         }
@@ -46,6 +54,10 @@ namespace psh {
         constexpr FatPtr<T const> const_fat_ptr() const noexcept {
             return FatPtr{static_cast<T const*>(buf), size_};
         }
+
+        // -----------------------------------------------------------------------------
+        // - Iterator utilities -
+        // -----------------------------------------------------------------------------
 
         constexpr T* begin() noexcept {
             return static_cast<T*>(buf);
@@ -62,6 +74,10 @@ namespace psh {
         constexpr T const* end() const noexcept {
             return static_cast<T const*>(buf) + size_;
         }
+
+        // -----------------------------------------------------------------------------
+        // - Indexed reads -
+        // -----------------------------------------------------------------------------
 
         constexpr T& operator[](usize idx) noexcept {
             return buf[idx];

@@ -36,9 +36,36 @@ struct Foo {
     u32 b;
 };
 
-void arena_scratch() {
+u8* fn_scratch_as_ref(ScratchArena& s, usize size) {
+    return s.arena->alloc<u8>(size);
+}
+
+void scratch_arena_ref() {
     constexpr usize capacity = 1024;
-    auto* const     buf      = reinterpret_cast<u8*>(std::malloc(capacity));
+    u8* const       buf      = reinterpret_cast<u8*>(std::malloc(capacity));
+    {
+        Arena ar{buf, capacity};
+        usize expected_offset = 0;
+
+        (void)ar.zero_alloc<u8>(32);
+        expected_offset += 32;
+
+        {
+            ScratchArena s = ar.make_scratch();
+            (void)fn_scratch_as_ref(s, 64);
+            expected_offset += 64;
+            psh_assert(ar.offset == expected_offset);
+        }
+        expected_offset -= 64;
+        psh_assert(ar.offset = expected_offset);
+    }
+    std::free(buf);
+    test_passed();
+}
+
+void scratch_arena() {
+    constexpr usize capacity = 1024;
+    u8* const       buf      = reinterpret_cast<u8*>(std::malloc(capacity));
     Arena           arena{buf, capacity};
     constexpr usize base_offset = 0;
 
@@ -62,8 +89,8 @@ void arena_scratch() {
     //     |-> `s2` is destroyed, arena goes back to `s2_base_offset`
     //     |-> `s1` is destroyed, arena goes back to `s1_base_offset`
     {
-        Arena::Scratch s1          = arena.make_scratch();
-        usize          last_offset = base_offset;
+        ScratchArena s1          = arena.make_scratch();
+        usize        last_offset = base_offset;
 
         // Check consistency while allocating within a scratch arena.
         psh_assert(s1.arena == &arena);
@@ -92,7 +119,7 @@ void arena_scratch() {
         // ---------------------------------------------------------------------------------
         usize const s2_base_offset = last_offset;
         {
-            Arena::Scratch s2 = s1.decouple();
+            ScratchArena s2 = s1.decouple();
 
             // Check if this new scratch has a working allocation scheme.
             psh_assert(s2.arena == &arena);
@@ -119,7 +146,7 @@ void arena_scratch() {
             // Create another scratch arena from `s1` within the same lifetime of `s2`.
             // ---------------------------------------------------------------------------------
 
-            Arena::Scratch s3 = s1.decouple();
+            ScratchArena s3 = s1.decouple();
 
             // Check if this new scratch has a working allocation scheme.
             psh_assert(s3.arena == &arena);
@@ -147,7 +174,7 @@ void arena_scratch() {
             // Create another scratch arena from `s2` within the same lifetime of `s2` and `s3`.
             // ---------------------------------------------------------------------------------
 
-            Arena::Scratch s4 = s2.decouple();
+            ScratchArena s4 = s2.decouple();
 
             // Check if this new scratch has a working allocation scheme.
             psh_assert(s4.arena == &arena);
@@ -177,7 +204,7 @@ void arena_scratch() {
 
             usize const s5_base_offset = last_offset;
             {
-                Arena::Scratch s5 = s4.decouple();
+                ScratchArena s5 = s4.decouple();
 
                 // Check if this new scratch has a working allocation scheme.
                 psh_assert(s5.arena == &arena);
@@ -523,7 +550,8 @@ void free_all() {
 }
 
 int main() {
-    arena_scratch();
+    scratch_arena();
+    scratch_arena_ref();
     stack_allocation_with_default_alignment();
     stack_offsets_reads_and_writes();
     stack_memory_stress_and_free();

@@ -57,6 +57,10 @@ namespace psh {
     psh_attr_fmt(2, 3) void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept;
 }  // namespace psh
 
+// -----------------------------------------------------------------------------
+// - Logging macro utilities intended for easier usage pattern  -
+// -----------------------------------------------------------------------------
+
 #if defined(PSH_DEBUG) || defined(PSH_ENABLE_LOGGING)
 #    define psh_fatal(msg)            psh::log(psh::LogLevel::Fatal, msg)
 #    define psh_error(msg)            psh::log(psh::LogLevel::Error, msg)

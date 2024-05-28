@@ -27,27 +27,29 @@
 #include <psh/option.h>
 #include <psh/types.h>
 
-/// Create a string literal and a string view at compile time from a given C-string literal.
-///
-/// Note: Use this macro with care, you should only use it with literal strings, otherwise the
-///       length of the string won't be computed corrected by the compile and you'll obtain the
-///       size of a pointer as the length of the string.
-#define psh_str(cstr_literal)          \
-    psh::Str<sizeof((cstr_literal))> { \
-        (cstr_literal)                 \
-    }
-#define psh_string_view(cstr_literal)              \
-    psh::StringView {                              \
-        (cstr_literal), sizeof((cstr_literal)) - 1 \
-    }
-
 namespace psh {
+    // -----------------------------------------------------------------------------
+    // - String comparison utilities -
+    // -----------------------------------------------------------------------------
+
     enum struct StrCmpResult { Unknown, LessThan, Equal, GreaterThan };
 
     usize        str_size(strptr str) noexcept;
     StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept;
     bool         str_equal(strptr lhs, strptr rhs) noexcept;
     bool         is_utf8(char c) noexcept;
+
+    // -----------------------------------------------------------------------------
+    // - String types -
+    // -----------------------------------------------------------------------------
+
+    /// String literal type.
+    struct StringLiteral {
+        strptr str;
+
+        template <usize N>
+        consteval StringLiteral(char const (&_str)[N]) noexcept : str{_str} {}
+    };
 
     /// A string with guaranteed compile-time known size.
     ///
@@ -56,7 +58,7 @@ namespace psh {
     ///
     /// Example:
     /// ```cpp
-    /// psh::Str my_str = psh_str("hey this is a compile time array of constant characters");
+    /// auto my_str = psh_str("hey this is a compile time array of constant characters");
     /// ```
     template <usize size_>
     struct Str {
@@ -106,3 +108,21 @@ namespace psh {
         Status join(std::initializer_list<StringView> strs, strptr join_cstr = nullptr) noexcept;
     };
 }  // namespace psh
+
+// -----------------------------------------------------------------------------
+// - Compile-time string type construction macros -
+// -----------------------------------------------------------------------------
+
+/// Create a string literal and a string view at compile time from a given C-string literal.
+///
+/// Note: Use this macro with care, you should only use it with literal strings, otherwise the
+///       length of the string won't be computed corrected by the compile and you'll obtain the
+///       size of a pointer as the length of the string.
+#define psh_str(cstr_literal)          \
+    psh::Str<sizeof((cstr_literal))> { \
+        (cstr_literal)                 \
+    }
+#define psh_string_view(cstr_literal)              \
+    psh::StringView {                              \
+        (cstr_literal), sizeof((cstr_literal)) - 1 \
+    }

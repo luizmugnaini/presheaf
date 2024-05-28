@@ -44,8 +44,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Resulting compiler and linker flags for the build
 # ------------------------------------------------------------------------------
 
-set(PSH_CXX_FLAGS)      # Holds the resulting compiler flags for the build
-set(PSH_CXX_SAN_FLAGS)  # Holds the resulting sanitizer flags for the build
+set(PSH_CXX_DEFINES)       # Holds the resulting compiler #define flags
+set(PSH_CXX_TEST_DEFINES)  # Holds the resulting compiler #define flags for the tests
+set(PSH_CXX_FLAGS)         # Holds the resulting compiler flags for the build
+set(PSH_CXX_SAN_FLAGS)     # Holds the resulting sanitizer flags for the build
 
 # ------------------------------------------------------------------------------
 # Compile-time "define" options
@@ -67,16 +69,20 @@ elseif(MSVC)
     set(PSH_DEFINE_PREFIX "/D")
 endif()
 
+# Register the enabled flags for the compilation.
 foreach(opt IN LISTS PSH_OPTIONS)
     if(${opt})
-        set(PSH_CXX_FLAGS ${PSH_CXX_FLAGS} "${PSH_DEFINE_PREFIX}${opt}=On")
+        set(PSH_CXX_DEFINES ${PSH_CXX_DEFINES} "${PSH_DEFINE_PREFIX}${opt}=On")
     endif()
 endforeach()
 
 # MSVC says that fopen is unsafe... cringe
 if(MSVC)
-    set(PSH_CXX_FLAGS ${PSH_CXX_FLAGS} "${PSH_DEFINE_PREFIX}_CRT_SECURE_NO_WARNINGS")
+    set(PSH_CXX_DEFINES ${PSH_CXX_DEFINES} "${PSH_DEFINE_PREFIX}_CRT_SECURE_NO_WARNINGS")
 endif()
+
+# Enable all debug facilities for the tests.
+set(PSH_CXX_TEST_DEFINES ${PSH_CXX_TEST_DEFINES} "${PSH_DEFINE_PREFIX}PSH_DEBUG=On")
 
 # ------------------------------------------------------------------------------
 # Compiler flags
@@ -258,11 +264,14 @@ message(STATUS "Presheaf C++ sanitizer flags: ${PSH_CXX_SAN_FLAGS}")
 
 set(
     PSH_SOURCES
-    "${PROJECT_SOURCE_DIR}/src/mem_utils.cc"
-    "${PROJECT_SOURCE_DIR}/src/io.cc"
-    "${PROJECT_SOURCE_DIR}/src/string.cc"
+    "${PROJECT_SOURCE_DIR}/src/arena.cc"
     "${PROJECT_SOURCE_DIR}/src/file_system.cc"
+    "${PROJECT_SOURCE_DIR}/src/io.cc"
+    "${PROJECT_SOURCE_DIR}/src/mem_utils.cc"
     "${PROJECT_SOURCE_DIR}/src/memory_manager.cc"
+    "${PROJECT_SOURCE_DIR}/src/string.cc"
+    "${PROJECT_SOURCE_DIR}/src/stack.cc"
+    "${PROJECT_SOURCE_DIR}/src/vec.cc"
 )
 
 # ------------------------------------------------------------------------------
@@ -276,7 +285,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 # ------------------------------------------------------------------------------
 
 add_library(presheaf ${PSH_SOURCES})
-target_compile_options(presheaf PRIVATE ${PSH_CXX_FLAGS} ${PSH_CXX_SAN_FLAGS})
+target_compile_options(presheaf PRIVATE ${PSH_CXX_DEFINES} ${PSH_CXX_FLAGS} ${PSH_CXX_SAN_FLAGS})
 target_link_libraries(presheaf PUBLIC ${PSH_CXX_SAN_FLAGS})
 target_include_directories(presheaf PUBLIC "${PROJECT_SOURCE_DIR}/include")
 
@@ -301,7 +310,7 @@ list(
 
 foreach(t IN LISTS TESTS)
     add_executable(${t} "${PROJECT_SOURCE_DIR}/tests/${t}.cc")
-    target_compile_options(${t} PRIVATE ${PSH_CXX_FLAGS} ${PSH_SAN_FLAGS})
+    target_compile_options(${t} PRIVATE ${PSH_CXX_TEST_DEFINES} ${PSH_CXX_FLAGS} ${PSH_SAN_FLAGS})
     target_link_libraries(${t} PUBLIC ${PSH_SAN_FLAGS} presheaf)
     add_test(NAME ${t} COMMAND ${t})
 endforeach()

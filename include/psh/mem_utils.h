@@ -25,59 +25,24 @@
 #include <psh/not_null.h>
 #include <psh/types.h>
 
+/// Add or subtract an offset from a pointer if and only if the pointer is not null.
 #define psh_ptr_add(ptr, offset) ((ptr) == nullptr ? nullptr : (ptr) + (offset))
 #define psh_ptr_sub(ptr, offset) ((ptr) == nullptr ? nullptr : (ptr) - (offset))
 
 namespace psh {
+    // -----------------------------------------------------------------------------
+    // - CPU architecture query utilities -
+    // -----------------------------------------------------------------------------
+
     /// Check whether the current architecture is little-endian or big-endian.
     ///
     /// Note: Unfortunately, these checks can only be reliably made at runtime.
     bool arch_is_little_endian() noexcept;
     bool arch_is_bit_endian() noexcept;
 
-    template <typename T>
-    using MatchFn = bool(T lhs, T rhs);
-
-    /// Check if a range given by a fat pointer contains a given `match` element.
-    template <typename T>
-        requires IsObject<T> && TriviallyCopyable<T>
-    bool contains(T match, FatPtr<T const> container, MatchFn<T>* match_fn) {
-        psh_assert_msg(match_fn != nullptr, "contains expected a valid match function");
-        bool found = false;
-        for (auto const& m : container) {
-            if (match_fn(match, m)) {
-                found = true;
-                break;
-            }
-        }
-        return found;
-    }
-
-    /// Check if a range given by a fat pointer contains a given `match` element.
-    template <typename T>
-        requires IsObject<T> && TriviallyCopyable<T> && Reflexive<T>
-    bool contains(T match, FatPtr<T const> container) {
-        bool found = false;
-        for (auto const& m : container) {
-            if (match == m) {
-                found = true;
-                break;
-            }
-        }
-        return found;
-    }
-
-    /// Override the contents of a fat pointer with a given element.
-    ///
-    /// This is the virtually same as `memory_set` but can copy elements of any type. However it
-    /// will be slower.
-    template <typename T>
-        requires TriviallyCopyable<T>
-    void fill(FatPtr<T> fat_ptr, T _fill) noexcept {
-        for (auto& elem : fat_ptr) {
-            elem = _fill;
-        }
-    }
+    // -----------------------------------------------------------------------------
+    // - Memory manipulation utilities -
+    // -----------------------------------------------------------------------------
 
     /// Simple wrapper around `std::memset` that automatically deals with null values.
     ///
@@ -94,6 +59,10 @@ namespace psh {
     ///
     /// Does nothing if either `dest` or `src` are null pointers.
     void memory_move(u8* dest, u8 const* src, usize size) noexcept;
+
+    // -----------------------------------------------------------------------------
+    // - Alignment utilities -
+    // -----------------------------------------------------------------------------
 
     /// Compute the padding needed for the alignment of the memory and header.
     ///

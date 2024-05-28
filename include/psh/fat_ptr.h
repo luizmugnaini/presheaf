@@ -31,6 +31,10 @@ namespace psh {
         T*    buf  = nullptr;
         usize size = 0;
 
+        // -----------------------------------------------------------------------------
+        // - Size related utilities -
+        // -----------------------------------------------------------------------------
+
         constexpr usize size_bytes() const noexcept {
             return sizeof(T) * size;
         }
@@ -38,6 +42,10 @@ namespace psh {
         constexpr bool is_empty() const noexcept {
             return (size == 0);
         }
+
+        // -----------------------------------------------------------------------------
+        // - Iterator utilities -
+        // -----------------------------------------------------------------------------
 
         constexpr T* begin() noexcept {
             return buf;
@@ -55,6 +63,10 @@ namespace psh {
             return (buf == nullptr) ? nullptr : static_cast<T const*>(buf + size);
         }
 
+        // -----------------------------------------------------------------------------
+        // - Indexed reads -
+        // -----------------------------------------------------------------------------
+
         constexpr T& operator[](usize idx) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(idx < size, "Index out of bounds for fat pointer");
@@ -69,6 +81,10 @@ namespace psh {
             return buf[idx];
         }
     };
+
+    // -----------------------------------------------------------------------------
+    // - Fat pointer creation for common usage patterns -
+    // -----------------------------------------------------------------------------
 
     template <typename T>
     FatPtr<u8> fat_ptr_as_bytes(T* buf, usize length) noexcept {

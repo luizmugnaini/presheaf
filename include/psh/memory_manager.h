@@ -35,16 +35,10 @@ namespace psh {
         usize allocation_count = 0;
         Stack allocator{};
 
-        /// Make a default empty memory manager.
         explicit constexpr MemoryManager() noexcept = default;
-
-        /// Make and initialize a memory manager.
-        explicit MemoryManager(usize capacity) noexcept;
-
-        ~MemoryManager() noexcept;
-
-        /// Initialize an empty memory manager.
         void init(usize capacity) noexcept;
+        explicit MemoryManager(usize capacity) noexcept;
+        ~MemoryManager() noexcept;
 
         /// Make a new arena allocator with a given size.
         Option<Arena> make_arena(usize size) noexcept;
@@ -52,32 +46,18 @@ namespace psh {
         /// Request a region of memory of a given type `T`.
         ///
         /// Parameters:
-        ///     * `length`: Number of entities of type `T` that should fit in the requested memory
+        ///     * count: Number of entities of type `T` that should fit in the requested memory
         ///                 region.
         template <typename T>
-        T* alloc(usize length) noexcept {
-            T* const new_mem = allocator.alloc<T>(length);
-            if (new_mem != nullptr) {
-                ++allocation_count;
-            }
-            return new_mem;
-        }
+        T* alloc(usize count) noexcept;
 
         /// Reallocate a region of memory created by the manager.
         ///
         /// Parameters:
         ///     * `block`: Pointer to the memory block that should be reallocated.
-        ///     * `new_length`: The new length that the memory block should have. (i.e. the
-        ///                     new memory block should be able to contain `new_length` entities of
-        ///                     type `T`).
+        ///     * `new_count`: The new length that the memory block should have.
         template <typename T>
-        T* realloc(T* block, usize new_length) noexcept {
-            T* const new_mem = allocator.realloc<T>(block, new_length);
-            if (new_mem != block) {
-                allocation_count += 1;
-            }
-            return new_mem;
-        }
+        T* realloc(T* block, usize new_length) noexcept;
 
         /// Try to free the last allocated block of memory.
         Status pop() noexcept;
@@ -97,4 +77,23 @@ namespace psh {
         /// Resets the manager by zeroing the memory offset and statistics.
         void reset() noexcept;
     };
+
+    template <typename T>
+    T* MemoryManager::alloc(usize length) noexcept {
+        T* const new_mem = allocator.alloc<T>(length);
+        if (new_mem != nullptr) {
+            ++allocation_count;
+        }
+        return new_mem;
+    }
+
+    template <typename T>
+    T* MemoryManager::realloc(T* block, usize new_length) noexcept {
+        T* const new_mem = allocator.realloc<T>(block, new_length);
+        if (new_mem != block) {
+            allocation_count += 1;
+        }
+        return new_mem;
+    }
+
 }  // namespace psh
