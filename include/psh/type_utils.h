@@ -23,6 +23,10 @@
 #include <type_traits>
 
 namespace psh {
+    // -----------------------------------------------------------------------------
+    // - Concepts -
+    // -----------------------------------------------------------------------------
+
     template <typename T>
     concept NotLValueRef = !std::is_lvalue_reference_v<T>;
 
@@ -65,6 +69,10 @@ namespace psh {
     template <typename T>
     concept Reflexive = requires(T x, T y) { x == y; };
 
+    // -----------------------------------------------------------------------------
+    // - Type trickery -
+    // -----------------------------------------------------------------------------
+
     template <typename T>
     struct RemoveRef {
         using Type = T;
@@ -77,4 +85,10 @@ namespace psh {
     struct RemoveRef<T&&> {
         using Type = T;
     };
+
+    template <typename T>
+        requires NotLValueRef<T>
+    T&& cast_forward(typename RemoveRef<T>::Type x) {
+        return static_cast<T&&>(x);
+    }
 }  // namespace psh

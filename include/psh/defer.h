@@ -41,26 +41,22 @@
 
 #pragma once
 
-#include <psh/concepts.h>
-#include <utility>
+#include <psh/type_utils.h>
 
 namespace psh {
-    template <typename T>
-        requires NotLValueRef<T>
-    T&& cast_forward(typename RemoveRef<T>::Type x) {
-        return static_cast<T&&>(x);
-    }
-
     template <typename Func>
     struct Deferrer {
         Func fn;
 
         Deferrer(Func&& _fn) : fn{_fn} {}
+        ~Deferrer() {
+            fn();
+        }
     };
 
     template <typename Func>
     Deferrer<Func> impl_make_defer_fn(Func&& fn) {
-        return Deferrer{std::forward<Func>(fn)};
+        return Deferrer{cast_forward<Func>(fn)};
     }
 
 #define psh_impl_defer_join(x, y)      x##y
