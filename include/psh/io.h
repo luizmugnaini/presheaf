@@ -66,25 +66,21 @@ namespace psh {
 #    define psh_error(msg)            psh::log(psh::LogLevel::Error, msg)
 #    define psh_warning(msg)          psh::log(psh::LogLevel::Warning, msg)
 #    define psh_info(msg)             psh::log(psh::LogLevel::Info, msg)
+#    define psh_debug(msg)            psh::log(psh::LogLevel::Debug, msg)
 #    define psh_fatal_fmt(fmt, ...)   psh::log_fmt(psh::LogLevel::Fatal, fmt, __VA_ARGS__)
 #    define psh_error_fmt(fmt, ...)   psh::log_fmt(psh::LogLevel::Error, fmt, __VA_ARGS__)
 #    define psh_warning_fmt(fmt, ...) psh::log_fmt(psh::LogLevel::Warning, fmt, __VA_ARGS__)
 #    define psh_info_fmt(fmt, ...)    psh::log_fmt(psh::LogLevel::Info, fmt, __VA_ARGS__)
+#    define psh_debug_fmt(fmt, ...)   psh::log_fmt(psh::LogLevel::Debug, fmt, __VA_ARGS__)
 #else
 #    define psh_fatal(msg)            0
 #    define psh_error(msg)            0
 #    define psh_warning(msg)          0
 #    define psh_info(msg)             0
+#    define psh_debug(msg)            0
 #    define psh_fatal_fmt(fmt, ...)   0
 #    define psh_error_fmt(fmt, ...)   0
 #    define psh_warning_fmt(fmt, ...) 0
 #    define psh_info_fmt(fmt, ...)    0
-#endif
-
-#if defined(PSH_DEBUG) && defined(PSH_ENABLE_LOGGING)
-#    define psh_debug(msg)          psh::log(psh::LogLevel::Debug, msg)
-#    define psh_debug_fmt(fmt, ...) psh::log_fmt(psh::LogLevel::Debug, fmt, __VA_ARGS__)
-#else
-#    define psh_debug(msg)          0
-#    define psh_debug_fmt(fmt, ...) 0
+#    define psh_debug_fmt(fmt, ...)   0
 #endif
