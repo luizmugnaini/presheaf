@@ -46,7 +46,7 @@
 #define psh_min(lhs, rhs) (((lhs) < (rhs)) ? (lhs) : (rhs))
 #define psh_max(lhs, rhs) (((lhs) > (rhs)) ? (lhs) : (rhs))
 
-#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n)-1)))
+#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n) - 1)))
 
 #define psh_clamp(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))
 

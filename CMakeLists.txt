@@ -104,27 +104,22 @@ set(
     "-Wswitch"
     "-Wcovered-switch-default"
     "-Wshadow"
-    "-Wnon-virtual-dtor"
-    "-Wold-style-cast"
     "-Wcast-align"
+    "-Wold-style-cast"
     "-Wunused"
-    "-Woverloaded-virtual"
     "-Wpedantic"
     "-Wconversion"
     "-Wsign-conversion"
     "-Wnull-dereference"
     "-Wdouble-promotion"
     "-Wmisleading-indentation"
+    "-Wformat=2"
+
     "-fno-rtti"
     "-fno-exceptions"
     "-fno-cxx-exceptions"
     "-fcolor-diagnostics"
     "-fno-force-emit-vtables"
-    # Don't warn about non-literal format strings.
-    # TODO: we should use -Wformat=2
-    # "-Wno-format-security"
-    # "-Wno-format-nonliteral"
-
 )
 
 # Final compiler flags
@@ -160,16 +155,13 @@ set(
     PSH_CLANGCL_CXX_FLAGS ${__PSH_COMMON_CXX_FLAGS_MSVC_CLANGCL}
     "-fcolor-diagnostics"
     "-nobuiltininc"
-
     "/W3"
     "-Wuninitialized"
     "-Wswitch"
     "-Wcovered-switch-default"
     "-Wshadow"
-    "-Wnon-virtual-dtor"
     "-Wold-style-cast"
     "-Wunused"
-    "-Woverloaded-virtual"
     "-Wpedantic"
     "-Wconversion"
     "-Wsign-conversion"
@@ -177,13 +169,7 @@ set(
     "-Wdouble-promotion"
     "-Wmisleading-indentation"
     "-Wcast-align"
-    "-Wno-cast-align"
-    "-Wno-language-extension-token"
-
-    # Don't warn about non-literal format strings.
-    # TODO: we should use -Wformat=2
-    "-Wno-format-security"
-    "-Wno-format-nonliteral"
+    "-Wformat=2"
 )
 
 # ------------------------------------------------------------------------------
