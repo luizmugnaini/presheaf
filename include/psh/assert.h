@@ -32,14 +32,14 @@ namespace psh {
         do {                                                         \
             if (!static_cast<bool>(expr)) {                          \
                 psh_fatal_fmt(psh::ASSERT_FMT, #expr, "no message"); \
-                psh::abort_program();                                \
+                psh_abort();                                         \
             }                                                        \
         } while (0)
 #    define psh_assert_msg(expr, msg)                         \
         do {                                                  \
             if (!static_cast<bool>(expr)) {                   \
                 psh_fatal_fmt(psh::ASSERT_FMT, #expr, (msg)); \
-                psh::abort_program();                         \
+                psh_abort();                                  \
             }                                                 \
         } while (0)
 #else
@@ -54,17 +54,17 @@ namespace psh {
 #define psh_unreachable()                             \
     do {                                              \
         psh_fatal("Codepath should be unreachable!"); \
-        psh::abort_program();                         \
+        psh_abort();                                  \
     } while (0)
 
 #define psh_todo()                                   \
     do {                                             \
         psh_fatal("TODO: code-path unimplemented!"); \
-        psh::abort_program();                        \
+        psh_abort();                                 \
     } while (0)
 
 #define psh_todo_msg(msg)                                             \
     do {                                                              \
         psh_fatal_fmt("TODO: code-path unimplemented, msg: %s", msg); \
-        psh::abort_program();                                         \
+        psh_abort();                                                  \
     } while (0)

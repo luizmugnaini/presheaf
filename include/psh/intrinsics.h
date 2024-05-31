@@ -20,6 +20,15 @@
 
 #pragma once
 
+#if defined(_MSC_VER)
+#    define psh_abort() __debugbreak()
+#elif defined(__clang__) || defined(__GNUC__)
+#    define psh_abort() __builtin_trap()
+#else
+#    include <signal.h>
+#    define psh_abort() raise(SIGTRAP)
+#endif
+
 #define psh_likely(expr)   __builtin_expect(!!(static_cast<long>(static_cast<bool>(expr))), 1)
 #define psh_unlikely(expr) __builtin_expect(!!(static_cast<long>(static_cast<bool>(expr))), 0)
 
