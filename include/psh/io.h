@@ -48,8 +48,6 @@ namespace psh {
             : file{_file}, line{_line}, lvl{_lvl} {}
     };
 
-    [[noreturn]] void abort_program() noexcept;
-
     /// Log a message to the standard error stream.
     void log(LogInfo info, strptr msg);
 

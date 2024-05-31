@@ -27,7 +27,6 @@
 #include <cassert>
 #include <cstdarg>
 #include <cstdio>
-#include <cstdlib>
 
 namespace psh {
     namespace {
@@ -45,11 +44,6 @@ namespace psh {
             return s;
         }
     }  // namespace
-
-    void abort_program() noexcept {
-        psh_discard(std::fprintf(stderr, "Aborting program...\n"));
-        std::abort();
-    }
 
     void log(LogInfo info, strptr msg) {
         psh_discard(
