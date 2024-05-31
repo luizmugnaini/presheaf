@@ -17,6 +17,7 @@
 ///
 /// Description: Mathematical utilities.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
+
 #pragma once
 
 #include <psh/type_utils.h>

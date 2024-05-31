@@ -1,4 +1,3 @@
-/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 ///                          Presheaf Library
 ///    Copyright (C) 2024 Luiz Gustavo Mugnaini Anselmo
 ///
@@ -23,8 +22,8 @@
 #pragma once
 
 #include <psh/arena.h>
-#include <psh/type_utils.h>
 #include <psh/mem_utils.h>
+#include <psh/type_utils.h>
 #include <psh/types.h>
 
 #include <initializer_list>

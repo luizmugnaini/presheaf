@@ -17,6 +17,7 @@
 ///
 /// Description: Vector types. Just like in linear algebra, they have a fixed size.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
+
 #pragma once
 
 #include <psh/types.h>
