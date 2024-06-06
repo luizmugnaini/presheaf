@@ -122,7 +122,7 @@ namespace psh {
         Arena* arena;
         usize  saved_offset = 0;
 
-        explicit ScratchArena(Arena* parent) noexcept;
+        explicit ScratchArena(Arena* arena) noexcept;
         ~ScratchArena() noexcept;
 
         /// Create a new scratch arena with the current state of the parent.
@@ -139,12 +139,9 @@ namespace psh {
     ///     * Any functions that return a raw pointer should be checked for nullity since allocation
     ///       may fail.
     struct Arena {
-        u8*   memory   = nullptr;  ///< Not-owned memory block managed by the arena allocator.
-        usize offset   = 0;        ///< The current offset to the free-space in the memory block.
-        usize capacity = 0;        ///< The capacity, in bytes, of the memory block.
-
-        constexpr explicit Arena() noexcept = default;
-        explicit Arena(u8* _memory, usize _capacity) noexcept;
+        u8*   buf    = nullptr;  ///< Not-owned memory block managed by the arena allocator.
+        usize size   = 0;        ///< The capacity, in bytes, of the memory block.
+        usize offset = 0;        ///< The current offset to the free-space in the memory block.
 
         // -----------------------------------------------------------------------------
         // - Allocation methods -
@@ -198,27 +195,27 @@ namespace psh {
 
     template <typename T>
     T* Arena::alloc(usize count) noexcept {
-        if (psh_unlikely(count == 0 || capacity == 0)) {
+        if (psh_unlikely(count == 0 || size == 0)) {
             return nullptr;
         }
 
-        uptr const  memory_addr    = reinterpret_cast<uptr>(memory);
-        uptr const  new_block_addr = align_forward(memory_addr + offset, alignof(T));
-        usize const size           = sizeof(T) * count;
+        uptr  memory_addr    = reinterpret_cast<uptr>(buf);
+        uptr  new_block_addr = align_forward(memory_addr + offset, alignof(T));
+        usize block_size     = sizeof(T) * count;
 
         // Check if there is enough memory.
-        if (psh_unlikely(new_block_addr + size > capacity + memory_addr)) {
+        if (psh_unlikely(new_block_addr + block_size > size + memory_addr)) {
             psh_error_fmt(
                 "ArenaAlloc::alloc unable to allocate %zu bytes of memory (%zu bytes required "
                 "due to alignment). The allocator has only %zu bytes remaining.",
-                size,
+                block_size,
                 wrap_sub(size + new_block_addr, (offset + memory_addr)),
-                capacity - offset);
+                block_size - offset);
             return nullptr;
         }
 
         // Commit the new block of memory.
-        offset = static_cast<usize>(size + new_block_addr - memory_addr);
+        offset = static_cast<usize>(block_size + new_block_addr - memory_addr);
 
         return reinterpret_cast<T*>(new_block_addr);
     }
@@ -233,7 +230,7 @@ namespace psh {
     template <typename T>
     T* Arena::realloc(T* block, usize current_count, usize new_count) noexcept {
         // Check if there is any memory at all.
-        if (psh_unlikely(capacity == 0 || memory == nullptr || new_count == 0)) {
+        if (psh_unlikely(size == 0 || buf == nullptr || new_count == 0)) {
             return nullptr;
         }
 
@@ -242,12 +239,12 @@ namespace psh {
             return alloc<T>(new_count);
         }
 
-        u8* const block_bytes = reinterpret_cast<u8*>(block);
-        u8* const mem_end     = memory + capacity;
-        u8* const free_mem    = memory + offset;
+        u8* block_bytes = reinterpret_cast<u8*>(block);
+        u8* mem_end     = buf + size;
+        u8* free_mem    = buf + offset;
 
         // Check if the block lies within the allocator's memory.
-        if (psh_unlikely((block_bytes < memory) || (block_bytes >= memory + capacity))) {
+        if (psh_unlikely((block_bytes < buf) || (block_bytes >= buf + size))) {
             psh_error("ArenaAlloc::realloc called with pointer outside of its domain.");
             return nullptr;
         }
@@ -259,37 +256,38 @@ namespace psh {
             return nullptr;
         }
 
-        usize const current_size = sizeof(T) * current_count;
-        usize const new_size     = sizeof(T) * new_count;
+        usize current_block_size = sizeof(T) * current_count;
+        usize new_block_size     = sizeof(T) * new_count;
 
         psh_assert_msg(
-            current_size <= offset,
-            "Arena::realloc called with current_size surpassing the current offset of the "
+            current_block_size <= offset,
+            "Arena::realloc called with current_block_size surpassing the current offset of the "
             "arena, which isn't possible");
 
         // If the block is the last allocated, just bump the offset.
-        if (block_bytes == free_mem - current_size) {
+        if (block_bytes == free_mem - current_block_size) {
             // Check if there is enough space.
-            if (psh_unlikely(block_bytes + new_size > mem_end)) {
+            if (psh_unlikely(block_bytes + new_block_size > mem_end)) {
                 psh_error_fmt(
                     "ArenaAlloc::realloc unable to reallocate block from %zu bytes to %zu "
                     "bytes.",
-                    current_size,
-                    new_size);
+                    current_block_size,
+                    new_block_size);
                 return nullptr;
             }
 
             offset = static_cast<usize>(
-                static_cast<isize>(offset) + static_cast<isize>(new_size - current_size));
+                static_cast<isize>(offset) +
+                static_cast<isize>(new_block_size - current_block_size));
             return block;
         }
 
-        u8* const new_mem = zero_alloc<u8>(new_count);
+        u8* new_block = zero_alloc<u8>(new_count);
 
         // Copy the existing data to the new block.
-        usize const copy_size = psh_min(current_size, new_size);
-        memory_copy(new_mem, block_bytes, copy_size);
+        usize copy_size = psh_min(current_block_size, new_block_size);
+        memory_copy(new_block, block_bytes, copy_size);
 
-        return reinterpret_cast<T*>(new_mem);
+        return reinterpret_cast<T*>(new_block);
     }
 }  // namespace psh
