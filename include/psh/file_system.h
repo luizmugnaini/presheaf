@@ -27,28 +27,29 @@
 
 namespace psh {
     enum struct FileStatus {
-        FailedToOpen,
-        FailedToClose,
-        FailedToRead,
-        OutOfMemory,
-        SizeUnknown,
+        FAILED_TO_OPEN,
+        FAILED_TO_CLOSE,
+        FAILED_TO_READ,
+        OUT_OF_MEMORY,
+        SIZE_UNKNOWN,
         OK,
     };
 
     struct FileReadResult {
         String     content{};
-        FileStatus status = FileStatus::FailedToRead;
+        FileStatus status = FileStatus::FAILED_TO_READ;
     };
 
     struct File {
         void*      handle;
         String     path{};
         usize      size   = 0;
-        FileStatus status = FileStatus::FailedToOpen;
+        FileStatus status = FileStatus::FAILED_TO_OPEN;
 
         File(Arena* arena, StringView path_, strptr flags_ = "rb") noexcept;
         ~File() noexcept;
 
+        // TODO: reading a file shouldn't be a behaviour associated with a file itself.
         FileReadResult read(Arena* arena) noexcept;
     };
 

@@ -23,6 +23,8 @@
 #include <psh/types.h>
 
 namespace psh {
+    constexpr f32 F32_IS_ZERO_RANGE = 1e-6f;
+
     struct Vec2 {
         f32 x = 0.0f;
         f32 y = 0.0f;
@@ -45,9 +47,51 @@ namespace psh {
         Vec3  operator*(Vec3 const& other) const noexcept;
         Vec3  operator*(f32 scalar) const noexcept;
 
+        /// Check if the components of the vector are inside the floating point zero range defined
+        /// by `F32_IS_ZERO_RANGE`.
+        bool is_zero() const noexcept;
+
+        /// Get the normalized vector.
+        ///
+        /// Note: The vector is assumed to be non-zero, otherwise this will result in UB.
         Vec3 normalized() const noexcept;
-        f32  dot(Vec3 const& other) const noexcept;
+
+        /// Euclidean inner product.
+        f32 dot(Vec3 const& other) const noexcept;
+
+        /// Cross product.
         Vec3 cross(Vec3 const& other) const noexcept;
+    };
+
+    struct IVec3 {
+        i32 x = 0;
+        i32 y = 0;
+        i32 z = 0;
+
+        IVec3& operator+=(IVec3 const& other) noexcept;
+        IVec3& operator-=(IVec3 const& other) noexcept;
+        IVec3& operator*=(IVec3 const& other) noexcept;
+        IVec3& operator*=(i32 scalar) noexcept;
+        IVec3  operator+(IVec3 const& other) const noexcept;
+        IVec3  operator-(IVec3 const& other) const noexcept;
+        IVec3  operator-() const noexcept;
+        IVec3  operator*(IVec3 const& other) const noexcept;
+        IVec3  operator*(i32 scalar) const noexcept;
+        Vec3   operator*(f32 scalar) const noexcept;
+
+        /// Check if the vector is zero-valued components.
+        bool is_zero() const noexcept;
+
+        /// Get the normalized vector in floating point space coordinates.
+        ///
+        /// Note: The vector is assumed to be non-zero, otherwise this will result in UB.
+        Vec3 normalized() const noexcept;
+
+        /// Euclidean inner product.
+        i32 dot(IVec3 const& other) const noexcept;
+
+        /// Cross product.
+        IVec3 cross(IVec3 const& other) const noexcept;
     };
 
     template <typename T>
@@ -61,9 +105,14 @@ namespace psh {
     struct Mat4 {
         f32 data[16] = {0.0f};
 
+        /// Get the matrix component whose row is `r` and column is `c`.
         f32& at(u32 r, u32 c) noexcept;
 
+        /// Create an identity matrix.
         static Mat4 id() noexcept;
+
+        /// Create the translation matrix for a given displacement in 3D space.
         static Mat4 translation(f32 dx, f32 dy, f32 dz) noexcept;
+        static Mat4 translation(Vec3 dx_dy_dz) noexcept;
     };
 }  // namespace psh

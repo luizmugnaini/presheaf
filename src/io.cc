@@ -30,16 +30,16 @@
 
 namespace psh {
     namespace {
-        [[maybe_unused]] constexpr strptr LOG_FMT = "%s [%s:%d] %s\n";
+        constexpr strptr LOG_FMT = "%s [%s:%d] %s\n";
 
         strptr log_level_str(LogLevel level) {
             strptr s;
             switch (level) {
-                case LogLevel::Fatal:   s = "\x1b[1;41m[FATAL]\x1b[0m"; break;
-                case LogLevel::Error:   s = "\x1b[1;31m[ERROR]\x1b[0m"; break;
-                case LogLevel::Warning: s = "\x1b[1;33m[WARNING]\x1b[0m"; break;
-                case LogLevel::Info:    s = "\x1b[1;32m[INFO]\x1b[0m"; break;
-                case LogLevel::Debug:   s = "\x1b[1;34m[DEBUG]\x1b[0m"; break;
+                case LogLevel::LEVEL_FATAL:   s = "\x1b[1;41m[FATAL]\x1b[0m"; break;
+                case LogLevel::LEVEL_ERROR:   s = "\x1b[1;31m[ERROR]\x1b[0m"; break;
+                case LogLevel::LEVEL_WARNING: s = "\x1b[1;33m[WARNING]\x1b[0m"; break;
+                case LogLevel::LEVEL_INFO:    s = "\x1b[1;32m[INFO]\x1b[0m"; break;
+                case LogLevel::LEVEL_DEBUG:   s = "\x1b[1;34m[DEBUG]\x1b[0m"; break;
             }
             return s;
         }
@@ -58,14 +58,14 @@ namespace psh {
         va_start(args, fmt);
         {
             // Format the message with the given arguments.
-            i32 const res_len = std::vsnprintf(msg, MAX_MSG_LEN, fmt, args);
+            i32 res_len = std::vsnprintf(msg, MAX_MSG_LEN, fmt, args);
             assert(
                 res_len != -1 && "std::snptrintf unable to parse the format string and arguments");
 
             // Stamp the message with a null-terminator.
-            auto const  ures_len = static_cast<usize>(res_len);
-            usize const msg_len  = ures_len < MAX_MSG_LEN ? ures_len : MAX_MSG_LEN;
-            msg[msg_len]         = 0;
+            usize ures_len = static_cast<usize>(res_len);
+            usize msg_len  = ures_len < MAX_MSG_LEN ? ures_len : MAX_MSG_LEN;
+            msg[msg_len]   = 0;
         }
         va_end(args);
 

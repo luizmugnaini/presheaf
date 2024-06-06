@@ -23,7 +23,7 @@
 #include <psh/io.h>
 
 namespace psh {
-    [[maybe_unused]] constexpr strptr ASSERT_FMT = "Assertion failed: %s, msg: %s";
+    constexpr strptr ASSERT_FMT = "Assertion failed: %s, msg: %s";
 }
 
 // Assertion macros.

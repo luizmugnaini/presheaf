@@ -106,7 +106,6 @@ set(
     "-Wshadow"
     "-Wcast-align"
     "-Wold-style-cast"
-    "-Wunused"
     "-Wpedantic"
     "-Wconversion"
     "-Wsign-conversion"
@@ -114,6 +113,8 @@ set(
     "-Wdouble-promotion"
     "-Wmisleading-indentation"
     "-Wformat=2"
+
+    "-Wno-unused-variable"
 
     "-fno-rtti"
     "-fno-exceptions"
@@ -161,7 +162,6 @@ set(
     "-Wcovered-switch-default"
     "-Wshadow"
     "-Wold-style-cast"
-    "-Wunused"
     "-Wpedantic"
     "-Wconversion"
     "-Wsign-conversion"
@@ -170,6 +170,7 @@ set(
     "-Wmisleading-indentation"
     "-Wcast-align"
     "-Wformat=2"
+    "-Wno-unused-variable"
 )
 
 # ------------------------------------------------------------------------------

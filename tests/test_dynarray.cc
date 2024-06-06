@@ -33,12 +33,12 @@ struct Foo {
 };
 
 void push_elements(MemoryManager& mem_manager) {
-    auto          arena = mem_manager.make_arena(sizeof(i32) * 1024).demand();
+    Arena         arena = mem_manager.make_arena(sizeof(i32) * 1024).demand();
     DynArray<i32> v{&arena};
     for (i32 i = 0; i < 100; ++i) {
         v.push(i);
         for (i32 j = 0; j < i; ++j) {
-            auto uj = static_cast<usize>(j);
+            usize uj = static_cast<usize>(j);
             psh_assert(v[uj] == j);
         }
     }
@@ -75,7 +75,7 @@ void size_and_capacity(MemoryManager& mem_manager) {
 }
 
 void peek_and_pop(MemoryManager& mem_manager) {
-    auto          arena = mem_manager.make_arena(sizeof(i32) * 3).demand();
+    Arena         arena = mem_manager.make_arena(sizeof(i32) * 3).demand();
     DynArray<i32> v{&arena, 3};
     v.push(4), v.push(5), v.push(6);
     i32* p = nullptr;
@@ -99,7 +99,7 @@ void peek_and_pop(MemoryManager& mem_manager) {
 }
 
 void remove(MemoryManager& mem_manager) {
-    auto          arena = mem_manager.make_arena(sizeof(i32) * 5).demand();
+    Arena         arena = mem_manager.make_arena(sizeof(i32) * 5).demand();
     DynArray<i32> v{&arena, 5};
     v.push(4), v.push(7), v.push(8), v.push(9), v.push(55);
     i32* p = nullptr;
@@ -151,7 +151,7 @@ void remove(MemoryManager& mem_manager) {
 }
 
 void clear(MemoryManager& mem_manager) {
-    auto          arena = mem_manager.make_arena(sizeof(f32) * 4).demand();
+    Arena         arena = mem_manager.make_arena(sizeof(f32) * 4).demand();
     DynArray<f32> v{&arena, 4};
     v.push(7.0f), v.push(4.8f), v.push(6.1f), v.push(3.14f);
     psh_assert_msg(v.size == static_cast<usize>(4), "Expected vector size to be 4");

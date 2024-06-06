@@ -49,8 +49,8 @@ namespace psh {
         }
 
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_MEMCPY_OVERLAP)
-        auto const dest_addr = reinterpret_cast<uptr>(dest);
-        auto const src_addr  = reinterpret_cast<uptr>(src);
+        uptr const dest_addr = reinterpret_cast<uptr>(dest);
+        uptr const src_addr  = reinterpret_cast<uptr>(src);
         psh_assert_msg(
             (dest_addr + size > src_addr) || (dest_addr < src_addr + size),
             "memcpy called but source and destination overlap, which produces UB");

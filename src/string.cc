@@ -38,14 +38,14 @@ namespace psh {
     }
 
     StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept {
-        i32 const    cmp = std::strcmp(lhs, rhs);
+        i32          cmp = std::strcmp(lhs, rhs);
         StrCmpResult res;
         if (cmp == 0) {
-            res = StrCmpResult::Equal;
+            res = StrCmpResult::EQUAL;
         } else if (cmp < 0) {
-            res = StrCmpResult::LessThan;
+            res = StrCmpResult::LESS_THAN;
         } else {
-            res = StrCmpResult::GreaterThan;
+            res = StrCmpResult::GREATER_THAN;
         }
         return res;
     }
@@ -116,8 +116,8 @@ namespace psh {
         usize new_capacity = data.size + additional_size;
 
         if (data.capacity < new_capacity) {
-            if (psh_unlikely(data.resize(new_capacity) == Status::Failed)) {
-                return Status::Failed;
+            if (psh_unlikely(data.resize(new_capacity) == Status::FAILED)) {
+                return Status::FAILED;
             }
         }
 

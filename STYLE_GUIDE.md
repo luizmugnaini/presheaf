@@ -1,5 +1,6 @@
 # Good Practices
 
+- No third-party code.
 - Classes & inheritance: no.
 - No exceptions.
 - No RTTI.
@@ -24,7 +25,7 @@ private:
 
 int main() {
   SuperPrivate my_foo{"Super secure private TM", 5};
-  auto *oops = reinterpret_cast<char *>(&my_foo);
+  char *oops = reinterpret_cast<char *>(&my_foo);
   std::printf("%s { name: %s, id: %d }",
               stringify(my_foo),
               *reinterpret_cast<char const **>(oops),
@@ -36,10 +37,9 @@ int main() {
 - Use the least amount of STL you can - possibly don't use it at all as it can introduce
   considerable bloat to the software and worsen both the compile time and runtime, as well as a
   larger memory footprint.
-- Unfortunately, some STL constructs (`std::initializer_list` for instance) are compiler intrinsic
-  are mingled inside of the STL. 
+- Unfortunately, some STL constructs (`std::initializer_list` for instance) are compiler intrinsic so
+  we have to include headers providing them if we wish to use these features.
 - Prefer the C++ wrappers for the libc headers, like `<cstdio>`. This keeps the namespace clean.
-- Don't use third-party code when you can easily write it yourself.
 - Always provide useful documentation. Note however that some docs may not be really that relevant:
   for instance, the method `psh::Array::size_bytes` is obvious, it simply returns the size of the
   array in bytes.
@@ -58,30 +58,35 @@ int main() {
 
 # Regarding `auto`
 
-Almost never `auto`, however in case you have a cast you may use `auto` to avoid repetition:
-```cpp
-auto* const memory = reinterpret_cast<u8*>(some_ptr);
-```
-Notice that `auto` should only be used for the **base** type, that is, qualifiers such as `*` or
-`const` should be written **explicitly**.
+Don't do `auto`, simple as that. Why?
+- Many may argue that it improves refactoring, but the fact is that if your return type changed,
+  the behaviour of the object changed and you should probably change the code anyway. So no
+  refactoring improvement is gained by using `auto` - in fact, it makes it worse to refactor
+  by obscuring the type.
+- No one has the obligation to use an LSP just because you use.
 
 # The `const` qualifier
 
 - The `const` qualifier should *always* be put to the right of the type, which allows one to read
   any type seamlessly from right to left. For instance, `int const` is a constant integer, while
   `int const* const` is a constant pointer to an array of constant integers.
+- Don't use `const` when there is absolutely no need to, it just clutters the code and decreases
+  readability. Moreover, C++ has pointers, you can still modify them if you want.
 
 # The `constexpr` qualifier
 
 Prefer using `constexpr` over a `#define` as it permits type safety. You should, however, not abuse
-the use of `constexpr`'s for functions that will clearly never be invoked at compile time.
+the use of `constexpr`'s for functions that will clearly never be invoked at compile time. The latter
+will only make the code harder to read and give you the false feeling that that codepath is optimized
+in some way. Always remember that the compiler gives you no guarantee that the `constexpr` function
+*will* be evaluated at compile time, just that it *can*.
 
 # The `[[nodiscard]]` attribute
 
 I opted out of the use of the `nodiscard` attribute simply because it litters the codebase and
 decreases significantly the readability of the code just because of noise. Moreover, the kinds of
 bugs that `nodiscard` prevents are actually pretty uninteresting and should be uncommon in any well
-written code.
+written codebase.
 
 # Strings
 
@@ -96,44 +101,29 @@ We mostly follow the advice given by the [C++ Core Guidelines](https://isocpp.gi
 ## General Advice
 
 - Have clear names over succinct ones.
-
-## Variables
-
-- **Common variables** should be named using snake case: `my_variable`.
-- **Global constants** (declared with `const` and `constexpr`) should be all
-  caps and in snake case: `MY_CONSTANT_VAR`.
-- **Global mutable variables** should be named with a starting `g` and in a snake case style:
-  `g_my_mutable_global_var`.
-
-## Functions
-
-- **Functions** should be named using snake case: `my_function`.
-- **Arguments** should be named using snake case: `my_function_argument`.
-
-### Internal Functions
-
-Internal functions are those that shouldn't be called directly by the end user and should be
-appended by one underscore: `my_internal_function_`.
+- Variables and functions should be named using snake case: `my_variable`.
+- Structs should be named using pascal case: `MyStructFoo`. The same applies for enums.
+- Global constants (declared with `const` or `constexpr`) should be all caps and in
+  snake case: `MY_CONSTANT_VAR`.
+- Enum types should be named with pascal case and their members should
+  be all caps with snake case, as they are constant expressions.
 
 ## Classes and Structs
 
-- Both **classes and structs** should be capitalized in each first letter of a word: `MyClass`.
-- **Private member variables** should be named using snake case and end with a trailing underscore:
-  `my_private_member_var_`.
-- **Public member variables** should be named using snake case: `my_public_member_var`.
-- **Methods** should be named using snake case: `my_method`.
-- Regarding **method argument names**, if you need to avoid name collisions with public member
-  variables, you can put an underscore to the end of the argument: `_arg_avoiding_collision`.
+- Always use the keyword `struct`, the keyword `class` is useless and just adds another word to the grammar.
+- Private variables should *not* be used, everything should be accessible. The user is responsible for their
+  usage, not the library - if one wants to break some implicit contract, let it be.
+- Regarding **method argument names**, if you need to avoid name collisions with member variables, you can
+  put an underscore to the start of the argument: `_arg_avoiding_collision`.
 
 # Enumerations
 
-- Prefer enumeration structs as they provide some safety.
-- **Enums and its members** should be capitalized in each first letter of a word:
+- Prefer enumeration structs as they provide namespaced constants.
   ```cpp
   enum struct MyEnum {
-      EnumMemberA,
-      EnumMemberB,
-      EnumMemberC,
+      ENUM_MEMBER_A,
+      ENUM_MEMBER_B,
+      ENUM_MEMBER_C,
   };
   ```
 
@@ -147,4 +137,5 @@ appended by one underscore: `my_internal_function_`.
 
 # Recommended reads
 
-- [Orthodox C++ principles](https://gist.github.com/bkaradzic/2e39896bc7d8c34e042b).
+- [Orthodox C++ principles](https://gist.github.com/bkaradzic/2e39896bc7d8c34e042b) has some good insights,
+  although we don't follow all of them in this codebase.

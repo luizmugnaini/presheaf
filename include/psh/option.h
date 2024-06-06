@@ -26,7 +26,7 @@
 namespace psh {
     enum struct Status : bool {
         OK     = true,
-        Failed = false,
+        FAILED = false,
     };
 
     /// Option type.

@@ -54,14 +54,14 @@ namespace psh {
 
         // Check if the block lies within the allocator's memory.
         if (psh_unlikely((block < mem_start) || (block > mem_start + allocator.previous_offset))) {
-            [[maybe_unused]] strptr fail_reason =
+            strptr fail_reason =
                 (block > mem_start + allocator.capacity)
                     ? "MemoryManager::clear_until called with a pointer outside of the stack "
                       "mem_start region."
                     : "MemoryManager::clear_until called with a pointer to an already free region "
                       "of the stack mem_start.";
             psh_error(fail_reason);
-            return Status::Failed;
+            return Status::FAILED;
         }
 
         // Pop the top memory block until popping `block` or reaching the end of the allocator.

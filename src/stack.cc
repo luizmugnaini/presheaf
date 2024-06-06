@@ -74,7 +74,7 @@ namespace psh {
 
     Status Stack::pop() noexcept {
         if (psh_unlikely(previous_offset == 0)) {
-            return Status::Failed;
+            return Status::FAILED;
         }
 
         u8 const*          top = memory + previous_offset;
@@ -88,19 +88,19 @@ namespace psh {
 
     Status Stack::clear_at(u8 const* block) noexcept {
         if (psh_unlikely(block == nullptr)) {
-            return Status::Failed;
+            return Status::FAILED;
         }
 
         // Check if the block is within the allocator's memory.
         if (psh_unlikely((block < memory) || (block > memory + previous_offset))) {
-            [[maybe_unused]] strptr fail_reason =
+            strptr fail_reason =
                 (block > memory + capacity)
                     ? "StackAlloc::free_at called with a pointer outside of the stack "
                       "allocator memory region."
                     : "StackAlloc::free_at called with a pointer to an already free region of "
                       "the stack allocator memory.";
             psh_error(fail_reason);
-            return Status::Failed;
+            return Status::FAILED;
         }
 
         StackHeader const* header =

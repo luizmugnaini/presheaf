@@ -26,7 +26,7 @@
 #include <limits>
 
 namespace psh {
-    [[maybe_unused]] constexpr f32 PI = 3.14159265359f;
+    constexpr f32 PI = 3.14159265359f;
 
     /// Add two values wrapping the result to the corresponding maximal numeric limit.
     template <typename T>

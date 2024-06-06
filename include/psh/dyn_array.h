@@ -247,7 +247,7 @@ namespace psh {
                     "DynArray::resize failed to resize capacity from %zu to %zu",
                     capacity,
                     new_capacity);
-                return Status::Failed;
+                return Status::FAILED;
             }
 
             // Commit the resizing.
@@ -274,7 +274,7 @@ namespace psh {
 
         /// Try to pop the last element of the dynamic array.
         Status pop() noexcept {
-            Status res = Status::Failed;
+            Status res = Status::FAILED;
             if (psh_likely(size > 0)) {
                 --size;
                 res = Status::OK;
@@ -291,7 +291,7 @@ namespace psh {
                     "%zu.",
                     idx,
                     size);
-                return Status::Failed;
+                return Status::FAILED;
             }
 #endif
 
