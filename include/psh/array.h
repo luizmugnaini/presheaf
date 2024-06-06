@@ -15,8 +15,8 @@
 ///    with this program; if not, write to the Free Software Foundation, Inc.,
 ///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ///
-/// Description: Fixed size array types whose size is only known at runtime, also known as variable
-///              length array (VLA).
+/// Description: Fixed size array types whose size is only known at runtime, analogous to a VLA, but
+///              has its memory bound to a parent arena allocator.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
 #pragma once
@@ -30,11 +30,14 @@
 
 namespace psh {
     /// Array with run-time known constant capacity.
+    ///
+    /// The array lifetime is bound to the lifetime of the arena passed at initialization, being
+    /// responsible to allocate the memory referenced by the array.
     template <typename T>
         requires IsObject<T>
     struct Array {
-        usize size = 0;
         T*    buf  = nullptr;
+        usize size = 0;
 
         // -----------------------------------------------------------------------------
         // - Constructors and initializers -
@@ -60,7 +63,10 @@ namespace psh {
             this->init(_arena, _size);
         }
 
-        /// Initialize the array with the contents of an initializer list.
+        /// Initialize the array with a list of elements.
+        ///
+        /// Copies the contents of the initializer list into the array's memory, so its lifetime is
+        /// not bound do the initializer list.
         void init(std::initializer_list<T> list, Arena* _arena) noexcept {
             size = list.size;
             if (psh_likely(size != 0)) {
@@ -73,7 +79,7 @@ namespace psh {
             }
 
             // Copy initializer list content.
-            memory_copy(
+            std::memcpy(
                 reinterpret_cast<u8*>(buf),
                 reinterpret_cast<u8 const*>(list.begin()),
                 sizeof(T) * list.size);
@@ -84,7 +90,10 @@ namespace psh {
             this->init(list, _arena);
         }
 
-        /// Initialize the array with the contents of a fat pointer.
+        /// Initialize the array with the elements of a fat pointer.
+        ///
+        /// Copies the contents of the fat pointer into the array's memory, so its lifetime is not
+        /// bound to fat pointer.
         void init(FatPtr<T> const& fptr, Arena* _arena) noexcept {
             size = fptr.size;
             if (psh_likely(size != 0)) {
@@ -97,7 +106,7 @@ namespace psh {
             }
 
             // Copy buffer content.
-            memory_copy(
+            std::memcpy(
                 reinterpret_cast<u8*>(buf),
                 reinterpret_cast<u8 const*>(fptr.buf),
                 fptr.size_bytes());

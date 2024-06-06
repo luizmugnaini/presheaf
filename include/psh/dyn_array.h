@@ -28,15 +28,9 @@
 #include <initializer_list>
 
 namespace psh {
-    /// Resizing factor for the `DynArray::grow` method.
-    static constexpr usize DYNARRAY_RESIZE_CAPACITY_FACTOR   = 2;
-    /// The initial capacity given to a `DynArray` if none is specified.
-    static constexpr usize DYNARRAY_DEFAULT_INITIAL_CAPACITY = 4;
-
-    /// Dynamic array managed by an arena allocator.
+    /// Run-time variable length array.
     ///
-    /// The dynamic array's buffer shouldn't be destroyed by the array itself, since it *never* owns
-    /// the memory.
+    /// A dynamic array has its lifetime bound to its associated arena.
     template <typename T>
         requires IsObject<T>
     struct DynArray {
@@ -44,6 +38,9 @@ namespace psh {
         usize  size     = 0;
         usize  capacity = 0;
         T*     buf      = nullptr;
+
+        static constexpr usize DYNARRAY_DEFAULT_INITIAL_CAPACITY = 4;
+        static constexpr usize DYNARRAY_RESIZE_CAPACITY_FACTOR   = 2;
 
         // -----------------------------------------------------------------------------
         // - Constructors and initializers -

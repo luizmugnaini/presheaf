@@ -20,9 +20,9 @@
 
 #pragma once
 
-#include <psh/type_utils.h>
 #include <psh/fat_ptr.h>
 #include <psh/not_null.h>
+#include <psh/type_utils.h>
 #include <psh/types.h>
 
 /// Add or subtract an offset from a pointer if and only if the pointer is not null.
