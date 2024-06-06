@@ -20,10 +20,10 @@
 
 #pragma once
 
-#include <psh/type_utils.h>
 #include <psh/fat_ptr.h>
 #include <psh/intrinsics.h>
 #include <psh/option.h>
+#include <psh/type_utils.h>
 
 namespace psh {
     // -----------------------------------------------------------------------------

@@ -63,7 +63,7 @@ void test_string() {
         psh_assert(s.data.capacity == s.data.size + 1);
         psh_assert(s.data.buf[s.data.capacity - 1] == 0);
     }
-    std::free(arena.memory);
+    std::free(arena.buf);
     test_passed();
 }
 
@@ -123,7 +123,7 @@ void test_string_join() {
         psh_assert(s.join({"Middle", "Earth"}, " ++ ") == Status::OK);
         psh_assert(str_equal(s.data.buf, "Hello ++ Middle ++ Earth"));
     }
-    std::free(arena.memory);
+    std::free(arena.buf);
     test_passed();
 }
 
