@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # Project description
-# 
+#
 # Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 # ------------------------------------------------------------------------------
 
@@ -26,12 +26,16 @@ message(STATUS "Linker executable: ${CMAKE_LINKER}")
 # You can assign to these options via `-D[OPTION NAME]=[On/Off]`.
 # ------------------------------------------------------------------------------
 
+# Code behaviour
 option(PSH_NAMESPACED_TYPES     "All fundamental types (u32, i64, etc) should be namespaced"     ON)
 option(PSH_DEBUG                "Compile in debug mode (enables all other flags)"               OFF)
 option(PSH_ENABLE_LOGGING       "Compile with logging"                                          OFF)
 option(PSH_ENABLE_ASSERTS       "Compile with assert checks"                                    OFF)
 option(PSH_CHECK_BOUNDS         "Compile with bound check"                                      OFF)
 option(PSH_CHECK_MEMCPY_OVERLAP "Checks if memcpy is called with overlapping regions of memory" OFF)
+
+# Build options
+option(PSH_BUILD_TEST "Build the entire suite of library tests" OFF)
 
 # ------------------------------------------------------------------------------
 # Tooling integration
@@ -198,7 +202,7 @@ set(PSH_CLANG_CXX_SAN_FLAGS ${__PSH_COMMON_CXX_SAN_FLAGS_GCC_CLANG})
 # ---- MSVC and Clang-cl ----
 
 set(
-    __PSH_COMMON_CXX_SAN_FLAGS_MSVC_CLANGCL 
+    __PSH_COMMON_CXX_SAN_FLAGS_MSVC_CLANGCL
     # TODO: add "/fsanitize=address" flag
 )
 set(PSH_MSVC_CXX_SAN_FLAGS    ${__PSH_COMMON_CXX_SAN_FLAGS_MSVC_CLANGCL})
@@ -280,24 +284,23 @@ target_include_directories(presheaf PUBLIC "${PROJECT_SOURCE_DIR}/include")
 # Library tests
 # ------------------------------------------------------------------------------
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message(STATUS "Enabling tests")
-    enable_testing()
+
+if(PSH_BUILD_TESTS)
+    list(
+        APPEND TESTS
+            "test_types"
+            "test_allocators"
+            "test_memory_manager"
+            "test_dynarray"
+            "test_string"
+            "test_bit"
+            "test_vec"
+    )
+
+    foreach(t IN LISTS TESTS)
+        add_executable(${t} "${PROJECT_SOURCE_DIR}/tests/${t}.cc")
+        target_compile_options(${t} PRIVATE ${PSH_CXX_TEST_DEFINES} ${PSH_CXX_FLAGS} ${PSH_SAN_FLAGS})
+        target_link_libraries(${t} PUBLIC ${PSH_SAN_FLAGS} presheaf)
+        add_test(NAME ${t} COMMAND ${t})
+    endforeach()
 endif()
-
-list(
-    APPEND TESTS
-        "test_types"
-        "test_allocators"
-        "test_memory_manager"
-        "test_dynarray"
-        "test_string"
-        "test_bit"
-)
-
-foreach(t IN LISTS TESTS)
-    add_executable(${t} "${PROJECT_SOURCE_DIR}/tests/${t}.cc")
-    target_compile_options(${t} PRIVATE ${PSH_CXX_TEST_DEFINES} ${PSH_CXX_FLAGS} ${PSH_SAN_FLAGS})
-    target_link_libraries(${t} PUBLIC ${PSH_SAN_FLAGS} presheaf)
-    add_test(NAME ${t} COMMAND ${t})
-endforeach()

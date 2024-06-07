@@ -58,13 +58,15 @@ if CURRENT_LINKER == "mold":
 
 DEBUG_FLAGS = [
     "-DCMAKE_BUILD_TYPE=Debug",
-    "-DPSH_DEBUG=On",
-    "-DPSH_ENABLE_LOGGING=On",
+    "-DPSH_DEBUG=ON",
+    "-DPSH_ENABLE_LOGGING=ON",
+    "-DPSH_BUILD_TESTS=ON",
 ]
 RELEASE_FLAGS = [
     "-DCMAKE_BUILD_TYPE=Release",
-    "-DPSH_DEBUG=Off",
-    "-DPSH_ENABLE_LOGGING=Off",
+    "-DPSH_DEBUG=OFF",
+    "-DPSH_ENABLE_LOGGING=OFF",
+    "-DPSH_BUILD_TESTS=ON",
 ]
 
 CPP_SRC_EXTENSION = ".cc"
@@ -260,8 +262,8 @@ if args.clear_cache:
 if args.build is not None:
     match args.build:
         case "debug":
-            command_build(build_flags=DEBUG_FLAGS)
+            command_build(DEBUG_FLAGS)
         case "release":
-            command_build(build_flags=RELEASE_FLAGS)
+            command_build(RELEASE_FLAGS)
 if args.test is not None:
     command_test(args.test)

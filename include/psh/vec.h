@@ -21,10 +21,10 @@
 #pragma once
 
 #include <psh/types.h>
+#include <psh/math.h>
 
 namespace psh {
-    constexpr f32 F32_IS_ZERO_RANGE = 1e-6f;
-
+    /// 2-dimensional vector in floating-point space.
     struct Vec2 {
         f32 x = 0.0f;
         f32 y = 0.0f;
@@ -32,6 +32,7 @@ namespace psh {
         Vec2& operator+=(Vec2 const& other) noexcept;
     };
 
+    /// 3-dimensional vector in floating-point space.
     struct Vec3 {
         f32 x = 0.0f;
         f32 y = 0.0f;
@@ -63,6 +64,7 @@ namespace psh {
         Vec3 cross(Vec3 const& other) const noexcept;
     };
 
+    /// 3-dimensional vector in integer space.
     struct IVec3 {
         i32 x = 0;
         i32 y = 0;
@@ -94,7 +96,7 @@ namespace psh {
         IVec3 cross(IVec3 const& other) const noexcept;
     };
 
-    template <typename T>
+    /// 4-dimensional vector in floating-point space.
     struct Vec4 {
         f32 x = 0.0f;
         f32 y = 0.0f;
@@ -102,8 +104,12 @@ namespace psh {
         f32 w = 0.0f;
     };
 
+    /// 4-dimensional square matrix in floating-point space.
+    ///
+    /// Note: The matrix is laid in memory in a column-major form. Although horrible, this is the
+    ///       standard way that GLSL reads matrices, so we'll have to compromise on that.
     struct Mat4 {
-        f32 data[16] = {0.0f};
+        f32 buf[16] = {0.0f};
 
         /// Get the matrix component whose row is `r` and column is `c`.
         f32& at(u32 r, u32 c) noexcept;

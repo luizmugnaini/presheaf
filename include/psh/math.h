@@ -25,8 +25,17 @@
 
 #include <limits>
 
+
+#include <psh/io.h>
+
 namespace psh {
     constexpr f32 PI = 3.14159265359f;
+    constexpr f32 F32_IS_ZERO_RANGE = 1e-6f;
+
+    constexpr bool float_equal(f32 a, f32 b) noexcept {
+        f32 sub = a - b;
+        return (-F32_IS_ZERO_RANGE < sub) && (sub < F32_IS_ZERO_RANGE);
+    }
 
     /// Add two values wrapping the result to the corresponding maximal numeric limit.
     template <typename T>

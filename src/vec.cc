@@ -159,10 +159,7 @@ namespace psh {
     }
 
     Vec3 IVec3::operator*(f32 scalar) const noexcept {
-        return Vec3{
-            static_cast<f32>(x) * scalar,
-            static_cast<f32>(y) * scalar,
-            static_cast<f32>(z) * scalar};
+        return Vec3{static_cast<f32>(x) * scalar, static_cast<f32>(y) * scalar, static_cast<f32>(z) * scalar};
     }
 
     bool IVec3::is_zero() const noexcept {
@@ -201,28 +198,28 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     f32& Mat4::at(u32 r, u32 c) noexcept {
-        return data[r * 4 + c];
+        return buf[c * 4 + r];
     }
 
     Mat4 Mat4::id() noexcept {
         // clang-format off
-        return Mat4{{
+        return Mat4{
                 1.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, 1.0f, 0.0f, 0.0f,
                 0.0f, 0.0f, 1.0f, 0.0f,
                 0.0f, 0.0f, 0.0f, 1.0f,
-            }};
+        };
         // clang-format on
     }
 
     Mat4 Mat4::translation(f32 dx, f32 dy, f32 dz) noexcept {
         // clang-format off
-        return Mat4{{
-                0.0f, 0.0f, 0.0f,   dx,
-                0.0f, 0.0f, 0.0f,   dy,
-                0.0f, 0.0f, 0.0f,   dz,
+        return Mat4{
                 0.0f, 0.0f, 0.0f, 0.0f,
-            }};
+                0.0f, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.0f, 0.0f,
+                  dx,   dy,   dz, 0.0f,
+        };
         // clang-format on
     }
 
