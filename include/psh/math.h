@@ -52,4 +52,8 @@ namespace psh {
         T const c = a - b;
         return (c <= a) ? c : std::numeric_limits<T>::min();
     }
+
+    constexpr f32 as_radians(f32 deg) noexcept {
+        return deg * PI / 180.0f;
+    }
 }  // namespace psh
