@@ -104,7 +104,7 @@ void test_string_join() {
     {
         // Empty string.
         String estr{&arena, 20};
-        psh_assert(estr.join(views1.const_fat_ptr(), ", ") == Status::OK);
+        psh_assert(estr.join(const_fat_ptr(views1), ", ") == Status::OK);
 
         psh_assert(str_equal(estr.data.buf, check_str1.buf));
         psh_assert(estr.data.size == check_str1.size());

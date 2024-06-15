@@ -182,7 +182,7 @@ def command_build(build_flags: list[str] = []):
 
 
 def command_test(pattern: str):
-    command_build()
+    command_build(DEBUG_FLAGS)
     if pattern == "all":
         run_tests()
     else:

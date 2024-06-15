@@ -38,14 +38,14 @@ void zeroed_at_initialization() {
     MemoryManager memory_manager{1024};
 
     // Check validity.
-    void* mem_ptr = memory_manager.allocator.memory;
+    void* mem_ptr = memory_manager.allocator.buf;
     psh_assert(mem_ptr != nullptr);
 
     psh_assert(memory_manager.allocator.offset == static_cast<i64>(0));
     psh_assert(memory_manager.allocation_count == 0ull);
 
     // Check allocator.
-    psh_assert(memory_manager.allocator.memory == reinterpret_cast<u8*>(mem_ptr));
+    psh_assert(memory_manager.allocator.buf == reinterpret_cast<u8*>(mem_ptr));
     psh_assert(memory_manager.allocator.offset == 0ull);
     psh_assert(memory_manager.allocator.previous_offset == 0ull);
     psh_assert(memory_manager.allocator.capacity == static_cast<usize>(1024));
@@ -55,7 +55,7 @@ void zeroed_at_initialization() {
 void initialization_and_shutdown() {
     usize         memory_manager_capacity = 2048;
     MemoryManager memory_manager{memory_manager_capacity};
-    u8 const*     mem_sys_alloc_mem_actual_addr = memory_manager.allocator.memory;
+    u8 const*     mem_sys_alloc_mem_actual_addr = memory_manager.allocator.buf;
 
     // Acquire a block of memory and write to it.
     usize block_length = 60;

@@ -15,7 +15,8 @@
 ///    with this program; if not, write to the Free Software Foundation, Inc.,
 ///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ///
-/// Description: Vector types. Just like in linear algebra, they have a fixed size.
+/// Description: Vector types (yes, a matrix is also vector). Just like in linear algebra, they have
+///              a fixed size.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
 #pragma once

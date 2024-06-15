@@ -249,7 +249,7 @@ void scratch_arena() {
 void print_stack_info(Stack const& stack) {
     std::printf(
         "Stack {\n\tmemory: %zu,\n\tcapacity: %zu,\n\toffset: %zu,\n\tprevious_offset: %zu\n}\n",
-        reinterpret_cast<uptr>(stack.memory),
+        reinterpret_cast<uptr>(stack.buf),
         stack.capacity,
         stack.offset,
         stack.previous_offset);
@@ -432,7 +432,7 @@ void stack_memory_stress_and_free() {
     u8*   buf      = reinterpret_cast<u8*>(std::malloc(capacity));
     Stack stack{buf, capacity};
 
-    iptr  stack_buf_diff = reinterpret_cast<iptr>(stack.memory);
+    iptr  stack_buf_diff = reinterpret_cast<iptr>(stack.buf);
     usize zero           = 0ull;
 
     usize  a1_alignment = sizeof(strptr);
@@ -497,7 +497,7 @@ void stack_memory_stress_and_free() {
     stack.clear();
     psh_assert(stack.previous_offset == zero);
     psh_assert(stack.offset == zero);
-    psh_assert(stack.memory && (stack.capacity != 0));  // The memory should still be available.
+    psh_assert(stack.buf && (stack.capacity != 0));  // The memory should still be available.
 
     // Ensure we can allocate after freeing all blocks.
     i32* b1 = stack.alloc<int>(80);
