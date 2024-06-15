@@ -99,7 +99,7 @@ namespace psh {
         // - Constructors and initializers -
         // -----------------------------------------------------------------------------
 
-        constexpr Stack() noexcept = default;
+        Stack() noexcept = default;
         void init(u8* _memory, usize _capacity) noexcept;
         Stack(u8* _memory, usize _capacity) noexcept;
 

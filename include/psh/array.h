@@ -121,11 +121,11 @@ namespace psh {
         // - Size related utilities -
         // -----------------------------------------------------------------------------
 
-        constexpr bool is_empty() const noexcept {
+        bool is_empty() const noexcept {
             return (size == 0);
         }
 
-        constexpr usize size_bytes() const noexcept {
+        usize size_bytes() const noexcept {
             return sizeof(T) * size;
         }
 
@@ -133,19 +133,19 @@ namespace psh {
         // - Iterator utilities -
         // -----------------------------------------------------------------------------
 
-        constexpr T* begin() noexcept {
+        T* begin() noexcept {
             return buf;
         }
 
-        constexpr T const* begin() const noexcept {
+        T const* begin() const noexcept {
             return static_cast<T const*>(buf);
         }
 
-        constexpr T* end() noexcept {
+        T* end() noexcept {
             return psh_ptr_add(buf, size);
         }
 
-        constexpr T const* end() const noexcept {
+        T const* end() const noexcept {
             return psh_ptr_add(static_cast<T const*>(buf), size);
         }
 
@@ -153,14 +153,14 @@ namespace psh {
         // - Indexed reads -
         // -----------------------------------------------------------------------------
 
-        constexpr T& operator[](usize index) noexcept {
+        T& operator[](usize index) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(index < size, "Array::operator[] index out of bounds");
 #endif
             return buf[index];
         }
 
-        constexpr T const& operator[](usize index) const noexcept {
+        T const& operator[](usize index) const noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(index < size, "Array::operator[] index out of bounds");
 #endif

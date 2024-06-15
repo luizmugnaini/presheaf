@@ -83,7 +83,7 @@ namespace psh {
     struct String {
         DynArray<char> data;
 
-        constexpr String() = default;
+        String() = default;
         String(Arena* arena, usize capacity) noexcept;
         String(Arena* arena, StringView sv) noexcept;
         void init(Arena* arena, usize capacity) noexcept;
