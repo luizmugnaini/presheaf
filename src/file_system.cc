@@ -102,7 +102,7 @@ namespace psh {
             has_read_permission(file.flag),
             "read_file cannot read File whose reading permission is disabled.");
 
-            if (psh_unlikely(file.status != FileStatus::OK)) {
+        if (psh_unlikely(file.status != FileStatus::OK)) {
             return {.status = FileStatus::FAILED_TO_READ};
         }
 
