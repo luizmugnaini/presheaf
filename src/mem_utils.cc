@@ -39,18 +39,18 @@ namespace psh {
     }
 
     void memory_set(FatPtr<u8> fptr, i32 fill) noexcept {
-        if (psh_unlikely(fptr.buf == nullptr)) return;
+        if (psh_unlikely((fptr.size == 0) || (fptr.buf == nullptr))) {
+            return;
+        }
         psh_discard(std::memset(fptr.buf, fill, fptr.size));
     }
 
     void memory_copy(u8* dest, u8 const* src, usize size) noexcept {
-        if (psh_unlikely(dest == nullptr || src == nullptr)) {
-            return;
-        }
+        if (psh_unlikely(dest == nullptr || src == nullptr)) return;
 
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_MEMCPY_OVERLAP)
-        uptr const dest_addr = reinterpret_cast<uptr>(dest);
-        uptr const src_addr  = reinterpret_cast<uptr>(src);
+        uptr dest_addr = reinterpret_cast<uptr>(dest);
+        uptr src_addr  = reinterpret_cast<uptr>(src);
         psh_assert_msg(
             (dest_addr + size > src_addr) || (dest_addr < src_addr + size),
             "memcpy called but source and destination overlap, which produces UB");
@@ -60,7 +60,9 @@ namespace psh {
     }
 
     void memory_move(u8* dest, u8 const* src, usize size) noexcept {
-        if (psh_unlikely(dest == nullptr || src == nullptr)) return;
+        if (psh_unlikely(dest == nullptr || src == nullptr)) {
+            return;
+        }
         psh_discard(std::memmove(dest, src, size));
     }
 
@@ -75,11 +77,10 @@ namespace psh {
             "padding_with_header expected the alignments to be powers of two");
 #endif
 
+        // Calculate the padding necessary for the alignment of the new block of memory.
         uptr padding = 0;
-
-        // Padding necessary for the alignment of the new block of memory.
-        uptr const align = static_cast<uptr>(alignment);
-        uptr const mod_align =
+        uptr align   = static_cast<uptr>(alignment);
+        uptr mod_align =
             ptr & (align - 1);  // Same as `ptr % align` since `align` is a power of two.
         if (mod_align != 0) {
             padding += align - mod_align;
@@ -87,8 +88,8 @@ namespace psh {
         ptr += padding;
 
         // Padding necessary for the header alignment.
-        uptr const align_header = static_cast<uptr>(header_alignment);
-        uptr const mod_header   = ptr & (align_header - 1);  // Same as `ptr % align_header`.
+        uptr align_header = static_cast<uptr>(header_alignment);
+        uptr mod_header   = ptr & (align_header - 1);  // Same as `ptr % align_header`.
         if (mod_header != 0) {
             padding += align_header - mod_header;
         }
@@ -106,8 +107,8 @@ namespace psh {
             "align_forward expected the alignment to be a power of two");
 #endif
 
-        uptr const align     = static_cast<uptr>(alignment);
-        uptr const mod_align = ptr & (align - 1);
+        uptr align     = static_cast<uptr>(alignment);
+        uptr mod_align = ptr & (align - 1);
         if (mod_align != 0) {
             ptr += align - mod_align;
         }

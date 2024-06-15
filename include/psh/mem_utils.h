@@ -49,6 +49,12 @@ namespace psh {
     /// Does nothing if `ptr` is a null pointer.
     void memory_set(FatPtr<u8> fat_ptr, i32 fill) noexcept;
 
+
+    template <typename T>
+    void zero_struct(T& s) noexcept {
+        memory_set(FatPtr{reinterpret_cast<u8*>(&s), sizeof(T)}, 0);
+    }
+
     /// Simple wrapper around `std::memcpy`.
     ///
     /// This function will assert that the blocks of memory don't overlap, avoiding undefined
