@@ -163,18 +163,6 @@ namespace psh {
         }
 
         // -----------------------------------------------------------------------------
-        // - Generate fat pointers -
-        // -----------------------------------------------------------------------------
-
-        FatPtr<T> fat_ptr() noexcept {
-            return FatPtr{buf, size};
-        }
-
-        FatPtr<T const> const_fat_ptr() const noexcept {
-            return FatPtr{static_cast<T const*>(buf), size};
-        }
-
-        // -----------------------------------------------------------------------------
         // - Iterator utilities -
         // -----------------------------------------------------------------------------
 
@@ -310,4 +298,18 @@ namespace psh {
             size = 0;
         }
     };
+
+    // -----------------------------------------------------------------------------
+    // - Generating fat pointers -
+    // -----------------------------------------------------------------------------
+
+    template <typename T>
+    inline FatPtr<T> fat_ptr(DynArray<T>& d) noexcept {
+        return FatPtr{d.buf, d.size};
+    }
+
+    template <typename T>
+    inline FatPtr<T const> const_fat_ptr(DynArray<T> const& d) noexcept {
+        return FatPtr{static_cast<T const*>(d.buf), d.size};
+    }
 }  // namespace psh

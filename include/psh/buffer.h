@@ -44,18 +44,6 @@ namespace psh {
         }
 
         // -----------------------------------------------------------------------------
-        // - Generating fat pointers -
-        // -----------------------------------------------------------------------------
-
-        FatPtr<T> fat_ptr() noexcept {
-            return FatPtr{buf, size_};
-        }
-
-        constexpr FatPtr<T const> const_fat_ptr() const noexcept {
-            return FatPtr{static_cast<T const*>(buf), size_};
-        }
-
-        // -----------------------------------------------------------------------------
         // - Iterator utilities -
         // -----------------------------------------------------------------------------
 
@@ -87,4 +75,18 @@ namespace psh {
             return buf[idx];
         }
     };
+
+    // -----------------------------------------------------------------------------
+    // - Generating fat pointers -
+    // -----------------------------------------------------------------------------
+
+    template <typename T, usize size>
+    inline FatPtr<T> fat_ptr(Buffer<T, size>& b) noexcept {
+        return FatPtr{b.buf, size};
+    }
+
+    template <typename T, usize size>
+    inline FatPtr<T const> const_fat_ptr(Buffer<T, size> const& b) noexcept {
+        return FatPtr{reinterpret_cast<T const*>(b.buf), size};
+    }
 }  // namespace psh
