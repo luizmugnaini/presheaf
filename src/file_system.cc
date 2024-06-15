@@ -27,10 +27,34 @@
 //       thread safe alternative to `std::strerror`.
 
 namespace psh {
-    File::File(Arena* arena, StringView path_, strptr flags_) noexcept {
-        path.init(arena, path_);
+    namespace {
+        constexpr strptr open_file_flag(OpenFileFlag f) {
+            strptr s;
+            switch (f) {
+                case OpenFileFlag::READ_TEXT:          s = "r"; break;
+                case OpenFileFlag::READ_TEXT_EXTENDED: s = "r+"; break;
+                case OpenFileFlag::READ_BIN:           s = "rb"; break;
+                case OpenFileFlag::READ_BIN_EXTENDED:  s = "rb+"; break;
+                case OpenFileFlag::WRITE:              s = "w"; break;
+                case OpenFileFlag::WRITE_EXTENDED:     s = "w+"; break;
+                case OpenFileFlag::APPEND:             s = "a"; break;
+            }
+            return s;
+        }
 
-        handle = std::fopen(path.data.buf, flags_);
+        constexpr bool has_read_permission(OpenFileFlag flag) noexcept {
+            return (flag == OpenFileFlag::READ_TEXT) ||
+                   (flag == OpenFileFlag::READ_TEXT_EXTENDED) || (flag == OpenFileFlag::READ_BIN) ||
+                   (flag == OpenFileFlag::READ_BIN_EXTENDED) ||
+                   (flag == OpenFileFlag::WRITE_EXTENDED);
+        }
+    }  // namespace
+
+    File::File(Arena* arena, StringView _path, OpenFileFlag _flag) noexcept {
+        path.init(arena, _path);
+        flag = _flag;
+
+        handle = std::fopen(path.data.buf, open_file_flag(flag));
         if (psh_unlikely(handle == nullptr)) {
             status = FileStatus::FAILED_TO_OPEN;
             return;
@@ -73,20 +97,24 @@ namespace psh {
         }
     }
 
-    FileReadResult File::read(Arena* arena) noexcept {
-        if (psh_unlikely(status != FileStatus::OK)) {
+    FileReadResult read_file(File file, Arena* arena) noexcept {
+        psh_assert_msg(
+            has_read_permission(file.flag),
+            "read_file cannot read File whose reading permission is disabled.");
+
+            if (psh_unlikely(file.status != FileStatus::OK)) {
             return {.status = FileStatus::FAILED_TO_READ};
         }
 
         // Acquire memory for the buffer.
-        char* buf = arena->alloc<char>(size + 1);
+        char* buf = arena->alloc<char>(file.size + 1);
         if (psh_unlikely(buf == nullptr)) {
             return {.status = FileStatus::OUT_OF_MEMORY};
         }
 
         // Read the whole file into the buffer.
-        FILE* fhandle    = reinterpret_cast<FILE*>(handle);
-        usize read_count = std::fread(buf, 1, size, fhandle);
+        FILE* fhandle    = reinterpret_cast<FILE*>(file.handle);
+        usize read_count = std::fread(buf, 1, file.size, fhandle);
         if (psh_unlikely(std::ferror(fhandle) != 0)) {
             std::perror("Couldn't read file.\n");
             return {.status = FileStatus::FAILED_TO_READ};
@@ -95,13 +123,13 @@ namespace psh {
         buf[read_count] = 0;  // Ensure the string is null terminated.
 
         return FileReadResult{
-            .content = String{arena, StringView{buf, size}},
+            .content = String{arena, StringView{buf, file.size}},
             .status  = FileStatus::OK,
         };
     }
 
-    FileReadResult read_file(Arena* arena, strptr path) noexcept {
-        FILE* fhandle = std::fopen(path, "rb");
+    FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) noexcept {
+        FILE* fhandle = std::fopen(path, open_file_flag(static_cast<OpenFileFlag>(flag)));
         if (psh_unlikely(fhandle == nullptr)) {
             return {.status = FileStatus::FAILED_TO_OPEN};
         }
@@ -116,7 +144,6 @@ namespace psh {
             std::perror("Couldn't tell the size of the file.\n");
             return {.status = FileStatus::SIZE_UNKNOWN};
         }
-
         usize size = static_cast<usize>(file_size);
 
         if (psh_unlikely(std::fseek(fhandle, 0, SEEK_SET) == -1)) {
