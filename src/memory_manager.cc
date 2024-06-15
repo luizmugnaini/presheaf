@@ -33,7 +33,7 @@ namespace psh {
     }
 
     MemoryManager::~MemoryManager() noexcept {
-        std::free(allocator.memory);
+        std::free(allocator.buf);
     }
 
     Option<Arena> MemoryManager::make_arena(usize size) noexcept {
@@ -50,7 +50,7 @@ namespace psh {
     }
 
     Status MemoryManager::clear_until(u8 const* block) noexcept {
-        u8 const* const mem_start = allocator.memory;
+        u8 const* mem_start = allocator.buf;
 
         // Check if the block lies within the allocator's memory.
         if (psh_unlikely((block < mem_start) || (block > mem_start + allocator.previous_offset))) {
@@ -84,8 +84,8 @@ namespace psh {
     }
 
     void MemoryManager::reset() noexcept {
-        u8* mem = allocator.memory;
+        u8* mem = allocator.buf;
         std::memset(this, 0, sizeof(MemoryManager));
-        allocator.memory = mem;
+        allocator.buf = mem;
     }
 }  // namespace psh

@@ -66,9 +66,7 @@ namespace psh {
         }
 
         /// Construct a dynamic array with a given capacity.
-        DynArray(
-            Arena* _arena,
-            usize  _capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) noexcept {
+        DynArray(Arena* _arena, usize _capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) noexcept {
             this->init(_arena, _capacity);
         }
 
@@ -139,10 +137,7 @@ namespace psh {
 
         /// Construct a dynamic array with the contents of a fat pointer, and optionally reserve a
         /// given capacity.
-        DynArray(
-            FatPtr<T const> fptr,
-            Arena*          _arena,
-            Option<usize>   _capacity = {}) noexcept {
+        DynArray(FatPtr<T const> fptr, Arena* _arena, Option<usize> _capacity = {}) noexcept {
             this->init(fptr, _arena, _capacity);
         }
 

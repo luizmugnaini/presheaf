@@ -90,9 +90,9 @@ namespace psh {
     /// use-after-free problems may arise if you later read from this pointer. This goes to say that
     /// the user should know how to correctly handle their memory reads and writes.
     struct Stack {
-        u8* memory = nullptr;
-        usize capacity = 0;
-        usize offset = 0;
+        u8*   buf             = nullptr;
+        usize capacity        = 0;
+        usize offset          = 0;
         usize previous_offset = 0;
 
         // -----------------------------------------------------------------------------
@@ -100,8 +100,8 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         Stack() noexcept = default;
-        void init(u8* _memory, usize _capacity) noexcept;
-        Stack(u8* _memory, usize _capacity) noexcept;
+        void init(u8* _buf, usize _capacity) noexcept;
+        Stack(u8* _buf, usize _capacity) noexcept;
 
         // -----------------------------------------------------------------------------
         // - Allocated memory information -
@@ -198,7 +198,7 @@ namespace psh {
         }
 
         usize const new_block_size = sizeof(T) * length;
-        u8* const   free_mem       = memory + offset;
+        u8* const   free_mem       = buf + offset;
         usize const padding        = padding_with_header(
             reinterpret_cast<uptr>(free_mem),
             alignof(T),
@@ -258,14 +258,14 @@ namespace psh {
         }
 
         // Check if the address is within the allocator's memory.
-        if (psh_unlikely((ublock < memory) || (ublock >= memory + capacity))) {
+        if (psh_unlikely((ublock < buf) || (ublock >= buf + capacity))) {
             psh_error("StackAlloc::realloc called with a pointer outside of the memory region "
                       "managed by the stack allocator.");
             return nullptr;
         }
 
         // Check if the address is already free.
-        if (psh_unlikely(ublock >= memory + offset)) {
+        if (psh_unlikely(ublock >= buf + offset)) {
             psh_error("StackAlloc::realloc called with a free block of memory (use-after-free "
                       "error).");
             return nullptr;

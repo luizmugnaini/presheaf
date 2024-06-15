@@ -1,17 +1,17 @@
 #include <psh/stack.h>
 
 namespace psh {
-    void Stack::init(u8* _memory, usize _capacity) noexcept {
-        memory   = _memory;
+    void Stack::init(u8* _buf, usize _capacity) noexcept {
+        buf      = _buf;
         capacity = _capacity;
         if (psh_likely(capacity != 0)) {
             psh_assert_msg(
-                memory != nullptr,
+                buf != nullptr,
                 "Stack::init called with non-zero capacity but null memory");
         }
     }
-    Stack::Stack(u8* _memory, usize _capacity) noexcept {
-        this->init(_memory, _capacity);
+    Stack::Stack(u8* _buf, usize _capacity) noexcept {
+        this->init(_buf, _capacity);
     }
 
     usize Stack::used() const noexcept {
@@ -19,12 +19,12 @@ namespace psh {
     }
 
     u8* Stack::top() const noexcept {
-        return psh_ptr_add(memory, previous_offset);
+        return psh_ptr_add(buf, previous_offset);
     }
 
     StackHeader const* Stack::top_header() const noexcept {
         return reinterpret_cast<StackHeader const*>(
-            psh_ptr_add(memory, previous_offset - sizeof(StackHeader)));
+            psh_ptr_add(buf, previous_offset - sizeof(StackHeader)));
     }
 
     usize Stack::top_capacity() const noexcept {
@@ -44,16 +44,16 @@ namespace psh {
         if (psh_unlikely(block == nullptr)) {
             valid = false;
         }
-        if (psh_unlikely((block < memory) || (block >= memory + capacity))) {
+        if (psh_unlikely((block < buf) || (block >= buf + capacity))) {
             psh_error("StackAlloc::header_of called with a pointer to a block of memory "
                       "outside of the stack allocator scope.");
             valid = false;
         }
-        if (psh_unlikely(block > memory + previous_offset)) {
+        if (psh_unlikely(block > buf + previous_offset)) {
             psh_error("StackAlloc::header_of called with a pointer to a freed block of memory.");
             valid = false;
         }
-        if (psh_unlikely(block_header < memory)) {
+        if (psh_unlikely(block_header < buf)) {
             psh_error("StackAlloc::header_of expected the memory block header to be contained "
                       "in the stack allocator scope.");
             valid = false;
@@ -77,7 +77,7 @@ namespace psh {
             return Status::FAILED;
         }
 
-        u8 const*          top = memory + previous_offset;
+        u8 const*          top = buf + previous_offset;
         StackHeader const* top_header =
             reinterpret_cast<StackHeader const*>(top - sizeof(StackHeader));
 
@@ -92,9 +92,9 @@ namespace psh {
         }
 
         // Check if the block is within the allocator's memory.
-        if (psh_unlikely((block < memory) || (block > memory + previous_offset))) {
+        if (psh_unlikely((block < buf) || (block > buf + previous_offset))) {
             strptr fail_reason =
-                (block > memory + capacity)
+                (block > buf + capacity)
                     ? "StackAlloc::free_at called with a pointer outside of the stack "
                       "allocator memory region."
                     : "StackAlloc::free_at called with a pointer to an already free region of "
@@ -108,7 +108,7 @@ namespace psh {
 
         offset = wrap_sub(
             wrap_sub(reinterpret_cast<uptr>(block), header->padding),
-            reinterpret_cast<uptr>(memory));
+            reinterpret_cast<uptr>(buf));
         previous_offset = header->previous_offset;
 
         return Status::OK;
