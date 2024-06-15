@@ -116,8 +116,8 @@ namespace psh {
 /// Create a string literal and a string view at compile time from a given C-string literal.
 ///
 /// Note: Use this macro with care, you should only use it with literal strings, otherwise the
-///       length of the string won't be computed corrected by the compile and you'll obtain the
-///       size of a pointer as the length of the string.
+///       length of the string won't be computed corrected by the compiler and you may obtain the
+///       size of a pointer instead the length of the string.
 #define psh_str(cstr_literal)          \
     psh::Str<sizeof((cstr_literal))> { \
         (cstr_literal)                 \
