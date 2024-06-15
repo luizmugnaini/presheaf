@@ -46,7 +46,7 @@ namespace psh {
         // - Constructors and initializers -
         // -----------------------------------------------------------------------------
 
-        explicit constexpr DynArray() noexcept = default;
+        DynArray() noexcept = default;
 
         /// Initialize the dynamic array with a given capacity.
         void init(Arena* _arena, usize _capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) noexcept {
@@ -66,7 +66,7 @@ namespace psh {
         }
 
         /// Construct a dynamic array with a given capacity.
-        explicit DynArray(
+        DynArray(
             Arena* _arena,
             usize  _capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) noexcept {
             this->init(_arena, _capacity);
@@ -103,7 +103,7 @@ namespace psh {
 
         /// Construct a dynamic array with the contents of an initializer list, and optionally
         /// reserve a given capacity.
-        explicit DynArray(
+        DynArray(
             std::initializer_list<T> list,
             Arena*                   _arena,
             Option<usize>            _capacity = {}) noexcept {
@@ -139,7 +139,7 @@ namespace psh {
 
         /// Construct a dynamic array with the contents of a fat pointer, and optionally reserve a
         /// given capacity.
-        explicit DynArray(
+        DynArray(
             FatPtr<T const> fptr,
             Arena*          _arena,
             Option<usize>   _capacity = {}) noexcept {

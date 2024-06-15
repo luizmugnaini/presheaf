@@ -33,7 +33,7 @@ namespace psh {
     template <typename T>
         requires NotPointer<T>
     struct Option {
-        T    val{};
+        T    val     = {};
         bool has_val = false;
 
         constexpr Option() noexcept = default;

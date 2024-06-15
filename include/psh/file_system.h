@@ -36,15 +36,15 @@ namespace psh {
     };
 
     struct FileReadResult {
-        String     content{};
-        FileStatus status = FileStatus::FAILED_TO_READ;
+        String     content = {};
+        FileStatus status;
     };
 
     struct File {
-        void*      handle;
-        String     path{};
+        String     path;
+        void*      handle = nullptr;
         usize      size   = 0;
-        FileStatus status = FileStatus::FAILED_TO_OPEN;
+        FileStatus status;
 
         File(Arena* arena, StringView path_, strptr flags_ = "rb") noexcept;
         ~File() noexcept;

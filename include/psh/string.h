@@ -74,8 +74,8 @@ namespace psh {
     struct StringView {
         FatPtr<char const> const data;
 
-        constexpr explicit StringView() noexcept = default;
-        constexpr explicit StringView(strptr _str, usize _length) noexcept : data{_str, _length} {}
+        constexpr StringView() noexcept = default;
+        constexpr StringView(strptr _str, usize _length) noexcept : data{_str, _length} {}
         StringView(strptr _str) noexcept;
     };
 
@@ -83,9 +83,9 @@ namespace psh {
     struct String {
         DynArray<char> data;
 
-        explicit constexpr String() = default;
-        explicit String(Arena* arena, usize capacity) noexcept;
-        explicit String(Arena* arena, StringView sv) noexcept;
+        constexpr String() = default;
+        String(Arena* arena, usize capacity) noexcept;
+        String(Arena* arena, StringView sv) noexcept;
         void init(Arena* arena, usize capacity) noexcept;
         void init(Arena* arena, StringView sv) noexcept;
 

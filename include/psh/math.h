@@ -25,11 +25,10 @@
 
 #include <limits>
 
-
 #include <psh/io.h>
 
 namespace psh {
-    constexpr f32 PI = 3.14159265359f;
+    constexpr f32 PI                = 3.14159265359f;
     constexpr f32 F32_IS_ZERO_RANGE = 1e-6f;
 
     constexpr bool float_equal(f32 a, f32 b) noexcept {

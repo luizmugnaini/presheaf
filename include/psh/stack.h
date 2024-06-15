@@ -60,8 +60,7 @@ namespace psh {
     /// Stack memory allocator.
     ///
     /// Note: The stack allocator **doesn't own** its memory, but merely manages it. That being
-    /// said,
-    ///       a stack allocator will never call `malloc` or `free`
+    ///       said, a stack allocator will never call `malloc` or `free`
     ///
     /// Memory layout:
     ///
@@ -91,26 +90,18 @@ namespace psh {
     /// use-after-free problems may arise if you later read from this pointer. This goes to say that
     /// the user should know how to correctly handle their memory reads and writes.
     struct Stack {
-        /// Pointer to the memory region managed by the allocator.
         u8* memory = nullptr;
-
-        /// Total capacity, in bytes, of the allocator.
         usize capacity = 0;
-
-        /// Offset, in bytes, to the start of the free space region.
         usize offset = 0;
-
-        /// Pointer offset relative to the start of the memory address of the last allocated block
-        /// (after its header).
         usize previous_offset = 0;
 
         // -----------------------------------------------------------------------------
         // - Constructors and initializers -
         // -----------------------------------------------------------------------------
 
-        constexpr explicit Stack() noexcept = default;
+        constexpr Stack() noexcept = default;
         void init(u8* _memory, usize _capacity) noexcept;
-        explicit Stack(u8* _memory, usize _capacity) noexcept;
+        Stack(u8* _memory, usize _capacity) noexcept;
 
         // -----------------------------------------------------------------------------
         // - Allocated memory information -

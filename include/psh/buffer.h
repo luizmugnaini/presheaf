@@ -29,7 +29,7 @@ namespace psh {
     template <typename T, usize size_>
         requires IsObject<T>
     struct Buffer {
-        T buf[size_]{};
+        T buf[size_] = {};
 
         // -----------------------------------------------------------------------------
         // - Size related utilities -

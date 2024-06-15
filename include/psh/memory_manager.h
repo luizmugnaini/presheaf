@@ -33,11 +33,13 @@ namespace psh {
     ///       fail.
     struct MemoryManager {
         usize allocation_count = 0;
-        Stack allocator{};
+        Stack allocator        = {};
 
-        explicit constexpr MemoryManager() noexcept = default;
+        constexpr MemoryManager() noexcept = default;
+
         void init(usize capacity) noexcept;
-        explicit MemoryManager(usize capacity) noexcept;
+        MemoryManager(usize capacity) noexcept;
+
         ~MemoryManager() noexcept;
 
         /// Make a new arena allocator with a given size.

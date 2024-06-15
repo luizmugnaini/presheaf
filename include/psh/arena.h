@@ -122,7 +122,7 @@ namespace psh {
         Arena* arena;
         usize  saved_offset = 0;
 
-        explicit ScratchArena(Arena* arena) noexcept;
+        ScratchArena(Arena* arena) noexcept;
         ~ScratchArena() noexcept;
 
         /// Create a new scratch arena with the current state of the parent.

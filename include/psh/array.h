@@ -43,7 +43,7 @@ namespace psh {
         // - Constructors and initializers -
         // -----------------------------------------------------------------------------
 
-        explicit constexpr Array() noexcept = default;
+        Array() noexcept = default;
 
         /// Initialize the array with a given size.
         void init(Arena* _arena, usize _size) noexcept {
@@ -59,7 +59,7 @@ namespace psh {
         }
 
         /// Construct an array with a given size.
-        explicit Array(Arena* _arena, usize _size) noexcept {
+        Array(Arena* _arena, usize _size) noexcept {
             this->init(_arena, _size);
         }
 
@@ -86,7 +86,7 @@ namespace psh {
         }
 
         /// Construct an array with the contents of an initializer list.
-        explicit Array(std::initializer_list<T> list, Arena* _arena) noexcept {
+        Array(std::initializer_list<T> list, Arena* _arena) noexcept {
             this->init(list, _arena);
         }
 
@@ -113,7 +113,7 @@ namespace psh {
         }
 
         /// Construct an array with the contents of a fat pointer.
-        explicit Array(FatPtr<T> const& fptr, Arena* _arena) noexcept {
+        Array(FatPtr<T> const& fptr, Arena* _arena) noexcept {
             this->init(fptr, _arena);
         }
 

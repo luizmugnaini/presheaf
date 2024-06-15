@@ -66,7 +66,7 @@ namespace psh {
     template <typename T>
         requires Reflexive<T>
     Option<usize> linear_search(FatPtr<T const> fptr, T match) noexcept {
-        Option<usize> match_idx{};
+        Option<usize> match_idx   = {};
         usize         search_size = fptr.size;
         for (usize idx = 0; idx < search_size; ++idx) {
             if (fptr[idx] == match) {

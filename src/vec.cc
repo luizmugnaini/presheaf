@@ -327,7 +327,6 @@ namespace psh {
         return (lhs.x == rhs.x) && (lhs.y == rhs.y) && (lhs.z == rhs.z);
     }
 
-
     // -----------------------------------------------------------------------------
     // - Row-major 3-dimensional square matrix in floating-point space -
     // -----------------------------------------------------------------------------
