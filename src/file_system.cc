@@ -97,7 +97,7 @@ namespace psh {
         }
     }
 
-    FileReadResult read_file(File file, Arena* arena) noexcept {
+    FileReadResult read_file(Arena* arena, File const& file) noexcept {
         psh_assert_msg(
             has_read_permission(file.flag),
             "read_file cannot read File whose reading permission is disabled.");

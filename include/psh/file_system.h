@@ -124,7 +124,7 @@ namespace psh {
     /// Parameters:
     ///     * arena: The arena allocator that will carry the contents of the resulting string.
     ///     * file: A file instance whose flag has read permission.
-    FileReadResult read_file(Arena* arena, File f) noexcept;
+    FileReadResult read_file(Arena* arena, File const& f) noexcept;
 
     /// Read file contents to a string.
     ///
