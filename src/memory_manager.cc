@@ -25,7 +25,7 @@
 
 namespace psh {
     void MemoryManager::init(usize capacity) noexcept {
-        allocator.init(reinterpret_cast<u8*>(std::malloc(capacity)), capacity);
+        allocator.init(reinterpret_cast<u8*>(psh_malloc(capacity)), capacity);
     }
 
     MemoryManager::MemoryManager(usize capacity) noexcept {
@@ -33,7 +33,7 @@ namespace psh {
     }
 
     MemoryManager::~MemoryManager() noexcept {
-        std::free(allocator.buf);
+        psh_free(allocator.buf);
     }
 
     Option<Arena> MemoryManager::make_arena(usize size) noexcept {
