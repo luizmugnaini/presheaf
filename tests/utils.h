@@ -16,7 +16,7 @@
 ///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ///
 /// Description: Common utilities to all tests.
-/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
+/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #pragma once
 

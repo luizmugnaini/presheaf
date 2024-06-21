@@ -16,7 +16,7 @@
 ///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ///
 /// Description: Implementation of vector types.
-/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
+/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #include <psh/vec.h>
 

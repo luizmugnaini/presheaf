@@ -16,7 +16,7 @@
 ///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ///
 /// Description: Utility concepts for template trait-based requirements.
-/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
+/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #pragma once
 

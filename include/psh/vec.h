@@ -17,7 +17,7 @@
 ///
 /// Description: Vector types (yes, a matrix is also vector). Just like in linear algebra, they have
 ///              a fixed size.
-/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
+/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #pragma once
 

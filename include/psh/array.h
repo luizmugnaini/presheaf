@@ -17,7 +17,7 @@
 ///
 /// Description: Fixed size array types whose size is only known at runtime, analogous to a VLA, but
 ///              has its memory bound to a parent arena allocator.
-/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
+/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #pragma once
 

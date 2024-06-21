@@ -16,7 +16,7 @@
 ///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ///
 /// Description: Fundamental types used by the entire library.
-/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
+/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 ///
 /// By default, these types will be exposed to the global namespace. However, if you want these
 /// types to be put in the `psh` namespace, compile the library with the `PSH_NAMESPACED_TYPES`
