@@ -21,7 +21,7 @@
 #pragma once
 
 #include <psh/intrinsics.h>
-#include <psh/io.h>
+#include <psh/log.h>
 #include <psh/math.h>
 #include <psh/mem_utils.h>
 #include <psh/option.h>

@@ -18,7 +18,7 @@
 /// Description: Implementation of the IO stream utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/io.h>
+#include <psh/log.h>
 
 #include <psh/assert.h>
 #include <psh/intrinsics.h>

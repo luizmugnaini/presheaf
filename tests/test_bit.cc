@@ -20,7 +20,7 @@
 
 #include <psh/assert.h>
 #include <psh/bit.h>
-#include <psh/io.h>
+#include <psh/log.h>
 #include <psh/types.h>
 #include "utils.h"
 

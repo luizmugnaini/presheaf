@@ -25,7 +25,7 @@
 
 #include <limits>
 
-#include <psh/io.h>
+#include <psh/log.h>
 
 namespace psh {
     constexpr f32 PI                = 3.14159265359f;

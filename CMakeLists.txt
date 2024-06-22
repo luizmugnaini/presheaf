@@ -256,12 +256,12 @@ message(STATUS "Presheaf C++ sanitizer flags: ${PSH_CXX_SAN_FLAGS}")
 set(
     PSH_SOURCES
     "${PROJECT_SOURCE_DIR}/src/arena.cc"
-    "${PROJECT_SOURCE_DIR}/src/file_system.cc"
-    "${PROJECT_SOURCE_DIR}/src/io.cc"
+    "${PROJECT_SOURCE_DIR}/src/log.cc"
     "${PROJECT_SOURCE_DIR}/src/mem_utils.cc"
     "${PROJECT_SOURCE_DIR}/src/memory_manager.cc"
-    "${PROJECT_SOURCE_DIR}/src/string.cc"
     "${PROJECT_SOURCE_DIR}/src/stack.cc"
+    "${PROJECT_SOURCE_DIR}/src/streams.cc"
+    "${PROJECT_SOURCE_DIR}/src/string.cc"
     "${PROJECT_SOURCE_DIR}/src/vec.cc"
 )
 

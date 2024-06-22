@@ -208,7 +208,7 @@ namespace psh {
         void grow(u32 factor = DYNARRAY_RESIZE_CAPACITY_FACTOR) noexcept {
             if (psh_likely(buf != nullptr)) {
                 // Reallocate the existing buffer.
-                usize const previous_capacity = capacity;
+                usize previous_capacity = capacity;
                 capacity *= factor;
                 buf = arena->realloc<T>(buf, previous_capacity, capacity);
             } else {

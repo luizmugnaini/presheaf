@@ -26,6 +26,17 @@
 #include <psh/types.h>
 
 namespace psh {
+    // -----------------------------------------------------------------------------
+    // - Standard Input Stream -
+    // -----------------------------------------------------------------------------
+
+    /// Read the standard input stream bytes to a string.
+    String read_stdin(Arena* arena) noexcept;
+
+    // -----------------------------------------------------------------------------
+    // - OS file stream -
+    // -----------------------------------------------------------------------------
+
     enum struct OpenFileFlag {
         /// Open a text file for reading operations.
         ///

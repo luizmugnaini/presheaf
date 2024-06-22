@@ -18,15 +18,105 @@
 /// Description: Implementation of the file system management utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/file_system.h>
+#include <psh/streams.h>
 
 #include <psh/intrinsics.h>
 #include <cstdio>
+
+#if defined(__unix__)
+#    include <unistd.h>
+#elif defined(_WIN32)
+#    define WIN32_LEAN_AND_MEAN
+#    define NOMINMAX
+#    define NOATOM
+#    define NOGDI
+#    define NOKERNEL
+#    define NOUSER
+#    define NONLS
+#    define NOMB
+#    define NOMEMMGR
+#    define NOMETAFILE
+#    define NOOPENFILE
+#    define NOSERVICE
+#    define NOSOUND
+#    define NOWH
+#    define NOCOMM
+#    define NODEFERWINDOWPOS
+#    define NOMCX
+#    define NOIME
+
+#    include <windows.h>
+#endif
 
 // TODO(luiz): Substitute the `std::perror` calls with `psh::log_fmt` taking the error strings via a
 //       thread safe alternative to `std::strerror`.
 
 namespace psh {
+    // -----------------------------------------------------------------------------
+    // - Implementation of the stdin handling -
+    // -----------------------------------------------------------------------------
+
+    String read_stdin(Arena* arena) noexcept {
+        constexpr u32 INITIAL_SIZE = 128;
+        constexpr u32 CHUNK_SIZE   = 64;
+        String        s{arena, INITIAL_SIZE};
+
+#if defined(__unix__)
+        for (;;) {
+            if (s.data.size + CHUNK_SIZE > s.data.capacity) {
+                s.data.resize(s.data.size + CHUNK_SIZE);
+            }
+
+            isize bytes_read = read(STDIN_FILENO, s.data.end(), CHUNK_SIZE);
+            s.data.size += bytes_read;
+
+            if (psh_unlikely(bytes_read == -1)) {
+                psh_error("Unable to read from the stdin stream.");
+            }
+
+            if (static_cast<usize>(bytes_read) < CHUNK_SIZE) {
+                break;
+            }
+        }
+#elif defined(_WIN32)
+        HANDLE handle_stdin = GetStdHandle(STD_INPUT_HANDLE);
+        if (handle_stdin == INVALID_HANDLE_VALUE) {
+            psh_error("Unable to acquire the handle to the stdin stream.");
+            return s;
+        }
+
+        for (;;) {
+            if (s.data.size + CHUNK_SIZE > s.data.capacity) {
+                s.data.resize(s.data.size + CHUNK_SIZE);
+            }
+
+            DWORD bytes_read;
+            BOOL  success = ReadFile(handle_stdin, s.data.end(), CHUNK_SIZE, &bytes_read, nullptr);
+            s.data.size += bytes_read;
+            if (psh_unlikely(!success)) {
+                psh_error("Unable to read from the stdin stream.");
+                return s;
+            }
+
+            if (bytes_read < CHUNK_SIZE) {
+                break;
+            }
+        }
+#endif
+
+        // Add null terminator to the end of the string.
+        if (s.data.size == s.data.capacity) {
+            s.data.resize(s.data.size + 1);
+        }
+        s.data.buf[s.data.size] = 0;
+
+        return s;
+    }
+
+    // -----------------------------------------------------------------------------
+    // - Implementation of the OS file stream handling -
+    // -----------------------------------------------------------------------------
+
     namespace {
         constexpr strptr open_file_flag(OpenFileFlag f) {
             strptr s;

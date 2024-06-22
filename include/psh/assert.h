@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <psh/io.h>
+#include <psh/log.h>
 
 namespace psh {
     constexpr strptr ASSERT_FMT = "Assertion failed: %s, msg: %s";
