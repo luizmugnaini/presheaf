@@ -30,6 +30,11 @@
 #    define psh_abort() raise(SIGTRAP)
 #endif
 
+/// Signals internal linkage.
+#define psh_internal static
+/// Signals that a variable is available in the global scope.
+#define psh_global   static
+
 /// Compiler hints for branching patterns.
 #define psh_likely(expr)   __builtin_expect(!!(static_cast<long>(static_cast<bool>(expr))), 1)
 #define psh_unlikely(expr) __builtin_expect(!!(static_cast<long>(static_cast<bool>(expr))), 0)

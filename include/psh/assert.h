@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <psh/intrinsics.h>
 #include <psh/log.h>
 
 namespace psh {
