@@ -41,44 +41,46 @@ namespace psh {
         /// Open a text file for reading operations.
         ///
         /// The file stream is positioned at the start of the file.
-        READ_TEXT = 0,
+        READ_TEXT,
 
         /// Open a text file for reading and writing.
         ///
         /// The file stream will be placed at the start of the file and the existing contents of the
         /// file, if any, will remain intact.
-        READ_TEXT_EXTENDED = 1,
+        READ_TEXT_EXTENDED,
 
         /// Open a non-text file for reading operations.
         ///
         /// The file stream is positioned at the start of the file.
-        READ_BIN = 2,
+        READ_BIN,
 
         /// Open a non-text file for reading and writing.
         ///
         /// The file stream will be placed at the start of the file and the existing contents of the
         /// file, if any, will remain intact.
-        READ_BIN_EXTENDED = 3,
+        READ_BIN_EXTENDED,
 
         /// Open a file for writing.
         ///
         /// If the file exists, all file contents are overwritten and the stream is placed at
         /// the start of the file. Otherwise, the file will be created and the file stream will be
         /// placed at the start of the file.
-        WRITE = 4,
+        WRITE,
 
         /// Open a file for reading and writing.
         ///
         /// If the file exists, all existing file contents are overwritten and the file stream is
         /// positioned at the start of the file. Otherwise, the file will be created and the file
         /// stream will be placed at the start of the file.
-        WRITE_EXTENDED = 5,
+        WRITE_EXTENDED,
 
         /// Open file for writing to the end of the file stream.
         ///
         /// The file stream is placed at the end of the file and all output is written to the
         /// current end of the file. If the file doesn't exist, it is created.
-        APPEND = 6,
+        APPEND,
+
+        FLAG_COUNT,
 
         // NOTE: the append extended flag won't be supported due to its non-portable behaviour. The
         //       user may use the WRITE_EXTENDED instead.

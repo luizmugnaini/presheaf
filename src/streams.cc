@@ -118,18 +118,17 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     namespace {
-        constexpr strptr open_file_flag(OpenFileFlag f) {
-            strptr s;
-            switch (f) {
-                case OpenFileFlag::READ_TEXT:          s = "r"; break;
-                case OpenFileFlag::READ_TEXT_EXTENDED: s = "r+"; break;
-                case OpenFileFlag::READ_BIN:           s = "rb"; break;
-                case OpenFileFlag::READ_BIN_EXTENDED:  s = "rb+"; break;
-                case OpenFileFlag::WRITE:              s = "w"; break;
-                case OpenFileFlag::WRITE_EXTENDED:     s = "w+"; break;
-                case OpenFileFlag::APPEND:             s = "a"; break;
-            }
-            return s;
+        constexpr strptr open_file_flag(OpenFileFlag f) noexcept {
+            constexpr strptr FLAG_STR[static_cast<u32>(OpenFileFlag::FLAG_COUNT)]{
+                "r",
+                "r+",
+                "rb",
+                "rb+",
+                "w",
+                "w+",
+                "a",
+            };
+            return FLAG_STR[static_cast<u32>(f)];
         }
 
         constexpr bool has_read_permission(OpenFileFlag flag) noexcept {
