@@ -37,9 +37,9 @@ namespace psh {
     };
 
     struct LogInfo {
-        strptr const   file;  ///< Source file name.
-        u32 const      line;  ///< Source current line.
-        LogLevel const lvl;   ///< Severity level.
+        strptr   file;  ///< Source file name.
+        u32      line;  ///< Source current line.
+        LogLevel lvl;   ///< Severity level.
 
         consteval LogInfo(
             LogLevel _lvl,

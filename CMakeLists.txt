@@ -33,6 +33,7 @@ option(PSH_ENABLE_LOGGING       "Compile with logging"                          
 option(PSH_ENABLE_ASSERTS       "Compile with assert checks"                                    OFF)
 option(PSH_CHECK_BOUNDS         "Compile with bound check"                                      OFF)
 option(PSH_CHECK_MEMCPY_OVERLAP "Checks if memcpy is called with overlapping regions of memory" OFF)
+option(PSH_DISABLE_ANSI_COLORS  "Don't use ANSI colors for logging"                             OFF)
 
 # Build options
 option(PSH_BUILD_TEST "Build the entire suite of library tests" OFF)
@@ -59,12 +60,13 @@ set(PSH_CXX_SAN_FLAGS)     # Holds the resulting sanitizer flags for the build
 
 list(
     APPEND PSH_OPTIONS
+        PSH_NAMESPACED_TYPES
         PSH_DEBUG
         PSH_ENABLE_LOGGING
         PSH_ENABLE_ASSERTS
         PSH_CHECK_BOUNDS
         PSH_CHECK_MEMCPY_OVERLAP
-        PSH_NAMESPACED_TYPES
+        PSH_DISABLE_ANSI_COLORS
 )
 
 if(UNIX)

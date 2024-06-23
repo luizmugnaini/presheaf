@@ -20,7 +20,6 @@
 
 #include <psh/log.h>
 
-#include <psh/assert.h>
 #include <psh/intrinsics.h>
 #include <psh/types.h>
 
@@ -29,21 +28,39 @@
 #include <cstdio>
 
 namespace psh {
+    // -----------------------------------------------------------------------------
+    // - Internal implementation details -
+    // -----------------------------------------------------------------------------
+
     namespace {
         constexpr strptr LOG_FMT = "%s [%s:%d] %s\n";
 
         strptr log_level_str(LogLevel level) {
-            strptr s;
-            switch (level) {
-                case LogLevel::LEVEL_FATAL:   s = "\x1b[1;41m[FATAL]\x1b[0m"; break;
-                case LogLevel::LEVEL_ERROR:   s = "\x1b[1;31m[ERROR]\x1b[0m"; break;
-                case LogLevel::LEVEL_WARNING: s = "\x1b[1;33m[WARNING]\x1b[0m"; break;
-                case LogLevel::LEVEL_INFO:    s = "\x1b[1;32m[INFO]\x1b[0m"; break;
-                case LogLevel::LEVEL_DEBUG:   s = "\x1b[1;34m[DEBUG]\x1b[0m"; break;
-            }
-            return s;
+            constexpr strptr LEVEL_STR[] {
+                // clang-format off
+#if !defined(PSH_DISABLE_ANSI_COLORS)
+                "\x1b[1;41m[FATAL]\x1b[0m",
+                "\x1b[1;31m[ERROR]\x1b[0m",
+                "\x1b[1;33m[WARNING]\x1b[0m",
+                "\x1b[1;32m[INFO]\x1b[0m",
+                "\x1b[1;34m[DEBUG]\x1b[0m",
+#else
+                "[FATAL]",
+                "[ERROR]",
+                "[WARNING]",
+                "[INFO]",
+                "[DEBUG]",
+#endif
+                // clang-format on
+            };
+
+            return LEVEL_STR[static_cast<u32>(level)];
         }
     }  // namespace
+
+    // -----------------------------------------------------------------------------
+    // - Implementation of the logging procedures -
+    // -----------------------------------------------------------------------------
 
     void log(LogInfo info, strptr msg) {
         psh_discard(
@@ -69,12 +86,6 @@ namespace psh {
         }
         va_end(args);
 
-        (void)std::fprintf(
-            stderr,
-            "%s [%s:%d] %s\n",
-            log_level_str(info.lvl),
-            info.file,
-            info.line,
-            msg);
+        (void)std::fprintf(stderr, LOG_FMT, log_level_str(info.lvl), info.file, info.line, msg);
     }
 }  // namespace psh
