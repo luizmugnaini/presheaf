@@ -15,12 +15,12 @@
 ///    with this program; if not, write to the Free Software Foundation, Inc.,
 ///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ///
-/// Description: Bit twiddling utilities.
+/// Description: Bit twiddling utilities. Implemented as macros to provide speed.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #pragma once
 
-#include <climits>
+#include <limits.h>
 
 // -----------------------------------------------------------------------------
 // - Bit Manipulations -
@@ -33,8 +33,8 @@
 /// Get the number of bits that compose a given type.
 #define psh_bit_count_type(T) (CHAR_BIT * sizeof(T))
 
-/// Get the number whose n-th bit is set to 1 and all other bits are 0.
-#define psh_bit(n) (1 << (n))
+/// Get the number of type T whose n-th bit is set to 1 and all other bits are 0.
+#define psh_bit(T, n) static_cast<T>(1 << (n))
 
 /// Get the number of type T whose n-th bit is set to 0 and all other bits are 1.
 #define psh_not_bit(T, n) static_cast<T>((~(1ULL << (n))) & ((1ULL << psh_bit_count_type(T))) - 1)
@@ -66,6 +66,9 @@
 
 /// Get `count` bits from a number, starting at position `pos`.
 #define psh_bits_at(val, pos, count) (((val) >> pos) & ((1ULL << (count)) - 1))
+
+/// Test a bit: true if the bit at the given position is set, false otherwise.
+#define psh_test_bit_at(val, n) static_cast<bool>(psh_bit_at((val), (n)))
 
 // -----------------------------------------------------------------------------
 // - Word (16-bit) manipulations -

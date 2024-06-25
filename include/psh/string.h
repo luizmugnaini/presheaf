@@ -113,9 +113,9 @@ namespace psh {
 // - Compile-time string type construction macros -
 // -----------------------------------------------------------------------------
 
-/// Create a string literal and a string view at compile time from a given C-string literal.
+/// Create a string literal and a string view at compile time from a given c-string literal.
 ///
-/// Note: Use this macro with care, you should only use it with literal strings, otherwise the
+/// Note: Use this macro with care, you should only use it with literal strings. Otherwise the
 ///       length of the string won't be computed corrected by the compiler and you may obtain the
 ///       size of a pointer instead the length of the string.
 #define psh_str(cstr_literal)          \
