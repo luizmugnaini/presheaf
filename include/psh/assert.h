@@ -27,8 +27,8 @@ namespace psh {
     constexpr strptr ASSERT_FMT = "Assertion failed: %s, msg: %s";
 }
 
-// Assertion macros.
-#if defined(PSH_DEBUG) || defined(PSH_ENABLE_ASSERTS)
+/// Assertion macros.
+#if !defined(PSH_DISABLE_ASSERTS)
 #    define psh_assert(expr)                                         \
         do {                                                         \
             if (!static_cast<bool>(expr)) {                          \
@@ -50,7 +50,7 @@ namespace psh {
             (void)(expr);             \
             (void)(msg);              \
         } while (0)
-#endif  // PSH_DEBUG || PSH_ENABLE_ASSERTS
+#endif
 
 #define psh_unreachable()                             \
     do {                                              \

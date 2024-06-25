@@ -59,12 +59,11 @@ namespace psh {
 // - Logging macro utilities intended for easier usage pattern  -
 // -----------------------------------------------------------------------------
 
-#if defined(PSH_DEBUG) || defined(PSH_ENABLE_LOGGING)
+#if !defined(PSH_DISABLE_LOGGING)
 #    define psh_fatal(msg)   psh::log(psh::LogInfo{psh::LogLevel::LEVEL_FATAL}, msg)
 #    define psh_error(msg)   psh::log(psh::LogInfo{psh::LogLevel::LEVEL_ERROR}, msg)
 #    define psh_warning(msg) psh::log(psh::LogInfo{psh::LogLevel::LEVEL_WARNING}, msg)
 #    define psh_info(msg)    psh::log(psh::LogInfo{psh::LogLevel::LEVEL_INFO}, msg)
-#    define psh_debug(msg)   psh::log(psh::LogInfo{psh::LogLevel::LEVEL_DEBUG}, msg)
 #    define psh_fatal_fmt(fmt, ...) \
         psh::log_fmt(psh::LogInfo{psh::LogLevel::LEVEL_FATAL}, fmt, __VA_ARGS__)
 #    define psh_error_fmt(fmt, ...) \
@@ -73,8 +72,14 @@ namespace psh {
         psh::log_fmt(psh::LogInfo{psh::LogLevel::LEVEL_WARNING}, fmt, __VA_ARGS__)
 #    define psh_info_fmt(fmt, ...) \
         psh::log_fmt(psh::LogInfo{psh::LogLevel::LEVEL_INFO}, fmt, __VA_ARGS__)
-#    define psh_debug_fmt(fmt, ...) \
-        psh::log_fmt(psh::LogInfo{psh::LogLevel::LEVEL_DEBUG}, fmt, __VA_ARGS__)
+#    if defined(PSH_DEBUG)
+#        define psh_debug(msg) psh::log(psh::LogInfo{psh::LogLevel::LEVEL_DEBUG}, msg)
+#        define psh_debug_fmt(fmt, ...) \
+            psh::log_fmt(psh::LogInfo{psh::LogLevel::LEVEL_DEBUG}, fmt, __VA_ARGS__)
+#    else
+#        define psh_debug(msg)          0
+#        define psh_debug_fmt(fmt, ...) 0
+#    endif  // PSH_DEBUG
 #else
 #    define psh_fatal(msg)            0
 #    define psh_error(msg)            0

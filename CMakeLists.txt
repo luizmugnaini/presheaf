@@ -29,8 +29,8 @@ message(STATUS "Linker executable: ${CMAKE_LINKER}")
 # Code behaviour
 option(PSH_NAMESPACED_TYPES     "All fundamental types (u32, i64, etc) should be namespaced"     ON)
 option(PSH_DEBUG                "Compile in debug mode (enables all other flags)"               OFF)
-option(PSH_ENABLE_LOGGING       "Compile with logging"                                          OFF)
-option(PSH_ENABLE_ASSERTS       "Compile with assert checks"                                    OFF)
+option(PSH_DISABLE_LOGGING      "Compile with logging"                                          OFF)
+option(PSH_DISABLE_ASSERTS      "Compile with assert checks"                                    OFF)
 option(PSH_CHECK_BOUNDS         "Compile with bound check"                                      OFF)
 option(PSH_CHECK_MEMCPY_OVERLAP "Checks if memcpy is called with overlapping regions of memory" OFF)
 option(PSH_DISABLE_ANSI_COLORS  "Don't use ANSI colors for logging"                             OFF)
@@ -62,8 +62,8 @@ list(
     APPEND PSH_OPTIONS
         PSH_NAMESPACED_TYPES
         PSH_DEBUG
-        PSH_ENABLE_LOGGING
-        PSH_ENABLE_ASSERTS
+        PSH_DISABLE_LOGGING
+        PSH_DISABLE_ASSERTS
         PSH_CHECK_BOUNDS
         PSH_CHECK_MEMCPY_OVERLAP
         PSH_DISABLE_ANSI_COLORS
