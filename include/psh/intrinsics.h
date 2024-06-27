@@ -45,7 +45,11 @@
 ///     * fmt_pos: The position of the argument containing the formatting string (the first argument
 ///                of a function has position 1).
 ///     * args_pos: The position of the first argument to be used when formatting the output string.
-#define psh_attr_fmt(fmt_pos, args_pos) __attribute__((__format__(__printf__, fmt_pos, args_pos)))
+#if defined(__clang__) || defined(__GNUC__)
+#    define psh_attr_fmt(fmt_pos) __attribute__((__format__(__printf__, fmt_pos, fmt_pos + 1)))
+#else
+#    define psh_attr_fmt(fmt_pos)
+#endif
 
 /// Generate a string containing the given expression.
 #define psh_stringify(x) #x

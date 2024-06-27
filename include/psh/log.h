@@ -52,7 +52,7 @@ namespace psh {
     void log(LogInfo info, strptr msg);
 
     /// Log a formatted message to the standard error stream.
-    psh_attr_fmt(2, 3) void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept;
+    psh_attr_fmt(2) void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept;
 }  // namespace psh
 
 // -----------------------------------------------------------------------------
