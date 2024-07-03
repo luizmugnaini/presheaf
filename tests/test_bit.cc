@@ -26,10 +26,10 @@
 
 using namespace psh;
 
-void test_bit() {
-    psh_assert(psh_bit(3) == 0b1000);
-    psh_assert(psh_bit(1) == 0b10);
-    psh_assert(psh_bit(0) == 0b1);
+void test_create_bit() {
+    psh_assert(psh_bit(u32, 3) == 0b1000);
+    psh_assert(psh_bit(u32, 1) == 0b10);
+    psh_assert(psh_bit(u32, 0) == 0b1);
 
     psh_assert(psh_not_bit(u8, 2) == 0b11111011);
     psh_assert(psh_not_bit(u8, 4) == 0b11101111);
@@ -187,13 +187,19 @@ void test_swap() {
     test_passed();
 }
 
-int main() {
-    test_bit();
+void test_bit() {
+    test_create_bit();
     test_bit_set_and_clear();
     test_bit_at();
     test_u16_bytes();
     test_u16_set_bytes();
     test_sign();
     test_swap();
+}
+
+#if !defined(NOMAIN)
+int main() {
+    test_bit();
     return 0;
 }
+#endif

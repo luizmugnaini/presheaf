@@ -18,17 +18,16 @@
 /// Description: Tests for the string types.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/string.h>
-
 #include <psh/buffer.h>
 #include <psh/intrinsics.h>
+#include <psh/string.h>
 #include <cstdlib>
 #include <cstring>
 #include "utils.h"
 
 using namespace psh;
 
-void test_str() {
+void test_str_type() {
     constexpr Str s = psh_str("Frodo Baggins");
     psh_assert(str_equal(s.buf, "Frodo Baggins"));
     psh_assert(s.size() == std::strlen("Frodo Baggins"));
@@ -36,7 +35,7 @@ void test_str() {
     test_passed();
 }
 
-void test_string_view() {
+void test_string_view_type() {
     StringView v1{"Nine for the Elven-kings under moon and star"};
     psh_assert(str_equal(v1.data.buf, "Nine for the Elven-kings under moon and star"));
     psh_assert(v1.data.size == std::strlen("Nine for the Elven-kings under moon and star"));
@@ -54,7 +53,7 @@ void test_string_view() {
     test_passed();
 }
 
-void test_string() {
+void test_string_type() {
     Arena arena{reinterpret_cast<u8*>(std::malloc(512)), 512};
     {
         String s{&arena, psh_string_view("Seven for the Dwarf-lords in their halls of stone")};
@@ -127,10 +126,16 @@ void test_string_join() {
     test_passed();
 }
 
-int main() {
-    test_str();
-    test_string_view();
-    test_string();
+void test_string() {
+    test_str_type();
+    test_string_view_type();
+    test_string_type();
     test_string_join();
+}
+
+#if !defined(NOMAIN)
+int main() {
+    test_string();
     return 0;
 }
+#endif

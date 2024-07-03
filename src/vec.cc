@@ -20,8 +20,8 @@
 
 #include <psh/vec.h>
 
+#include <psh/assert.h>
 #include <cmath>
-#include "psh/assert.h"
 
 namespace psh {
     // -----------------------------------------------------------------------------

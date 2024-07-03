@@ -18,6 +18,7 @@
 /// Description: A memory manager that is capable of managing the whole allocation system of an
 ///              application.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
+
 #pragma once
 
 #include <psh/arena.h>

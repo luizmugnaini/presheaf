@@ -1,4 +1,4 @@
-///                          Presheaf Library
+///                            Presheaf Library
 ///    Copyright (C) 2024 Luiz Gustavo Mugnaini Anselmo
 ///
 ///    This program is free software; you can redistribute it and/or modify
@@ -15,14 +15,17 @@
 ///    with this program; if not, write to the Free Software Foundation, Inc.,
 ///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ///
-/// Description: Input handling layer.
-/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
+/// Description: Single compilation unit containing the entirety of the Presheaf library. This file
+///              exists for the single purpose of making it trivial to compile the whole library.
+/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
-#pragma once
-
-#include <psh/arena.h>
-#include <psh/string.h>
-
-namespace psh {
-    String read_stdin(Arena* arena) noexcept;
-}
+// clang-format off
+#include "vec.cc"
+#include "log.cc"
+#include "mem_utils.cc"
+#include "arena.cc"
+#include "stack.cc"
+#include "memory_manager.cc"
+#include "string.cc"
+#include "streams.cc"
+// clang-format on

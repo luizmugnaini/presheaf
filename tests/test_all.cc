@@ -15,35 +15,40 @@
 ///    with this program; if not, write to the Free Software Foundation, Inc.,
 ///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ///
-/// Description: Tests for the fundamental types.
+/// Description: Single compilation unit containing all Presheaf library tests.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/assert.h>
-#include <psh/types.h>
-#include "utils.h"
+// Prevent tests from defining a `main()` function.
+#define NOMAIN
 
-using namespace psh;
+// -----------------------------------------------------------------------------
+// - Single compilation unit comprising the whole library implementation -
+// -----------------------------------------------------------------------------
 
-void test_types() {
-    psh_assert(sizeof(u8) == 1);
-    psh_assert(sizeof(u16) == 2);
-    psh_assert(sizeof(u32) == 4);
-    psh_assert(sizeof(u64) == 8);
-    psh_assert(sizeof(usize) == 8);
-    psh_assert(sizeof(i8) == 1);
-    psh_assert(sizeof(i16) == 2);
-    psh_assert(sizeof(i32) == 4);
-    psh_assert(sizeof(i64) == 8);
-    psh_assert(sizeof(f32) == 4);
-    psh_assert(sizeof(f64) == 8);
-    psh_assert(sizeof(uptr) == 8);
-    psh_assert(sizeof(iptr) == 8);
-    test_passed();
-}
+#include "../src/all.cc"
 
-#if !defined(NOMAIN)
+// -----------------------------------------------------------------------------
+// - Invoke all test -
+// -----------------------------------------------------------------------------
+
+// Include all tests.
+// clang-format off
+#include "test_types.cc"
+#include "test_bit.cc"
+#include "test_vec.cc"
+#include "test_allocators.cc"
+#include "test_memory_manager.cc"
+#include "test_dynarray.cc"
+#include "test_string.cc"
+// clang-format on
+
 int main() {
     test_types();
+    test_bit();
+    test_vec();
+    test_allocators();
+    test_memory_manager();
+    test_dynarray();
+    test_string();
     return 0;
 }
-#endif

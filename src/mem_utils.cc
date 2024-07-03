@@ -24,7 +24,6 @@
 #include <psh/intrinsics.h>
 #include <psh/math.h>
 #include <psh/types.h>
-
 #include <cstring>
 
 namespace psh {

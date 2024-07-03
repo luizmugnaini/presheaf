@@ -119,7 +119,7 @@ namespace psh {
     template <typename T>
         requires TriviallyCopyable<T>
     void fill(FatPtr<T> fat_ptr, T _fill) noexcept {
-        for (auto& elem : fat_ptr) {
+        for (T& elem : fat_ptr) {
             elem = _fill;
         }
     }

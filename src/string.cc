@@ -20,6 +20,7 @@
 
 #include <psh/string.h>
 
+#include <psh/mem_utils.h>
 #include <psh/option.h>
 #include <cstring>
 #include <string>

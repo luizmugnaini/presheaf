@@ -44,12 +44,8 @@ namespace psh {
             }                                                 \
         } while (0)
 #else
-#    define psh_assert(expr) (void)(expr)
-#    define psh_assert_msg(expr, msg) \
-        do {                          \
-            (void)(expr);             \
-            (void)(msg);              \
-        } while (0)
+#    define psh_assert(expr)          (void)(expr)
+#    define psh_assert_msg(expr, msg) (void)(expr), (void)(msg)
 #endif
 
 #define psh_unreachable()                             \

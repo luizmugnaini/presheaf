@@ -117,7 +117,7 @@ namespace psh {
     // - Implementation of the OS file stream handling -
     // -----------------------------------------------------------------------------
 
-    namespace {
+    namespace streams_impl {
         constexpr strptr open_file_flag(OpenFileFlag f) noexcept {
             constexpr strptr FLAG_STR[static_cast<u32>(OpenFileFlag::FLAG_COUNT)]{
                 "r",
@@ -137,13 +137,13 @@ namespace psh {
                    (flag == OpenFileFlag::READ_BIN_EXTENDED) ||
                    (flag == OpenFileFlag::WRITE_EXTENDED);
         }
-    }  // namespace
+    }  // namespace streams_impl
 
     File::File(Arena* arena, StringView _path, OpenFileFlag _flag) noexcept {
         path.init(arena, _path);
         flag = _flag;
 
-        handle = std::fopen(path.data.buf, open_file_flag(flag));
+        handle = std::fopen(path.data.buf, streams_impl::open_file_flag(flag));
         if (psh_unlikely(handle == nullptr)) {
             status = FileStatus::FAILED_TO_OPEN;
             return;
@@ -188,7 +188,7 @@ namespace psh {
 
     FileReadResult read_file(Arena* arena, File const& file) noexcept {
         psh_assert_msg(
-            has_read_permission(file.flag),
+            streams_impl::has_read_permission(file.flag),
             "read_file cannot read File whose reading permission is disabled.");
 
         if (psh_unlikely(file.status != FileStatus::OK)) {
@@ -218,7 +218,8 @@ namespace psh {
     }
 
     FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) noexcept {
-        FILE* fhandle = std::fopen(path, open_file_flag(static_cast<OpenFileFlag>(flag)));
+        FILE* fhandle =
+            std::fopen(path, streams_impl::open_file_flag(static_cast<OpenFileFlag>(flag)));
         if (psh_unlikely(fhandle == nullptr)) {
             return {.status = FileStatus::FAILED_TO_OPEN};
         }

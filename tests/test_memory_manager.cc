@@ -21,20 +21,19 @@
 /// This test should be ran with sanitizer flags on in order to detect possible memory leaks that
 /// may go unseen.
 
-#include <psh/memory_manager.h>
-
 #include <psh/arena.h>
 #include <psh/assert.h>
 #include <psh/dyn_array.h>
 #include <psh/intrinsics.h>
 #include <psh/mem_utils.h>
+#include <psh/memory_manager.h>
 #include <psh/stack.h>
 #include <psh/types.h>
 #include "utils.h"
 
 using namespace psh;
 
-void zeroed_at_initialization() {
+void test_memory_manager_zeroed_at_initialization() {
     MemoryManager memory_manager{1024};
 
     // Check validity.
@@ -52,7 +51,7 @@ void zeroed_at_initialization() {
     test_passed();
 }
 
-void initialization_and_shutdown() {
+void test_memory_manager_initialization_and_shutdown() {
     usize         memory_manager_capacity = 2048;
     MemoryManager memory_manager{memory_manager_capacity};
     u8 const*     mem_sys_alloc_mem_actual_addr = memory_manager.allocator.buf;
@@ -92,7 +91,7 @@ void initialization_and_shutdown() {
     test_passed();
 }
 
-void memory_statistics() {
+void test_memory_manager_memory_statistics() {
     /** Expected statistics. **/
 
     constexpr usize expected_string_at_least =
@@ -217,9 +216,15 @@ void memory_statistics() {
     test_passed();
 }
 
+void test_memory_manager() {
+    test_memory_manager_zeroed_at_initialization();
+    test_memory_manager_initialization_and_shutdown();
+    test_memory_manager_memory_statistics();
+}
+
+#if !defined(NOMAIN)
 int main() {
-    zeroed_at_initialization();
-    initialization_and_shutdown();
-    memory_statistics();
+    test_memory_manager();
     return 0;
 }
+#endif

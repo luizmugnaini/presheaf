@@ -20,12 +20,10 @@
 
 #pragma once
 
+#include <psh/log.h>
 #include <psh/type_utils.h>
 #include <psh/types.h>
-
 #include <limits>
-
-#include <psh/log.h>
 
 namespace psh {
     constexpr f32 PI                = 3.14159265359f;

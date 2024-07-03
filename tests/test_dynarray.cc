@@ -18,9 +18,8 @@
 /// Description: Tests for the dynamic array.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/dyn_array.h>
-
 #include <psh/assert.h>
+#include <psh/dyn_array.h>
 #include <psh/mem_utils.h>
 #include <psh/memory_manager.h>
 #include <psh/types.h>
@@ -32,7 +31,7 @@ struct Foo {
     i32 bar;
 };
 
-void push_elements(MemoryManager& mem_manager) {
+void test_dynarray_push_elements(MemoryManager& mem_manager) {
     Arena         arena = mem_manager.make_arena(sizeof(i32) * 1024).demand();
     DynArray<i32> v{&arena};
     for (i32 i = 0; i < 100; ++i) {
@@ -47,7 +46,7 @@ void push_elements(MemoryManager& mem_manager) {
     test_passed();
 }
 
-void size_and_capacity(MemoryManager& mem_manager) {
+void test_dynarray_size_and_capacity(MemoryManager& mem_manager) {
     Arena         arena = mem_manager.make_arena(sizeof(Foo) * 100).demand();
     DynArray<Foo> v{&arena};
 
@@ -74,7 +73,7 @@ void size_and_capacity(MemoryManager& mem_manager) {
     test_passed();
 }
 
-void peek_and_pop(MemoryManager& mem_manager) {
+void test_dynarray_peek_and_pop(MemoryManager& mem_manager) {
     Arena         arena = mem_manager.make_arena(sizeof(i32) * 3).demand();
     DynArray<i32> v{&arena, 3};
     v.push(4), v.push(5), v.push(6);
@@ -98,7 +97,7 @@ void peek_and_pop(MemoryManager& mem_manager) {
     test_passed();
 }
 
-void remove(MemoryManager& mem_manager) {
+void test_dynarray_remove(MemoryManager& mem_manager) {
     Arena         arena = mem_manager.make_arena(sizeof(i32) * 5).demand();
     DynArray<i32> v{&arena, 5};
     v.push(4), v.push(7), v.push(8), v.push(9), v.push(55);
@@ -150,7 +149,7 @@ void remove(MemoryManager& mem_manager) {
     test_passed();
 }
 
-void clear(MemoryManager& mem_manager) {
+void test_dynarray_clear(MemoryManager& mem_manager) {
     Arena         arena = mem_manager.make_arena(sizeof(f32) * 4).demand();
     DynArray<f32> v{&arena, 4};
     v.push(7.0f), v.push(4.8f), v.push(6.1f), v.push(3.14f);
@@ -162,12 +161,18 @@ void clear(MemoryManager& mem_manager) {
     test_passed();
 }
 
-i32 main() {
+void test_dynarray() {
     MemoryManager mem_manager{10240};
-    push_elements(mem_manager);
-    size_and_capacity(mem_manager);
-    peek_and_pop(mem_manager);
-    remove(mem_manager);
-    clear(mem_manager);
+    test_dynarray_push_elements(mem_manager);
+    test_dynarray_size_and_capacity(mem_manager);
+    test_dynarray_peek_and_pop(mem_manager);
+    test_dynarray_remove(mem_manager);
+    test_dynarray_clear(mem_manager);
+}
+
+#if !defined(NOMAIN)
+int main() {
+    test_dynarray();
     return 0;
 }
+#endif

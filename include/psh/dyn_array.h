@@ -24,7 +24,6 @@
 #include <psh/mem_utils.h>
 #include <psh/option.h>
 #include <psh/types.h>
-
 #include <initializer_list>
 
 namespace psh {

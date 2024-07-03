@@ -17,21 +17,20 @@
 ///
 /// Description: Tests for the stack memory allocator.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
+
 #include <psh/arena.h>
 #include <psh/assert.h>
 #include <psh/intrinsics.h>
 #include <psh/mem_utils.h>
 #include <psh/stack.h>
 #include <psh/types.h>
-
 #include <cstdio>
 #include <cstdlib>
-
 #include "utils.h"
 
 using namespace psh;
 
-struct Foo {
+struct FooBar {
     f64 a;
     u32 b;
 };
@@ -40,7 +39,7 @@ u8* fn_scratch_as_ref(ScratchArena& s, usize size) {
     return s.arena->alloc<u8>(size);
 }
 
-void scratch_arena_ref() {
+void test_scratch_arena_ref() {
     usize     capacity = 1024;
     u8* const buf      = reinterpret_cast<u8*>(std::malloc(capacity));
     {
@@ -57,13 +56,13 @@ void scratch_arena_ref() {
             psh_assert(ar.offset == expected_offset);
         }
         expected_offset -= 64;
-        psh_assert(ar.offset = expected_offset);
+        psh_assert(ar.offset == expected_offset);
     }
     std::free(buf);
     test_passed();
 }
 
-void scratch_arena() {
+void test_scratch_arena() {
     usize     capacity = 1024;
     u8* const buf      = reinterpret_cast<u8*>(std::malloc(capacity));
     Arena     arena{buf, capacity};
@@ -255,7 +254,7 @@ void print_stack_info(Stack const& stack) {
         stack.previous_offset);
 }
 
-void stack_allocation_with_default_alignment() {
+void test_stack_allocation_with_default_alignment() {
     usize salloc_min_expected_size = 0;
     usize expected_alloc_capacity  = 512;
     u8*   buf                      = reinterpret_cast<u8*>(std::malloc(expected_alloc_capacity));
@@ -329,7 +328,7 @@ void stack_allocation_with_default_alignment() {
     test_passed()
 }
 
-void stack_offsets_reads_and_writes() {
+void test_stack_offsets_reads_and_writes() {
     usize capacity = 1024;
     u8*   buf      = reinterpret_cast<u8*>(std::malloc(capacity));
     Stack stack{buf, capacity};
@@ -427,7 +426,7 @@ void stack_offsets_reads_and_writes() {
     test_passed();
 }
 
-void stack_memory_stress_and_free() {
+void test_stack_memory_stress_and_free() {
     usize capacity = 2048;
     u8*   buf      = reinterpret_cast<u8*>(std::malloc(capacity));
     Stack stack{buf, capacity};
@@ -509,7 +508,7 @@ void stack_memory_stress_and_free() {
     test_passed();
 }
 
-void free_all() {
+void test_stack_free_all() {
     usize     capacity = 512;
     u8* const buf      = reinterpret_cast<u8*>(std::malloc(capacity));
     Stack     salloc{buf, capacity};
@@ -528,12 +527,12 @@ void free_all() {
 
     psh_assert(salloc.used() >= expected_min_size);
 
-    usize foos_size = 10 * sizeof(Foo);
-    Foo*  foos      = salloc.alloc<Foo>(10);
+    usize   foos_size = 10 * sizeof(FooBar);
+    FooBar* foos      = salloc.alloc<FooBar>(10);
     psh_assert(foos != nullptr);
     expected_min_size += foos_size;
     for (u32 idx = 0; idx < 10; ++idx) {
-        foos[idx] = Foo{static_cast<f64>(idx) / 2.0, idx};
+        foos[idx] = FooBar{static_cast<f64>(idx) / 2.0, idx};
     }
 
     psh_assert(salloc.used() >= expected_min_size);
@@ -548,12 +547,18 @@ void free_all() {
     test_passed();
 }
 
+void test_allocators() {
+    test_scratch_arena();
+    test_scratch_arena_ref();
+    test_stack_allocation_with_default_alignment();
+    test_stack_offsets_reads_and_writes();
+    test_stack_memory_stress_and_free();
+    test_stack_free_all();
+}
+
+#if !defined(NOMAIN)
 int main() {
-    scratch_arena();
-    scratch_arena_ref();
-    stack_allocation_with_default_alignment();
-    stack_offsets_reads_and_writes();
-    stack_memory_stress_and_free();
-    free_all();
+    test_allocators();
     return 0;
 }
+#endif

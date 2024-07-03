@@ -24,7 +24,7 @@
 
 using namespace psh;
 
-void matrix_indexed_access() {
+void test_matrix_indexed_access() {
     Mat3 mat3 = Mat3::id();
     for (u32 row = 0; row < 3; ++row) {
         for (u32 column = 0; column < 3; ++column) {
@@ -50,7 +50,13 @@ void matrix_indexed_access() {
     test_passed();
 }
 
+void test_vec() {
+    test_matrix_indexed_access();
+}
+
+#if !defined(NOMAIN)
 int main() {
-    matrix_indexed_access();
+    test_vec();
     return 0;
 }
+#endif

@@ -22,7 +22,6 @@
 
 #include <psh/intrinsics.h>
 #include <psh/types.h>
-
 #include <cassert>
 #include <cstdarg>
 #include <cstdio>
@@ -32,7 +31,7 @@ namespace psh {
     // - Internal implementation details -
     // -----------------------------------------------------------------------------
 
-    namespace {
+    namespace log_impl {
         constexpr strptr LOG_FMT = "%s [%s:%d] %s\n";
 
         strptr log_level_str(LogLevel level) {
@@ -56,15 +55,20 @@ namespace psh {
 
             return LEVEL_STR[static_cast<u32>(level)];
         }
-    }  // namespace
+    }  // namespace log_impl
 
     // -----------------------------------------------------------------------------
     // - Implementation of the logging procedures -
     // -----------------------------------------------------------------------------
 
     void log(LogInfo info, strptr msg) {
-        psh_discard(
-            std::fprintf(stderr, LOG_FMT, log_level_str(info.lvl), info.file, info.line, msg));
+        psh_discard(std::fprintf(
+            stderr,
+            log_impl::LOG_FMT,
+            log_impl::log_level_str(info.lvl),
+            info.file,
+            info.line,
+            msg));
     }
 
     void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept {
@@ -86,6 +90,12 @@ namespace psh {
         }
         va_end(args);
 
-        (void)std::fprintf(stderr, LOG_FMT, log_level_str(info.lvl), info.file, info.line, msg);
+        (void)std::fprintf(
+            stderr,
+            log_impl::LOG_FMT,
+            log_impl::log_level_str(info.lvl),
+            info.file,
+            info.line,
+            msg);
     }
 }  // namespace psh

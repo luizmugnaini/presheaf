@@ -28,7 +28,8 @@
 #include <cstring>
 
 namespace psh {
-    struct Arena;  // Forward declaration.
+    // Forward declaration.
+    struct Arena;
 
     /// Scratch arena.
     ///
@@ -223,7 +224,9 @@ namespace psh {
     template <typename T>
     T* Arena::zero_alloc(usize count) noexcept {
         T* const ptr = alloc<T>(count);
-        std::memset(ptr, 0, count);
+        if (ptr != nullptr) {
+            std::memset(ptr, 0, count);
+        }
         return ptr;
     }
 
