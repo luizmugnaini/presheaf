@@ -68,12 +68,13 @@ namespace psh {
             }
 
             isize bytes_read = read(STDIN_FILENO, s.data.end(), CHUNK_SIZE);
-            s.data.size += bytes_read;
 
             if (psh_unlikely(bytes_read == -1)) {
                 psh_error("Unable to read from the stdin stream.");
+                return s;
             }
 
+            s.data.size += static_cast<usize>(bytes_read);
             if (static_cast<usize>(bytes_read) < CHUNK_SIZE) {
                 break;
             }
