@@ -44,7 +44,7 @@ namespace psh {
         psh_discard(std::memset(fptr.buf, fill, fptr.size));
     }
 
-    void memory_copy(u8* dest, u8 const* src, usize size) noexcept {
+    void memory_copy(void* dest, void const* src, usize size) noexcept {
         if (psh_unlikely(dest == nullptr || src == nullptr)) return;
 
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_MEMCPY_OVERLAP)
@@ -58,7 +58,7 @@ namespace psh {
         psh_discard(std::memcpy(dest, src, size));
     }
 
-    void memory_move(u8* dest, u8 const* src, usize size) noexcept {
+    void memory_move(void* dest, void const* src, usize size) noexcept {
         if (psh_unlikely(dest == nullptr || src == nullptr)) {
             return;
         }

@@ -82,12 +82,12 @@ namespace psh {
     ///
     /// This function will assert that the blocks of memory don't overlap, avoiding undefined
     /// behaviour introduced by `std::memcpy` in this case.
-    void memory_copy(u8* dest, u8 const* src, usize size) noexcept;
+    void memory_copy(void* dest, void const* src, usize size) noexcept;
 
     /// Simple wrapper around `std::memmove`.
     ///
     /// Does nothing if either `dest` or `src` are null pointers.
-    void memory_move(u8* dest, u8 const* src, usize size) noexcept;
+    void memory_move(void* dest, void const* src, usize size) noexcept;
 
     // -----------------------------------------------------------------------------
     // - Alignment utilities -
