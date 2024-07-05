@@ -122,7 +122,7 @@ namespace psh {
             }
         }
 
-        if (join_sv.has_val) {
+        if (join_sv.has_val && (join_sv.val.data.size != 0)) {
             usize init_idx = 0;
 
             // If the string was empty, we omit the first `sjoin`.
