@@ -83,9 +83,8 @@ namespace psh {
         return Status::OK;
     }
 
-    void MemoryManager::reset() noexcept {
-        u8* mem = allocator.buf;
-        std::memset(this, 0, sizeof(MemoryManager));
-        allocator.buf = mem;
+    void MemoryManager::clear() noexcept {
+        allocation_count = 0;
+        allocator.clear();
     }
 }  // namespace psh

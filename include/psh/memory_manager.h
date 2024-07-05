@@ -78,7 +78,7 @@ namespace psh {
         Status clear_until(u8 const* block) noexcept;
 
         /// Resets the manager by zeroing the memory offset and statistics.
-        void reset() noexcept;
+        void clear() noexcept;
     };
 
     template <typename T>
