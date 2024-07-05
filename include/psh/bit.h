@@ -37,28 +37,30 @@
 #define psh_bit(T, n) static_cast<T>(1 << (n))
 
 /// Get the number of type T whose n-th bit is set to 0 and all other bits are 1.
-#define psh_not_bit(T, n) static_cast<T>((~(1ULL << (n))) & ((1ULL << psh_bit_count_type(T))) - 1)
+#define psh_not_bit(T, n) \
+    static_cast<T>(       \
+        ~(static_cast<T>(1 << (n))) & static_cast<T>((1ULL << psh_bit_count_type(T)) - 1))
 
 /// Get the number whose first `count` bits are 1's.
 #define psh_bit_ones(count) ((1ULL << (count)) - 1)
 
 /// Set the n-th bit of a variable to 1.
-#define psh_bit_set(var, n) \
-    do {                    \
-        var |= 1ULL << (n); \
+#define psh_bit_set(var, n)                 \
+    do {                                    \
+        var |= psh_bit(decltype(var), (n)); \
     } while (0)
 
 /// Set the n-th bit of a variable to 0.
-#define psh_bit_clear(var, n)  \
-    do {                       \
-        var &= ~(1ULL << (n)); \
+#define psh_bit_clear(var, n)                   \
+    do {                                        \
+        var &= psh_not_bit(decltype(var), (n)); \
     } while (0)
 
 /// Set the n-th bit to 1 if the condition passes, otherwise set the bit to 0.
-#define psh_bit_set_or_clear_if(var, n, cond)                                        \
-    do {                                                                             \
-        decltype(var) mask__ = 1ULL << (n);                                          \
-        var                  = (var & ~mask__) | (-static_cast<int>(cond) & mask__); \
+#define psh_bit_set_or_clear_if(var, n, cond)                                          \
+    do {                                                                               \
+        decltype(var) mask__ = psh_bit(decltype(var), (n));                            \
+        var                  = ((var) & ~mask__) | (-static_cast<int>(cond) & mask__); \
     } while (0)
 
 /// Get the value of the n-th bit of given value.
