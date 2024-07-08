@@ -23,9 +23,7 @@
 #include <psh/intrinsics.h>
 #include <cstdio>
 
-#if defined(__unix__)
-#    include <unistd.h>
-#elif defined(_WIN32)
+#if defined(PSH_OS_WINDOWS_32)
 #    define WIN32_LEAN_AND_MEAN
 #    define NOMINMAX
 #    define NOATOM
@@ -44,8 +42,9 @@
 #    define NODEFERWINDOWPOS
 #    define NOMCX
 #    define NOIME
-
-#    include <windows.h>
+#    include <Windows.h>
+#else
+#    include <unistd.h>
 #endif
 
 // TODO(luiz): Substitute the `std::perror` calls with `psh::log_fmt` taking the error strings via a
@@ -61,25 +60,7 @@ namespace psh {
         constexpr u32 CHUNK_SIZE   = 64;
         String        s{arena, INITIAL_SIZE};
 
-#if defined(__unix__)
-        for (;;) {
-            if (s.data.size + CHUNK_SIZE > s.data.capacity) {
-                s.data.resize(s.data.size + CHUNK_SIZE);
-            }
-
-            isize bytes_read = read(STDIN_FILENO, s.data.end(), CHUNK_SIZE);
-
-            if (psh_unlikely(bytes_read == -1)) {
-                psh_error("Unable to read from the stdin stream.");
-                return s;
-            }
-
-            s.data.size += static_cast<usize>(bytes_read);
-            if (static_cast<usize>(bytes_read) < CHUNK_SIZE) {
-                break;
-            }
-        }
-#elif defined(_WIN32)
+#if defined(PSH_OS_WINDOWS_32)
         HANDLE handle_stdin = GetStdHandle(STD_INPUT_HANDLE);
         if (handle_stdin == INVALID_HANDLE_VALUE) {
             psh_error("Unable to acquire the handle to the stdin stream.");
@@ -100,6 +81,24 @@ namespace psh {
             }
 
             if (bytes_read < CHUNK_SIZE) {
+                break;
+            }
+        }
+#else
+        for (;;) {
+            if (s.data.size + CHUNK_SIZE > s.data.capacity) {
+                s.data.resize(s.data.size + CHUNK_SIZE);
+            }
+
+            isize bytes_read = read(STDIN_FILENO, s.data.end(), CHUNK_SIZE);
+
+            if (psh_unlikely(bytes_read == -1)) {
+                psh_error("Unable to read from the stdin stream.");
+                return s;
+            }
+
+            s.data.size += static_cast<usize>(bytes_read);
+            if (static_cast<usize>(bytes_read) < CHUNK_SIZE) {
                 break;
             }
         }

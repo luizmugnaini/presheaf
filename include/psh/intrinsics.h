@@ -20,10 +20,57 @@
 
 #pragma once
 
-/// Macro for aborting a program at runtime.
+// -----------------------------------------------------------------------------
+// - Macros for operating system and compiler detection -
+// -----------------------------------------------------------------------------
+
+/// Macros for OS detection.
+#if defined(_WIN32)
+#    define PSH_OS_WINDOWS_32
+#elif defined(_WIN64)
+#    define PSH_OS_WINDOWS_64
+#elif defined(__APPLE__) || defined(__MACH__)
+#    define PSH_OS_APPLE
+#elif defined(__linux__)
+#    define PSH_OS_LINUX
+#elif defined(__unix__)
+#    define PSH_OS_UNIX
+#elif defined(_POSIX_VERSION)
+#    define PSH_OS_POSIX
+#endif
+
+/// Macros for compiler detection.
 #if defined(_MSC_VER)
+#    define PSH_COMPILER_MSVC
+#    if _MSC_VER >= 1920
+#        define PSH_COMPILER_MSVC_YEAR 2019
+#    elif _MSC_VER >= 1910
+#        define PSH_COMPILER_MSVC_YEAR 2017
+#    elif _MSC_VER >= 1900
+#        define PSH_COMPILER_MSVC_YEAR 2015
+#    elif _MSC_VER >= 1800
+#        define PSH_COMPILER_MSVC_YEAR 2013
+#    elif _MSC_VER >= 1700
+#        define PSH_COMPILER_MSVC_YEAR 2012
+#    elif _MSC_VER >= 1600
+#        define PSH_COMPILER_MSVC_YEAR 2010
+#    elif _MSC_VER >= 1500
+#        define PSH_COMPILER_MSVC_YEAR 2008
+#    elif _MSC_VER >= 1400
+#        define PSH_COMPILER_MSVC_YEAR 2005
+#    else
+#        define PSH_COMPILER_MSVC_YEAR 0
+#    endif
+#elif defined(__clang__)
+#    define PSH_COMPILER_CLANG
+#elif defined(__GNUC__)
+#    define PSH_COMPILER_GCC
+#endif
+
+/// Macro for aborting a program at runtime.
+#if defined(PSH_COMPILER_MSVC)
 #    define psh_abort() __debugbreak()
-#elif defined(__clang__) || defined(__GNUC__)
+#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
 #    define psh_abort() __builtin_trap()
 #else
 #    include <signal.h>
@@ -36,8 +83,13 @@
 #define psh_global   static
 
 /// Compiler hints for branching patterns.
-#define psh_likely(expr)   __builtin_expect(!!(static_cast<long>(static_cast<bool>(expr))), 1)
-#define psh_unlikely(expr) __builtin_expect(!!(static_cast<long>(static_cast<bool>(expr))), 0)
+#if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#    define psh_likely(expr)   __builtin_expect(!!(static_cast<long>(static_cast<bool>(expr))), 1)
+#    define psh_unlikely(expr) __builtin_expect(!!(static_cast<long>(static_cast<bool>(expr))), 0)
+#else
+#    define psh_likely(expr)   (expr)
+#    define psh_unlikely(expr) (expr)
+#endif
 
 /// printf-like function attribute.
 ///
@@ -45,7 +97,7 @@
 ///     * fmt_pos: The position of the argument containing the formatting string (the first argument
 ///                of a function has position 1).
 ///     * args_pos: The position of the first argument to be used when formatting the output string.
-#if defined(__clang__) || defined(__GNUC__)
+#if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
 #    define psh_attr_fmt(fmt_pos) __attribute__((__format__(__printf__, fmt_pos, fmt_pos + 1)))
 #else
 #    define psh_attr_fmt(fmt_pos)
