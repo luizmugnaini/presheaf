@@ -22,27 +22,25 @@
 #include <psh/vec.h>
 #include "utils.h"
 
-using namespace psh;
-
 void test_matrix_indexed_access() {
-    Mat3 mat3 = Mat3::id();
+    psh::Mat3 mat3 = psh::Mat3::id();
     for (u32 row = 0; row < 3; ++row) {
         for (u32 column = 0; column < 3; ++column) {
             if (row != column) {
-                psh_assert(float_equal(mat3.at(row, column), 0.0f));
+                psh_assert(psh::float_equal(mat3.at(row, column), 0.0f));
             } else {
-                psh_assert(float_equal(mat3.at(row, column), 1.0f));
+                psh_assert(psh::float_equal(mat3.at(row, column), 1.0f));
             }
         }
     }
 
-    ColMat4 cmat4 = ColMat4::id();
+    psh::ColMat4 cmat4 = psh::ColMat4::id();
     for (u32 row = 0; row < 4; ++row) {
         for (u32 column = 0; column < 4; ++column) {
             if (row != column) {
-                psh_assert(float_equal(cmat4.at(row, column), 0.0f));
+                psh_assert(psh::float_equal(cmat4.at(row, column), 0.0f));
             } else {
-                psh_assert(float_equal(cmat4.at(row, column), 1.0f));
+                psh_assert(psh::float_equal(cmat4.at(row, column), 1.0f));
             }
         }
     }

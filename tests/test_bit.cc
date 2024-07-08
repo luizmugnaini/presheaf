@@ -24,8 +24,6 @@
 #include <psh/types.h>
 #include "utils.h"
 
-using namespace psh;
-
 void test_create_bit() {
     psh_assert(psh_bit(u32, 3) == 0b1000);
     psh_assert(psh_bit(u32, 1) == 0b10);
@@ -42,7 +40,7 @@ void test_create_bit() {
     psh_assert(psh_bit_ones(7) == 0b1111111);
     psh_assert(psh_bit_ones(8) == 0b11111111);
 
-    test_passed()
+    test_passed();
 }
 
 void test_bit_set_and_clear() {
@@ -82,7 +80,7 @@ void test_bit_set_and_clear() {
     psh_bit_set_or_clear_if(z, 4, true);
     psh_assert(z == 0b11111111);
 
-    test_passed()
+    test_passed();
 }
 
 void test_bit_at() {
@@ -115,7 +113,7 @@ void test_bit_at() {
     psh_assert(psh_bits_at(x, 0, 2) == 0b11);
     psh_assert(psh_bits_at(x, 0, 3) == 0b011);
 
-    test_passed()
+    test_passed();
 }
 
 void test_u16_bytes() {
@@ -137,7 +135,7 @@ void test_u16_bytes() {
     psh_assert(psh_u16_lo(0x0000) == 0x00);
     psh_assert(psh_u16_lo(0xAAAA) == 0xAA);
 
-    test_passed()
+    test_passed();
 }
 
 void test_u16_set_bytes() {
@@ -151,7 +149,7 @@ void test_u16_set_bytes() {
     psh_assert(psh_u16_from_bytes(0xFF, 0xC3) == 0xFFC3);
     psh_assert(psh_u16_from_bytes(0xAB, 0xCD) == 0xABCD);
 
-    test_passed()
+    test_passed();
 }
 
 void test_u8_bit() {
@@ -162,7 +160,7 @@ void test_u8_bit() {
 
     psh_assert(psh_u8_to_u16_hi(0xFC) == 0xFC00);
 
-    test_passed()
+    test_passed();
 }
 
 void test_sign() {

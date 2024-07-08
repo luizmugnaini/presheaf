@@ -22,8 +22,6 @@
 #include <psh/types.h>
 #include "utils.h"
 
-using namespace psh;
-
 void test_types() {
     psh_assert(sizeof(u8) == 1);
     psh_assert(sizeof(u16) == 2);

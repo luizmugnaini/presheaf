@@ -28,14 +28,12 @@
 #include <cstdlib>
 #include "utils.h"
 
-using namespace psh;
-
 struct FooBar {
     f64 a;
     u32 b;
 };
 
-u8* fn_scratch_as_ref(ScratchArena& s, usize size) {
+u8* fn_scratch_as_ref(psh::ScratchArena& s, usize size) {
     return s.arena->alloc<u8>(size);
 }
 
@@ -43,14 +41,14 @@ void test_scratch_arena_ref() {
     usize     capacity = 1024;
     u8* const buf      = reinterpret_cast<u8*>(std::malloc(capacity));
     {
-        Arena ar{buf, capacity};
-        usize expected_offset = 0;
+        psh::Arena ar{buf, capacity};
+        usize      expected_offset = 0;
 
         (void)ar.zero_alloc<u8>(32);
         expected_offset += 32;
 
         {
-            ScratchArena s = ar.make_scratch();
+            psh::ScratchArena s = ar.make_scratch();
             (void)fn_scratch_as_ref(s, 64);
             expected_offset += 64;
             psh_assert(ar.offset == expected_offset);
@@ -63,10 +61,10 @@ void test_scratch_arena_ref() {
 }
 
 void test_scratch_arena() {
-    usize     capacity = 1024;
-    u8* const buf      = reinterpret_cast<u8*>(std::malloc(capacity));
-    Arena     arena{buf, capacity};
-    usize     base_offset = 0;
+    usize      capacity = 1024;
+    u8* const  buf      = reinterpret_cast<u8*>(std::malloc(capacity));
+    psh::Arena arena{buf, capacity};
+    usize      base_offset = 0;
 
     // Test 1
     //
@@ -88,8 +86,8 @@ void test_scratch_arena() {
     //     |-> `s2` is destroyed, arena goes back to `s2_base_offset`
     //     |-> `s1` is destroyed, arena goes back to `s1_base_offset`
     {
-        ScratchArena s1          = arena.make_scratch();
-        usize        last_offset = base_offset;
+        psh::ScratchArena s1          = arena.make_scratch();
+        usize             last_offset = base_offset;
 
         // Check consistency while allocating within a scratch arena.
         psh_assert(s1.arena == &arena);
@@ -118,7 +116,7 @@ void test_scratch_arena() {
         // ---------------------------------------------------------------------------------
         usize s2_base_offset = last_offset;
         {
-            ScratchArena s2 = s1.decouple();
+            psh::ScratchArena s2 = s1.decouple();
 
             // Check if this new scratch has a working allocation scheme.
             psh_assert(s2.arena == &arena);
@@ -145,7 +143,7 @@ void test_scratch_arena() {
             // Create another scratch arena from `s1` within the same lifetime of `s2`.
             // ---------------------------------------------------------------------------------
 
-            ScratchArena s3 = s1.decouple();
+            psh::ScratchArena s3 = s1.decouple();
 
             // Check if this new scratch has a working allocation scheme.
             psh_assert(s3.arena == &arena);
@@ -173,7 +171,7 @@ void test_scratch_arena() {
             // Create another scratch arena from `s2` within the same lifetime of `s2` and `s3`.
             // ---------------------------------------------------------------------------------
 
-            ScratchArena s4 = s2.decouple();
+            psh::ScratchArena s4 = s2.decouple();
 
             // Check if this new scratch has a working allocation scheme.
             psh_assert(s4.arena == &arena);
@@ -203,7 +201,7 @@ void test_scratch_arena() {
 
             usize s5_base_offset = last_offset;
             {
-                ScratchArena s5 = s4.decouple();
+                psh::ScratchArena s5 = s4.decouple();
 
                 // Check if this new scratch has a working allocation scheme.
                 psh_assert(s5.arena == &arena);
@@ -245,7 +243,7 @@ void test_scratch_arena() {
     test_passed();
 }
 
-void print_stack_info(Stack const& stack) {
+void print_stack_info(psh::Stack const& stack) {
     std::printf(
         "Stack {\n\tmemory: %zu,\n\tcapacity: %zu,\n\toffset: %zu,\n\tprevious_offset: %zu\n}\n",
         reinterpret_cast<uptr>(stack.buf),
@@ -255,10 +253,10 @@ void print_stack_info(Stack const& stack) {
 }
 
 void test_stack_allocation_with_default_alignment() {
-    usize salloc_min_expected_size = 0;
-    usize expected_alloc_capacity  = 512;
-    u8*   buf                      = reinterpret_cast<u8*>(std::malloc(expected_alloc_capacity));
-    Stack salloc{buf, expected_alloc_capacity};
+    usize      salloc_min_expected_size = 0;
+    usize      expected_alloc_capacity  = 512;
+    u8*        buf = reinterpret_cast<u8*>(std::malloc(expected_alloc_capacity));
+    psh::Stack salloc{buf, expected_alloc_capacity};
 
     u8    expected_u8_vec[5]       = {51, 102, 153, 204, 255};
     usize expected_u8_vec_capacity = 5 * sizeof(u8);  // 5 bytes
@@ -267,7 +265,7 @@ void test_stack_allocation_with_default_alignment() {
     for (usize i = 0; i < 5; ++i) {
         test_vec_u8[i] = expected_u8_vec[i];
     }
-    salloc_min_expected_size += sizeof(StackHeader) + expected_u8_vec_capacity;
+    salloc_min_expected_size += sizeof(psh::StackHeader) + expected_u8_vec_capacity;
 
     // The first allocation has a zero alignment so we can check for equality.
     psh_assert(salloc.used() == salloc_min_expected_size);
@@ -279,14 +277,14 @@ void test_stack_allocation_with_default_alignment() {
     for (usize i = 0; i < 3; ++i) {
         test_vec_u32[i] = expected_u32_vec[i];
     }
-    salloc_min_expected_size += sizeof(StackHeader) + expected_u32_vec_capacity;
+    salloc_min_expected_size += sizeof(psh::StackHeader) + expected_u32_vec_capacity;
 
     psh_assert(salloc.used() >= salloc_min_expected_size);
 
     usize capacity = salloc.capacity;
     psh_assert(capacity == expected_alloc_capacity);
 
-    StackHeader const* th_u32 = salloc.top_header();
+    psh::StackHeader const* th_u32 = salloc.top_header();
     psh_assert(th_u32 != nullptr);
     usize actual_u32_vec_capacity = th_u32->capacity;
     psh_assert(actual_u32_vec_capacity == expected_u32_vec_capacity);
@@ -301,10 +299,10 @@ void test_stack_allocation_with_default_alignment() {
     }
 
     psh_assert_msg(
-        salloc.pop() == Status::OK,
-        "Expected StackAlloc to be able to pop the top memory in the stack");
+        salloc.pop() == psh::Status::OK,
+        "Expectedpsh::StackAlloc to be able to pop the top memory in the stack");
 
-    StackHeader const* th_u8 = salloc.top_header();
+    psh::StackHeader const* th_u8 = salloc.top_header();
     psh_assert(th_u8 != nullptr);
     usize actual_u8_vec_capacity = th_u8->capacity;
     psh_assert(actual_u8_vec_capacity == 5ull);
@@ -318,20 +316,20 @@ void test_stack_allocation_with_default_alignment() {
     }
 
     psh_assert_msg(
-        salloc.pop() == Status::OK,
-        "Expected StackAlloc to be able to pop the top memory in the stack");
+        salloc.pop() == psh::Status::OK,
+        "Expectedpsh::StackAlloc to be able to pop the top memory in the stack");
 
-    psh_assert_msg(salloc.offset == 0ull, "Expected empty StackAlloc");
-    psh_assert_msg(salloc.previous_offset == 0ull, "%s Expected empty StackAlloc");
+    psh_assert_msg(salloc.offset == 0ull, "Expected emptypsh::StackAlloc");
+    psh_assert_msg(salloc.previous_offset == 0ull, "%s Expected emptypsh::StackAlloc");
 
     std::free(buf);
-    test_passed()
+    test_passed();
 }
 
 void test_stack_offsets_reads_and_writes() {
-    usize capacity = 1024;
-    u8*   buf      = reinterpret_cast<u8*>(std::malloc(capacity));
-    Stack stack{buf, capacity};
+    usize      capacity = 1024;
+    u8*        buf      = reinterpret_cast<u8*>(std::malloc(capacity));
+    psh::Stack stack{buf, capacity};
 
     u8* buf_start = buf;
 
@@ -348,15 +346,15 @@ void test_stack_offsets_reads_and_writes() {
     }
 
     // Check correctness of the `array1` offset.
-    usize array1_expected_padding = sizeof(StackHeader);
+    usize array1_expected_padding = sizeof(psh::StackHeader);
     usize array1_expected_offset  = array1_expected_padding;
     psh_assert(stack.previous_offset == array1_expected_offset);
 
     u8* array1_addr = buf_start + array1_expected_offset;
 
     // Check the correctness of the `array1` header.
-    StackHeader const* array1_header =
-        reinterpret_cast<StackHeader const*>(array1_addr - sizeof(StackHeader));
+    psh::StackHeader const* array1_header =
+        reinterpret_cast<psh::StackHeader const*>(array1_addr - sizeof(psh::StackHeader));
     usize array1_actual_padding         = array1_header->padding;
     usize array1_actual_previous_offset = array1_header->previous_offset;
     psh_assert(array1_actual_padding == array1_expected_padding);
@@ -393,16 +391,16 @@ void test_stack_offsets_reads_and_writes() {
     usize array2_alignment_modifier = after_array1_expected_offset % array2_alignment;
     usize array2_expected_padding =
         (array2_alignment_modifier == 0)
-            ? sizeof(StackHeader)
-            : array2_alignment - array2_alignment_modifier + sizeof(StackHeader);
+            ? sizeof(psh::StackHeader)
+            : array2_alignment - array2_alignment_modifier + sizeof(psh::StackHeader);
     usize array2_expected_offset = after_array1_expected_offset + array2_expected_padding;
     psh_assert(stack.previous_offset == array2_expected_offset);
 
     u8* array2_addr = buf_start + array2_expected_offset;
 
     // Check the correctness of the `array2` header.
-    StackHeader const* array2_header =
-        reinterpret_cast<StackHeader const*>(array2_addr - sizeof(StackHeader));
+    psh::StackHeader const* array2_header =
+        reinterpret_cast<psh::StackHeader const*>(array2_addr - sizeof(psh::StackHeader));
     usize array2_actual_padding = array2_header->padding;
     psh_assert(array2_actual_padding == array2_expected_padding);
     usize array2_expected_previous_offset = static_cast<usize>(array1_addr - buf_start);
@@ -427,9 +425,9 @@ void test_stack_offsets_reads_and_writes() {
 }
 
 void test_stack_memory_stress_and_free() {
-    usize capacity = 2048;
-    u8*   buf      = reinterpret_cast<u8*>(std::malloc(capacity));
-    Stack stack{buf, capacity};
+    usize      capacity = 2048;
+    u8*        buf      = reinterpret_cast<u8*>(std::malloc(capacity));
+    psh::Stack stack{buf, capacity};
 
     iptr  stack_buf_diff = reinterpret_cast<iptr>(stack.buf);
     usize zero           = 0ull;
@@ -437,7 +435,8 @@ void test_stack_memory_stress_and_free() {
     usize  a1_alignment = sizeof(strptr);
     strptr a1           = stack.alloc<char>(50);
     psh_assert(a1 != nullptr);
-    psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+    psh_assert(
+        (stack.previous_offset - sizeof(psh::StackHeader)) % alignof(psh::StackHeader) == zero);
     psh_assert(stack.previous_offset % a1_alignment == zero);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a1) - stack_buf_diff);
@@ -445,7 +444,8 @@ void test_stack_memory_stress_and_free() {
     usize a2_alignment = sizeof(i32);
     i32*  a2           = stack.alloc<i32>(100);
     psh_assert(a2 != nullptr);
-    psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+    psh_assert(
+        (stack.previous_offset - sizeof(psh::StackHeader)) % alignof(psh::StackHeader) == zero);
     psh_assert(stack.previous_offset % a2_alignment == zero);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a2) - stack_buf_diff);
@@ -453,7 +453,8 @@ void test_stack_memory_stress_and_free() {
     usize a3_alignment = sizeof(u64);
     u64*  a3           = stack.alloc<u64>(33);
     psh_assert(a3 != nullptr);
-    psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+    psh_assert(
+        (stack.previous_offset - sizeof(psh::StackHeader)) % alignof(psh::StackHeader) == zero);
     psh_assert(stack.previous_offset % a3_alignment == zero);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a3) - stack_buf_diff);
@@ -461,7 +462,8 @@ void test_stack_memory_stress_and_free() {
     usize a4_alignment = sizeof(u8);
     u8*   a4           = stack.alloc<u8>(49);
     psh_assert(a4 != nullptr);
-    psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+    psh_assert(
+        (stack.previous_offset - sizeof(psh::StackHeader)) % alignof(psh::StackHeader) == zero);
     psh_assert(stack.previous_offset % a4_alignment == zero);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a4) - stack_buf_diff);
@@ -469,7 +471,8 @@ void test_stack_memory_stress_and_free() {
     usize a5_alignment = sizeof(u32);
     u32*  a5           = stack.alloc<u32>(8);
     psh_assert(a5 != nullptr);
-    psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+    psh_assert(
+        (stack.previous_offset - sizeof(psh::StackHeader)) % alignof(psh::StackHeader) == zero);
     psh_assert(stack.previous_offset % a5_alignment == zero);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a5) - stack_buf_diff);
@@ -477,7 +480,8 @@ void test_stack_memory_stress_and_free() {
     usize  a6_alignment = sizeof(strptr);
     strptr a6           = stack.alloc<char>(14);
     psh_assert(a6 != nullptr);
-    psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+    psh_assert(
+        (stack.previous_offset - sizeof(psh::StackHeader)) % alignof(psh::StackHeader) == zero);
     psh_assert(stack.previous_offset % a6_alignment == zero);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a6) - stack_buf_diff);
@@ -488,7 +492,7 @@ void test_stack_memory_stress_and_free() {
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a5) - stack_buf_diff);
 
     // Free a3, a4, and a5 (they should all be dangling after the free).
-    psh_assert(stack.clear_at(reinterpret_cast<u8*>(a3)) == Status::OK);
+    psh_assert(stack.clear_at(reinterpret_cast<u8*>(a3)) == psh::Status::OK);
     psh_assert(
         static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a2) - stack_buf_diff);
 
@@ -509,9 +513,9 @@ void test_stack_memory_stress_and_free() {
 }
 
 void test_stack_free_all() {
-    usize     capacity = 512;
-    u8* const buf      = reinterpret_cast<u8*>(std::malloc(capacity));
-    Stack     salloc{buf, capacity};
+    usize      capacity = 512;
+    u8* const  buf      = reinterpret_cast<u8*>(std::malloc(capacity));
+    psh::Stack salloc{buf, capacity};
 
     usize expected_min_size = 0;
 
@@ -540,8 +544,8 @@ void test_stack_free_all() {
     salloc.clear();
     psh_assert(salloc.used() == 0ull);
 
-    psh_assert_msg(salloc.offset == 0ull, "Expected empty StackAlloc");
-    psh_assert_msg(salloc.previous_offset == 0ull, "Expected empty StackAlloc");
+    psh_assert_msg(salloc.offset == 0ull, "Expected emptypsh::StackAlloc");
+    psh_assert_msg(salloc.previous_offset == 0ull, "Expected emptypsh::StackAlloc");
 
     std::free(buf);
     test_passed();
