@@ -57,10 +57,10 @@
     } while (0)
 
 /// Set the n-th bit to 1 if the condition passes, otherwise set the bit to 0.
-#define psh_bit_set_or_clear_if(var, n, cond)                                          \
-    do {                                                                               \
-        decltype(var) mask__ = psh_bit(decltype(var), (n));                            \
-        var                  = ((var) & ~mask__) | (-static_cast<int>(cond) & mask__); \
+#define psh_bit_set_or_clear_if(var, n, cond)                                       \
+    do {                                                                            \
+        decltype(var) psh_var_mask_ = psh_bit(decltype(var), (n));                  \
+        var = ((var) & ~psh_var_mask_) | (-static_cast<int>(cond) & psh_var_mask_); \
     } while (0)
 
 /// Get the value of the n-th bit of given value.
@@ -87,17 +87,17 @@
 #define psh_u16_lo(val_u16) (0x00FF & (val_u16))
 
 /// Set the value of the high byte of a word.
-#define psh_u16_set_hi(var_u16, hi_u8)                                        \
-    do {                                                                      \
-        unsigned short lo__ = (var_u16) & 0x00FF;                             \
-        var_u16             = static_cast<unsigned short>(hi_u8 << 8) | lo__; \
+#define psh_u16_set_hi(var_u16, hi_u8)                                                      \
+    do {                                                                                    \
+        unsigned short psh_var_lo_ = (var_u16) & 0x00FF;                                    \
+        var_u16                    = static_cast<unsigned short>(hi_u8 << 8) | psh_var_lo_; \
     } while (0)
 
 /// Set the value of the low byte of a word.
-#define psh_u16_set_lo(var_u16, lo_u8)                                   \
-    do {                                                                 \
-        unsigned short hi__ = (var_u16) & 0xFF00;                        \
-        var_u16             = hi__ | static_cast<unsigned short>(lo_u8); \
+#define psh_u16_set_lo(var_u16, lo_u8)                                                 \
+    do {                                                                               \
+        unsigned short psh_var_hi_ = (var_u16) & 0xFF00;                               \
+        var_u16                    = psh_var_hi_ | static_cast<unsigned short>(lo_u8); \
     } while (0)
 
 // -----------------------------------------------------------------------------
