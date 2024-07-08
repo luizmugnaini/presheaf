@@ -38,7 +38,7 @@ namespace psh {
 
     Option<Arena> MemoryManager::make_arena(usize size) noexcept {
         u8* mem = alloc<u8>(size);
-        return (mem == nullptr) ? Option<Arena>{} : Option{Arena{mem, size}};
+        return (mem == nullptr) ? Option<Arena>{} : Option<Arena>{Arena{mem, size}};
     }
 
     Status MemoryManager::pop() noexcept {
