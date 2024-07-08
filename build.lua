@@ -85,96 +85,64 @@ end
 
 local compilers = {
 	clang = {
-		cc = {
-			exe = "clang++",
-			opt = {
-				std = "-std=",
-				no_link = "-c",
-				include = "-I",
-				define = "-D",
-				out_obj = "-o",
-				out_exe = "-o",
-			},
-			flags = {
-				common = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-pointer-arithmetic -Wnull-dereference -Wformat=2 -Wno-unused-variable -Wno-compat -Wno-unsafe-buffer-usage -fno-rtti -fno-exceptions",
-				debug = "-Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
-				release = "-O2",
-			},
-		},
-		ar = {
-			exe = "llvm-ar",
-			out = "-o",
-			flags = "rcs",
-		},
+		cc = "clang++",
+		opt_include = "-I",
+		opt_define = "-D",
+		opt_std = "-std=",
+		opt_no_link = "-c",
+		opt_out_obj = "-o",
+		opt_out_exe = "-o",
+		flags_common = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-pointer-arithmetic -Wnull-dereference -Wformat=2 -Wno-unused-variable -Wno-compat -Wno-unsafe-buffer-usage -fno-rtti -fno-exceptions",
+		flags_debug = "-Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
+		flags_release = "-O2",
+		ar = "llvm-ar",
+		ar_out = "-o",
+		ar_flags = "rcs",
 	},
 	gcc = {
-		cc = {
-			exe = "g++",
-			opt = {
-				std = "-std=",
-				no_link = "-c",
-				include = "-I",
-				define = "-D",
-				out_obj = "-o",
-				out_exe = "-o",
-			},
-			flags = {
-				common = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-dereference -Wformat=2 -Wno-unused-variable -fno-rtti -fno-exceptions",
-				debug = "-Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
-				release = "-O2",
-			},
-		},
-		ar = {
-			exe = "ar",
-			out = "-o",
-			flags = "rcs",
-		},
+		cc = "g++",
+		opt_include = "-I",
+		opt_define = "-D",
+		opt_std = "-std=",
+		opt_no_link = "-c",
+		opt_out_obj = "-o",
+		opt_out_exe = "-o",
+		flags_common = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-dereference -Wformat=2 -Wno-unused-variable -fno-rtti -fno-exceptions",
+		flags_debug = "-Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
+		flags_release = "-O2",
+		ar = "ar",
+		ar_out = "-o",
+		ar_flags = "rcs",
 	},
 	msvc = {
-		cc = {
-			exe = "cl",
-			opt = {
-				include = "/I",
-				define = "/D",
-				std = "/std:",
-				no_link = "/c",
-				out_obj = "/Fo:",
-				out_exe = "/Fe:",
-			},
-			flags = {
-				common = "-nologo -Oi -TP -MP -FC -GF -GA /fp:except- -GR- -EHsc- /INCREMENTAL:NO /W3",
-				debug = "/Ob0 /Od /Oy- /Z7 /RTC1 /MTd",
-				release = "/O2 /MT",
-			},
-		},
-		ar = {
-			exe = "lib",
-			out = "/out:",
-			flags = "/nologo",
-		},
+		cc = "cl",
+		opt_include = "/I",
+		opt_define = "/D",
+		opt_std = "/std:",
+		opt_no_link = "/c",
+		opt_out_obj = "/Fo:",
+		opt_out_exe = "/Fe:",
+		flags_common = "-nologo -Oi -TP -MP -FC -GF -GA /fp:except- -GR- -EHsc- /INCREMENTAL:NO /W3",
+		flags_debug = "/Ob0 /Od /Oy- /Z7 /RTC1 /MTd",
+		flags_release = "/O2 /MT",
+		ar = "lib",
+		ar_out = "/out:",
+		ar_flags = "/nologo",
 	},
 	clang_cl = {
-		cc = {
-			exe = "clang-cl",
-			opt = {
-				include = "/I",
-				define = "/D",
-				std = "/std:",
-				no_link = "-c",
-				out_obj = "-o",
-				out_exe = "-o",
-			},
-			flags = {
-				common = "/TP -Wall -Wextra -Wconversion -Wuninitialized -Wnull-pointer-arithmetic -Wnull-dereference -Wcast-align -Wformat=2 -Wno-unused-variable -Wno-missing-prototypes -Wno-unsafe-buffer-usage -Wno-c++20-compat -Wno-c++98-compat-pedantic",
-				debug = "-Ob0 /Od /Oy- /Z7 /RTC1 -g /MTd",
-				release = "-O2 /MT",
-			},
-		},
-		ar = {
-			exe = "llvm-lib",
-			out = "/out:",
-			flags = "/nologo",
-		},
+		cc = "clang-cl",
+		opt_include = "/I",
+		opt_define = "/D",
+		opt_std = "/std:",
+		opt_no_link = "-c",
+		opt_out_obj = "-o",
+		opt_out_exe = "-o",
+		flags_common = "/TP -Wall -Wextra -Wconversion -Wuninitialized -Wnull-pointer-arithmetic -Wnull-dereference -Wcast-align -Wformat=2 -Wno-unused-variable -Wno-missing-prototypes -Wno-unsafe-buffer-usage -Wno-c++20-compat -Wno-c++98-compat-pedantic",
+		flags_debug = "-Ob0 /Od /Oy- /Z7 /RTC1 -g /MTd",
+		flags_release = "-O2 /MT",
+		ar = "llvm-lib",
+		ar_out = "/out:",
+		ar_flags = "/nologo",
 	},
 }
 
@@ -189,15 +157,15 @@ local presheaf = {
 	std = "c++20",
 }
 
-function presheaf_flags(cc)
+function presheaf_flags(tc)
 	return string.format(
 		"%s %s %s %s %s %s",
-		cc.opt.std .. presheaf.std,
-		cc.flags.common,
-		options.release and cc.flags.release or cc.flags.debug,
-		concat(presheaf.defines, " " .. cc.opt.define, true),
-		options.release and "" or concat(presheaf.debug_defines, " " .. cc.opt.define, true),
-		cc.opt.include .. presheaf.include_dir
+		tc.opt_std .. presheaf.std,
+		tc.flags_common,
+		options.release and tc.flags_release or tc.flags_debug,
+		concat(presheaf.defines, " " .. tc.opt_define, true),
+		options.release and "" or concat(presheaf.debug_defines, " " .. tc.opt_define, true),
+		tc.opt_include .. presheaf.include_dir
 	)
 end
 
@@ -205,31 +173,14 @@ end
 -- Toolchain
 -- -----------------------------------------------------------------------------
 
-local tc = { cc = nil, ar = nil, ld = nil }
-
+local tc = os_windows and compilers.msvc or compilers.gcc
 if options.clang then
-	if os_windows then
-		tc.cc = compilers.clang_cl.cc
-		tc.ar = compilers.clang_cl.ar
-	else
-		tc.cc = compilers.clang.cc
-		tc.ar = compilers.clang.ar
-	end
+	tc = os_windows and compilers.clang_cl or compilers.clang
 elseif options.gcc then
 	assert(not os_windows, "GCC build not supported in Windows")
-	tc.cc = compilers.gcc.cc
-	tc.ar = compilers.gcc.ar
+	tc = compilers.gcc
 elseif options.msvc then
-	tc.cc = compilers.msvc.cc
-	tc.ar = compilers.msvc.ar
-else
-	if os_windows then
-		tc.cc = compilers.msvc.cc
-		tc.ar = compilers.msvc.ar
-	else
-		tc.cc = compilers.gcc.cc
-		tc.ar = compilers.gcc.ar
-	end
+	tc = compilers.msvc
 end
 
 -- -----------------------------------------------------------------------------
@@ -249,19 +200,15 @@ exec("mkdir " .. out_dir, true)
 exec(
 	string.format(
 		"%s %s %s %s %s",
-		tc.cc.exe,
-		tc.cc.opt.no_link,
-		presheaf_flags(tc.cc, options.release),
-		tc.cc.opt.out_obj .. obj_out,
-		presheaf.src,
-		tc.ar.exe,
-		tc.ar.flags,
-		tc.ar.out .. lib_out,
-		obj_out
+		tc.cc,
+		tc.opt_no_link,
+		presheaf_flags(tc, options.release),
+		tc.opt_out_obj .. obj_out,
+		presheaf.src
 	)
 )
 -- Archive objs into a library.
-exec(string.format("%s %s %s %s", tc.ar.exe, tc.ar.flags, tc.ar.out .. lib_out, obj_out))
+exec(string.format("%s %s %s %s", tc.ar, tc.ar_flags, tc.ar_out .. lib_out, obj_out))
 
 if options.test then
 	-- Compile tests with debug flags.
@@ -269,10 +216,10 @@ if options.test then
 	exec(
 		string.format(
 			"%s %s %s %s %s",
-			tc.cc.exe,
-			presheaf_flags(tc.cc, false),
-			tc.cc.opt.out_obj .. out_dir .. os_info.path_sep .. presheaf.test_exe .. os_info.obj_ext,
-			tc.cc.opt.out_exe .. test_exe_out,
+			tc.cc,
+			presheaf_flags(tc, false),
+			tc.opt_out_obj .. out_dir .. os_info.path_sep .. presheaf.test_exe .. os_info.obj_ext,
+			tc.opt_out_exe .. test_exe_out,
 			presheaf.test_src
 		)
 	)
