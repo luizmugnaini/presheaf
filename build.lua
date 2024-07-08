@@ -23,174 +23,261 @@
 
 local start_time = os.clock()
 
+-- -----------------------------------------------------------------------------
+-- Available command line options
+-- -----------------------------------------------------------------------------
+
 -- Available command line options.
 local options = {
 	-- Format source files.
 	fmt = false,
 	-- Build type (default: debug build).
 	release = false,
-	-- Compiler of choice (default: clang).
+	-- Compiler of choice (default: MSVC on Windows and GCC on Linux).
 	clang = false,
 	gcc = false,
 	msvc = false,
-	-- Linker of choice (default: compiler chooses)
-	ld = false,
-	lld = false,
-	mold = false, -- Only available on unix builds.
-	-- Build tests.
+	-- Build and run tests.
 	test = false,
 	-- Whether or not to print the commands ran by the build script and their output.
 	quiet = false,
 }
+
 for i = 1, #arg do
 	options[arg[i]] = true
 end
 
 local os_windows = (package.config:sub(1, 1) == "\\")
-local silence_cmd = os_windows and " > NUL 2>&1" or " > /dev/null 2>&1"
+local os_info = {}
+if os_windows then
+	os_info.path_sep = "\\"
+	os_info.silence_cmd = " > NUL 2>&1"
+	os_info.obj_ext = ".obj"
+	os_info.lib_ext = ".lib"
+	os_info.exe_ext = ".exe"
+else
+	os_info.path_sep = "/"
+	os_info.silence_cmd = " > /dev/null 2>&1"
+	os_info.obj_ext = ".o"
+	os_info.lib_ext = ".a"
+	os_info.exe_ext = ""
+end
 
-function exec(cmd_str, show_out)
+function exec(cmd_str, quiet)
+	local cmd_res = (not (quiet or options.quiet)) and cmd_str or (cmd_str .. os_info.silence_cmd)
 	if not options.quiet then
-		print("\x1b[1;35mexecuting ::\x1b[0m " .. cmd_str)
+		print("\x1b[1;35mexecuting ::\x1b[0m " .. cmd_res)
 	end
-
-	local cmd_res = (show_out and not options.quiet) and cmd_str or (cmd_str .. silence_cmd)
 	os.execute(cmd_res)
 end
 
+function concat(arr, join, is_prefix)
+	local acc = is_prefix and (join .. arr[1]) or arr[1]
+	for i = 2, #arr do
+		acc = acc .. join .. arr[i]
+	end
+	return acc
+end
+
 -- -----------------------------------------------------------------------------
--- - Library configuration -
+-- Project configuration
 -- -----------------------------------------------------------------------------
 
--- File extensions.
-local obj_ext = os_windows and ".obj" or ".o"
-local exe_ext = os_windows and ".exe" or ""
-local lib_ext = os_windows and ".lib" or ".a"
+local compilers = {
+	clang = {
+		cc = {
+			exe = "clang++",
+			opt = {
+				std = "-std=",
+				no_link = "-c",
+				include = "-I",
+				define = "-D",
+				out_obj = "-o",
+				out_exe = "-o",
+			},
+			flags = {
+				common = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-pointer-arithmetic -Wnull-dereference -Wformat=2 -Wno-unused-variable -Wno-compat -Wno-unsafe-buffer-usage -fno-rtti -fno-exceptions",
+				debug = "-Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
+				release = "-O2",
+			},
+		},
+		ar = {
+			exe = "llvm-ar",
+			out = "-o",
+			flags = "rcs",
+		},
+	},
+	gcc = {
+		cc = {
+			exe = "g++",
+			opt = {
+				std = "-std=",
+				no_link = "-c",
+				include = "-I",
+				define = "-D",
+				out_obj = "-o",
+				out_exe = "-o",
+			},
+			flags = {
+				common = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-dereference -Wformat=2 -Wno-unused-variable -fno-rtti -fno-exceptions",
+				debug = "-Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
+				release = "-O2",
+			},
+		},
+		ar = {
+			exe = "ar",
+			out = "-o",
+			flags = "rcs",
+		},
+	},
+	msvc = {
+		cc = {
+			exe = "cl",
+			opt = {
+				include = "/I",
+				define = "/D",
+				std = "/std:",
+				no_link = "/c",
+				out_obj = "/Fo:",
+				out_exe = "/Fe:",
+			},
+			flags = {
+				common = "-nologo -Oi -TP -MP -FC -GF -GA /fp:except- -GR- -EHsc- /INCREMENTAL:NO /W3",
+				debug = "/Ob0 /Od /Oy- /Z7 /RTC1 /MTd",
+				release = "/O2 /MT",
+			},
+		},
+		ar = {
+			exe = "lib",
+			out = "/out:",
+			flags = "/nologo",
+		},
+	},
+	clang_cl = {
+		cc = {
+			exe = "clang-cl",
+			opt = {
+				include = "/I",
+				define = "/D",
+				std = "/std:",
+				no_link = "-c",
+				out_obj = "-o",
+				out_exe = "-o",
+			},
+			flags = {
+				common = "/TP -Wall -Wextra -Wconversion -Wuninitialized -Wnull-pointer-arithmetic -Wnull-dereference -Wcast-align -Wformat=2 -Wno-unused-variable -Wno-missing-prototypes -Wno-unsafe-buffer-usage -Wno-c++20-compat -Wno-c++98-compat-pedantic",
+				debug = "-Ob0 /Od /Oy- /Z7 /RTC1 -g /MTd",
+				release = "-O2 /MT",
+			},
+		},
+		ar = {
+			exe = "llvm-lib",
+			out = "/out:",
+			flags = "/nologo",
+		},
+	},
+}
 
-local out_dir = "build/"
-
-local lib = {
+local presheaf = {
 	src = "src/all.cc",
-	test = "tests/test_all.cc",
+	test_src = "tests/test_all.cc",
 	include_dir = "include",
-	lib_obj = out_dir .. "presheaf" .. obj_ext,
-	lib_bin = out_dir .. "presheaf" .. lib_ext,
-	test_exe = out_dir .. "test" .. exe_ext,
+	defines = { "_CRT_SECURE_NO_WARNINGS" },
+	debug_defines = { "PSH_DEBUG" },
+	lib = "libpresheaf",
+	test_exe = "test_all",
 	std = "c++20",
 }
 
-local compiler_config = {
-	clang = {
-		compiler = os_windows and "clang-cl" or "clang++",
-		archiver = "llvm-ar rc",
-		include_flag = "-I",
-		std_flag = "-std=",
-		no_link_flag = "-c",
-		link_flag = "-L",
-		linker_flag = "-fuse-ld=",
-		out_flag = "-o",
-		cflags = "-Wall -Wextra -pedantic -Wuninitialized -Wswitch -Wcovered-switch-default -Wshadow -Wcast-align -Wold-style-cast -Wpedantic -Wconversion -Wsign-conversion -Wnull-dereference -Wdouble-promotion -Wmisleading-indentation -Wformat=2 -Wno-unused-variable -fno-rtti -fno-exceptions -fno-cxx-exceptions -fcolor-diagnostics -fno-force-emit-vtables",
-		debug_cflags = "-g -DPSH_DEBUG",
-		san_cflags = "-fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
-	},
-	msvc = {
-		compiler = "cl",
-		archiver = "lib",
-		include_flag = "/I",
-		std_flag = "/std:",
-		no_link_flag = "/c",
-		link_flag = "/link",
-		linker_flag = "/linker:",
-		out_flag = "/o",
-		cflags = "/W3 /fp:except- /GR- /GA /nologo",
-		debug_cflags = "/Zi /Oy- /DPSH_DEBUG",
-		san_cflags = "",
-	},
-	gcc = {
-		compiler = "g++",
-		archiver = "ar rcs",
-		include_flag = "-I",
-		std_flag = "-std=",
-		no_link_flag = "-c",
-		link_flag = "-L",
-		linker_flag = "-fuse-ld=",
-		out_flag = "-o",
-		cflags = "-Wall -Wextra -pedantic -Wuninitialized -Wswitch -Wshadow -Wcast-align -Wold-style-cast -Wpedantic -Wconversion -Wsign-conversion -Wnull-dereference -Wdouble-promotion -Wmisleading-indentation -Wformat=2 -Wno-unused-variable -fno-rtti -fno-exceptions -fno-exceptions",
-		debug_cflags = "-g -DPSH_DEBUG",
-		san_cflags = "-fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
-	},
-}
-
-local linker_config = {
-	ld = "ld",
-	mold = "mold",
-	lld = os_windows and "lld-link" or "lld",
-}
+function presheaf_flags(cc)
+	return string.format(
+		"%s %s %s %s %s %s",
+		cc.opt.std .. presheaf.std,
+		cc.flags.common,
+		options.release and cc.flags.release or cc.flags.debug,
+		concat(presheaf.defines, " " .. cc.opt.define, true),
+		options.release and "" or concat(presheaf.debug_defines, " " .. cc.opt.define, true),
+		cc.opt.include .. presheaf.include_dir
+	)
+end
 
 -- -----------------------------------------------------------------------------
--- - Pre-compilation step -
+-- Toolchain
 -- -----------------------------------------------------------------------------
 
--- Decide which compiler to use.
-local cc = compiler_config.clang
-if options.gcc then
-	cc = compiler_config.gcc
+local tc = { cc = nil, ar = nil, ld = nil }
+
+if options.clang then
+	if os_windows then
+		tc.cc = compilers.clang_cl.cc
+		tc.ar = compilers.clang_cl.ar
+	else
+		tc.cc = compilers.clang.cc
+		tc.ar = compilers.clang.ar
+	end
+elseif options.gcc then
+	assert(not os_windows, "GCC build not supported in Windows")
+	tc.cc = compilers.gcc.cc
+	tc.ar = compilers.gcc.ar
 elseif options.msvc then
-	cc = compiler_config.msvc
+	tc.cc = compilers.msvc.cc
+	tc.ar = compilers.msvc.ar
+else
+	if os_windows then
+		tc.cc = compilers.msvc.cc
+		tc.ar = compilers.msvc.ar
+	else
+		tc.cc = compilers.gcc.cc
+		tc.ar = compilers.gcc.ar
+	end
 end
 
--- Decide which linker to use.
-local ld = nil
-if options.lld then
-	ld = linker_config.lld
-elseif options.mold then
-	assert(not os_windows, "mold linker not available")
-	ld = linker_config.mold
-elseif options.ld then
-	ld = linker_config.ld
-end
+-- -----------------------------------------------------------------------------
+-- Execute build instructions
+-- -----------------------------------------------------------------------------
 
--- Format source files if requested.
 if options.fmt then
 	exec("clang-format -i include/psh/*.h src/*.cc")
 end
 
--- Create the directory where the compiler output will be written.
-exec("mkdir " .. out_dir)
+local out_dir = "build"
+local obj_out = out_dir .. os_info.path_sep .. presheaf.lib .. os_info.obj_ext
+local lib_out = out_dir .. os_info.path_sep .. presheaf.lib .. os_info.lib_ext
+exec("mkdir " .. out_dir, true)
 
--- -----------------------------------------------------------------------------
--- - Compile and archive the presheaf library -
--- -----------------------------------------------------------------------------
-
-local cflags_lib =
-	string.format("%s %s%s %s %s%s", cc.no_link_flag, cc.std_flag, lib.std, cc.cflags, cc.include_flag, lib.include_dir)
-if not options.release then
-	cflags_lib = cflags_lib .. " " .. cc.debug_cflags .. " " .. cc.san_cflags
-end
-
-exec(string.format("%s %s %s %s %s", cc.compiler, cflags_lib, lib.src, cc.out_flag, lib.lib_obj), true)
-exec(string.format("%s %s %s", cc.archiver, lib.lib_bin, lib.lib_obj), true)
-
--- -----------------------------------------------------------------------------
--- - Compile and run the tests -
--- -----------------------------------------------------------------------------
+-- Compile without linking.
+exec(
+	string.format(
+		"%s %s %s %s %s",
+		tc.cc.exe,
+		tc.cc.opt.no_link,
+		presheaf_flags(tc.cc, options.release),
+		tc.cc.opt.out_obj .. obj_out,
+		presheaf.src,
+		tc.ar.exe,
+		tc.ar.flags,
+		tc.ar.out .. lib_out,
+		obj_out
+	)
+)
+-- Archive objs into a library.
+exec(string.format("%s %s %s %s", tc.ar.exe, tc.ar.flags, tc.ar.out .. lib_out, obj_out))
 
 if options.test then
-	local cflags_test = string.format(
-		"%s%s %s %s %s %s%s",
-		cc.std_flag,
-		lib.std,
-		cc.cflags,
-		cc.debug_cflags,
-		cc.san_cflags,
-		cc.include_flag,
-		lib.include_dir
+	-- Compile tests with debug flags.
+	local test_exe_out = out_dir .. os_info.path_sep .. presheaf.test_exe .. os_info.exe_ext
+	exec(
+		string.format(
+			"%s %s %s %s %s",
+			tc.cc.exe,
+			presheaf_flags(tc.cc, false),
+			tc.cc.opt.out_obj .. out_dir .. os_info.path_sep .. presheaf.test_exe .. os_info.obj_ext,
+			tc.cc.opt.out_exe .. test_exe_out,
+			presheaf.test_src
+		)
 	)
-	if ld ~= nil then
-		cflags_test = cflags_test .. " " .. cc.linker_flag .. ld
-	end
-
-	exec(string.format("%s %s %s %s %s", cc.compiler, lib.test, cflags_test, cc.out_flag, lib.test_exe), true)
+	-- Run tests.
+	exec(test_exe_out)
 end
 
 print(string.format("\x1b[1;35mtime elapsed ::\x1b[0m %.5f seconds", os.clock() - start_time))
