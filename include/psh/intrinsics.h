@@ -61,6 +61,10 @@
 #    else
 #        define PSH_COMPILER_MSVC_YEAR 0
 #    endif
+#    if defined(__clang_major__)
+#        define PSH_COMPILER_CLANG_CL
+#        define PSH_COMPILER_CLANG
+#    endif
 #elif defined(__clang__)
 #    define PSH_COMPILER_CLANG
 #elif defined(__GNUC__)
