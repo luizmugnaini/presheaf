@@ -81,6 +81,11 @@
 #    define psh_abort() raise(SIGTRAP)
 #endif
 
+#if __cplusplus >= 202002L // Technically Presheaf only supports C++20.
+#    define PSH_FALLTHROUGH [[fallthrough]]
+#else
+#    define PSH_FALLTHROUGH
+#endif
 
 #if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
 #    define psh_unreachable() (__builtin_unreachable())
