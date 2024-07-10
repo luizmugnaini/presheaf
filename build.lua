@@ -98,11 +98,11 @@ local compilers = {
 		opt_no_link = "-c",
 		opt_out_obj = "-o",
 		opt_out_exe = "-o",
-		flags_common = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-pointer-arithmetic -Wnull-dereference -Wformat=2 -Wno-unused-variable -Wno-compat -Wno-unsafe-buffer-usage -fno-rtti -fno-exceptions",
+		flags_common = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-pointer-arithmetic -Wnull-dereference -Wformat=2 -Wno-unused-variable -Wno-unsafe-buffer-usage -fno-rtti -fno-exceptions",
 		flags_debug = "-Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
 		flags_release = "-O2",
 		ar = "llvm-ar",
-		ar_out = "-o",
+		ar_out = "",
 		ar_flags = "rcs",
 	},
 	gcc = {
@@ -117,7 +117,7 @@ local compilers = {
 		flags_debug = "-Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
 		flags_release = "-O2",
 		ar = "ar",
-		ar_out = "-o",
+		ar_out = "",
 		ar_flags = "rcs",
 	},
 	msvc = {
