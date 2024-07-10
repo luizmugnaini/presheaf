@@ -72,7 +72,13 @@ function exec(cmd_str, quiet)
 end
 
 function concat(arr, join, is_prefix)
-	local acc = is_prefix and (join .. arr[1]) or arr[1]
+	local acc = nil
+	if is_prefix then
+		acc = join .. arr[1]
+	else
+		acc = arr[1]
+	end
+
 	for i = 2, #arr do
 		acc = acc .. join .. arr[i]
 	end
