@@ -77,6 +77,15 @@
 #    define psh_abort() raise(SIGTRAP)
 #endif
 
+
+#if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#    define psh_unreachable() (__builtin_unreachable())
+#elif defined(PSH_COMPILER_MSVC)
+#    define psh_unreachable() (__assume(false))
+#else
+#    define psh_unreachable()
+#endif
+
 /// Signals internal linkage.
 #define psh_internal static
 /// Signals that a variable is available in the global scope.

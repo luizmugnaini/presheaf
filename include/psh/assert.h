@@ -48,20 +48,14 @@ namespace psh {
 #    define psh_assert_msg(expr, msg) (void)(expr), (void)(msg)
 #endif
 
-#define psh_unreachable()                             \
-    do {                                              \
-        psh_fatal("Codepath should be unreachable!"); \
-        psh_abort();                                  \
-    } while (0)
-
 #define psh_todo()                                   \
     do {                                             \
         psh_fatal("TODO: code-path unimplemented!"); \
-        psh_abort();                                 \
+        psh_unreachable();                           \
     } while (0)
 
 #define psh_todo_msg(msg)                                             \
     do {                                                              \
         psh_fatal_fmt("TODO: code-path unimplemented, msg: %s", msg); \
-        psh_abort();                                                  \
+        psh_unreachable();                                            \
     } while (0)
