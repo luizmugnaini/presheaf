@@ -156,6 +156,6 @@ namespace psh {
     }
 
     Status String::join(std::initializer_list<StringView> strs, strptr sjoin) noexcept {
-        return this->join(FatPtr{strs.begin(), strs.size()}, sjoin);
+        return this->join(FatPtr<StringView const>{strs.begin(), strs.size()}, sjoin);
     }
 }  // namespace psh

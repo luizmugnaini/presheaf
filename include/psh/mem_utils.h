@@ -75,7 +75,7 @@ namespace psh {
 
     template <typename T>
     void zero_struct(T& s) noexcept {
-        memory_set(FatPtr{reinterpret_cast<u8*>(&s), sizeof(T)}, 0);
+        memory_set(FatPtr<u8>{reinterpret_cast<u8*>(&s), sizeof(T)}, 0);
     }
 
     /// Simple wrapper around `std::memcpy`.

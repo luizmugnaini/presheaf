@@ -88,11 +88,11 @@ namespace psh {
 
     template <typename T>
     FatPtr<u8> fat_ptr_as_bytes(T* buf, usize length) noexcept {
-        return FatPtr{reinterpret_cast<u8*>(buf), sizeof(T) * length};
+        return FatPtr<u8>{reinterpret_cast<u8*>(buf), sizeof(T) * length};
     }
 
     template <typename T>
     FatPtr<u8 const> fat_ptr_as_bytes(T const* buf, usize length) noexcept {
-        return FatPtr{reinterpret_cast<u8 const*>(buf), sizeof(T) * length};
+        return FatPtr<u8 const>{reinterpret_cast<u8 const*>(buf), sizeof(T) * length};
     }
 }  // namespace psh
