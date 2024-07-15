@@ -108,7 +108,7 @@
 #define psh_u8_lo(val_u8) (0x0F & (val_u8))
 
 /// High nibble of a byte.
-#define psh_u8_hi(val_u8) (0xF0 & (val_u8))
+#define psh_u8_hi(val_u8) ((val_u8) >> 4)
 
 /// Make a byte from a pair of nibbles.
 #define psh_u8_from_nibbles(hi_nib, lo_nib) (static_cast<unsigned char>(((hi_nib) << 4) | lo_nib))
