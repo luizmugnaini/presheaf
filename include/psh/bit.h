@@ -27,11 +27,9 @@
 // -----------------------------------------------------------------------------
 // Note: The bit indexing count starts at zero for all macros.
 
-/// Get the number of bits that compose a given value.
-#define psh_bit_count(val) (CHAR_BIT * sizeof(decltype(val)))
-
 /// Get the number of bits that compose a given type.
-#define psh_bit_count_type(T) (CHAR_BIT * sizeof(T))
+#define psh_type_bit_count(T)    (CHAR_BIT * sizeof(T))
+#define psh_value_bit_count(val) psh_type_bit_count(decltype(val))
 
 /// Get the number of type T whose n-th bit is set to 1 and all other bits are 0.
 #define psh_bit(T, n) static_cast<T>(1 << (n))
@@ -39,7 +37,7 @@
 /// Get the number of type T whose n-th bit is set to 0 and all other bits are 1.
 #define psh_not_bit(T, n) \
     static_cast<T>(       \
-        ~(static_cast<T>(1 << (n))) & static_cast<T>((1ULL << psh_bit_count_type(T)) - 1))
+        ~(static_cast<T>(1 << (n))) & static_cast<T>((1ULL << psh_type_bit_count(T)) - 1))
 
 /// Get the number whose first `count` bits are 1's.
 #define psh_bit_ones(count) ((1ULL << (count)) - 1)
@@ -131,8 +129,8 @@
 
 /// Rotate right by `n` digits.
 #define psh_int_rotr(val, n) \
-    (static_cast<decltype(val)>((val >> (n)) | (val << (psh_bit_count(val) - (n)))))
+    (static_cast<decltype(val)>((val >> (n)) | (val << (psh_value_bit_count(val) - (n)))))
 
 /// Rotate left by `n` digits.
 #define psh_int_rotl(val, n) \
-    (static_cast<decltype(val)>((val << (n)) | (val >> (psh_bit_count(val) - (n)))))
+    (static_cast<decltype(val)>((val << (n)) | (val >> (psh_value_bit_count(val) - (n)))))
