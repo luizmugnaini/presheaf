@@ -45,7 +45,9 @@ namespace psh {
     }
 
     void memory_copy(void* dest, void const* src, usize size) noexcept {
-        if (psh_unlikely(dest == nullptr || src == nullptr)) return;
+        if (psh_unlikely(dest == nullptr || src == nullptr)) {
+            return;
+        }
 
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_MEMCPY_OVERLAP)
         uptr dest_addr = reinterpret_cast<uptr>(dest);
