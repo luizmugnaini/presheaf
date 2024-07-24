@@ -15,18 +15,15 @@
 ///    with this program; if not, write to the Free Software Foundation, Inc.,
 ///    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 ///
-/// Description: Single compilation unit containing the entirety of the Presheaf library. This file
-///              exists for the single purpose of making it trivial to compile the whole library.
+/// Description: System time interface.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
-// clang-format off
-#include "time.cc"
-#include "vec.cc"
-#include "log.cc"
-#include "mem_utils.cc"
-#include "arena.cc"
-#include "stack.cc"
-#include "memory_manager.cc"
-#include "string.cc"
-#include "streams.cc"
-// clang-format on
+#pragma once
+
+#include <psh/intrinsics.h>
+#include <psh/option.h>
+#include <psh/types.h>
+
+namespace psh {
+    Option<f64> current_time_in_seconds() noexcept;
+}
