@@ -39,6 +39,70 @@
 #    define PSH_OS_POSIX
 #endif
 
+/// Windows-specific tweaks.
+#if defined(PSH_OS_WINDOWS_32) || defined(PSH_OS_WINDOWS_64)
+// Stop MSVC from complaining about fopen and such.
+#    ifndef _CRT_SECURE_NO_WARNINGS
+#        define _CRT_SECURE_NO_WARNINGS
+#    endif
+
+// Macros disabling many of the annoying Windows headers macros.
+#    ifndef WIN32_LEAN_AND_MEAN
+#        define WIN32_LEAN_AND_MEAN
+#    endif
+#    ifndef NOMINMAX
+#        define NOMINMAX
+#    endif
+#    ifndef NOATOM
+#        define NOATOM
+#    endif
+#    ifndef NOGDI
+#        define NOGDI
+#    endif
+#    ifndef NOKERNEL
+#        define NOKERNEL
+#    endif
+#    ifndef NOUSER
+#        define NOUSER
+#    endif
+#    ifndef NONLS
+#        define NONLS
+#    endif
+#    ifndef NOMB
+#        define NOMB
+#    endif
+#    ifndef NOMEMMGR
+#        define NOMEMMGR
+#    endif
+#    ifndef NOMETAFILE
+#        define NOMETAFILE
+#    endif
+#    ifndef NOOPENFILE
+#        define NOOPENFILE
+#    endif
+#    ifndef NOSERVICE
+#        define NOSERVICE
+#    endif
+#    ifndef NOSOUND
+#        define NOSOUND
+#    endif
+#    ifndef NOWH
+#        define NOWH
+#    endif
+#    ifndef NOCOMM
+#        define NOCOMM
+#    endif
+#    ifndef NODEFERWINDOWPOS
+#        define NODEFERWINDOWPOS
+#    endif
+#    ifndef NOMCX
+#        define NOMCX
+#    endif
+#    ifndef NOIME
+#        define NOIME
+#    endif
+#endif
+
 /// Macros for compiler detection.
 #if defined(_MSC_VER)
 #    define PSH_COMPILER_MSVC
@@ -81,7 +145,7 @@
 #    define psh_abort() raise(SIGTRAP)
 #endif
 
-#if __cplusplus >= 202002L // Technically Presheaf only supports C++20.
+#if __cplusplus >= 202002L  // Technically Presheaf only supports C++20.
 #    define PSH_FALLTHROUGH [[fallthrough]]
 #else
 #    define PSH_FALLTHROUGH

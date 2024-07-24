@@ -24,24 +24,6 @@
 #include <cstdio>
 
 #if defined(PSH_OS_WINDOWS_32)
-#    define WIN32_LEAN_AND_MEAN
-#    define NOMINMAX
-#    define NOATOM
-#    define NOGDI
-#    define NOKERNEL
-#    define NOUSER
-#    define NONLS
-#    define NOMB
-#    define NOMEMMGR
-#    define NOMETAFILE
-#    define NOOPENFILE
-#    define NOSERVICE
-#    define NOSOUND
-#    define NOWH
-#    define NOCOMM
-#    define NODEFERWINDOWPOS
-#    define NOMCX
-#    define NOIME
 #    include <Windows.h>
 #else
 #    include <unistd.h>
