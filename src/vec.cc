@@ -450,15 +450,19 @@ namespace psh {
         return ColMat4::view_direction_rh(eye, target - eye, view_up);
     }
 
-    ColMat4 ColMat4::perspective_projection_rhzo(f32 fovy, f32 aspect, f32 near, f32 far) noexcept {
+    ColMat4 ColMat4::perspective_projection_rhzo(
+        f32 fovy,
+        f32 aspect,
+        f32 near_plane,
+        f32 far_plane) noexcept {
         f32 tan_hfovy = std::tan(fovy * 0.5f);
 
         // clang-format off
         return ColMat4{
-            1 / (aspect * tan_hfovy),      0.0f,                     0.0f,               0.0f,
-                     0.0f,            -(1 / tan_hfovy),              0.0f,               0.0f,
-                     0.0f,                 0.0f,            -(far / (far - near)),      -1.0f,
-                     0.0f,                 0.0f,        -((far * near) / (far - near)),  0.0f,
+            1 / (aspect * tan_hfovy),      0.0f,                               0.0f,                             0.0f,
+                     0.0f,            -(1 / tan_hfovy),                        0.0f,                             0.0f,
+                     0.0f,                 0.0f,            -(far_plane / (far_plane - near_plane)),            -1.0f,
+                     0.0f,                 0.0f,        -((far_plane * near_plane) / (far_plane - near_plane)),  0.0f,
         };
         // clang-format on
     }
