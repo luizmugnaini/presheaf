@@ -19,7 +19,7 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #include <psh/assert.h>
-#include <psh/types.h>
+#include <psh/core.h>
 #include "utils.h"
 
 void test_types() {

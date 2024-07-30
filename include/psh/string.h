@@ -22,10 +22,9 @@
 
 #include <psh/arena.h>
 #include <psh/assert.h>
+#include <psh/core.h>
 #include <psh/dyn_array.h>
-#include <psh/intrinsics.h>
 #include <psh/option.h>
-#include <psh/types.h>
 
 namespace psh {
     // -----------------------------------------------------------------------------

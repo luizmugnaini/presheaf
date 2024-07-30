@@ -20,9 +20,9 @@
 
 #pragma once
 
+#include <psh/core.h>
 #include <psh/fat_ptr.h>
 #include <psh/type_utils.h>
-#include <psh/types.h>
 
 namespace psh {
     /// Buffer with a compile-time known size.
@@ -82,11 +82,11 @@ namespace psh {
 
     template <typename T, usize size>
     inline FatPtr<T> fat_ptr(Buffer<T, size>& b) noexcept {
-        return FatPtr{b.buf, size};
+        return FatPtr<T>{b.buf, size};
     }
 
     template <typename T, usize size>
     inline FatPtr<T const> const_fat_ptr(Buffer<T, size> const& b) noexcept {
-        return FatPtr{reinterpret_cast<T const*>(b.buf), size};
+        return FatPtr<T const>{reinterpret_cast<T const*>(b.buf), size};
     }
 }  // namespace psh

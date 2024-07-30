@@ -20,8 +20,8 @@
 
 #include <psh/assert.h>
 #include <psh/bit.h>
+#include <psh/core.h>
 #include <psh/log.h>
-#include <psh/types.h>
 #include "utils.h"
 
 void test_create_bit() {

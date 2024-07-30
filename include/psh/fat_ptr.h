@@ -21,8 +21,8 @@
 #pragma once
 
 #include <psh/assert.h>
+#include <psh/core.h>
 #include <psh/type_utils.h>
-#include <psh/types.h>
 
 namespace psh {
     /// Fat pointer, holds a pointer to a buffer and its corresponding size.
@@ -31,16 +31,21 @@ namespace psh {
         T*    buf  = nullptr;
         usize size = 0;
 
+        FatPtr<T> slice(usize start_idx, usize end = this->size) noexcept {
+            psh_assert(end <= this->size);
+            return FatPtr<T>{psh_ptr_add(this->buf, start_idx), end - start_idx};
+        }
+
         // -----------------------------------------------------------------------------
         // - Size related utilities -
         // -----------------------------------------------------------------------------
 
         constexpr usize size_bytes() const noexcept {
-            return sizeof(T) * size;
+            return sizeof(T) * this->size;
         }
 
         constexpr bool is_empty() const noexcept {
-            return (size == 0);
+            return (this->size == 0);
         }
 
         // -----------------------------------------------------------------------------
@@ -48,19 +53,19 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         constexpr T* begin() noexcept {
-            return buf;
+            return this->buf;
         }
 
         constexpr T const* begin() const noexcept {
-            return static_cast<T const*>(buf);
+            return static_cast<T const*>(this->buf);
         }
 
         constexpr T* end() noexcept {
-            return (buf == nullptr) ? nullptr : buf + size;
+            return (this->buf == nullptr) ? nullptr : (this->buf + this->size);
         }
 
         constexpr T const* end() const noexcept {
-            return (buf == nullptr) ? nullptr : static_cast<T const*>(buf + size);
+            return (this->buf == nullptr) ? nullptr : static_cast<T const*>(this->buf + this->size);
         }
 
         // -----------------------------------------------------------------------------
@@ -69,16 +74,16 @@ namespace psh {
 
         constexpr T& operator[](usize idx) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(idx < size, "Index out of bounds for fat pointer");
+            psh_assert_msg(idx < this->size, "Index out of bounds for fat pointer");
 #endif
-            return buf[idx];
+            return this->buf[idx];
         }
 
         constexpr T const& operator[](usize idx) const noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(idx < size, "Index out of bounds for fat pointer");
+            psh_assert_msg(idx < this->size, "Index out of bounds for fat pointer");
 #endif
-            return buf[idx];
+            return this->buf[idx];
         }
     };
 

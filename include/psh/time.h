@@ -20,9 +20,8 @@
 
 #pragma once
 
-#include <psh/intrinsics.h>
+#include <psh/core.h>
 #include <psh/option.h>
-#include <psh/types.h>
 
 namespace psh {
     Option<f64> current_time_in_seconds() noexcept;

@@ -20,8 +20,7 @@
 
 #include <psh/log.h>
 
-#include <psh/intrinsics.h>
-#include <psh/types.h>
+#include <psh/core.h>
 #include <cassert>
 #include <cstdarg>
 #include <cstdio>

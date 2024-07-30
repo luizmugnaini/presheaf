@@ -19,7 +19,7 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #include <psh/buffer.h>
-#include <psh/intrinsics.h>
+#include <psh/core.h>
 #include <psh/string.h>
 #include <cstdlib>
 #include <cstring>

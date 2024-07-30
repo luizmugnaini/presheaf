@@ -19,10 +19,10 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #include <psh/assert.h>
+#include <psh/core.h>
 #include <psh/dyn_array.h>
 #include <psh/mem_utils.h>
 #include <psh/memory_manager.h>
-#include <psh/types.h>
 #include "utils.h"
 
 struct Foo {

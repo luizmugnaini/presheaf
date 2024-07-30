@@ -21,9 +21,9 @@
 #pragma once
 
 #include <psh/buffer.h>
+#include <psh/core.h>
 #include <psh/option.h>
 #include <psh/string.h>
-#include <psh/types.h>
 
 namespace psh {
     // -----------------------------------------------------------------------------

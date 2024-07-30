@@ -20,7 +20,7 @@
 
 #include <psh/streams.h>
 
-#include <psh/intrinsics.h>
+#include <psh/core.h>
 #include <cstdio>
 
 #if defined(PSH_OS_WINDOWS_32)

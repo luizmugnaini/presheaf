@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 // -----------------------------------------------------------------------------
 // - Macros for operating system and compiler detection -
 // -----------------------------------------------------------------------------
@@ -135,15 +137,40 @@
 #    define PSH_COMPILER_GCC
 #endif
 
-/// Macro for aborting a program at runtime.
-#if defined(PSH_COMPILER_MSVC)
-#    define psh_abort() __debugbreak()
-#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-#    define psh_abort() __builtin_trap()
-#else
-#    include <signal.h>
-#    define psh_abort() raise(SIGTRAP)
-#endif
+// -----------------------------------------------------------------------------
+// - Fundamental types -
+// -----------------------------------------------------------------------------
+
+/// Unsigned integer type.
+using u8    = std::uint8_t;
+using u16   = std::uint16_t;
+using u32   = std::uint32_t;
+using u64   = std::uint64_t;
+using usize = u64;
+
+/// Signed integer type.
+using i8    = std::int8_t;
+using i16   = std::int16_t;
+using i32   = std::int32_t;
+using i64   = std::int64_t;
+using isize = i64;
+
+/// Memory-address types.
+using uptr = u64;
+using iptr = i64;
+
+/// Floating-point types.
+using f32 = float;
+using f64 = double;
+
+/// Immutable zero-terminated string type
+///
+/// A pointer to a contiguous array of constant character values.
+using strptr = char const*;
+
+// -----------------------------------------------------------------------------
+// - Compiler hints -
+// -----------------------------------------------------------------------------
 
 #if __cplusplus >= 202002L  // Technically Presheaf only supports C++20.
 #    define PSH_FALLTHROUGH [[fallthrough]]
@@ -185,18 +212,41 @@
 #    define psh_attr_fmt(fmt_pos)
 #endif
 
-/// Generate a string containing the given expression.
-#define psh_stringify(x) #x
+// -----------------------------------------------------------------------------
+// - Overriding allocation/deallocation -
+// -----------------------------------------------------------------------------
 
-/// Discard the value of a given expression.
-#define psh_discard(x) (void)(x)
+#if defined(psh_malloc) && defined(psh_free)
+// Fine, all defined.
+#elif !defined(psh_malloc) && !defined(psh_free)
+// Fine, none defined.
+#else
+#    error "You must define all or none of the macros psh_malloc and psh_free."
+#endif
 
-/// Common Memory sizes
-#define psh_kibibytes(n) ((n) * (1 << 10))
-#define psh_mebibytes(n) ((n) * (1 << 20))
-#define psh_gibibytes(n) ((n) * (1 << 30))
+// Define the default allocation procedures.
+#if !defined(psh_malloc)
+#    define psh_malloc malloc
+#endif
+#if !defined(psh_free)
+#    define psh_free free
+#endif
 
-/// Minimum/maximum mathematical functions.
+// -----------------------------------------------------------------------------
+// - Pointer operations -
+// -----------------------------------------------------------------------------
+
+/// Add or subtract an offset from a pointer if and only if the pointer is not null.
+#define psh_ptr_add(ptr, offset) \
+    (((ptr) == nullptr) ? nullptr : ((ptr) + static_cast<uptr>(offset)))
+#define psh_ptr_sub(ptr, offset) \
+    (((ptr) == nullptr) ? nullptr : ((ptr) - static_cast<iptr>(offset)))
+
+// -----------------------------------------------------------------------------
+// - Mathematical operations -
+// -----------------------------------------------------------------------------
+
+/// Minimum/maximum functions.
 #define psh_min(lhs, rhs) (((lhs) < (rhs)) ? (lhs) : (rhs))
 #define psh_max(lhs, rhs) (((lhs) > (rhs)) ? (lhs) : (rhs))
 
@@ -211,3 +261,31 @@
 
 /// Add values and clamp to an upper bound.
 #define psh_ub_add(lhs, rhs, ub) (((lhs) + (rhs)) > (ub) ? (ub) : ((lhs) + (rhs)))
+
+// -----------------------------------------------------------------------------
+// - Common memory sizes -
+// -----------------------------------------------------------------------------
+
+#define psh_kibibytes(n) ((n) * (1 << 10))
+#define psh_mebibytes(n) ((n) * (1 << 20))
+#define psh_gibibytes(n) ((n) * (1 << 30))
+
+// -----------------------------------------------------------------------------
+// - Misc. utilities -
+// -----------------------------------------------------------------------------
+
+/// Generate a string containing the given expression.
+#define psh_stringify(x) #x
+
+/// Discard the value of a given expression.
+#define psh_discard(x) (void)(x)
+
+/// Macro for aborting a program at runtime.
+#if defined(PSH_COMPILER_MSVC)
+#    define psh_abort() __debugbreak()
+#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#    define psh_abort() __builtin_trap()
+#else
+#    include <signal.h>
+#    define psh_abort() raise(SIGTRAP)
+#endif

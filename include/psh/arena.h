@@ -20,11 +20,10 @@
 #pragma once
 
 #include <psh/assert.h>
-#include <psh/intrinsics.h>
+#include <psh/core.h>
 #include <psh/log.h>
 #include <psh/math.h>
 #include <psh/mem_utils.h>
-#include <psh/types.h>
 #include <cstring>
 
 namespace psh {

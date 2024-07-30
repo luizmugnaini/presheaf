@@ -50,7 +50,7 @@ int main() {
   it a default value if possible.
 - In case there is no possible default value, don't be shy of asserts! If you **are** going to fail,
   fail as fast as possible.
-- Always use the type aliases declared in `<psh/types.h>`.
+- Always use the type aliases declared in `<psh/core.h>`.
 
 # Formatting
 

@@ -22,10 +22,9 @@
 #pragma once
 
 #include <psh/arena.h>
-#include <psh/mem_utils.h>
+#include <psh/core.h>
 #include <psh/option.h>
 #include <psh/stack.h>
-#include <psh/types.h>
 
 namespace psh {
     /// A stack allocator manager that can be used as the central memory resource of an application.
@@ -98,5 +97,4 @@ namespace psh {
         }
         return new_mem;
     }
-
 }  // namespace psh

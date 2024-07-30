@@ -20,10 +20,9 @@
 
 #include <psh/arena.h>
 #include <psh/assert.h>
-#include <psh/intrinsics.h>
+#include <psh/core.h>
 #include <psh/mem_utils.h>
 #include <psh/stack.h>
-#include <psh/types.h>
 #include <cstdio>
 #include <cstdlib>
 #include "utils.h"

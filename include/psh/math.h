@@ -20,9 +20,9 @@
 
 #pragma once
 
+#include <psh/core.h>
 #include <psh/log.h>
 #include <psh/type_utils.h>
-#include <psh/types.h>
 #include <limits>
 
 namespace psh {

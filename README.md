@@ -36,8 +36,6 @@ target_compile_options(presheaf PUBLIC cxx_std_20)
 # Library compile-time options
 
 The following `#define` macros can be used to tweak the behaviour of the library as you want it:
-- `PSH_NAMESPACED_TYPES`: add the library namespace to all fundamental types such as `i32` (which
-  would become `psh::i32`).
 - `PSH_DISABLE_LOGGING`: silence all logging calls.
 - `PSH_DISABLE_ASSERTS`: silence all assert calls.
 - `PSH_CHECK_BOUNDS`: check the bounds of index-based memory access.

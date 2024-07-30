@@ -21,8 +21,8 @@
 
 #pragma once
 
+#include <psh/core.h>
 #include <psh/math.h>
-#include <psh/types.h>
 
 namespace psh {
     // -----------------------------------------------------------------------------

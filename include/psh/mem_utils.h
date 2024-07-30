@@ -20,38 +20,10 @@
 
 #pragma once
 
+#include <psh/core.h>
 #include <psh/fat_ptr.h>
 #include <psh/not_null.h>
 #include <psh/type_utils.h>
-#include <psh/types.h>
-
-// -----------------------------------------------------------------------------
-// - Pointer operations -
-// -----------------------------------------------------------------------------
-
-/// Add or subtract an offset from a pointer if and only if the pointer is not null.
-#define psh_ptr_add(ptr, offset) ((ptr) == nullptr ? nullptr : (ptr) + (offset))
-#define psh_ptr_sub(ptr, offset) ((ptr) == nullptr ? nullptr : (ptr) - (offset))
-
-// -----------------------------------------------------------------------------
-// - Overriding allocation/deallocation -
-// -----------------------------------------------------------------------------
-
-#if defined(psh_malloc) && defined(psh_free)
-// Fine, all defined.
-#elif !defined(psh_malloc) && !defined(psh_free)
-// Fine, none defined.
-#else
-#    error "You must define all or none of the macros psh_malloc and psh_free."
-#endif
-
-// Define the default allocation procedures.
-#if !defined(psh_malloc)
-#    define psh_malloc malloc
-#endif
-#if !defined(psh_free)
-#    define psh_free free
-#endif
 
 namespace psh {
     // -----------------------------------------------------------------------------
