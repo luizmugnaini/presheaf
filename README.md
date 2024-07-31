@@ -31,7 +31,8 @@ You may either create a static or shared library binary or you can simply add th
 your soul be forgiven), you can add the following two lines to add Presheaf as a library:
 ```cmake
 add_library(presheaf src/all.cc)
-target_compile_options(presheaf PUBLIC cxx_std_20)
+target_include_directories(presheaf PUBLIC include)
+set_property(TARGET presheaf PROPERTY CXX_STANDARD 20)
 ```
 # Library compile-time options
 
