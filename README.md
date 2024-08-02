@@ -37,8 +37,8 @@ set_property(TARGET presheaf PROPERTY CXX_STANDARD 20)
 # Library compile-time options
 
 The following `#define` macros can be used to tweak the behaviour of the library as you want it:
-- `PSH_DISABLE_LOGGING`: silence all logging calls.
-- `PSH_DISABLE_ASSERTS`: silence all assert calls.
-- `PSH_CHECK_BOUNDS`: check the bounds of index-based memory access.
+- `psh_malloc` and `psh_free`: Function-like macros for overriding the default allocation functions.
+- `PSH_DISABLE_LOGGING`: Silence all logging calls.
+- `PSH_DISABLE_ASSERTS`: Silence all assert calls.
+- `PSH_CHECK_BOUNDS`: Check the bounds of index-based memory access.
 - `PSH_DEBUG`: Enables all debug checks.
-
