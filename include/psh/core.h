@@ -47,7 +47,6 @@
 #    ifndef _CRT_SECURE_NO_WARNINGS
 #        define _CRT_SECURE_NO_WARNINGS
 #    endif
-
 // Macros disabling many of the annoying Windows headers macros.
 #    ifndef WIN32_LEAN_AND_MEAN
 #        define WIN32_LEAN_AND_MEAN
@@ -103,7 +102,7 @@
 #    ifndef NOIME
 #        define NOIME
 #    endif
-#endif
+#endif  // PSH_OS_WINDOWS_32 || PSH_OS_WINDOWS_64
 
 /// Macros for compiler detection.
 #if defined(_MSC_VER)
@@ -188,8 +187,9 @@ using strptr = char const*;
 
 /// Signals internal linkage.
 #define psh_internal static
+
 /// Signals that a variable is available in the global scope.
-#define psh_global   static
+#define psh_global static
 
 /// Compiler hints for branching patterns.
 #if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
@@ -205,7 +205,6 @@ using strptr = char const*;
 /// Parameters:
 ///     * fmt_pos: The position of the argument containing the formatting string (the first argument
 ///                of a function has position 1).
-///     * args_pos: The position of the first argument to be used when formatting the output string.
 #if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
 #    define psh_attr_fmt(fmt_pos) __attribute__((__format__(__printf__, fmt_pos, fmt_pos + 1)))
 #else
