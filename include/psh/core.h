@@ -182,7 +182,8 @@ using strptr = char const*;
 #elif defined(PSH_COMPILER_MSVC)
 #    define psh_unreachable() (__assume(false))
 #else
-#    define psh_unreachable()
+#    include <cassert>
+#    define psh_unreachable() (assert(false && "Codepath should be unreachable"))
 #endif
 
 /// Signals internal linkage.
