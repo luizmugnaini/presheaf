@@ -41,4 +41,5 @@ The following `#define` macros can be used to tweak the behaviour of the library
 - `PSH_DISABLE_LOGGING`: Silence all logging calls.
 - `PSH_DISABLE_ASSERTS`: Silence all assert calls.
 - `PSH_CHECK_BOUNDS`: Check the bounds of index-based memory access.
+- `PSH_CHECK_MEMCPY_OVERLAP`: Check if the pointer ranges overlap before calling `memcpy`.
 - `PSH_DEBUG`: Enables all debug checks.
