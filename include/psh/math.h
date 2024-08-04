@@ -53,4 +53,12 @@ namespace psh {
     constexpr f32 as_radians(f32 deg) noexcept {
         return deg * PI / 180.0f;
     }
+
+    template <typename T>
+    constexpr T next_multiple(T current, T mul) noexcept {
+#if defined(psh_debug)
+        psh_assert_msg(mul != 0, "next_multiple expected the multiple base to be non-zero");
+#endif
+        return mul * static_cast<T>(static_cast<i64>(current / mul) + 1);
+    }
 }  // namespace psh
