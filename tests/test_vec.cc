@@ -27,9 +27,9 @@ void test_matrix_indexed_access() {
     for (u32 row = 0; row < 3; ++row) {
         for (u32 column = 0; column < 3; ++column) {
             if (row != column) {
-                psh_assert(psh::float_equal(mat3.at(row, column), 0.0f));
+                psh_assert(psh::f32_approx_equal(mat3.at(row, column), 0.0f));
             } else {
-                psh_assert(psh::float_equal(mat3.at(row, column), 1.0f));
+                psh_assert(psh::f32_approx_equal(mat3.at(row, column), 1.0f));
             }
         }
     }
@@ -38,9 +38,9 @@ void test_matrix_indexed_access() {
     for (u32 row = 0; row < 4; ++row) {
         for (u32 column = 0; column < 4; ++column) {
             if (row != column) {
-                psh_assert(psh::float_equal(cmat4.at(row, column), 0.0f));
+                psh_assert(psh::f32_approx_equal(cmat4.at(row, column), 0.0f));
             } else {
-                psh_assert(psh::float_equal(cmat4.at(row, column), 1.0f));
+                psh_assert(psh::f32_approx_equal(cmat4.at(row, column), 1.0f));
             }
         }
     }
