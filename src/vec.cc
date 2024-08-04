@@ -207,10 +207,7 @@ namespace psh {
             return Vec2{};
         }
 
-        return Vec2{
-            static_cast<f32>(x) / len,
-            static_cast<f32>(y) / len,
-        };
+        return Vec2{static_cast<f32>(x) / len, static_cast<f32>(y) / len};
     }
 
     i32 IVec2::dot(IVec2 const& other) const noexcept {
@@ -472,18 +469,15 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     Vec3 mat_mul(Mat3 m, Vec3 v) noexcept {
-        // clang-format off
-        return Vec3 {
+        return Vec3{
             (m.buf[0] * v.x) + (m.buf[1] * v.y) + (m.buf[2] * v.z),
             (m.buf[3] * v.x) + (m.buf[4] * v.y) + (m.buf[5] * v.z),
             (m.buf[6] * v.x) + (m.buf[7] * v.y) + (m.buf[8] * v.z),
         };
-        // clang-format on
     }
 
     Mat3 mat_mul(Mat3 lhs, Mat3 rhs) noexcept {
-        // clang-format off
-        return Mat3 {
+        return Mat3{
             // Row 1.
             (lhs.buf[0] * rhs.buf[0]) + (lhs.buf[1] * rhs.buf[3]) + (lhs.buf[2] * rhs.buf[6]),
             (lhs.buf[0] * rhs.buf[1]) + (lhs.buf[1] * rhs.buf[4]) + (lhs.buf[2] * rhs.buf[7]),
@@ -497,6 +491,5 @@ namespace psh {
             (lhs.buf[6] * rhs.buf[1]) + (lhs.buf[7] * rhs.buf[4]) + (lhs.buf[8] * rhs.buf[7]),
             (lhs.buf[6] * rhs.buf[2]) + (lhs.buf[7] * rhs.buf[5]) + (lhs.buf[8] * rhs.buf[8]),
         };
-        // clang-format on
     }
 }  // namespace psh

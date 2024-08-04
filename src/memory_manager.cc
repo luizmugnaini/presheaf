@@ -25,7 +25,7 @@
 
 namespace psh {
     void MemoryManager::init(usize capacity) noexcept {
-        allocator.init(reinterpret_cast<u8*>(psh_malloc(capacity)), capacity);
+        this->allocator.init(reinterpret_cast<u8*>(psh_malloc(capacity)), capacity);
     }
 
     MemoryManager::MemoryManager(usize capacity) noexcept {
@@ -33,7 +33,7 @@ namespace psh {
     }
 
     MemoryManager::~MemoryManager() noexcept {
-        psh_free(allocator.buf);
+        psh_free(this->allocator.buf);
     }
 
     Option<Arena> MemoryManager::make_arena(usize size) noexcept {
@@ -42,20 +42,20 @@ namespace psh {
     }
 
     Status MemoryManager::pop() noexcept {
-        Status st = allocator.pop();
+        Status st = this->allocator.pop();
         if (psh_likely(st == Status::OK)) {
-            --allocation_count;
+            --this->allocation_count;
         }
         return st;
     }
 
     Status MemoryManager::clear_until(u8 const* block) noexcept {
-        u8 const* mem_start = allocator.buf;
+        u8 const* mem_start = this->allocator.buf;
 
         // Check if the block lies within the allocator's memory.
-        if (psh_unlikely((block < mem_start) || (block > mem_start + allocator.previous_offset))) {
+        if (psh_unlikely((block < mem_start) || (block > mem_start + this->allocator.previous_offset))) {
             strptr fail_reason =
-                (block > mem_start + allocator.capacity)
+                (block > mem_start + this->allocator.capacity)
                     ? "MemoryManager::clear_until called with a pointer outside of the stack "
                       "mem_start region."
                     : "MemoryManager::clear_until called with a pointer to an already free region "
@@ -68,12 +68,12 @@ namespace psh {
         //
         // NOTE: If we were given the incorrect address, we end up clearing the whole memory.
         for (;;) {
-            u8 const* top_block = allocator.top();
+            u8 const* top_block = this->allocator.top();
             if (psh_unlikely(top_block == mem_start)) {
                 break;
             }
-            if (psh_likely(allocator.pop() == Status::OK)) {
-                --allocation_count;
+            if (psh_likely(this->allocator.pop() == Status::OK)) {
+                --this->allocation_count;
             }
             if (psh_unlikely(top_block == block)) {
                 break;
@@ -84,7 +84,7 @@ namespace psh {
     }
 
     void MemoryManager::clear() noexcept {
-        allocation_count = 0;
-        allocator.clear();
+        this->allocation_count = 0;
+        this->allocator.clear();
     }
 }  // namespace psh

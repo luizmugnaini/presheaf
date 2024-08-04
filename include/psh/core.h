@@ -237,10 +237,8 @@ using strptr = char const*;
 // -----------------------------------------------------------------------------
 
 /// Add or subtract an offset from a pointer if and only if the pointer is not null.
-#define psh_ptr_add(ptr, offset) \
-    (((ptr) == nullptr) ? nullptr : ((ptr) + static_cast<uptr>(offset)))
-#define psh_ptr_sub(ptr, offset) \
-    (((ptr) == nullptr) ? nullptr : ((ptr) - static_cast<iptr>(offset)))
+#define psh_ptr_add(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) + static_cast<uptr>(offset)))
+#define psh_ptr_sub(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) - static_cast<iptr>(offset)))
 
 // -----------------------------------------------------------------------------
 // - Mathematical operations -

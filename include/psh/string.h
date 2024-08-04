@@ -31,7 +31,9 @@ namespace psh {
     // - String comparison utilities -
     // -----------------------------------------------------------------------------
 
-    enum struct StrCmpResult { LESS_THAN, EQUAL, GREATER_THAN };
+    enum struct StrCmpResult { LESS_THAN,
+                               EQUAL,
+                               GREATER_THAN };
 
     usize        str_size(strptr str) noexcept;
     StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept;
@@ -47,7 +49,8 @@ namespace psh {
         strptr str;
 
         template <usize N>
-        consteval StringLiteral(char const (&_str)[N]) noexcept : str{_str} {}
+        consteval StringLiteral(char const (&_str)[N]) noexcept
+            : str{_str} {}
     };
 
     /// A string with guaranteed compile-time known size.
@@ -74,7 +77,8 @@ namespace psh {
         FatPtr<char const> const data;
 
         constexpr StringView() noexcept = default;
-        constexpr StringView(strptr _str, usize _length) noexcept : data{_str, _length} {}
+        constexpr StringView(strptr _str, usize _length) noexcept
+            : data{_str, _length} {}
         StringView(strptr _str) noexcept;
     };
 

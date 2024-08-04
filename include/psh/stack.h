@@ -197,7 +197,7 @@ namespace psh {
         }
 
         usize const new_block_size = sizeof(T) * length;
-        u8* const   free_mem       = buf + offset;
+        u8* const   free_mem       = this->buf + this->offset;
         usize const padding        = padding_with_header(
             reinterpret_cast<uptr>(free_mem),
             alignof(T),
@@ -205,14 +205,14 @@ namespace psh {
             alignof(StackHeader));
         usize const required = padding + new_block_size;
 
-        if (psh_unlikely(required > capacity - offset)) {
+        if (psh_unlikely(required > this->capacity - this->offset)) {
             psh_error_fmt(
                 "StackAlloc::alloc unable to allocate %zu bytes of memory (%zu bytes required "
                 "due to alignment and padding). The stack allocator has only %zu bytes "
                 "remaining.",
                 new_block_size,
                 required,
-                capacity - offset);
+                this->capacity - this->offset);
             return nullptr;
         }
 
@@ -220,14 +220,14 @@ namespace psh {
         u8* new_block = free_mem + padding;
 
         // Write to the header associated with the new block of memory.
-        StackHeader* new_header = reinterpret_cast<StackHeader*>(new_block - sizeof(StackHeader));
-        new_header->padding     = padding;
-        new_header->capacity    = new_block_size;
-        new_header->previous_offset = previous_offset;
+        StackHeader* new_header     = reinterpret_cast<StackHeader*>(new_block - sizeof(StackHeader));
+        new_header->padding         = padding;
+        new_header->capacity        = new_block_size;
+        new_header->previous_offset = this->previous_offset;
 
         // Update the stack offsets.
-        previous_offset = offset + padding;
-        offset += padding + new_block_size;
+        this->previous_offset = this->offset + padding;
+        this->offset += padding + new_block_size;
 
         return reinterpret_cast<T*>(new_block);
     }
@@ -252,19 +252,19 @@ namespace psh {
 
         // If `ptr` is the last allocated block, just adjust the offsets.
         if (ublock == this->top()) {
-            offset = previous_offset + new_size;
+            this->offset = this->previous_offset + new_size;
             return block;
         }
 
         // Check if the address is within the allocator's memory.
-        if (psh_unlikely((ublock < buf) || (ublock >= buf + capacity))) {
+        if (psh_unlikely((ublock < this->buf) || (ublock >= this->buf + this->capacity))) {
             psh_error("StackAlloc::realloc called with a pointer outside of the memory region "
                       "managed by the stack allocator.");
             return nullptr;
         }
 
         // Check if the address is already free.
-        if (psh_unlikely(ublock >= buf + offset)) {
+        if (psh_unlikely(ublock >= this->buf + this->offset)) {
             psh_error("StackAlloc::realloc called with a free block of memory (use-after-free "
                       "error).");
             return nullptr;
@@ -274,13 +274,13 @@ namespace psh {
             reinterpret_cast<StackHeader const*>(ublock - sizeof(StackHeader));
 
         // Check memory availability.
-        if (psh_unlikely(new_size > capacity - offset)) {
+        if (psh_unlikely(new_size > this->capacity - this->offset)) {
             psh_error_fmt(
                 "StackAlloc::realloc cannot reallocate memory from size %zu to %zu. Only %zu "
                 "bytes of memory remaining.",
                 header->capacity,
                 new_size,
-                capacity - offset);
+                this->capacity - this->offset);
             return nullptr;
         }
 

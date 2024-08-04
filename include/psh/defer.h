@@ -48,7 +48,9 @@ namespace psh {
     struct Deferrer {
         Func fn;
 
-        Deferrer(Func&& _fn) : fn{_fn} {}
+        Deferrer(Func&& _fn) {
+            this->fn = _fn;
+        }
         ~Deferrer() {
             fn();
         }

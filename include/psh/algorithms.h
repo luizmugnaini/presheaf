@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include <psh/fat_ptr.h>
 #include <psh/core.h>
+#include <psh/fat_ptr.h>
 #include <psh/option.h>
 #include <psh/type_utils.h>
 

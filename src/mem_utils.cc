@@ -71,11 +71,9 @@ namespace psh {
         usize alignment,
         usize header_size,
         usize header_alignment) noexcept {
-#if defined(PSH_DEBUG) || defined(PSH_CHECK_ALIGNMENT)
         psh_assert_msg(
             psh_is_pow_of_two(alignment) && psh_is_pow_of_two(header_alignment),
             "padding_with_header expected the alignments to be powers of two");
-#endif
 
         // Calculate the padding necessary for the alignment of the new block of memory.
         uptr padding = 0;
@@ -101,11 +99,9 @@ namespace psh {
     }
 
     usize align_forward(uptr ptr, usize alignment) noexcept {
-#if defined(PSH_DEBUG) || defined(PSH_CHECK_ALIGNMENT)
         psh_assert_msg(
             psh_is_pow_of_two(alignment),
             "align_forward expected the alignment to be a power of two");
-#endif
 
         uptr align     = static_cast<uptr>(alignment);
         uptr mod_align = ptr & (align - 1);

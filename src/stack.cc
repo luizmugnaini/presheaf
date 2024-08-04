@@ -22,11 +22,11 @@
 
 namespace psh {
     void Stack::init(u8* _buf, usize _capacity) noexcept {
-        buf      = _buf;
-        capacity = _capacity;
-        if (psh_likely(capacity != 0)) {
+        this->buf      = _buf;
+        this->capacity = _capacity;
+        if (psh_likely(this->capacity != 0)) {
             psh_assert_msg(
-                buf != nullptr,
+                this->buf != nullptr,
                 "Stack::init called with non-zero capacity but null memory");
         }
     }
@@ -35,16 +35,16 @@ namespace psh {
     }
 
     usize Stack::used() const noexcept {
-        return offset;
+        return this->offset;
     }
 
     u8* Stack::top() const noexcept {
-        return psh_ptr_add(buf, previous_offset);
+        return psh_ptr_add(this->buf, this->previous_offset);
     }
 
     StackHeader const* Stack::top_header() const noexcept {
         return reinterpret_cast<StackHeader const*>(
-            psh_ptr_add(buf, previous_offset - sizeof(StackHeader)));
+            psh_ptr_add(this->buf, this->previous_offset - sizeof(StackHeader)));
     }
 
     usize Stack::top_capacity() const noexcept {
@@ -64,16 +64,16 @@ namespace psh {
         if (psh_unlikely(block == nullptr)) {
             valid = false;
         }
-        if (psh_unlikely((block < buf) || (block >= buf + capacity))) {
+        if (psh_unlikely((block < this->buf) || (block >= this->buf + this->capacity))) {
             psh_error("StackAlloc::header_of called with a pointer to a block of memory "
                       "outside of the stack allocator scope.");
             valid = false;
         }
-        if (psh_unlikely(block > buf + previous_offset)) {
+        if (psh_unlikely(block > this->buf + this->previous_offset)) {
             psh_error("StackAlloc::header_of called with a pointer to a freed block of memory.");
             valid = false;
         }
-        if (psh_unlikely(block_header < buf)) {
+        if (psh_unlikely(block_header < this->buf)) {
             psh_error("StackAlloc::header_of expected the memory block header to be contained "
                       "in the stack allocator scope.");
             valid = false;
@@ -93,16 +93,16 @@ namespace psh {
     }
 
     Status Stack::pop() noexcept {
-        if (psh_unlikely(previous_offset == 0)) {
+        if (psh_unlikely(this->previous_offset == 0)) {
             return Status::FAILED;
         }
 
-        u8 const*          top = buf + previous_offset;
+        u8 const*          top = this->buf + this->previous_offset;
         StackHeader const* top_header =
             reinterpret_cast<StackHeader const*>(top - sizeof(StackHeader));
 
-        offset          = previous_offset - top_header->padding;
-        previous_offset = top_header->previous_offset;
+        this->offset          = this->previous_offset - top_header->padding;
+        this->previous_offset = top_header->previous_offset;
         return Status::OK;
     }
 
@@ -112,9 +112,9 @@ namespace psh {
         }
 
         // Check if the block is within the allocator's memory.
-        if (psh_unlikely((block < buf) || (block > buf + previous_offset))) {
+        if (psh_unlikely((block < this->buf) || (block > this->buf + this->previous_offset))) {
             strptr fail_reason =
-                (block > buf + capacity)
+                (block > this->buf + this->capacity)
                     ? "StackAlloc::free_at called with a pointer outside of the stack "
                       "allocator memory region."
                     : "StackAlloc::free_at called with a pointer to an already free region of "
@@ -126,17 +126,17 @@ namespace psh {
         StackHeader const* header =
             reinterpret_cast<StackHeader const*>(block - sizeof(StackHeader));
 
-        offset = wrap_sub(
+        this->offset = wrap_sub(
             wrap_sub(reinterpret_cast<uptr>(block), header->padding),
-            reinterpret_cast<uptr>(buf));
-        previous_offset = header->previous_offset;
+            reinterpret_cast<uptr>(this->buf));
+        this->previous_offset = header->previous_offset;
 
         return Status::OK;
     }
 
     /// Reset the allocator's offset.
     void Stack::clear() noexcept {
-        offset          = 0;
-        previous_offset = 0;
+        this->offset          = 0;
+        this->previous_offset = 0;
     }
 }  // namespace psh

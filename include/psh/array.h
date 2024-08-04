@@ -46,14 +46,14 @@ namespace psh {
 
         /// Initialize the array with a given size.
         void init(Arena* _arena, usize _size) noexcept {
-            size = _size;
-            if (psh_likely(size != 0)) {
+            this->size = _size;
+            if (psh_likely(this->size != 0)) {
                 psh_assert_msg(
                     _arena != nullptr,
                     "Array::init called with non-zero size but null arena");
 
-                buf = _arena->zero_alloc<T>(_size);
-                psh_assert_msg(buf != nullptr, "Array::init unable to allocate enough memory");
+                this->buf = _arena->zero_alloc<T>(this->size);
+                psh_assert_msg(this->buf != nullptr, "Array::init unable to allocate enough memory");
             }
         }
 
@@ -67,14 +67,14 @@ namespace psh {
         /// Copies the contents of the initializer list into the array's memory, so its lifetime is
         /// not bound do the initializer list.
         void init(std::initializer_list<T> list, Arena* _arena) noexcept {
-            size = list.size;
-            if (psh_likely(size != 0)) {
+            this->size = list.size;
+            if (psh_likely(this->size != 0)) {
                 psh_assert_msg(
                     _arena != nullptr,
                     "Array::init called with non-zero size but null arena");
 
-                buf = _arena->alloc<T>(size);
-                psh_assert_msg(buf != nullptr, "Array unable to allocate enough memory");
+                this->buf = _arena->alloc<T>(this->size);
+                psh_assert_msg(this->buf != nullptr, "Array unable to allocate enough memory");
             }
 
             // Copy initializer list content.
@@ -94,19 +94,19 @@ namespace psh {
         /// Copies the contents of the fat pointer into the array's memory, so its lifetime is not
         /// bound to fat pointer.
         void init(FatPtr<T> const& fptr, Arena* _arena) noexcept {
-            size = fptr.size;
-            if (psh_likely(size != 0)) {
+            this->size = fptr.size;
+            if (psh_likely(this->size != 0)) {
                 psh_assert_msg(
                     _arena != nullptr,
                     "Array::init called with non-zero size but null arena");
 
-                buf = _arena->alloc<T>(fptr.size);
-                psh_assert_msg(buf != nullptr, "Array unable to allocate enough memory");
+                this->buf = _arena->alloc<T>(this->size);
+                psh_assert_msg(this->buf != nullptr, "Array unable to allocate enough memory");
             }
 
             // Copy buffer content.
             std::memcpy(
-                reinterpret_cast<u8*>(buf),
+                reinterpret_cast<u8*>(this->buf),
                 reinterpret_cast<u8 const*>(fptr.buf),
                 fptr.size_bytes());
         }
@@ -121,11 +121,11 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         bool is_empty() const noexcept {
-            return (size == 0);
+            return (this->size == 0);
         }
 
         usize size_bytes() const noexcept {
-            return sizeof(T) * size;
+            return sizeof(T) * this->size;
         }
 
         // -----------------------------------------------------------------------------
@@ -133,19 +133,19 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         T* begin() noexcept {
-            return buf;
+            return this->buf;
         }
 
         T const* begin() const noexcept {
-            return static_cast<T const*>(buf);
+            return static_cast<T const*>(this->buf);
         }
 
         T* end() noexcept {
-            return psh_ptr_add(buf, size);
+            return psh_ptr_add(this->buf, this->size);
         }
 
         T const* end() const noexcept {
-            return psh_ptr_add(static_cast<T const*>(buf), size);
+            return psh_ptr_add(static_cast<T const*>(this->buf), this->size);
         }
 
         // -----------------------------------------------------------------------------
@@ -154,16 +154,16 @@ namespace psh {
 
         T& operator[](usize index) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(index < size, "Array::operator[] index out of bounds");
+            psh_assert_msg(index < this->size, "Array::operator[] index out of bounds");
 #endif
-            return buf[index];
+            return this->buf[index];
         }
 
         T const& operator[](usize index) const noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(index < size, "Array::operator[] index out of bounds");
+            psh_assert_msg(index < this->size, "Array::operator[] index out of bounds");
 #endif
-            return buf[index];
+            return this->buf[index];
         }
     };
 

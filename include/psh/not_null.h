@@ -29,16 +29,17 @@ namespace psh {
     struct NotNull {
         T* const ptr;
 
-        NotNull(T* _ptr) noexcept : ptr{_ptr} {
-            psh_assert_msg(ptr != nullptr, "NotNull created with a null pointer");
+        NotNull(T* _ptr) noexcept {
+            psh_assert_msg(_ptr != nullptr, "NotNull created with a null pointer");
+            this->ptr = _ptr;
         }
 
         T& operator*() noexcept {
-            return *ptr;
+            return *this->ptr;
         }
 
         T* operator->() noexcept {
-            return ptr;
+            return this->ptr;
         }
 
         NotNull() = delete;

@@ -49,17 +49,17 @@ namespace psh {
 
         /// Initialize the dynamic array with a given capacity.
         void init(Arena* _arena, usize _capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) noexcept {
-            arena    = _arena;
-            capacity = _capacity;
+            this->arena    = _arena;
+            this->capacity = _capacity;
 
-            if (psh_likely(capacity != 0)) {
+            if (psh_likely(this->capacity != 0)) {
                 psh_assert_msg(
-                    arena != nullptr,
+                    this->arena != nullptr,
                     "DynArray::init called with non-zero capacity but an empty arena");
 
-                buf = arena->zero_alloc<T>(capacity);
+                this->buf = arena->zero_alloc<T>(this->capacity);
                 psh_assert_msg(
-                    buf != nullptr,
+                    this->buf != nullptr,
                     "DynArray::init unable to acquire enough bytes of memory");
             }
         }
@@ -75,27 +75,27 @@ namespace psh {
             std::initializer_list<T> const& list,
             Arena*                          _arena,
             Option<usize> const&            _capacity = {}) noexcept {
-            arena    = _arena;
-            size     = list.size();
-            capacity = _capacity.val_or(DYNARRAY_RESIZE_CAPACITY_FACTOR * size);
+            this->arena    = _arena;
+            this->size     = list.size();
+            this->capacity = _capacity.val_or(DYNARRAY_RESIZE_CAPACITY_FACTOR * this->size);
 
             psh_assert_msg(
-                size <= capacity,
+                this->size <= this->capacity,
                 "DynArray::init called with inconsistent data: capacity less than the size");
 
-            if (psh_likely(capacity != 0)) {
+            if (psh_likely(this->capacity != 0)) {
                 psh_assert_msg(
-                    arena != nullptr,
+                    this->arena != nullptr,
                     "DynArray::init called with non-zero capacity but an empty arena");
 
-                buf = arena->alloc<T>(capacity);
-                psh_assert_msg(buf != nullptr, "DynArray::init unable to allocate enough memory");
+                this->buf = arena->alloc<T>(this->capacity);
+                psh_assert_msg(this->buf != nullptr, "DynArray::init unable to allocate enough memory");
             }
 
             std::memcpy(
-                reinterpret_cast<u8*>(buf),
+                reinterpret_cast<u8*>(this->buf),
                 reinterpret_cast<u8 const*>(list.begin()),
-                sizeof(T) * size);
+                sizeof(T) * this->size);
         }
 
         /// Construct a dynamic array with the contents of an initializer list, and optionally
@@ -111,25 +111,25 @@ namespace psh {
         /// a given capacity.
         void
         init(FatPtr<T const> fptr, Arena* _arena, Option<usize> const& _capacity = {}) noexcept {
-            arena    = _arena;
-            size     = fptr.size;
-            capacity = _capacity.val_or(DYNARRAY_RESIZE_CAPACITY_FACTOR * size);
+            this->arena    = _arena;
+            this->size     = fptr.size;
+            this->capacity = _capacity.val_or(DYNARRAY_RESIZE_CAPACITY_FACTOR * this->size);
 
             psh_assert_msg(
-                size <= capacity,
+                this->size <= this->capacity,
                 "DynArray::init called with inconsistent data: capacity less than the size");
 
-            if (psh_likely(capacity != 0)) {
+            if (psh_likely(this->capacity != 0)) {
                 psh_assert_msg(
-                    arena != nullptr,
+                    this->arena != nullptr,
                     "DynArray::init called with non-zero capacity but an empty arena");
 
-                buf = arena->alloc<T>(capacity);
-                psh_assert_msg(buf != nullptr, "DynArray::init unable to allocate enough memory");
+                this->buf = arena->alloc<T>(this->capacity);
+                psh_assert_msg(this->buf != nullptr, "DynArray::init unable to allocate enough memory");
             }
 
             std::memcpy(
-                reinterpret_cast<u8*>(buf),
+                reinterpret_cast<u8*>(this->buf),
                 reinterpret_cast<u8 const*>(fptr.begin()),
                 fptr.size_bytes());
         }
@@ -145,15 +145,15 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         bool is_empty() const noexcept {
-            return (size == 0);
+            return (this->size == 0);
         }
 
         usize size_bytes() noexcept {
-            return size * sizeof(T);
+            return this->size * sizeof(T);
         }
 
         usize capacity_bytes() const noexcept {
-            return capacity * sizeof(T);
+            return this->capacity * sizeof(T);
         }
 
         // -----------------------------------------------------------------------------
@@ -161,24 +161,24 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         T* begin() noexcept {
-            return buf;
+            return this->buf;
         }
 
         T const* begin() const noexcept {
-            return static_cast<T const*>(buf);
+            return static_cast<T const*>(this->buf);
         }
 
         T* end() noexcept {
-            return psh_ptr_add(buf, size);
+            return psh_ptr_add(this->buf, this->size);
         }
 
         T const* end() const noexcept {
-            return psh_ptr_add(static_cast<T const*>(buf), size);
+            return psh_ptr_add(static_cast<T const*>(this->buf), this->size);
         }
 
         /// Get a pointer to the last element of the dynamic array.
         T* peek() const noexcept {
-            return (this->size == 0) ? nullptr : &buf[size - 1];
+            return (this->size == 0) ? nullptr : &this->buf[this->size - 1];
         }
 
         // -----------------------------------------------------------------------------
@@ -187,16 +187,16 @@ namespace psh {
 
         T& operator[](usize idx) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(idx < size, "Index out of bounds for dynamic array");
+            psh_assert_msg(idx < this->size, "Index out of bounds for dynamic array");
 #endif
-            return buf[idx];
+            return this->buf[idx];
         }
 
         T const& operator[](usize idx) const noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(idx < size, "Index out of bounds for dynamic array");
+            psh_assert_msg(idx < this->size, "Index out of bounds for dynamic array");
 #endif
-            return buf[idx];
+            return this->buf[idx];
         }
 
         // -----------------------------------------------------------------------------
@@ -205,36 +205,36 @@ namespace psh {
 
         /// Resize the dynamic array underlying buffer.
         void grow(u32 factor = DYNARRAY_RESIZE_CAPACITY_FACTOR) noexcept {
-            if (psh_likely(buf != nullptr)) {
+            if (psh_likely(this->buf != nullptr)) {
                 // Reallocate the existing buffer.
-                usize previous_capacity = capacity;
-                capacity *= factor;
-                buf = arena->realloc<T>(buf, previous_capacity, capacity);
+                usize previous_capacity = this->capacity;
+                this->capacity *= factor;
+                this->buf = arena->realloc<T>(this->buf, previous_capacity, this->capacity);
             } else {
                 // Create a new buffer with a default capacity.
-                capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY;
-                buf      = arena->zero_alloc<T>(capacity);
+                this->capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY;
+                this->buf      = arena->zero_alloc<T>(this->capacity);
             }
 
-            if (psh_likely(capacity != 0)) {
-                psh_assert_msg(buf != nullptr, "DynArray::grow unable to rellocate buffer");
+            if (psh_likely(this->capacity != 0)) {
+                psh_assert_msg(this->buf != nullptr, "DynArray::grow unable to rellocate buffer");
             }
         }
 
         Status resize(usize new_capacity) noexcept {
-            T* new_buf = arena->realloc<T>(buf, capacity, new_capacity);
+            T* new_buf = arena->realloc<T>(this->buf, this->capacity, new_capacity);
 
             if (psh_unlikely(new_buf == nullptr)) {
                 psh_error_fmt(
                     "DynArray::resize failed to resize capacity from %zu to %zu",
-                    capacity,
+                    this->capacity,
                     new_capacity);
                 return Status::FAILED;
             }
 
             // Commit the resizing.
-            buf      = new_buf;
-            capacity = new_capacity;
+            this->buf      = new_buf;
+            this->capacity = new_capacity;
 
             return Status::OK;
         }
@@ -248,17 +248,17 @@ namespace psh {
         /// If the dynamic array capacity is full, the capacity is doubled by making a reallocation
         /// of the underlying memory buffer.
         void push(T new_element) noexcept {
-            if (capacity == size) {
+            if (this->capacity == this->size) {
                 this->grow();
             }
-            buf[size++] = new_element;
+            this->buf[this->size++] = new_element;
         }
 
         /// Try to pop the last element of the dynamic array.
         Status pop() noexcept {
             Status res = Status::FAILED;
-            if (psh_likely(size > 0)) {
-                --size;
+            if (psh_likely(this->size > 0)) {
+                --this->size;
                 res = Status::OK;
             }
             return res;
@@ -267,29 +267,29 @@ namespace psh {
         /// Try to remove a dynamic array element at a given index.
         Status remove(usize idx) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            if (psh_unlikely(idx >= size)) {
+            if (psh_unlikely(idx >= this->size)) {
                 psh_error_fmt(
                     "DynArray::remove index %zu is out of bounds for dynamic array of size "
                     "%zu.",
                     idx,
-                    size);
+                    this->size);
                 return Status::FAILED;
             }
 #endif
 
-            if (idx != size - 1) {
+            if (idx != this->size - 1) {
                 // If the element isn't the last we have copy the array content with overlap.
-                u8*       dest = reinterpret_cast<u8*>(buf) + sizeof(T) * idx;
-                u8 const* src  = reinterpret_cast<u8*>(buf) + sizeof(T) * (idx + 1);
-                memory_move(dest, src, sizeof(T) * (size - idx - 1));
+                u8*       dest = reinterpret_cast<u8*>(this->buf) + sizeof(T) * idx;
+                u8 const* src  = reinterpret_cast<u8*>(this->buf) + sizeof(T) * (idx + 1);
+                memory_move(dest, src, sizeof(T) * (this->size - idx - 1));
             }
-            --size;
+            --this->size;
             return Status::OK;
         }
 
         /// Clear the dynamic array data, resetting its size.
         void clear() noexcept {
-            size = 0;
+            this->size = 0;
         }
     };
 

@@ -31,13 +31,9 @@ namespace psh {
         T*    buf  = nullptr;
         usize size = 0;
 
-        FatPtr<T> slice(usize start, usize end = 0) noexcept {
-            psh_assert_msg(
-                end <= this->size,
-                "Expected the end index to be within the fat pointer boundaries");
-
-            end = (end == 0) ? this->size : end;
-            return FatPtr<T>{psh_ptr_add(this->buf, start), end - start};
+        FatPtr<T> slice(usize start_idx, usize end = 0) noexcept {
+            psh_assert(end <= this->size);
+            return FatPtr<T>{psh_ptr_add(this->buf, start_idx), end - start_idx};
         }
 
         // -----------------------------------------------------------------------------

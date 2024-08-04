@@ -82,18 +82,18 @@ namespace psh {
 
     template <typename T>
     T* MemoryManager::alloc(usize length) noexcept {
-        T* const new_mem = allocator.alloc<T>(length);
+        T* const new_mem = this->allocator.alloc<T>(length);
         if (new_mem != nullptr) {
-            ++allocation_count;
+            ++this->allocation_count;
         }
         return new_mem;
     }
 
     template <typename T>
     T* MemoryManager::realloc(T* block, usize new_length) noexcept {
-        T* const new_mem = allocator.realloc<T>(block, new_length);
+        T* const new_mem = this->allocator.realloc<T>(block, new_length);
         if (new_mem != block) {
-            allocation_count += 1;
+            this->allocation_count += 1;
         }
         return new_mem;
     }

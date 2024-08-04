@@ -38,21 +38,22 @@ namespace psh {
 
         constexpr Option() noexcept = default;
 
-        constexpr Option(T _val) noexcept : val{_val}, has_val{true} {}
+        constexpr Option(T _val) noexcept
+            : val{_val}, has_val{true} {}
 
         constexpr Option& operator=(T _val) noexcept {
-            val     = _val;
-            has_val = true;
+            this->val     = _val;
+            this->has_val = true;
             return *this;
         }
 
         T const& val_or(T const& default_val = {}) const noexcept {
-            return has_val ? val : default_val;
+            return this->has_val ? this->val : default_val;
         }
 
         T const& demand(strptr msg = "Option::demand failed") const noexcept {
-            psh_assert_msg(has_val, msg);
-            return val;
+            psh_assert_msg(this->has_val, msg);
+            return this->val;
         }
     };
 }  // namespace psh

@@ -55,10 +55,10 @@
     } while (0)
 
 /// Set the n-th bit to 1 if the condition passes, otherwise set the bit to 0.
-#define psh_bit_set_or_clear_if(var, n, cond)                                       \
-    do {                                                                            \
-        decltype(var) psh_var_mask_ = psh_bit(decltype(var), (n));                  \
-        var = ((var) & ~psh_var_mask_) | (-static_cast<int>(cond) & psh_var_mask_); \
+#define psh_bit_set_or_clear_if(var, n, cond)                                                               \
+    do {                                                                                                    \
+        decltype(var) psh_var_mask_ = psh_bit(decltype(var), (n));                                          \
+        var                         = ((var) & ~psh_var_mask_) | (-static_cast<int>(cond) & psh_var_mask_); \
     } while (0)
 
 /// Get the value of the n-th bit of given value.

@@ -51,11 +51,11 @@ namespace psh {
 #define psh_todo()                                   \
     do {                                             \
         psh_fatal("TODO: code-path unimplemented!"); \
-        psh_unreachable();                           \
+        psh_abort();                                 \
     } while (0)
 
 #define psh_todo_msg(msg)                                             \
     do {                                                              \
         psh_fatal_fmt("TODO: code-path unimplemented, msg: %s", msg); \
-        psh_unreachable();                                            \
+        psh_abort();                                                  \
     } while (0)

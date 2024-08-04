@@ -48,19 +48,19 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         constexpr T* begin() noexcept {
-            return static_cast<T*>(buf);
+            return static_cast<T*>(this->buf);
         }
 
         constexpr T const* begin() const noexcept {
-            return static_cast<T const*>(buf);
+            return static_cast<T const*>(this->buf);
         }
 
         constexpr T* end() noexcept {
-            return static_cast<T*>(buf) + size_;
+            return static_cast<T*>(this->buf) + size_;
         }
 
         constexpr T const* end() const noexcept {
-            return static_cast<T const*>(buf) + size_;
+            return static_cast<T const*>(this->buf) + size_;
         }
 
         // -----------------------------------------------------------------------------
@@ -68,11 +68,11 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         constexpr T& operator[](usize idx) noexcept {
-            return buf[idx];
+            return this->buf[idx];
         }
 
         constexpr T const& operator[](usize idx) const noexcept {
-            return buf[idx];
+            return this->buf[idx];
         }
     };
 

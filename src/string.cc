@@ -63,24 +63,25 @@ namespace psh {
     // - String view implementation -
     // -----------------------------------------------------------------------------
 
-    StringView::StringView(strptr str) noexcept : data{str, str_size(str)} {}
+    StringView::StringView(strptr str) noexcept
+        : data{str, str_size(str)} {}
 
     // -----------------------------------------------------------------------------
     // - String implementation -
     // -----------------------------------------------------------------------------
 
     void String::init(Arena* arena, usize capacity) noexcept {
-        data.init(arena, capacity);
+        this->data.init(arena, capacity);
     }
 
     void String::init(Arena* arena, StringView sv) noexcept {
-        data.init(arena, sv.data.size + 1);
+        this->data.init(arena, sv.data.size + 1);
         memory_copy(
-            reinterpret_cast<u8*>(data.buf),
+            reinterpret_cast<u8*>(this->data.buf),
             reinterpret_cast<u8 const*>(sv.data.buf),
             sv.data.size);
-        data.buf[sv.data.size + 1] = 0;
-        data.size                  = sv.data.size;
+        this->data.buf[sv.data.size + 1] = 0;
+        this->data.size                  = sv.data.size;
     }
 
     String::String(Arena* _arena, usize _capacity) noexcept {
@@ -92,12 +93,12 @@ namespace psh {
     }
 
     StringView String::view() const noexcept {
-        return StringView{data.buf, data.size};
+        return StringView{this->data.buf, this->data.size};
     }
 
     Status String::join(FatPtr<StringView const> strs, strptr join_cstr) noexcept {
         Option<StringView> join_sv{join_cstr};
-        bool const         was_empty = (data.size == 0);
+        bool const         was_empty = (this->data.size == 0);
 
         usize additional_size = 1;  // Account for the null terminator.
         {
@@ -114,10 +115,10 @@ namespace psh {
                 additional_size += s.data.size;
             }
         }
-        usize new_capacity = data.size + additional_size;
+        usize new_capacity = this->data.size + additional_size;
 
-        if (data.capacity < new_capacity) {
-            if (psh_unlikely(data.resize(new_capacity) == Status::FAILED)) {
+        if (this->data.capacity < new_capacity) {
+            if (psh_unlikely(this->data.resize(new_capacity) == Status::FAILED)) {
                 return Status::FAILED;
             }
         }
@@ -128,29 +129,29 @@ namespace psh {
             // If the string was empty, we omit the first `sjoin`.
             if (was_empty) {
                 StringView const& s0 = strs[0];
-                std::memcpy(data.buf + data.size, s0.data.buf, s0.data.size);
-                data.size += s0.data.size;
+                std::memcpy(this->data.buf + this->data.size, s0.data.buf, s0.data.size);
+                this->data.size += s0.data.size;
                 init_idx += 1;
             }
 
             for (usize idx = init_idx; idx < strs.size; ++idx) {
                 StringView const& si = strs[idx];
-                std::memcpy(data.buf + data.size, join_sv.val.data.buf, join_sv.val.data.size);
+                std::memcpy(this->data.buf + this->data.size, join_sv.val.data.buf, join_sv.val.data.size);
                 std::memcpy(
-                    data.buf + data.size + join_sv.val.data.size,
+                    this->data.buf + this->data.size + join_sv.val.data.size,
                     si.data.buf,
                     si.data.size);
-                data.size += join_sv.val.data.size + si.data.size;
+                this->data.size += join_sv.val.data.size + si.data.size;
             }
         } else {
             for (StringView const& s : strs) {
-                std::memcpy(data.buf + data.size, s.data.buf, s.data.size);
-                data.size += s.data.size;
+                std::memcpy(this->data.buf + this->data.size, s.data.buf, s.data.size);
+                this->data.size += s.data.size;
             }
         }
 
         // Append a null terminator.
-        data.buf[data.size] = 0;
+        this->data.buf[this->data.size] = 0;
 
         return Status::OK;
     }
