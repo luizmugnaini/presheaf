@@ -39,7 +39,7 @@ namespace psh {
         }
 #elif defined(PSH_OS_UNIX)
         timespec time_spec;
-        if (psh_likely(clock_gettime(CLOCK_MONOTONIC, &time_spec) != 0) {
+        if (psh_likely(clock_gettime(CLOCK_MONOTONIC, &time_spec) == 0)) {
             curr_time =
                 static_cast<f64>(time_spec.tv_sec) + (static_cast<f64>(time_spec.tv_nsec) / 1e9);
         }
