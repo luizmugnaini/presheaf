@@ -41,7 +41,7 @@ namespace psh {
     template <typename T>
         requires Addable<T> && IsSigned<T> && TriviallyCopyable<T>
     constexpr T wrap_add(T a, T b) noexcept {
-        T const c = a + b;
+        T c = a + b;
         return (c >= a) ? c : std::numeric_limits<T>::max();
     }
 
@@ -49,7 +49,7 @@ namespace psh {
     template <typename T>
         requires Addable<T> && IsUnsigned<T> && TriviallyCopyable<T>
     constexpr T wrap_sub(T a, T b) noexcept {
-        T const c = a - b;
+        T c = a - b;
         return (c <= a) ? c : std::numeric_limits<T>::min();
     }
 
@@ -59,7 +59,7 @@ namespace psh {
 
     template <typename T>
     constexpr T next_multiple(T current, T mul) noexcept {
-#if defined(psh_debug)
+#if defined(PSH_DEBUG)
         psh_assert_msg(mul != 0, "next_multiple expected the multiple base to be non-zero");
 #endif
         return mul * static_cast<T>(static_cast<i64>(current / mul) + 1);
