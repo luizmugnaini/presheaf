@@ -34,9 +34,8 @@ namespace psh {
         f32 x = 0.0f;
         f32 y = 0.0f;
 
-        /// Check if the components of the vector are inside the floating point zero range defined
-        /// by `F32_IS_ZERO_RANGE`.
-        bool is_zero() const noexcept;
+        /// Check if the components of the vector are inside the floating point zero range.
+        bool is_zero(f32 zero_range = F32_IS_ZERO_RANGE) const noexcept;
 
         /// Get the normalized vector.
         ///
@@ -63,9 +62,8 @@ namespace psh {
         f32 y = 0.0f;
         f32 z = 0.0f;
 
-        /// Check if the components of the vector are inside the floating point zero range defined
-        /// by `F32_IS_ZERO_RANGE`.
-        bool is_zero() const noexcept;
+        /// Check if the components of the vector are inside the floating point zero range.
+        bool is_zero(f32 zero_range = F32_IS_ZERO_RANGE) const noexcept;
 
         /// Get the normalized vector.
         ///
