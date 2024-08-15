@@ -39,6 +39,16 @@ namespace psh {
         usize size = 0;
 
         // -----------------------------------------------------------------------------
+        // - Diagnostic messages -
+        // -----------------------------------------------------------------------------
+
+        static constexpr strptr ERROR_INIT_INCONSISTENT_ARENA =
+            "Array initialization called with non-zero capacity but an empty arena";
+        static constexpr strptr ERROR_INIT_OUT_OF_MEMORY =
+            "Array initialization unable to acquire enough bytes of memory";
+        static constexpr strptr ERROR_ACCESS_OUT_OF_BOUNDS = "DynArray access out of bounds";
+
+        // -----------------------------------------------------------------------------
         // - Constructors and initializers -
         // -----------------------------------------------------------------------------
 
@@ -48,12 +58,10 @@ namespace psh {
         void init(Arena* _arena, usize _size) noexcept {
             this->size = _size;
             if (psh_likely(this->size != 0)) {
-                psh_assert_msg(
-                    _arena != nullptr,
-                    "Array::init called with non-zero size but null arena");
+                psh_assert_msg(_arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
 
                 this->buf = _arena->zero_alloc<T>(this->size);
-                psh_assert_msg(this->buf != nullptr, "Array::init unable to allocate enough memory");
+                psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
             }
         }
 
@@ -69,12 +77,10 @@ namespace psh {
         void init(std::initializer_list<T> list, Arena* _arena) noexcept {
             this->size = list.size;
             if (psh_likely(this->size != 0)) {
-                psh_assert_msg(
-                    _arena != nullptr,
-                    "Array::init called with non-zero size but null arena");
+                psh_assert_msg(_arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
 
                 this->buf = _arena->alloc<T>(this->size);
-                psh_assert_msg(this->buf != nullptr, "Array unable to allocate enough memory");
+                psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
             }
 
             // Copy initializer list content.
@@ -96,12 +102,10 @@ namespace psh {
         void init(FatPtr<T> const& fptr, Arena* _arena) noexcept {
             this->size = fptr.size;
             if (psh_likely(this->size != 0)) {
-                psh_assert_msg(
-                    _arena != nullptr,
-                    "Array::init called with non-zero size but null arena");
+                psh_assert_msg(_arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
 
                 this->buf = _arena->alloc<T>(this->size);
-                psh_assert_msg(this->buf != nullptr, "Array unable to allocate enough memory");
+                psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
             }
 
             // Copy buffer content.
@@ -154,14 +158,14 @@ namespace psh {
 
         T& operator[](usize index) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(index < this->size, "Array::operator[] index out of bounds");
+            psh_assert_msg(index < this->size, ERROR_ACCESS_OUT_OF_BOUNDS);
 #endif
             return this->buf[index];
         }
 
         T const& operator[](usize index) const noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(index < this->size, "Array::operator[] index out of bounds");
+            psh_assert_msg(index < this->size, ERROR_ACCESS_OUT_OF_BOUNDS);
 #endif
             return this->buf[index];
         }

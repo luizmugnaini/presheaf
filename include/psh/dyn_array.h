@@ -42,6 +42,20 @@ namespace psh {
         static constexpr usize DYNARRAY_RESIZE_CAPACITY_FACTOR   = 2;
 
         // -----------------------------------------------------------------------------
+        // - Diagnostic messages -
+        // -----------------------------------------------------------------------------
+
+        static constexpr strptr ERROR_INIT_INCONSISTENT_ARENA =
+            "DynArray initialization called with non-zero capacity but an empty arena";
+        static constexpr strptr ERROR_INIT_OUT_OF_MEMORY =
+            "DynArray initialization unable to acquire enough bytes of memory";
+        static constexpr strptr ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY =
+            "DynArray initialization called with inconsistent data: capacity less than the size";
+        static constexpr strptr ERROR_ACCESS_OUT_OF_BOUNDS = "DynArray access out of bounds";
+        static constexpr strptr ERROR_RESIZE_OUT_OF_MEMORY =
+            "DynArray cannot be resized because its allocator is out of memory";
+
+        // -----------------------------------------------------------------------------
         // - Constructors and initializers -
         // -----------------------------------------------------------------------------
 
@@ -53,14 +67,10 @@ namespace psh {
             this->capacity = _capacity;
 
             if (psh_likely(this->capacity != 0)) {
-                psh_assert_msg(
-                    this->arena != nullptr,
-                    "DynArray::init called with non-zero capacity but an empty arena");
+                psh_assert_msg(this->arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
 
                 this->buf = arena->zero_alloc<T>(this->capacity);
-                psh_assert_msg(
-                    this->buf != nullptr,
-                    "DynArray::init unable to acquire enough bytes of memory");
+                psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
             }
         }
 
@@ -78,18 +88,13 @@ namespace psh {
             this->arena    = _arena;
             this->size     = list.size();
             this->capacity = _capacity.val_or(DYNARRAY_RESIZE_CAPACITY_FACTOR * this->size);
-
-            psh_assert_msg(
-                this->size <= this->capacity,
-                "DynArray::init called with inconsistent data: capacity less than the size");
+            psh_assert_msg(this->size <= this->capacity, ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY);
 
             if (psh_likely(this->capacity != 0)) {
-                psh_assert_msg(
-                    this->arena != nullptr,
-                    "DynArray::init called with non-zero capacity but an empty arena");
+                psh_assert_msg(this->arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
 
                 this->buf = arena->alloc<T>(this->capacity);
-                psh_assert_msg(this->buf != nullptr, "DynArray::init unable to allocate enough memory");
+                psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
             }
 
             std::memcpy(
@@ -114,18 +119,13 @@ namespace psh {
             this->arena    = _arena;
             this->size     = fptr.size;
             this->capacity = _capacity.val_or(DYNARRAY_RESIZE_CAPACITY_FACTOR * this->size);
-
-            psh_assert_msg(
-                this->size <= this->capacity,
-                "DynArray::init called with inconsistent data: capacity less than the size");
+            psh_assert_msg(this->size <= this->capacity, ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY);
 
             if (psh_likely(this->capacity != 0)) {
-                psh_assert_msg(
-                    this->arena != nullptr,
-                    "DynArray::init called with non-zero capacity but an empty arena");
+                psh_assert_msg(this->arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
 
                 this->buf = arena->alloc<T>(this->capacity);
-                psh_assert_msg(this->buf != nullptr, "DynArray::init unable to allocate enough memory");
+                psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
             }
 
             std::memcpy(
@@ -187,14 +187,14 @@ namespace psh {
 
         T& operator[](usize idx) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(idx < this->size, "Index out of bounds for dynamic array");
+            psh_assert_msg(idx < this->size, ERROR_ACCESS_OUT_OF_BOUNDS);
 #endif
             return this->buf[idx];
         }
 
         T const& operator[](usize idx) const noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(idx < this->size, "Index out of bounds for dynamic array");
+            psh_assert_msg(idx < this->size, ERROR_ACCESS_OUT_OF_BOUNDS);
 #endif
             return this->buf[idx];
         }
@@ -217,7 +217,7 @@ namespace psh {
             }
 
             if (psh_likely(this->capacity != 0)) {
-                psh_assert_msg(this->buf != nullptr, "DynArray::grow unable to rellocate buffer");
+                psh_assert_msg(this->buf != nullptr, ERROR_RESIZE_OUT_OF_MEMORY);
             }
         }
 
@@ -225,10 +225,8 @@ namespace psh {
             T* new_buf = arena->realloc<T>(this->buf, this->capacity, new_capacity);
 
             if (psh_unlikely(new_buf == nullptr)) {
-                psh_error_fmt(
-                    "DynArray::resize failed to resize capacity from %zu to %zu",
-                    this->capacity,
-                    new_capacity);
+                // TODO: should this be a fatal error?
+                psh_error(ERROR_RESIZE_OUT_OF_MEMORY);
                 return Status::FAILED;
             }
 
@@ -244,9 +242,6 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         /// Inserts a new element to the end of the dynamic array.
-        ///
-        /// If the dynamic array capacity is full, the capacity is doubled by making a reallocation
-        /// of the underlying memory buffer.
         void push(T new_element) noexcept {
             if (this->capacity == this->size) {
                 this->grow();
@@ -258,7 +253,7 @@ namespace psh {
         Status pop() noexcept {
             Status res = Status::FAILED;
             if (psh_likely(this->size > 0)) {
-                --this->size;
+                this->size -= 1;
                 res = Status::OK;
             }
             return res;
@@ -268,22 +263,20 @@ namespace psh {
         Status remove(usize idx) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
             if (psh_unlikely(idx >= this->size)) {
-                psh_error_fmt(
-                    "DynArray::remove index %zu is out of bounds for dynamic array of size "
-                    "%zu.",
-                    idx,
-                    this->size);
+                psh_error(ERROR_ACCESS_OUT_OF_BOUNDS);
                 return Status::FAILED;
             }
 #endif
 
+            // If the element isn't the last we have to copy the array content with overlap.
             if (idx != this->size - 1) {
-                // If the element isn't the last we have copy the array content with overlap.
                 u8*       dest = reinterpret_cast<u8*>(this->buf) + sizeof(T) * idx;
                 u8 const* src  = reinterpret_cast<u8*>(this->buf) + sizeof(T) * (idx + 1);
                 memory_move(dest, src, sizeof(T) * (this->size - idx - 1));
             }
-            --this->size;
+
+            this->size -= 1;
+
             return Status::OK;
         }
 
