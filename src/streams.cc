@@ -100,18 +100,15 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     namespace streams_impl {
-        constexpr strptr open_file_flag(OpenFileFlag f) noexcept {
-            constexpr strptr FLAG_STR[static_cast<u32>(OpenFileFlag::FLAG_COUNT)]{
-                "r",
-                "r+",
-                "rb",
-                "rb+",
-                "w",
-                "w+",
-                "a",
-            };
-            return FLAG_STR[static_cast<u32>(f)];
-        }
+        constexpr strptr OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(OpenFileFlag::FLAG_COUNT)] = {
+            "r",
+            "r+",
+            "rb",
+            "rb+",
+            "w",
+            "w+",
+            "a",
+        };
 
         constexpr bool has_read_permission(OpenFileFlag flag) noexcept {
             return (flag == OpenFileFlag::READ_TEXT) ||
@@ -125,7 +122,9 @@ namespace psh {
         path.init(arena, _path);
         flag = _flag;
 
-        handle = std::fopen(path.data.buf, streams_impl::open_file_flag(flag));
+        handle = std::fopen(
+            path.data.buf,
+            streams_impl::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(flag)]);
         if (psh_unlikely(handle == nullptr)) {
             status = FileStatus::FAILED_TO_OPEN;
             return;
@@ -177,13 +176,11 @@ namespace psh {
             return {.status = FileStatus::FAILED_TO_READ};
         }
 
-        // Acquire memory for the buffer.
         char* buf = arena->alloc<char>(file.size + 1);
         if (psh_unlikely(buf == nullptr)) {
             return {.status = FileStatus::OUT_OF_MEMORY};
         }
 
-        // Read the whole file into the buffer.
         FILE* fhandle    = reinterpret_cast<FILE*>(file.handle);
         usize read_count = std::fread(buf, 1, file.size, fhandle);
         if (psh_unlikely(std::ferror(fhandle) != 0)) {
@@ -201,7 +198,9 @@ namespace psh {
 
     FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) noexcept {
         FILE* fhandle =
-            std::fopen(path, streams_impl::open_file_flag(static_cast<OpenFileFlag>(flag)));
+            std::fopen(
+                path,
+                streams_impl::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(static_cast<OpenFileFlag>(flag))]);
         if (psh_unlikely(fhandle == nullptr)) {
             return {.status = FileStatus::FAILED_TO_OPEN};
         }
@@ -223,13 +222,11 @@ namespace psh {
             return {.status = FileStatus::FAILED_TO_READ};
         }
 
-        // Acquire memory for the buffer.
         char* buf = arena->alloc<char>(size + 1);
         if (psh_unlikely(buf == nullptr)) {
             return {.status = FileStatus::OUT_OF_MEMORY};
         }
 
-        // Read the whole file into the buffer.
         usize read_count = std::fread(buf, 1, size, fhandle);
         if (psh_unlikely(std::ferror(fhandle) != 0)) {
             std::perror("Couldn't read file.\n");
