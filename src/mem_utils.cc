@@ -44,7 +44,7 @@ namespace psh {
     }
 
     void memory_copy(void* dest, void const* src, usize size) noexcept {
-        if (psh_unlikely(dest == nullptr || src == nullptr)) {
+        if (psh_unlikely((dest == nullptr) || (src == nullptr) || (size == 0))) {
             return;
         }
 
@@ -60,7 +60,7 @@ namespace psh {
     }
 
     void memory_move(void* dest, void const* src, usize size) noexcept {
-        if (psh_unlikely(dest == nullptr || src == nullptr)) {
+        if (psh_unlikely((dest == nullptr) || (src == nullptr) || (size == 0))) {
             return;
         }
         psh_discard(std::memmove(dest, src, size));
