@@ -240,7 +240,7 @@ using strptr = char const*;
 #define psh_ptr_add(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) + static_cast<uptr>(offset)))
 #define psh_ptr_sub(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) - static_cast<iptr>(offset)))
 
-#define psh_ptr_offset_bytes(end, start) static_cast<usize>(reinterpret_cast<iptr>(end) - reinterpret_cast<iptr>(start))
+#define psh_ptr_offset_bytes(end, start) (reinterpret_cast<iptr>(reinterpret_cast<u8 const*>(end)) - reinterpret_cast<iptr>(reinterpret_cast<u8 const*>(start)))
 
 // -----------------------------------------------------------------------------
 // - Mathematical operations -
