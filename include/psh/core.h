@@ -246,6 +246,9 @@ using strptr = char const*;
 // - Mathematical operations -
 // -----------------------------------------------------------------------------
 
+#define in_closed_range(val, min, max) (((min) <= (val)) && ((val) <= (max)))
+#define in_open_range(val, min, max)   (((min) < (val)) && ((val) < (max)))
+
 /// Minimum/maximum functions.
 #define psh_min(lhs, rhs) (((lhs) < (rhs)) ? (lhs) : (rhs))
 #define psh_max(lhs, rhs) (((lhs) > (rhs)) ? (lhs) : (rhs))
