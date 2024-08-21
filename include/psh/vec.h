@@ -199,6 +199,9 @@ namespace psh {
         /// Create an identity matrix.
         static ColMat4 id() noexcept;
 
+        /// Create a scaling matrix for 3D space.
+        static ColMat4 scale(Vec3 scaling) noexcept;
+
         /// Create the translation matrix for a given displacement in 3D space.
         static ColMat4 translation(Vec3 dx_dy_dz) noexcept;
 
@@ -249,4 +252,7 @@ namespace psh {
 
     /// Multiply a pair of 3-dimensional square matrices.
     Mat3 mat_mul(Mat3 lhs, Mat3 rhs) noexcept;
+
+    /// Multiply a pair of 4-dimensional square column-major matrices.
+    ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) noexcept;
 }  // namespace psh

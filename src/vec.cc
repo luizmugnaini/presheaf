@@ -419,6 +419,17 @@ namespace psh {
         // clang-format on
     }
 
+    ColMat4 ColMat4::scale(Vec3 scaling) noexcept {
+        // clang-format off
+        return ColMat4{
+            scaling.x,    0.0f,      0.0f,   0.0f,
+               0.0f,   scaling.y,    0.0f,   0.0f,
+               0.0f,      0.0f,   scaling.z, 0.0f,
+               0.0f,      0.0f,      0.0f,   1.0f,
+        };
+        // clang-format on
+    }
+
     ColMat4 ColMat4::translation(Vec3 dx_dy_dz) noexcept {
         // clang-format off
         return ColMat4{
@@ -493,5 +504,32 @@ namespace psh {
             (lhs.buf[6] * rhs.buf[1]) + (lhs.buf[7] * rhs.buf[4]) + (lhs.buf[8] * rhs.buf[7]),
             (lhs.buf[6] * rhs.buf[2]) + (lhs.buf[7] * rhs.buf[5]) + (lhs.buf[8] * rhs.buf[8]),
         };
+    }
+
+    ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) noexcept {
+        // clang-format off
+        return ColMat4{
+            // Row 1.
+            (lhs.buf[0] * rhs.buf[0]) + (lhs.buf[1] * rhs.buf[4]) + (lhs.buf[2] * rhs.buf[8])  + (lhs.buf[3] * rhs.buf[12]),
+            (lhs.buf[0] * rhs.buf[1]) + (lhs.buf[1] * rhs.buf[5]) + (lhs.buf[2] * rhs.buf[9])  + (lhs.buf[3] * rhs.buf[13]),
+            (lhs.buf[0] * rhs.buf[2]) + (lhs.buf[1] * rhs.buf[6]) + (lhs.buf[2] * rhs.buf[10]) + (lhs.buf[3] * rhs.buf[14]),
+            (lhs.buf[0] * rhs.buf[3]) + (lhs.buf[1] * rhs.buf[7]) + (lhs.buf[2] * rhs.buf[11]) + (lhs.buf[3] * rhs.buf[15]),
+            // Row 2.
+            (lhs.buf[4] * rhs.buf[0]) + (lhs.buf[5] * rhs.buf[4]) + (lhs.buf[6] * rhs.buf[8])  + (lhs.buf[7] * rhs.buf[12]),
+            (lhs.buf[4] * rhs.buf[1]) + (lhs.buf[5] * rhs.buf[5]) + (lhs.buf[6] * rhs.buf[9])  + (lhs.buf[7] * rhs.buf[13]),
+            (lhs.buf[4] * rhs.buf[2]) + (lhs.buf[5] * rhs.buf[6]) + (lhs.buf[6] * rhs.buf[10]) + (lhs.buf[7] * rhs.buf[14]),
+            (lhs.buf[4] * rhs.buf[3]) + (lhs.buf[5] * rhs.buf[7]) + (lhs.buf[6] * rhs.buf[11]) + (lhs.buf[7] * rhs.buf[15]),
+            // Row 3.
+            (lhs.buf[8] * rhs.buf[0]) + (lhs.buf[9] * rhs.buf[4]) + (lhs.buf[10] * rhs.buf[8])  + (lhs.buf[11] * rhs.buf[12]),
+            (lhs.buf[8] * rhs.buf[1]) + (lhs.buf[9] * rhs.buf[5]) + (lhs.buf[10] * rhs.buf[9])  + (lhs.buf[11] * rhs.buf[13]),
+            (lhs.buf[8] * rhs.buf[2]) + (lhs.buf[9] * rhs.buf[6]) + (lhs.buf[10] * rhs.buf[10]) + (lhs.buf[11] * rhs.buf[14]),
+            (lhs.buf[8] * rhs.buf[3]) + (lhs.buf[9] * rhs.buf[7]) + (lhs.buf[10] * rhs.buf[11]) + (lhs.buf[11] * rhs.buf[15]),
+            // Row 4.
+            (lhs.buf[12] * rhs.buf[0]) + (lhs.buf[13] * rhs.buf[4]) + (lhs.buf[14] * rhs.buf[8])  + (lhs.buf[15] * rhs.buf[12]),
+            (lhs.buf[12] * rhs.buf[1]) + (lhs.buf[13] * rhs.buf[5]) + (lhs.buf[14] * rhs.buf[9])  + (lhs.buf[15] * rhs.buf[13]),
+            (lhs.buf[12] * rhs.buf[2]) + (lhs.buf[13] * rhs.buf[6]) + (lhs.buf[14] * rhs.buf[10]) + (lhs.buf[15] * rhs.buf[14]),
+            (lhs.buf[12] * rhs.buf[3]) + (lhs.buf[13] * rhs.buf[7]) + (lhs.buf[14] * rhs.buf[11]) + (lhs.buf[15] * rhs.buf[15]),
+        };
+        // clang-format on
     }
 }  // namespace psh
