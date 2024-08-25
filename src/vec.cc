@@ -70,6 +70,10 @@ namespace psh {
         return x * other.x + y * other.y;
     }
 
+    bool Vec2::is_to_the_left_of(Vec2 const& other) const noexcept {
+        return ((other.x * y - other.y * x) >= 0.0f);
+    }
+
     Vec2 operator+(Vec2 lhs, Vec2 rhs) noexcept {
         return Vec2{lhs.x + rhs.x, lhs.y + rhs.y};
     }
@@ -477,9 +481,33 @@ namespace psh {
         // clang-format on
     }
 
+    ColMat4 ColMat4::orthographic_projection_rhzo(
+        f32 left,
+        f32 right,
+        f32 bottom,
+        f32 top,
+        f32 near_plane,
+        f32 far_plane) noexcept {
+        // clang-format off
+        return ColMat4{
+                 2.0f / (right - left),                  0.0f,                            0.0f,                      0.0f,
+                          0.0f,                  2.0f / (top - bottom),                   0.0f,                      0.0f,
+                          0.0f,                          0.0f,                  1.0f / (near_plane - far_plane),     0.0f,
+            (left + right) / (left - right), (bottom + top) / (bottom - top), near_plane / (near_plane - far_plane), 1.0f,
+        };
+        // clang-format on
+    }
+
     // -----------------------------------------------------------------------------
     // - Implementation of the matrix multiplication operations -
     // -----------------------------------------------------------------------------
+
+    Vec2 mat_mul(Mat2 m, Vec2 v) noexcept {
+        return Vec2{
+            (m.buf[0] * v.x) + (m.buf[1] * v.y),
+            (m.buf[2] * v.x) + (m.buf[3] * v.y),
+        };
+    }
 
     Vec3 mat_mul(Mat3 m, Vec3 v) noexcept {
         return Vec3{
@@ -503,6 +531,15 @@ namespace psh {
             (lhs.buf[6] * rhs.buf[0]) + (lhs.buf[7] * rhs.buf[3]) + (lhs.buf[8] * rhs.buf[6]),
             (lhs.buf[6] * rhs.buf[1]) + (lhs.buf[7] * rhs.buf[4]) + (lhs.buf[8] * rhs.buf[7]),
             (lhs.buf[6] * rhs.buf[2]) + (lhs.buf[7] * rhs.buf[5]) + (lhs.buf[8] * rhs.buf[8]),
+        };
+    }
+
+    Vec4 mat_mul(ColMat4 m, Vec4 v) noexcept {
+        return Vec4{
+            (m.buf[0] * v.x) + (m.buf[4] * v.y) + (m.buf[8] * v.z) + (m.buf[12] * v.w),
+            (m.buf[1] * v.x) + (m.buf[5] * v.y) + (m.buf[9] * v.z) + (m.buf[13] * v.w),
+            (m.buf[2] * v.x) + (m.buf[6] * v.y) + (m.buf[10] * v.z) + (m.buf[14] * v.w),
+            (m.buf[3] * v.x) + (m.buf[7] * v.y) + (m.buf[11] * v.z) + (m.buf[15] * v.w),
         };
     }
 

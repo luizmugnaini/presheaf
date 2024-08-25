@@ -45,6 +45,8 @@ namespace psh {
         /// Euclidean inner product.
         f32 dot(Vec2 const& other) const noexcept;
 
+        bool is_to_the_left_of(Vec2 const& other) const noexcept;
+
         Vec2& operator+=(Vec2 const& other) noexcept;
         Vec2& operator-=(Vec2 const& other) noexcept;
         Vec2& operator*=(Vec2 const& other) noexcept;
@@ -154,6 +156,11 @@ namespace psh {
     // - Floating point matrices -
     // -----------------------------------------------------------------------------
 
+    // TODO: implement Mat2 methods.
+    struct Mat2 {
+        f32 buf[4] = {0.0f};
+    };
+
     /// Row-major 3-dimensional square matrix in floating-point space.
     struct Mat3 {
         f32 buf[9] = {0.0f};
@@ -239,20 +246,34 @@ namespace psh {
         /// Parameters:
         ///     * fovy: The vertical field of view in radians.
         ///     * aspect: The aspect ratio (width / height) of the view.
-        ///     * near: The distance to the near clip plane.
-        ///     * far: The distance to the far clip plane.
+        ///     * near_plane: The distance to the near clip plane.
+        ///     * far_plane: The distance to the far clip plane.
         static ColMat4
-        perspective_projection_rhzo(f32 fovy, f32 aspect, f32 near, f32 far) noexcept;
+        perspective_projection_rhzo(f32 fovy, f32 aspect, f32 near_plane, f32 far_plane) noexcept;
 
         // TODO: perspective_projection_rhno following OpenGL conventions.
+
+        static ColMat4 orthographic_projection_rhzo(
+            f32 left,
+            f32 right,
+            f32 bottom,
+            f32 top,
+            f32 near_plane,
+            f32 far_plane) noexcept;
     };
 
-    /// Left-multiply a 3D vector by a 3-dimensional square matrix.
+    /// Left-multiply a 2D vector by a 2D square matrix.
+    Vec2 mat_mul(Mat2 m, Vec2 v) noexcept;
+
+    /// Left-multiply a 3D vector by a 3D square matrix.
     Vec3 mat_mul(Mat3 m, Vec3 v) noexcept;
 
-    /// Multiply a pair of 3-dimensional square matrices.
+    /// Multiply a pair of 3D square matrices.
     Mat3 mat_mul(Mat3 lhs, Mat3 rhs) noexcept;
 
-    /// Multiply a pair of 4-dimensional square column-major matrices.
+    /// Left-multiply a 4D vector by a 4D square column-major matrix.
+    Vec4 mat_mul(ColMat4 m, Vec4 v) noexcept;
+
+    /// Multiply a pair of 4D square column-major matrices.
     ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) noexcept;
 }  // namespace psh
