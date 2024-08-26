@@ -277,8 +277,11 @@ using strptr = char const*;
 /// Add values and clamp to an upper bound.
 #define psh_ub_add(lhs, rhs, ub) (((lhs) + (rhs)) > (ub) ? (ub) : ((lhs) + (rhs)))
 
+// Get the sign of a number.
 #define psh_sign(x) ((static_cast<f64>(x) > 0.0) ? 1 : ((static_cast<f64>(x) != 0.0) ? -1 : 0))
-#define psh_abs(x)  ((static_cast<f64>(x) > 0.0) ? (x) : -(x))
+
+// Get the absolute value of a number.
+#define psh_abs(x) ((static_cast<f64>(x) > 0.0) ? (x) : -(x))
 
 // -----------------------------------------------------------------------------
 // - Common memory sizes -
