@@ -141,17 +141,17 @@
 // -----------------------------------------------------------------------------
 
 /// Unsigned integer type.
-using u8    = std::uint8_t;
-using u16   = std::uint16_t;
-using u32   = std::uint32_t;
-using u64   = std::uint64_t;
+using u8    = uint8_t;
+using u16   = uint16_t;
+using u32   = uint32_t;
+using u64   = uint64_t;
 using usize = u64;
 
 /// Signed integer type.
-using i8    = std::int8_t;
-using i16   = std::int16_t;
-using i32   = std::int32_t;
-using i64   = std::int64_t;
+using i8    = int8_t;
+using i16   = int16_t;
+using i32   = int32_t;
+using i64   = int64_t;
 using isize = i64;
 
 /// Memory-address types.
@@ -212,6 +212,9 @@ using strptr = char const*;
 #    define psh_attr_fmt(fmt_pos)
 #endif
 
+/// Discard the value of a given expression.
+#define psh_discard(x) (void)(x)
+
 // -----------------------------------------------------------------------------
 // - Overriding allocation/deallocation -
 // -----------------------------------------------------------------------------
@@ -246,15 +249,15 @@ using strptr = char const*;
 // - Mathematical operations -
 // -----------------------------------------------------------------------------
 
-#define in_closed_range(val, min, max) (((min) <= (val)) && ((val) <= (max)))
-#define in_open_range(val, min, max)   (((min) < (val)) && ((val) < (max)))
+#define psh_in_closed_range(val, min, max) (((min) <= (val)) && ((val) <= (max)))
+#define psh_in_open_range(val, min, max)   (((min) < (val)) && ((val) < (max)))
 
 /// Minimum/maximum functions.
 #define psh_min(lhs, rhs) (((lhs) < (rhs)) ? (lhs) : (rhs))
 #define psh_max(lhs, rhs) (((lhs) > (rhs)) ? (lhs) : (rhs))
 
 /// Check if a value is a power of two.
-#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n)-1)))
+#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n) - 1)))
 
 /// Clamp a value to an interval.
 #define psh_clamp(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))
@@ -277,12 +280,6 @@ using strptr = char const*;
 // - Misc. utilities -
 // -----------------------------------------------------------------------------
 
-/// Generate a string containing the given expression.
-#define psh_stringify(x) #x
-
-/// Discard the value of a given expression.
-#define psh_discard(x) (void)(x)
-
 /// Macro for aborting a program at runtime.
 #if defined(PSH_COMPILER_MSVC)
 #    define psh_abort() __debugbreak()
@@ -292,3 +289,82 @@ using strptr = char const*;
 #    include <signal.h>
 #    define psh_abort() raise(SIGTRAP)
 #endif
+
+/// Generate a string containing the given expression.
+#define psh_stringify(x) #x
+
+// -----------------------------------------------------------------------------
+// - Short names -
+// -----------------------------------------------------------------------------
+
+#if defined(PSH_DEFINE_SHORT_NAMES)
+#    ifndef FALLTHROUGH
+#        define FALLTHROUGH PSH_FALLTHROUGH
+#    endif
+#    ifndef unreachable
+#        define unreachable psh_unreachable
+#    endif
+#    ifndef internal
+#        define internal psh_internal
+#    endif
+#    ifndef global
+#        define global psh_global
+#    endif
+#    ifndef likely
+#        define likely psh_likely
+#    endif
+#    ifndef unlikely
+#        define unlikely psh_unlikely
+#    endif
+#    ifndef attr_fmt
+#        define attr_fmt psh_attr_fmt
+#    endif
+#    ifndef discard
+#        define discard psh_discard
+#    endif
+#    ifndef ptr_add
+#        define ptr_add psh_ptr_add
+#    endif
+#    ifndef ptr_sub
+#        define ptr_sub psh_ptr_sub
+#    endif
+#    ifndef ptr_offset_bytes
+#        define ptr_offset_bytes psh_ptr_offset_bytes
+#    endif
+#    ifndef in_closed_range
+#        define in_closed_range psh_in_closed_range
+#    endif
+#    ifndef in_open_range
+#        define in_open_range psh_in_open_range
+#    endif
+#    ifndef min
+#        define min psh_min
+#    endif
+#    ifndef max
+#        define max psh_max
+#    endif
+#    ifndef clamp
+#        define clamp psh_clamp
+#    endif
+#    ifndef lb_add
+#        define lb_add psh_lb_add
+#    endif
+#    ifndef ub_add
+#        define ub_add psh_ub_add
+#    endif
+#    ifndef kibibytes
+#        define kibibytes psh_kibibytes
+#    endif
+#    ifndef mebibytes
+#        define mebibytes psh_mebibytes
+#    endif
+#    ifndef gibibytes
+#        define gibibytes psh_gibibytes
+#    endif
+#    ifndef abort
+#        define abort psh_abort
+#    endif
+#    ifndef stringify
+#        define stringify psh_stringify
+#    endif
+#endif  // PSH_DEFINE_SHORT_NAMES

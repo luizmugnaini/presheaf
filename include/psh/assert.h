@@ -59,3 +59,19 @@ namespace psh {
         psh_fatal_fmt("TODO: code-path unimplemented, msg: %s", msg); \
         psh_abort();                                                  \
     } while (0)
+
+// -----------------------------------------------------------------------------
+// - Short names -
+// -----------------------------------------------------------------------------
+
+#if defined(PSH_DEFINE_SHORT_NAMES)
+#    ifndef assert
+#        define assert psh_assert
+#    endif
+#    ifndef todo
+#        define todo psh_todo
+#    endif
+#    ifndef todo_msg
+#        define todo_msg psh_todo_msg
+#    endif
+#endif  // PSH_DEFINE_SHORT_NAMES

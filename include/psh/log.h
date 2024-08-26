@@ -91,3 +91,40 @@ namespace psh {
 #    define psh_info_fmt(fmt, ...)    0
 #    define psh_debug_fmt(fmt, ...)   0
 #endif
+
+// -----------------------------------------------------------------------------
+// - Short names -
+// -----------------------------------------------------------------------------
+
+#if defined(PSH_DEFINE_SHORT_NAMES)
+#    ifndef fatal
+#        define fatal psh_fatal
+#    endif
+#    ifndef error
+#        define error psh_error
+#    endif
+#    ifndef warning
+#        define warning psh_warning
+#    endif
+#    ifndef info
+#        define info psh_info
+#    endif
+#    ifndef debug
+#        define debug psh_debug
+#    endif
+#    ifndef fatal_fmt
+#        define fatal_fmt psh_fatal_fmt
+#    endif
+#    ifndef error_fmt
+#        define error_fmt psh_error_fmt
+#    endif
+#    ifndef warning_fmt
+#        define warning_fmt psh_warning_fmt
+#    endif
+#    ifndef info_fmt
+#        define info_fmt psh_info_fmt
+#    endif
+#    ifndef debug_fmt
+#        define debug_fmt psh_debug_fmt
+#    endif
+#endif
