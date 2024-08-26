@@ -177,13 +177,22 @@ using strptr = char const*;
 #    define PSH_FALLTHROUGH
 #endif
 
+/// Macro for aborting a program at runtime.
+#if defined(PSH_COMPILER_MSVC)
+#    define psh_abort() __debugbreak()
+#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#    define psh_abort() __builtin_trap()
+#else
+#    include <signal.h>
+#    define psh_abort() raise(SIGTRAP)
+#endif
+
 #if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
 #    define psh_unreachable() (__builtin_unreachable())
 #elif defined(PSH_COMPILER_MSVC)
 #    define psh_unreachable() (__assume(false))
 #else
-#    include <cassert>
-#    define psh_unreachable() (assert(false && "Codepath should be unreachable"))
+#    define psh_unreachable() psh_abort()
 #endif
 
 /// Signals internal linkage.
@@ -257,7 +266,7 @@ using strptr = char const*;
 #define psh_max(lhs, rhs) (((lhs) > (rhs)) ? (lhs) : (rhs))
 
 /// Check if a value is a power of two.
-#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n) - 1)))
+#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n)-1)))
 
 /// Clamp a value to an interval.
 #define psh_clamp(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))
@@ -267,6 +276,9 @@ using strptr = char const*;
 
 /// Add values and clamp to an upper bound.
 #define psh_ub_add(lhs, rhs, ub) (((lhs) + (rhs)) > (ub) ? (ub) : ((lhs) + (rhs)))
+
+#define psh_sign(x) ((static_cast<f64>(x) > 0.0) ? 1 : ((static_cast<f64>(x) != 0.0) ? -1 : 0))
+#define psh_abs(x)  ((static_cast<f64>(x) > 0.0) ? (x) : -(x))
 
 // -----------------------------------------------------------------------------
 // - Common memory sizes -
@@ -280,21 +292,15 @@ using strptr = char const*;
 // - Misc. utilities -
 // -----------------------------------------------------------------------------
 
-/// Macro for aborting a program at runtime.
-#if defined(PSH_COMPILER_MSVC)
-#    define psh_abort() __debugbreak()
-#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-#    define psh_abort() __builtin_trap()
-#else
-#    include <signal.h>
-#    define psh_abort() raise(SIGTRAP)
-#endif
-
 /// Generate a string containing the given expression.
 #define psh_stringify(x) #x
 
 // -----------------------------------------------------------------------------
 // - Short names -
+//
+// NOTE: Unfortunately, some of the above macros would cause name collisions
+//       with the majority of compilers, and for this reason they don't get
+//       assigned a short name. (Examples: min, max, clamp, abs, ...)
 // -----------------------------------------------------------------------------
 
 #if defined(PSH_DEFINE_SHORT_NAMES)
@@ -337,15 +343,6 @@ using strptr = char const*;
 #    ifndef in_open_range
 #        define in_open_range psh_in_open_range
 #    endif
-#    ifndef min
-#        define min psh_min
-#    endif
-#    ifndef max
-#        define max psh_max
-#    endif
-#    ifndef clamp
-#        define clamp psh_clamp
-#    endif
 #    ifndef lb_add
 #        define lb_add psh_lb_add
 #    endif
@@ -360,9 +357,6 @@ using strptr = char const*;
 #    endif
 #    ifndef gibibytes
 #        define gibibytes psh_gibibytes
-#    endif
-#    ifndef abort
-#        define abort psh_abort
 #    endif
 #    ifndef stringify
 #        define stringify psh_stringify
