@@ -302,6 +302,14 @@ using strptr = char const*;
 /// Generate a string containing the given expression.
 #define psh_stringify(x) #x
 
+#if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#    define PSH_FUNCTION_SIGNATURE __PRETTY_FUNCTION__
+#elif defined(PSH_COMPILER_MSVC)
+#    define PSH_FUNCTION_SIGNATURE __FUNCSIG__
+#else
+#    define PSH_FUNCTION_SIGNATURE "<unknown>"
+#endif
+
 // -----------------------------------------------------------------------------
 // - Short names -
 //
