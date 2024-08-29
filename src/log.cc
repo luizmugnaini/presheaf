@@ -34,7 +34,7 @@ namespace psh {
     // - Internal implementation details -
     // -----------------------------------------------------------------------------
 
-    namespace log_impl {
+    namespace impl_log {
         constexpr strptr LOG_FMT = "%s [%s:%d] %s\n";
 
         strptr log_level_str(LogLevel level) {
@@ -58,7 +58,7 @@ namespace psh {
 
             return LEVEL_STR[static_cast<u32>(level)];
         }
-    }  // namespace log_impl
+    }  // namespace impl_log
 
     // -----------------------------------------------------------------------------
     // - Implementation of the logging procedures -
@@ -67,8 +67,8 @@ namespace psh {
     void log(LogInfo info, strptr msg) {
         psh_discard(std::fprintf(
             stderr,
-            log_impl::LOG_FMT,
-            log_impl::log_level_str(info.lvl),
+            impl_log::LOG_FMT,
+            impl_log::log_level_str(info.lvl),
             info.file,
             info.line,
             msg));
@@ -83,8 +83,7 @@ namespace psh {
         {
             // Format the message with the given arguments.
             i32 res_len = std::vsnprintf(msg, MAX_MSG_LEN, fmt, args);
-            assert(
-                res_len != -1 && "std::snptrintf unable to parse the format string and arguments");
+            assert(res_len != -1 && "std::snptrintf unable to parse the format string and arguments");
 
             // Stamp the message with a null-terminator.
             usize ures_len = static_cast<usize>(res_len);
@@ -95,8 +94,8 @@ namespace psh {
 
         (void)std::fprintf(
             stderr,
-            log_impl::LOG_FMT,
-            log_impl::log_level_str(info.lvl),
+            impl_log::LOG_FMT,
+            impl_log::log_level_str(info.lvl),
             info.file,
             info.line,
             msg);

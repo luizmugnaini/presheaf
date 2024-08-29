@@ -103,7 +103,7 @@ namespace psh {
     // - Implementation of the OS file stream handling -
     // -----------------------------------------------------------------------------
 
-    namespace streams_impl {
+    namespace impl_streams {
         constexpr strptr OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(OpenFileFlag::FLAG_COUNT)] = {
             "r",
             "r+",
@@ -120,7 +120,7 @@ namespace psh {
                    (flag == OpenFileFlag::READ_BIN_EXTENDED) ||
                    (flag == OpenFileFlag::WRITE_EXTENDED);
         }
-    }  // namespace streams_impl
+    }  // namespace impl_streams
 
     File::File(Arena* arena, StringView _path, OpenFileFlag _flag) noexcept {
         path.init(arena, _path);
@@ -128,7 +128,7 @@ namespace psh {
 
         handle = std::fopen(
             path.data.buf,
-            streams_impl::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(flag)]);
+            impl_streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(flag)]);
         if (psh_unlikely(handle == nullptr)) {
             status = FileStatus::FAILED_TO_OPEN;
             return;
@@ -173,7 +173,7 @@ namespace psh {
 
     FileReadResult read_file(Arena* arena, File const& file) noexcept {
         psh_assert_msg(
-            streams_impl::has_read_permission(file.flag),
+            impl_streams::has_read_permission(file.flag),
             "read_file cannot read File whose reading permission is disabled.");
 
         if (psh_unlikely(file.status != FileStatus::OK)) {
@@ -201,10 +201,7 @@ namespace psh {
     }
 
     FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) noexcept {
-        FILE* fhandle =
-            std::fopen(
-                path,
-                streams_impl::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(static_cast<OpenFileFlag>(flag))]);
+        FILE* fhandle = std::fopen(path, impl_streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(static_cast<OpenFileFlag>(flag))]);
         if (psh_unlikely(fhandle == nullptr)) {
             return {.status = FileStatus::FAILED_TO_OPEN};
         }

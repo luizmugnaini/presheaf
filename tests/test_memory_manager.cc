@@ -48,7 +48,7 @@ void test_memory_manager_zeroed_at_initialization() {
     psh_assert(memory_manager.allocator.buf == reinterpret_cast<u8*>(mem_ptr));
     psh_assert(memory_manager.allocator.offset == 0ull);
     psh_assert(memory_manager.allocator.previous_offset == 0ull);
-    psh_assert(memory_manager.allocator.capacity == static_cast<usize>(1024));
+    psh_assert(memory_manager.allocator.size == static_cast<usize>(1024));
     test_passed();
 }
 

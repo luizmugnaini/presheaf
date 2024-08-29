@@ -151,13 +151,9 @@ namespace psh {
         // - Allocation methods -
         // -----------------------------------------------------------------------------
 
-        u8* alloc_align(usize size, u32 alignment) noexcept;
-        u8* zero_alloc_align(usize size, u32 alignment) noexcept;
-        u8* realloc_align(
-            u8*   block,
-            usize current_size_bytes,
-            usize new_size_bytes,
-            u32   alignment) noexcept;
+        u8* alloc_align(usize size_bytes, u32 alignment) noexcept;
+        u8* zero_alloc_align(usize size_bytes, u32 alignment) noexcept;
+        u8* realloc_align(u8* block, usize current_size_bytes, usize new_size_bytes, u32 alignment) noexcept;
 
         template <typename T>
         T* alloc(usize count) noexcept;

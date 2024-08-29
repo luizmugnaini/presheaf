@@ -41,10 +41,10 @@ u8* fn_scratch_as_ref(psh::ScratchArena& s, usize size) {
 }
 
 void test_scratch_arena_ref() {
-    usize     capacity = 1024;
-    u8* const buf      = reinterpret_cast<u8*>(std::malloc(capacity));
+    usize     size = 1024;
+    u8* const buf  = reinterpret_cast<u8*>(std::malloc(size));
     {
-        psh::Arena ar{buf, capacity};
+        psh::Arena ar{buf, size};
         usize      expected_offset = 0;
 
         (void)ar.zero_alloc<u8>(32);
@@ -64,9 +64,9 @@ void test_scratch_arena_ref() {
 }
 
 void test_scratch_arena() {
-    usize      capacity = 1024;
-    u8* const  buf      = reinterpret_cast<u8*>(std::malloc(capacity));
-    psh::Arena arena{buf, capacity};
+    usize      size = 1024;
+    u8* const  buf  = reinterpret_cast<u8*>(std::malloc(size));
+    psh::Arena arena{buf, size};
     usize      base_offset = 0;
 
     // Test 1
@@ -248,49 +248,49 @@ void test_scratch_arena() {
 
 void print_stack_info(psh::Stack const& stack) {
     std::printf(
-        "Stack {\n\tmemory: %zu,\n\tcapacity: %zu,\n\toffset: %zu,\n\tprevious_offset: %zu\n}\n",
+        "Stack {\n\tmemory: %zu,\n\tsize: %zu,\n\toffset: %zu,\n\tprevious_offset: %zu\n}\n",
         reinterpret_cast<uptr>(stack.buf),
-        stack.capacity,
+        stack.size,
         stack.offset,
         stack.previous_offset);
 }
 
 void test_stack_allocation_with_default_alignment() {
     usize      salloc_min_expected_size = 0;
-    usize      expected_alloc_capacity  = 512;
-    u8*        buf                      = reinterpret_cast<u8*>(std::malloc(expected_alloc_capacity));
-    psh::Stack salloc{buf, expected_alloc_capacity};
+    usize      expected_alloc_size      = 512;
+    u8*        buf                      = reinterpret_cast<u8*>(std::malloc(expected_alloc_size));
+    psh::Stack salloc{buf, expected_alloc_size};
 
-    u8    expected_u8_vec[5]       = {51, 102, 153, 204, 255};
-    usize expected_u8_vec_capacity = 5 * sizeof(u8);  // 5 bytes
-    u8*   test_vec_u8              = salloc.alloc<u8>(expected_u8_vec_capacity);
+    u8    expected_u8_vec[5]   = {51, 102, 153, 204, 255};
+    usize expected_u8_vec_size = 5 * sizeof(u8);  // 5 bytes
+    u8*   test_vec_u8          = salloc.alloc<u8>(expected_u8_vec_size);
     psh_assert(test_vec_u8 != nullptr);
     for (usize i = 0; i < 5; ++i) {
         test_vec_u8[i] = expected_u8_vec[i];
     }
-    salloc_min_expected_size += sizeof(psh::StackHeader) + expected_u8_vec_capacity;
+    salloc_min_expected_size += sizeof(psh::StackHeader) + expected_u8_vec_size;
 
     // The first allocation has a zero alignment so we can check for equality.
     psh_assert(salloc.used() == salloc_min_expected_size);
 
-    u32   expected_u32_vec[3]       = {1, 1024, 1073741824};
-    usize expected_u32_vec_capacity = 3 * sizeof(u32);  // 12 bytes
-    u32*  test_vec_u32              = salloc.alloc<u32>(3);
+    u32   expected_u32_vec[3]   = {1, 1024, 1073741824};
+    usize expected_u32_vec_size = 3 * sizeof(u32);  // 12 bytes
+    u32*  test_vec_u32          = salloc.alloc<u32>(3);
     psh_assert(test_vec_u32 != nullptr);
     for (usize i = 0; i < 3; ++i) {
         test_vec_u32[i] = expected_u32_vec[i];
     }
-    salloc_min_expected_size += sizeof(psh::StackHeader) + expected_u32_vec_capacity;
+    salloc_min_expected_size += sizeof(psh::StackHeader) + expected_u32_vec_size;
 
     psh_assert(salloc.used() >= salloc_min_expected_size);
 
-    usize capacity = salloc.capacity;
-    psh_assert(capacity == expected_alloc_capacity);
+    usize size = salloc.size;
+    psh_assert(size == expected_alloc_size);
 
     psh::StackHeader const* th_u32 = salloc.top_header();
     psh_assert(th_u32 != nullptr);
-    usize actual_u32_vec_capacity = th_u32->capacity;
-    psh_assert(actual_u32_vec_capacity == expected_u32_vec_capacity);
+    usize actual_u32_vec_size = th_u32->size;
+    psh_assert(actual_u32_vec_size == expected_u32_vec_size);
 
     u8* top_u32 = salloc.top();
     psh_assert(top_u32 != nullptr);
@@ -307,8 +307,8 @@ void test_stack_allocation_with_default_alignment() {
 
     psh::StackHeader const* th_u8 = salloc.top_header();
     psh_assert(th_u8 != nullptr);
-    usize actual_u8_vec_capacity = th_u8->capacity;
-    psh_assert(actual_u8_vec_capacity == 5ull);
+    usize actual_u8_vec_size = th_u8->size;
+    psh_assert(actual_u8_vec_size == 5ull);
 
     u8* actual_u8_vec = salloc.top();
     psh_assert(actual_u8_vec != nullptr);
@@ -330,9 +330,9 @@ void test_stack_allocation_with_default_alignment() {
 }
 
 void test_stack_offsets_reads_and_writes() {
-    usize      capacity = 1024;
-    u8*        buf      = reinterpret_cast<u8*>(std::malloc(capacity));
-    psh::Stack stack{buf, capacity};
+    usize      size = 1024;
+    u8*        buf  = reinterpret_cast<u8*>(std::malloc(size));
+    psh::Stack stack{buf, size};
 
     u8* buf_start = buf;
 
@@ -428,9 +428,9 @@ void test_stack_offsets_reads_and_writes() {
 }
 
 void test_stack_memory_stress_and_free() {
-    usize      capacity = 2048;
-    u8*        buf      = reinterpret_cast<u8*>(std::malloc(capacity));
-    psh::Stack stack{buf, capacity};
+    usize      size = 2048;
+    u8*        buf  = reinterpret_cast<u8*>(std::malloc(size));
+    psh::Stack stack{buf, size};
 
     iptr  stack_buf_diff = reinterpret_cast<iptr>(stack.buf);
     usize zero           = 0ull;
@@ -503,7 +503,7 @@ void test_stack_memory_stress_and_free() {
     stack.clear();
     psh_assert(stack.previous_offset == zero);
     psh_assert(stack.offset == zero);
-    psh_assert(stack.buf && (stack.capacity != 0));  // The memory should still be available.
+    psh_assert(stack.buf && (stack.size != 0));  // The memory should still be available.
 
     // Ensure we can allocate after freeing all blocks.
     i32* b1 = stack.alloc<int>(80);
@@ -516,9 +516,9 @@ void test_stack_memory_stress_and_free() {
 }
 
 void test_stack_free_all() {
-    usize      capacity = 512;
-    u8* const  buf      = reinterpret_cast<u8*>(std::malloc(capacity));
-    psh::Stack salloc{buf, capacity};
+    usize      size = 512;
+    u8* const  buf  = reinterpret_cast<u8*>(std::malloc(size));
+    psh::Stack salloc{buf, size};
 
     usize expected_min_size = 0;
 
