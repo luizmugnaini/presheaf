@@ -35,9 +35,10 @@ namespace psh {
         T*    buf  = nullptr;
         usize size = 0;
 
-        FatPtr<T> slice(usize start_idx, usize end = 0) noexcept {
-            psh_assert(end <= this->size);
-            return FatPtr<T>{psh_ptr_add(this->buf, start_idx), end - start_idx};
+        FatPtr<T> slice(usize start, usize end) noexcept {
+            psh_assert_msg(start <= end, "Attempted to create a fat pointer slice with invalid bounds");
+            psh_assert_msg(end < this->size, "Attempted to create a fat pointer slice out of bounds");
+            return FatPtr<T>{psh_ptr_add(this->buf, start), 1 + end - start};
         }
 
         // -----------------------------------------------------------------------------
