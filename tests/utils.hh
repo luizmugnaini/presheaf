@@ -19,18 +19,12 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Common components to implementation sources.
+/// Description: Common utilities to all tests.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#if defined(PSH_ABORT_AT_MEMORY_ERROR)
-#    include <psh/core.h>
-#    include <psh/log.h>
-#    define psh_impl_return_from_memory_error()                                     \
-        do {                                                                        \
-            psh_fatal("PSH_ABORT_AT_MEMORY_ERROR active, aborting the program..."); \
-            psh_abort();                                                            \
-        } while (0)
-#else
-#    define psh_impl_return_from_memory_error() \
-        return {}
-#endif
+#pragma once
+
+#include <psh/core.hh>
+#include <cstdio>
+
+#define test_passed() std::printf("\x1b[1;32m[PASSED]\x1b[0m: %s.\n", PSH_FUNCTION_SIGNATURE)

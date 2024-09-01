@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <psh/core.h>
+#include <psh/core.hh>
 
 namespace psh {
     /// Log level.

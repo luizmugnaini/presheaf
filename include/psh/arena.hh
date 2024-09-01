@@ -23,12 +23,12 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 #pragma once
 
-#include <psh/assert.h>
-#include <psh/core.h>
-#include <psh/log.h>
-#include <psh/math.h>
-#include <psh/mem_utils.h>
 #include <cstring>
+#include <psh/assert.hh>
+#include <psh/core.hh>
+#include <psh/log.hh>
+#include <psh/math.hh>
+#include <psh/memory_utils.hh>
 
 namespace psh {
     // Forward declaration.

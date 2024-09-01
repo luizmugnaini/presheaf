@@ -24,9 +24,9 @@
 
 #pragma once
 
-#include <psh/core.h>
-#include <psh/fat_ptr.h>
-#include <psh/type_utils.h>
+#include <psh/core.hh>
+#include <psh/fat_ptr.hh>
+#include <psh/type_utils.hh>
 
 namespace psh {
     /// Buffer with a compile-time known size.

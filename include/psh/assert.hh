@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include <psh/core.h>
-#include <psh/log.h>
+#include <psh/core.hh>
+#include <psh/log.hh>
 
 namespace psh {
     constexpr strptr ASSERT_FMT = "Assertion failed: %s, msg: %s";

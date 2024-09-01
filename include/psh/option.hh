@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include <psh/assert.h>
-#include <psh/type_utils.h>
+#include <psh/assert.hh>
+#include <psh/type_utils.hh>
 
 namespace psh {
     enum struct Status : bool {

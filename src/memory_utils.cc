@@ -22,12 +22,12 @@
 /// Description: Implementation of the utilities for memory-related operations.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/mem_utils.h>
+#include <psh/memory_utils.hh>
 
-#include <psh/assert.h>
-#include <psh/core.h>
-#include <psh/math.h>
 #include <cstring>
+#include <psh/assert.hh>
+#include <psh/core.hh>
+#include <psh/math.hh>
 
 namespace psh {
     bool arch_is_little_endian() noexcept {

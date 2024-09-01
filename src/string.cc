@@ -22,11 +22,11 @@
 /// Description: Implementation of the string related types and utility functions.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/string.h>
+#include <psh/string.hh>
 
-#include <psh/mem_utils.h>
-#include <psh/option.h>
 #include <cstring>
+#include <psh/memory_utils.hh>
+#include <psh/option.hh>
 #include <string>
 
 namespace psh {

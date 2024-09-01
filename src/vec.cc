@@ -22,10 +22,10 @@
 /// Description: Implementation of vector types.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/vec.h>
+#include <psh/vec.hh>
 
-#include <psh/assert.h>
 #include <cmath>
+#include <psh/assert.hh>
 
 namespace psh {
     // -----------------------------------------------------------------------------

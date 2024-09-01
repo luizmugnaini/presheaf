@@ -22,11 +22,11 @@
 /// Description: Tests for the bit twiddling utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/assert.h>
-#include <psh/bit.h>
-#include <psh/core.h>
-#include <psh/log.h>
-#include "utils.h"
+#include <psh/assert.hh>
+#include <psh/bit.hh>
+#include <psh/core.hh>
+#include <psh/log.hh>
+#include "utils.hh"
 
 void test_create_bit() {
     psh_assert(psh_bit(u32, 3) == 0b1000);

@@ -22,9 +22,9 @@
 /// Description: Tests for the fundamental types.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/assert.h>
-#include <psh/core.h>
-#include "utils.h"
+#include <psh/assert.hh>
+#include <psh/core.hh>
+#include "utils.hh"
 
 void test_types() {
     psh_assert(sizeof(u8) == 1);

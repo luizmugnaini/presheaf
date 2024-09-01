@@ -25,11 +25,11 @@
 
 #pragma once
 
-#include <psh/arena.h>
-#include <psh/core.h>
-#include <psh/mem_utils.h>
-#include <psh/type_utils.h>
 #include <initializer_list>
+#include <psh/arena.hh>
+#include <psh/core.hh>
+#include <psh/memory_utils.hh>
+#include <psh/type_utils.hh>
 
 namespace psh {
     /// Array with run-time known constant capacity.

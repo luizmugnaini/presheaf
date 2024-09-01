@@ -22,9 +22,9 @@
 /// Description: Implementation of the arena memory allocator.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/arena.h>
+#include <psh/arena.hh>
 
-#include "impl_common.h"
+#include "impl_common.hh"
 
 #define psh_impl_arena_report_out_of_memory(arena, requested_size, requested_alignment)  \
     do {                                                                                 \

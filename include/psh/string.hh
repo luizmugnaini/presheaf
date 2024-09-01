@@ -24,11 +24,11 @@
 
 #pragma once
 
-#include <psh/arena.h>
-#include <psh/assert.h>
-#include <psh/core.h>
-#include <psh/dyn_array.h>
-#include <psh/option.h>
+#include <psh/arena.hh>
+#include <psh/assert.hh>
+#include <psh/core.hh>
+#include <psh/dyn_array.hh>
+#include <psh/option.hh>
 
 namespace psh {
     // -----------------------------------------------------------------------------

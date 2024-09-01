@@ -19,12 +19,31 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Common utilities to all tests.
-/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
+/// Description: Conversion between number representations.
+/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
 #pragma once
 
-#include <psh/core.h>
-#include <cstdio>
+#include <psh/arena.hh>
+#include <psh/string.hh>
+#include <psh/type_utils.hh>
 
-#define test_passed() std::printf("\x1b[1;32m[PASSED]\x1b[0m: %s.\n", PSH_FUNCTION_SIGNATURE)
+namespace psh {
+    inline char digit_to_char(u8 digit) noexcept {
+        psh_assert_msg(digit < 10, "Expected digit to be between 0 and 9");
+        return '0' + digit;
+    }
+
+    /// Get the binary representation of a number
+    template <typename T>
+    String binary_repr(Arena* arena, T val) noexcept {
+        constexpr usize BIT_COUNT = psh_value_bit_count(val);
+        String          repr{arena, BIT_COUNT + 1};
+
+        repr.data.size = BIT_COUNT;
+        for (usize idx = 0; idx < repr.data.size; ++idx) {
+            repr.data[repr.data.size - 1 - idx] = digit_to_char(psh_bit_at(val, idx));
+        }
+        return repr;
+    }
+}  // namespace psh

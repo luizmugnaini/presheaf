@@ -25,7 +25,7 @@
 -- Running the build system:  lua build.lua [options]
 -- Example:                   lua build.lua fmt clang mold test
 
-local start_time = os.clock()
+local start_time = os.time()
 
 -- -----------------------------------------------------------------------------
 -- Available command line options
@@ -198,7 +198,7 @@ end
 -- -----------------------------------------------------------------------------
 
 if options.fmt then
-    exec("clang-format -i include/psh/*.h src/*.cc")
+    exec("clang-format -i include/psh/*.hh src/*.cc")
 end
 
 local out_dir = "build"
@@ -246,4 +246,4 @@ if options.test then
     exec(test_exe_out)
 end
 
-print(string.format("\x1b[1;35mtime elapsed ::\x1b[0m %.5f seconds", os.clock() - start_time))
+print(string.format("\x1b[1;35mtime elapsed ::\x1b[0m %.5f seconds", os.difftime(os.time(), start_time)))

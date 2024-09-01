@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <psh/type_utils.h>
+#include <psh/type_utils.hh>
 
 namespace psh {
     /// Type holding an immutable pointer that can never be null.

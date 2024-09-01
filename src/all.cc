@@ -27,7 +27,7 @@
 #include "time.cc"
 #include "vec.cc"
 #include "log.cc"
-#include "mem_utils.cc"
+#include "memory_utils.cc"
 #include "arena.cc"
 #include "stack.cc"
 #include "memory_manager.cc"

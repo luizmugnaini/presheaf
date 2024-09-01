@@ -270,7 +270,7 @@ using strptr = char const*;
 #define psh_max(lhs, rhs) (((lhs) > (rhs)) ? (lhs) : (rhs))
 
 /// Check if a value is a power of two.
-#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n)-1)))
+#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n) - 1)))
 
 /// Clamp a value to an interval.
 #define psh_clamp(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))

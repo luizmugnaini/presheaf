@@ -24,12 +24,12 @@
 
 #pragma once
 
-#include <psh/core.h>
-#include <psh/log.h>
-#include <psh/math.h>
-#include <psh/mem_utils.h>
-#include <psh/option.h>
 #include <cstring>
+#include <psh/core.hh>
+#include <psh/log.hh>
+#include <psh/math.hh>
+#include <psh/memory_utils.hh>
+#include <psh/option.hh>
 
 namespace psh {
     /// Header associated with each memory block in the stack allocator.

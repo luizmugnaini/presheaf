@@ -22,12 +22,12 @@
 /// Description: Implementation of the IO stream utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/log.h>
+#include <psh/log.hh>
 
-#include <psh/core.h>
 #include <cassert>
 #include <cstdarg>
 #include <cstdio>
+#include <psh/core.hh>
 
 namespace psh {
     // -----------------------------------------------------------------------------
@@ -38,8 +38,8 @@ namespace psh {
         constexpr strptr LOG_FMT = "%s [%s:%d] %s\n";
 
         strptr log_level_str(LogLevel level) {
-            constexpr strptr LEVEL_STR[] {
-                // clang-format off
+            constexpr strptr LEVEL_STR[]{
+            // clang-format off
 #if !defined(PSH_DISABLE_ANSI_COLORS)
                 "\x1b[1;41m[FATAL]\x1b[0m",
                 "\x1b[1;31m[ERROR]\x1b[0m",

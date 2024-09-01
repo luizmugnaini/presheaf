@@ -22,12 +22,12 @@
 /// Description: Tests for the dynamic array.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/assert.h>
-#include <psh/core.h>
-#include <psh/dyn_array.h>
-#include <psh/mem_utils.h>
-#include <psh/memory_manager.h>
-#include "utils.h"
+#include <psh/assert.hh>
+#include <psh/core.hh>
+#include <psh/dyn_array.hh>
+#include <psh/memory_utils.hh>
+#include <psh/memory_manager.hh>
+#include "utils.hh"
 
 struct Foo {
     i32 bar;

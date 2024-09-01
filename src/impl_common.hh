@@ -19,31 +19,18 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Conversion between number representations.
-/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
+/// Description: Common components to implementation sources.
+/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#pragma once
-
-#include <psh/arena.h>
-#include <psh/string.h>
-#include <psh/type_utils.h>
-
-namespace psh {
-    inline char digit_to_char(u8 digit) noexcept {
-        psh_assert_msg(digit < 10, "Expected digit to be between 0 and 9");
-        return '0' + digit;
-    }
-
-    /// Get the binary representation of a number
-    template <typename T>
-    String binary_repr(Arena* arena, T val) noexcept {
-        constexpr usize BIT_COUNT = psh_value_bit_count(val);
-        String          repr{arena, BIT_COUNT + 1};
-
-        repr.data.size = BIT_COUNT;
-        for (usize idx = 0; idx < repr.data.size; ++idx) {
-            repr.data[repr.data.size - 1 - idx] = digit_to_char(psh_bit_at(val, idx));
-        }
-        return repr;
-    }
-}  // namespace psh
+#if defined(PSH_ABORT_AT_MEMORY_ERROR)
+#    include <psh/core.hh>
+#    include <psh/log.hh>
+#    define psh_impl_return_from_memory_error()                                     \
+        do {                                                                        \
+            psh_fatal("PSH_ABORT_AT_MEMORY_ERROR active, aborting the program..."); \
+            psh_abort();                                                            \
+        } while (0)
+#else
+#    define psh_impl_return_from_memory_error() \
+        return {}
+#endif

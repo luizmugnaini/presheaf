@@ -24,10 +24,10 @@
 
 #pragma once
 
-#include <psh/core.h>
-#include <psh/fat_ptr.h>
-#include <psh/option.h>
-#include <psh/type_utils.h>
+#include <psh/core.hh>
+#include <psh/fat_ptr.hh>
+#include <psh/option.hh>
+#include <psh/type_utils.hh>
 
 namespace psh {
     // -----------------------------------------------------------------------------
