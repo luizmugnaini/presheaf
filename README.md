@@ -6,7 +6,7 @@ ensured to work are: Clang, GCC, MSVC.
 
 The code is written with simplicity of use in mind and does not adhere to the principles of the so
 called "modern" C++. There is no use of exceptions, inheritance, and only a few standard headers are
-used (i.e. `type_traits`, `stdint`, etc) for more information, check the [style guide](./STYLE_GUIDE.md).
+used for more information, check the [style guide](./STYLE_GUIDE.md).
 
 # Development
 
@@ -28,7 +28,7 @@ script.
 
 You may either create a static or shared library binary or you can simply add the include directory
 `include` and the source file `src/all.cc` to your compilation command. If you are using CMake (may
-your soul be forgiven), you can add the following two lines to add Presheaf as a library:
+your soul be forgiven), you can include the following lines to add Presheaf as a library:
 ```cmake
 add_library(presheaf src/all.cc)
 target_include_directories(presheaf PUBLIC include)
@@ -45,5 +45,5 @@ The following `#define` macros can be used to tweak the behaviour of the library
 - `PSH_DEBUG`: Enables all debug checks.
 - `PSH_ABORT_AT_MEMORY_ERROR`: Aborts the program at any memory (re)allocation errors, for debugging
   purposes. Not enabled by `PSH_DEBUG` due to its intrusiveness on the behaviour of fault tolerancy.
-- `PSH_DEFINE_SHORT_NAMES`: Define shorter names for function-like macros defined in `psh/core.h`,
-  `psh/log.h`, and `psh/assert.h`.
+- `PSH_DEFINE_SHORT_NAMES`: Define shorter names for function-like macros defined in `psh/core.hh`,
+  `psh/log.hh`, and `psh/assert.hh`.
