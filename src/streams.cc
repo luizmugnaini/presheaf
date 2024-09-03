@@ -236,6 +236,11 @@ namespace psh {
 
         buf[read_count] = 0;  // Ensure the string is null terminated.
 
+        i32 res = std::fclose(reinterpret_cast<FILE*>(fhandle));
+        if (psh_unlikely(res == EOF)) {
+            psh_error_fmt("File %s failed to be closed.", path);
+        }
+
         return FileReadResult{
             .content = String{arena, StringView{buf, size}},
             .status  = FileStatus::OK,
