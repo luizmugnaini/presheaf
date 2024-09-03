@@ -35,13 +35,17 @@
 #    define PSH_OS_WINDOWS_32
 #elif defined(_WIN64)
 #    define PSH_OS_WINDOWS_64
-#elif defined(__APPLE__) || defined(__MACH__)
+#endif
+#if defined(__APPLE__) || defined(__MACH__)
 #    define PSH_OS_APPLE
-#elif defined(__linux__)
+#endif
+#if defined(__linux__)
 #    define PSH_OS_LINUX
-#elif defined(__unix__)
+#endif
+#if defined(__unix__)
 #    define PSH_OS_UNIX
-#elif defined(_POSIX_VERSION)
+#endif
+#if defined(_POSIX_VERSION)
 #    define PSH_OS_POSIX
 #endif
 
