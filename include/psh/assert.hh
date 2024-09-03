@@ -27,29 +27,36 @@
 #include <psh/core.hh>
 #include <psh/log.hh>
 
-namespace psh {
-    constexpr strptr ASSERT_FMT = "Assertion failed: %s, msg: %s";
-}
+#define PSH_IMPL_FMT_ASSERT_MSG     "Assertion failed: %s, msg: %s"
+#define PSH_IMPL_FMT_ASSERT_MSG_FMT "Assertion failed: %s, msg: "
 
 /// Assertion macros.
 #if !defined(PSH_DISABLE_ASSERTS)
-#    define psh_assert(expr)                                         \
-        do {                                                         \
-            if (!static_cast<bool>(expr)) {                          \
-                psh_fatal_fmt(psh::ASSERT_FMT, #expr, "no message"); \
-                psh_abort();                                         \
-            }                                                        \
+#    define psh_assert(expr)                                                 \
+        do {                                                                 \
+            if (!static_cast<bool>(expr)) {                                  \
+                psh_fatal_fmt(PSH_IMPL_FMT_ASSERT_MSG, #expr, "no message"); \
+                psh_abort();                                                 \
+            }                                                                \
         } while (0)
-#    define psh_assert_msg(expr, msg)                         \
-        do {                                                  \
-            if (!static_cast<bool>(expr)) {                   \
-                psh_fatal_fmt(psh::ASSERT_FMT, #expr, (msg)); \
-                psh_abort();                                  \
-            }                                                 \
+#    define psh_assert_msg(expr, msg)                                 \
+        do {                                                          \
+            if (!static_cast<bool>(expr)) {                           \
+                psh_fatal_fmt(PSH_IMPL_FMT_ASSERT_MSG, #expr, (msg)); \
+                psh_abort();                                          \
+            }                                                         \
+        } while (0)
+#    define psh_assert_msg_fmt(expr, fmt, ...)                                      \
+        do {                                                                        \
+            if (!static_cast<bool>(expr)) {                                         \
+                psh_fatal_fmt(PSH_IMPL_FMT_ASSERT_MSG_FMT fmt, #expr, __VA_ARGS__); \
+                psh_abort();                                                        \
+            }                                                                       \
         } while (0)
 #else
-#    define psh_assert(expr)          (void)(expr)
-#    define psh_assert_msg(expr, msg) (void)(expr), (void)(msg)
+#    define psh_assert(expr)                   (void)(expr)
+#    define psh_assert_msg(expr, msg)          (void)(expr)
+#    define psh_assert_msg_fmt(expr, fmt, ...) (void)(expr)
 #endif
 
 #define psh_todo()                                   \
@@ -71,6 +78,12 @@ namespace psh {
 #if defined(PSH_DEFINE_SHORT_NAMES)
 #    ifndef assert
 #        define assert psh_assert
+#    endif
+#    ifndef assert_msg
+#        define assert_msg psh_assert_msg
+#    endif
+#    ifndef assert_msg_fmt
+#        define assert_msg_fmt psh_assert_msg_fmt
 #    endif
 #    ifndef todo
 #        define todo psh_todo
