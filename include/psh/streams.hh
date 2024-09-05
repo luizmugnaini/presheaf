@@ -28,6 +28,7 @@
 #include <psh/core.hh>
 #include <psh/option.hh>
 #include <psh/string.hh>
+#include <psh/array.hh>
 
 namespace psh {
     // -----------------------------------------------------------------------------
@@ -132,7 +133,7 @@ namespace psh {
     };
 
     struct FileReadResult {
-        String     content = {};  ///< The contents pertaining to the file.
+        Array<u8> content = {};  ///< The contents pertaining to the file.
         FileStatus status;        ///< Status of the read operation.
     };
 

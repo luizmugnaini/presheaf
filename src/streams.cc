@@ -180,7 +180,7 @@ namespace psh {
             return {.status = FileStatus::FAILED_TO_READ};
         }
 
-        char* buf = arena->alloc<char>(file.size + 1);
+        u8* buf = arena->alloc<u8>(file.size + 1);
         if (psh_unlikely(buf == nullptr)) {
             return {.status = FileStatus::OUT_OF_MEMORY};
         }
@@ -195,7 +195,7 @@ namespace psh {
         buf[read_count] = 0;  // Ensure the string is null terminated.
 
         return FileReadResult{
-            .content = String{arena, StringView{buf, file.size}},
+            .content = Array{FatPtr{buf, file.size}, arena},
             .status  = FileStatus::OK,
         };
     }
@@ -223,7 +223,7 @@ namespace psh {
             return {.status = FileStatus::FAILED_TO_READ};
         }
 
-        char* buf = arena->alloc<char>(size + 1);
+        u8* buf = arena->alloc<u8>(size + 1);
         if (psh_unlikely(buf == nullptr)) {
             return {.status = FileStatus::OUT_OF_MEMORY};
         }
@@ -242,7 +242,7 @@ namespace psh {
         }
 
         return FileReadResult{
-            .content = String{arena, StringView{buf, size}},
+            .content = Array{FatPtr{buf, size}, arena},
             .status  = FileStatus::OK,
         };
     }
