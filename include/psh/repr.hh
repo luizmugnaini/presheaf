@@ -26,7 +26,6 @@
 
 #include <psh/arena.hh>
 #include <psh/string.hh>
-#include <psh/type_utils.hh>
 
 namespace psh {
     inline char digit_to_char(u8 digit) noexcept {

@@ -45,9 +45,35 @@
 
 #pragma once
 
-#include <psh/type_utils.hh>
+#include <type_traits>
 
-namespace psh {
+namespace psh::impl_defer {
+    // -----------------------------------------------------------------------------
+    // - Implementation details, some type trickery -
+    // -----------------------------------------------------------------------------
+
+    template <typename T>
+    struct RemoveRef {
+        using Type = T;
+    };
+    template <typename T>
+    struct RemoveRef<T&> {
+        using Type = T;
+    };
+    template <typename T>
+    struct RemoveRef<T&&> {
+        using Type = T;
+    };
+
+    template <typename T>
+    concept NotLValueRef = !std::is_lvalue_reference_v<T>;
+
+    template <typename T>
+        requires NotLValueRef<T>
+    T&& cast_forward(typename RemoveRef<T>::Type x) {
+        return static_cast<T&&>(x);
+    }
+
     template <typename Func>
     struct Deferrer {
         Func fn;
@@ -61,15 +87,20 @@ namespace psh {
     };
 
     template <typename Func>
-    Deferrer<Func> impl_make_defer_fn(Func&& fn) {
+    Deferrer<Func> make_defer_fn(Func&& fn) {
         return Deferrer{cast_forward<Func>(fn)};
     }
+}  // namespace psh::impl_defer
 
 #define psh_impl_defer_join(x, y)      x##y
 #define psh_impl_defer_var(prefix, id) psh_impl_defer_join(prefix, id)
+
+// -----------------------------------------------------------------------------
+// - Defer interface -
+// -----------------------------------------------------------------------------
+
 #define psh_defer(code)                                                 \
     [[maybe_unused]] auto psh_impl_defer_var(psh_deferred_, __LINE__) = \
-        psh::impl_make_defer_fn([&]() {                                 \
+        psh::impl_defer::impl_make_defer_fn([&]() {                     \
             code;                                                       \
         })
-}  // namespace psh

@@ -27,7 +27,6 @@
 #include <limits>
 #include <psh/core.hh>
 #include <psh/log.hh>
-#include <psh/type_utils.hh>
 
 namespace psh {
     constexpr f32 PI                = 3.14159265359f;
@@ -43,7 +42,6 @@ namespace psh {
 
     /// Add two values wrapping the result to the corresponding maximal numeric limit.
     template <typename T>
-        requires Addable<T> && IsSigned<T> && TriviallyCopyable<T>
     constexpr T wrap_add(T a, T b) noexcept {
         T c = a + b;
         return (c >= a) ? c : std::numeric_limits<T>::max();
@@ -51,7 +49,6 @@ namespace psh {
 
     /// Subtract two values wrapping the result to the corresponding minimal numeric limit.
     template <typename T>
-        requires Addable<T> && IsUnsigned<T> && TriviallyCopyable<T>
     constexpr T wrap_sub(T a, T b) noexcept {
         T c = a - b;
         return (c <= a) ? c : std::numeric_limits<T>::min();

@@ -24,12 +24,12 @@
 
 #pragma once
 
-#include <psh/type_utils.hh>
-
 namespace psh {
     /// Type holding an immutable pointer that can never be null.
+    ///
+    /// Note: If you use this struct with a pointer type, beware that the pointer may not be null but
+    ///       the pointer that it points to may be null as we don't check that.
     template <typename T>
-        requires NotPointer<T>
     struct NotNull {
         T* const ptr;
 

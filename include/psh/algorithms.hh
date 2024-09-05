@@ -27,7 +27,6 @@
 #include <psh/core.hh>
 #include <psh/fat_ptr.hh>
 #include <psh/option.hh>
-#include <psh/type_utils.hh>
 
 namespace psh {
     // -----------------------------------------------------------------------------
@@ -39,7 +38,6 @@ namespace psh {
 
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
-        requires IsObject<T> && TriviallyCopyable<T>
     bool contains(T match, FatPtr<T const> container, MatchFn<T>* match_fn) {
         psh_assert_msg(match_fn != nullptr, "contains expected a valid match function");
         bool found = false;
@@ -54,7 +52,6 @@ namespace psh {
 
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
-        requires IsObject<T> && TriviallyCopyable<T> && Reflexive<T>
     bool contains(T match, FatPtr<T const> container) {
         bool found = false;
         for (auto const& m : container) {
@@ -68,7 +65,6 @@ namespace psh {
 
     /// Try to find the index of the first match.
     template <typename T>
-        requires Reflexive<T>
     Option<usize> linear_search(FatPtr<T const> fptr, T match) noexcept {
         Option<usize> match_idx   = {};
         usize         search_size = fptr.size;
@@ -85,7 +81,6 @@ namespace psh {
     ///
     /// Note: We assume that the buffer of data is ordered.
     template <typename T>
-        requires PartiallyOrdered<T> && TriviallyCopyable<T>
     Option<usize> binary_search(FatPtr<T const> fptr, T match) noexcept {
         if (psh_unlikely(fptr.is_empty())) {
             return {};
@@ -121,11 +116,9 @@ namespace psh {
     /// This is the virtually same as `memory_set` but can copy elements of any type. However it
     /// will be slower.
     template <typename T>
-        requires TriviallyCopyable<T>
     void fill(FatPtr<T> fat_ptr, T _fill) noexcept {
         for (T& elem : fat_ptr) {
             elem = _fill;
         }
     }
-
 }  // namespace psh

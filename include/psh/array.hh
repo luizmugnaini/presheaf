@@ -29,7 +29,6 @@
 #include <psh/arena.hh>
 #include <psh/core.hh>
 #include <psh/memory_utils.hh>
-#include <psh/type_utils.hh>
 
 namespace psh {
     /// Array with run-time known constant capacity.
@@ -37,7 +36,6 @@ namespace psh {
     /// The array lifetime is bound to the lifetime of the arena passed at initialization, being
     /// responsible to allocate the memory referenced by the array.
     template <typename T>
-        requires IsObject<T>
     struct Array {
         T*    buf  = nullptr;
         usize size = 0;

@@ -26,8 +26,6 @@
 
 #include <psh/core.hh>
 #include <psh/fat_ptr.hh>
-#include <psh/not_null.hh>
-#include <psh/type_utils.hh>
 
 namespace psh {
     // -----------------------------------------------------------------------------

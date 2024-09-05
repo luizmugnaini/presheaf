@@ -26,12 +26,10 @@
 
 #include <psh/core.hh>
 #include <psh/fat_ptr.hh>
-#include <psh/type_utils.hh>
 
 namespace psh {
     /// Buffer with a compile-time known size.
     template <typename T, usize size_>
-        requires IsObject<T>
     struct Buffer {
         T buf[size_] = {};
 

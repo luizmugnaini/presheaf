@@ -25,7 +25,6 @@
 #pragma once
 
 #include <psh/assert.hh>
-#include <psh/type_utils.hh>
 
 namespace psh {
     enum struct Status : bool {
@@ -34,8 +33,10 @@ namespace psh {
     };
 
     /// Option type.
+    ///
+    /// Note: This struct shouldn't be used with pointer types, as a null will still indicate a value
+    ///       being present.
     template <typename T>
-        requires NotPointer<T>
     struct Option {
         T    val     = {};
         bool has_val = false;

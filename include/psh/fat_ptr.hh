@@ -26,7 +26,6 @@
 
 #include <psh/assert.hh>
 #include <psh/core.hh>
-#include <psh/type_utils.hh>
 
 namespace psh {
     /// Fat pointer, holds a pointer to a buffer and its corresponding size.
