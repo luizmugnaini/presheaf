@@ -151,7 +151,6 @@ namespace psh {
 
     void Arena::clear() noexcept {
         this->offset = 0;
-        int x        = 0;
     }
 
     ScratchArena Arena::make_scratch() noexcept {
