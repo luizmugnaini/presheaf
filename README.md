@@ -4,12 +4,12 @@
 > until I think the API is good enough.
 
 This is a C++ library that I use across my projects as an alternative to the STL. It's written in
-C++20 and its only dependence is a compiler supporting the language features. Compilers that are
+C++20 and its only dependency is a compiler supporting the language features. Compilers that are
 ensured to work are: Clang, GCC, MSVC.
 
 The code is written with simplicity of use in mind and does not adhere to the principles of the so
 called "modern" C++. There is no use of exceptions, inheritance, and only a few standard headers are
-used for more information, check the [style guide](./STYLE_GUIDE.md).
+used. For more information, check the [style guide](./STYLE_GUIDE.md).
 
 # Development
 
