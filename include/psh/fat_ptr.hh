@@ -40,16 +40,8 @@ namespace psh {
             return FatPtr<T>{psh_ptr_add(this->buf, start), 1 + end - start};
         }
 
-        // -----------------------------------------------------------------------------
-        // - Size related utilities -
-        // -----------------------------------------------------------------------------
-
         constexpr usize size_bytes() const noexcept {
             return sizeof(T) * this->size;
-        }
-
-        constexpr bool is_empty() const noexcept {
-            return (this->size == 0);
         }
 
         // -----------------------------------------------------------------------------

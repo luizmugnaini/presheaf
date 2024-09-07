@@ -82,7 +82,7 @@ namespace psh {
     /// Note: We assume that the buffer of data is ordered.
     template <typename T>
     Option<usize> binary_search(FatPtr<T const> fptr, T match) noexcept {
-        if (psh_unlikely(fptr.is_empty())) {
+        if (psh_unlikely(fptr.size == 0)) {
             return {};
         }
 

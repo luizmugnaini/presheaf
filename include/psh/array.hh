@@ -25,7 +25,6 @@
 
 #pragma once
 
-#include <initializer_list>
 #include <psh/arena.hh>
 #include <psh/core.hh>
 #include <psh/memory_utils.hh>
@@ -70,64 +69,6 @@ namespace psh {
         /// Construct an array with a given size.
         Array(Arena* _arena, usize _size) noexcept {
             this->init(_arena, _size);
-        }
-
-        /// Initialize the array with a list of elements.
-        ///
-        /// Copies the contents of the initializer list into the array's memory, so its lifetime is
-        /// not bound do the initializer list.
-        void init(std::initializer_list<T> list, Arena* _arena) noexcept {
-            this->size = list.size;
-            if (psh_likely(this->size != 0)) {
-                psh_assert_msg(_arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
-
-                this->buf = _arena->alloc<T>(this->size);
-                psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
-            }
-
-            // Copy initializer list content.
-            std::memcpy(
-                reinterpret_cast<u8*>(buf),
-                reinterpret_cast<u8 const*>(list.begin()),
-                sizeof(T) * list.size);
-        }
-
-        /// Construct an array with the contents of an initializer list.
-        Array(std::initializer_list<T> list, Arena* _arena) noexcept {
-            this->init(list, _arena);
-        }
-
-        /// Initialize the array with the elements of a fat pointer.
-        ///
-        /// Copies the contents of the fat pointer into the array's memory, so its lifetime is not
-        /// bound to fat pointer.
-        void init(FatPtr<T> const& fptr, Arena* _arena) noexcept {
-            this->size = fptr.size;
-            if (psh_likely(this->size != 0)) {
-                psh_assert_msg(_arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
-
-                this->buf = _arena->alloc<T>(this->size);
-                psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
-            }
-
-            // Copy buffer content.
-            std::memcpy(
-                reinterpret_cast<u8*>(this->buf),
-                reinterpret_cast<u8 const*>(fptr.buf),
-                fptr.size_bytes());
-        }
-
-        /// Construct an array with the contents of a fat pointer.
-        Array(FatPtr<T> const& fptr, Arena* _arena) noexcept {
-            this->init(fptr, _arena);
-        }
-
-        // -----------------------------------------------------------------------------
-        // - Size related utilities -
-        // -----------------------------------------------------------------------------
-
-        bool is_empty() const noexcept {
-            return (this->size == 0);
         }
 
         usize size_bytes() const noexcept {

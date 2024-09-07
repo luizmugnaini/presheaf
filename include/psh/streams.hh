@@ -19,29 +19,16 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: File system management utilities.
+/// Description: OS stream management.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #pragma once
 
 #include <psh/array.hh>
-#include <psh/buffer.hh>
 #include <psh/core.hh>
-#include <psh/option.hh>
 #include <psh/string.hh>
 
 namespace psh {
-    // -----------------------------------------------------------------------------
-    // - Standard Input Stream -
-    // -----------------------------------------------------------------------------
-
-    /// Read the standard input stream bytes to a string.
-    String read_stdin(Arena* arena) noexcept;
-
-    // -----------------------------------------------------------------------------
-    // - OS file stream -
-    // -----------------------------------------------------------------------------
-
     enum struct OpenFileFlag {
         /// Open a text file for reading operations.
         ///
@@ -112,37 +99,10 @@ namespace psh {
         OK,
     };
 
-    struct File {
-        String       path;              ///< Path to the file.
-        void*        handle = nullptr;  ///< File stream.
-        usize        size   = 0;        ///< Size of the file.
-        OpenFileFlag flag;              ///< Read/write Permission flags.
-        FileStatus   status;            ///< Indicates the result of the opening operation.
-
-        /// Open a file.
-        ///
-        /// Parameters:
-        ///     * arena: The arena allocator that will carry the contents of the path string.
-        ///     * path: The path to the file to be opened.
-        ///     * flag: The permission flag used to open the file.
-        ///
-        /// Note: Before proceeding, consider checking the `File::status` flag to confirm that the
-        ///       operation was successful.
-        File(Arena* arena, StringView path, OpenFileFlag flag) noexcept;
-        ~File() noexcept;
-    };
-
     struct FileReadResult {
-        Array<u8>  content = {};  ///< The contents pertaining to the file.
-        FileStatus status;        ///< Status of the read operation.
+        Array<u8>  content = {};
+        FileStatus status  = {};
     };
-
-    /// Read file contents to a string.
-    ///
-    /// Parameters:
-    ///     * arena: The arena allocator that will carry the contents of the resulting string.
-    ///     * file: A file instance whose flag has read permission.
-    FileReadResult read_file(Arena* arena, File const& f) noexcept;
 
     /// Read file contents to a string.
     ///
@@ -151,4 +111,7 @@ namespace psh {
     ///     * path: A zero-terminated string containing the path to the file to be read.
     ///     * flag: Can be any flag with read permission.
     FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) noexcept;
+
+    /// Read the standard input stream bytes to a string.
+    String read_stdin(Arena* arena) noexcept;
 }  // namespace psh

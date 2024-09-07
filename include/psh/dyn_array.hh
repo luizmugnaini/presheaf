@@ -115,48 +115,8 @@ namespace psh {
             this->init(list, _arena, _capacity);
         }
 
-        /// Initialize the dynamic array with the contents of a fat pointer, and optionally reserve
-        /// a given capacity.
-        void
-        init(FatPtr<T const> fptr, Arena* _arena, Option<usize> const& _capacity = {}) noexcept {
-            this->arena    = _arena;
-            this->size     = fptr.size;
-            this->capacity = _capacity.val_or(DYNARRAY_RESIZE_CAPACITY_FACTOR * this->size);
-            psh_assert_msg(this->size <= this->capacity, ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY);
-
-            if (psh_likely(this->capacity != 0)) {
-                psh_assert_msg(this->arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
-
-                this->buf = arena->alloc<T>(this->capacity);
-                psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
-            }
-
-            std::memcpy(
-                reinterpret_cast<u8*>(this->buf),
-                reinterpret_cast<u8 const*>(fptr.begin()),
-                fptr.size_bytes());
-        }
-
-        /// Construct a dynamic array with the contents of a fat pointer, and optionally reserve a
-        /// given capacity.
-        DynArray(FatPtr<T const> fptr, Arena* _arena, Option<usize> _capacity = {}) noexcept {
-            this->init(fptr, _arena, _capacity);
-        }
-
-        // -----------------------------------------------------------------------------
-        // - Size related utilities -
-        // -----------------------------------------------------------------------------
-
-        bool is_empty() const noexcept {
-            return (this->size == 0);
-        }
-
         usize size_bytes() noexcept {
             return this->size * sizeof(T);
-        }
-
-        usize capacity_bytes() const noexcept {
-            return this->capacity * sizeof(T);
         }
 
         // -----------------------------------------------------------------------------

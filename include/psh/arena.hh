@@ -23,12 +23,7 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 #pragma once
 
-#include <cstring>
-#include <psh/assert.hh>
 #include <psh/core.hh>
-#include <psh/log.hh>
-#include <psh/math.hh>
-#include <psh/memory_utils.hh>
 
 namespace psh {
     // Forward declaration.
