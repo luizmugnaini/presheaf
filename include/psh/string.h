@@ -25,10 +25,8 @@
 #pragma once
 
 #include <psh/arena.h>
-#include <psh/assert.h>
 #include <psh/core.h>
 #include <psh/dyn_array.h>
-#include <psh/option.h>
 
 namespace psh {
     // -----------------------------------------------------------------------------
@@ -39,7 +37,7 @@ namespace psh {
                                EQUAL,
                                GREATER_THAN };
 
-    usize        str_size(strptr str) noexcept;
+    usize        str_length(strptr str) noexcept;
     StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept;
     bool         str_equal(strptr lhs, strptr rhs) noexcept;
     bool         is_utf8(char c) noexcept;
@@ -104,15 +102,18 @@ namespace psh {
         //
         // Example:
         // ```cpp
-        // psh::Arena arena{...};
-        // psh::String s{&arena, "Hello"};
-        // assert(s.join({"World", "Earth", "Terra"}, ", ") == psh::Result::OK);
-        // assert(std::strcmp(s.data.buf, "Hello, World, Earth, Terra") == 0);
+        // using namespace psh;
+        //
+        // Arena arena{...};
+        // String s{&arena, "Hello"};
+        // Buffer<StringView, 3> words = {"World", "Earth", "Terra"};
+        //
+        // assert(s.join(const_fat_ptr(words), ", ") == Result::OK);
+        // assert(strcmp(s.data.buf, "Hello, World, Earth, Terra") == 0);
         // ```
         // Although this example uses initializer lists, you can also achieve the same using the
         // implementation based on `psh::FatPtr`.
         Status join(FatPtr<StringView const> strs, strptr join_cstr = nullptr) noexcept;
-        Status join(std::initializer_list<StringView> strs, strptr join_cstr = nullptr) noexcept;
     };
 }  // namespace psh
 

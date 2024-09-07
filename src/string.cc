@@ -26,24 +26,24 @@
 
 #include <psh/memory_utils.h>
 #include <psh/option.h>
-#include <cstring>
-#include <string>
+#include <string.h>
+#include <initializer_list>
 
 namespace psh {
     // -----------------------------------------------------------------------------
     // - String utilities implementation -
     // -----------------------------------------------------------------------------
 
-    usize str_size(strptr str) noexcept {
+    usize str_length(strptr str) noexcept {
         usize res = 0;
         if (psh_likely(str != nullptr)) {
-            res = std::char_traits<char>::length(str);
+            res = strlen(str);
         }
         return res;
     }
 
     StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept {
-        i32          cmp = std::strcmp(lhs, rhs);
+        i32          cmp = strcmp(lhs, rhs);
         StrCmpResult res;
         if (cmp == 0) {
             res = StrCmpResult::EQUAL;
@@ -56,7 +56,7 @@ namespace psh {
     }
 
     bool str_equal(strptr lhs, strptr rhs) noexcept {
-        return (std::strcmp(lhs, rhs) == 0);
+        return (strcmp(lhs, rhs) == 0);
     }
 
     bool is_utf8(char c) noexcept {
@@ -68,7 +68,7 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     StringView::StringView(strptr str) noexcept
-        : data{str, str_size(str)} {}
+        : data{str, str_length(str)} {}
 
     // -----------------------------------------------------------------------------
     // - String implementation -
@@ -133,15 +133,15 @@ namespace psh {
             // If the string was empty, we omit the first `sjoin`.
             if (was_empty) {
                 StringView const& s0 = strs[0];
-                std::memcpy(this->data.buf + this->data.size, s0.data.buf, s0.data.size);
+                memory_copy(this->data.buf + this->data.size, s0.data.buf, s0.data.size);
                 this->data.size += s0.data.size;
                 init_idx += 1;
             }
 
             for (usize idx = init_idx; idx < strs.size; ++idx) {
                 StringView const& si = strs[idx];
-                std::memcpy(this->data.buf + this->data.size, join_sv.val.data.buf, join_sv.val.data.size);
-                std::memcpy(
+                memory_copy(this->data.buf + this->data.size, join_sv.val.data.buf, join_sv.val.data.size);
+                memory_copy(
                     this->data.buf + this->data.size + join_sv.val.data.size,
                     si.data.buf,
                     si.data.size);
@@ -149,7 +149,7 @@ namespace psh {
             }
         } else {
             for (StringView const& s : strs) {
-                std::memcpy(this->data.buf + this->data.size, s.data.buf, s.data.size);
+                memory_copy(this->data.buf + this->data.size, s.data.buf, s.data.size);
                 this->data.size += s.data.size;
             }
         }
@@ -158,9 +158,5 @@ namespace psh {
         this->data.buf[this->data.size] = 0;
 
         return Status::OK;
-    }
-
-    Status String::join(std::initializer_list<StringView> strs, strptr sjoin) noexcept {
-        return this->join(FatPtr<StringView const>{strs.begin(), strs.size()}, sjoin);
     }
 }  // namespace psh

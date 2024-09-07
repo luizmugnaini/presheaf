@@ -18,7 +18,7 @@
   considerable bloat to the software and worsen both the compile time and runtime, as well as a
   larger memory footprint. Unfortunately, some STL constructs (`std::initializer_list` for instance)
   are compiler intrinsic so we have to include headers providing them if we wish to use these features.
-- Prefer the C++ wrappers for the libc headers, like `<cstdio>`. This keeps the namespace clean.
+- Prefer including the direct LibC headers (e.g. `stdio.h`) instead of the C++ wrappers (e.g. `cstdio`).
 - Always provide useful documentation. Note however that some docs may not be really that relevant:
   for instance, the method `psh::Array::size_bytes` is obvious, it simply returns the size of the
   array in bytes.

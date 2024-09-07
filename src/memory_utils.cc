@@ -27,7 +27,7 @@
 #include <psh/assert.h>
 #include <psh/core.h>
 #include <psh/math.h>
-#include <cstring>
+#include <string.h>
 
 namespace psh {
     bool arch_is_little_endian() noexcept {
@@ -44,7 +44,7 @@ namespace psh {
         if (psh_unlikely((fptr.size == 0) || (fptr.buf == nullptr))) {
             return;
         }
-        psh_discard(std::memset(fptr.buf, fill, fptr.size));
+        psh_discard(memset(fptr.buf, fill, fptr.size));
     }
 
     void memory_copy(void* dest, void const* src, usize size) noexcept {
@@ -60,14 +60,14 @@ namespace psh {
             "memcpy called but source and destination overlap, which produces UB");
 #endif
 
-        psh_discard(std::memcpy(dest, src, size));
+        psh_discard(memcpy(dest, src, size));
     }
 
     void memory_move(void* dest, void const* src, usize size) noexcept {
         if (psh_unlikely((dest == nullptr) || (src == nullptr) || (size == 0))) {
             return;
         }
-        psh_discard(std::memmove(dest, src, size));
+        psh_discard(memmove(dest, src, size));
     }
 
     usize padding_with_header(

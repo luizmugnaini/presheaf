@@ -42,7 +42,7 @@ namespace psh {
     // - Memory manipulation utilities -
     // -----------------------------------------------------------------------------
 
-    /// Simple wrapper around `std::memset` that automatically deals with null values.
+    /// Simple wrapper around `memset` that automatically deals with null values.
     ///
     /// Does nothing if `ptr` is a null pointer.
     void memory_set(FatPtr<u8> fat_ptr, i32 fill) noexcept;
@@ -52,13 +52,13 @@ namespace psh {
         memory_set(FatPtr<u8>{reinterpret_cast<u8*>(&s), sizeof(T)}, 0);
     }
 
-    /// Simple wrapper around `std::memcpy`.
+    /// Simple wrapper around `memcpy`.
     ///
     /// This function will assert that the blocks of memory don't overlap, avoiding undefined
-    /// behaviour introduced by `std::memcpy` in this case.
+    /// behaviour introduced by `memcpy` in this case.
     void memory_copy(void* dest, void const* src, usize size) noexcept;
 
-    /// Simple wrapper around `std::memmove`.
+    /// Simple wrapper around `memmove`.
     ///
     /// Does nothing if either `dest` or `src` are null pointers.
     void memory_move(void* dest, void const* src, usize size) noexcept;

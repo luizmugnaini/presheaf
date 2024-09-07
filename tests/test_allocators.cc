@@ -27,8 +27,8 @@
 #include <psh/core.h>
 #include <psh/memory_utils.h>
 #include <psh/stack.h>
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 #include "utils.h"
 
 struct FooBar {
@@ -42,7 +42,7 @@ u8* fn_scratch_as_ref(psh::ScratchArena& s, usize size) {
 
 void test_scratch_arena_ref() {
     usize     size = 1024;
-    u8* const buf  = reinterpret_cast<u8*>(std::malloc(size));
+    u8* const buf  = reinterpret_cast<u8*>(malloc(size));
     {
         psh::Arena ar{buf, size};
         usize      expected_offset = 0;
@@ -59,13 +59,13 @@ void test_scratch_arena_ref() {
         expected_offset -= 64;
         psh_assert(ar.offset == expected_offset);
     }
-    std::free(buf);
+    free(buf);
     test_passed();
 }
 
 void test_scratch_arena() {
     usize      size = 1024;
-    u8* const  buf  = reinterpret_cast<u8*>(std::malloc(size));
+    u8* const  buf  = reinterpret_cast<u8*>(malloc(size));
     psh::Arena arena{buf, size};
     usize      base_offset = 0;
 
@@ -242,12 +242,12 @@ void test_scratch_arena() {
     }
     psh_assert(arena.offset == base_offset);
 
-    std::free(buf);
+    free(buf);
     test_passed();
 }
 
 void print_stack_info(psh::Stack const& stack) {
-    std::printf(
+    printf(
         "Stack {\n\tmemory: %zu,\n\tsize: %zu,\n\toffset: %zu,\n\tprevious_offset: %zu\n}\n",
         reinterpret_cast<uptr>(stack.buf),
         stack.size,
@@ -258,7 +258,7 @@ void print_stack_info(psh::Stack const& stack) {
 void test_stack_allocation_with_default_alignment() {
     usize      salloc_min_expected_size = 0;
     usize      expected_alloc_size      = 512;
-    u8*        buf                      = reinterpret_cast<u8*>(std::malloc(expected_alloc_size));
+    u8*        buf                      = reinterpret_cast<u8*>(malloc(expected_alloc_size));
     psh::Stack salloc{buf, expected_alloc_size};
 
     u8    expected_u8_vec[5]   = {51, 102, 153, 204, 255};
@@ -325,13 +325,13 @@ void test_stack_allocation_with_default_alignment() {
     psh_assert_msg(salloc.offset == 0ull, "Expected emptypsh::StackAlloc");
     psh_assert_msg(salloc.previous_offset == 0ull, "%s Expected emptypsh::StackAlloc");
 
-    std::free(buf);
+    free(buf);
     test_passed();
 }
 
 void test_stack_offsets_reads_and_writes() {
     usize      size = 1024;
-    u8*        buf  = reinterpret_cast<u8*>(std::malloc(size));
+    u8*        buf  = reinterpret_cast<u8*>(malloc(size));
     psh::Stack stack{buf, size};
 
     u8* buf_start = buf;
@@ -429,7 +429,7 @@ void test_stack_offsets_reads_and_writes() {
 
 void test_stack_memory_stress_and_free() {
     usize      size = 2048;
-    u8*        buf  = reinterpret_cast<u8*>(std::malloc(size));
+    u8*        buf  = reinterpret_cast<u8*>(malloc(size));
     psh::Stack stack{buf, size};
 
     iptr  stack_buf_diff = reinterpret_cast<iptr>(stack.buf);
@@ -511,13 +511,13 @@ void test_stack_memory_stress_and_free() {
     psh_assert(b1 != nullptr);
     psh_assert(b2 != nullptr);
 
-    std::free(buf);
+    free(buf);
     test_passed();
 }
 
 void test_stack_free_all() {
     usize      size = 512;
-    u8* const  buf  = reinterpret_cast<u8*>(std::malloc(size));
+    u8* const  buf  = reinterpret_cast<u8*>(malloc(size));
     psh::Stack salloc{buf, size};
 
     usize expected_min_size = 0;
@@ -550,7 +550,7 @@ void test_stack_free_all() {
     psh_assert_msg(salloc.offset == 0ull, "Expected emptypsh::StackAlloc");
     psh_assert_msg(salloc.previous_offset == 0ull, "Expected emptypsh::StackAlloc");
 
-    std::free(buf);
+    free(buf);
     test_passed();
 }
 

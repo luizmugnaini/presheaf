@@ -25,7 +25,7 @@
 #include <psh/streams.h>
 
 #include <psh/core.h>
-#include <cstdio>
+#include <stdio.h>
 
 #if defined(PSH_OS_WINDOWS_32)
 #    include <Windows.h>
@@ -33,8 +33,8 @@
 #    include <unistd.h>
 #endif
 
-// TODO(luiz): Substitute the `std::perror` calls with `psh::log_fmt` taking the error strings via a
-//       thread safe alternative to `std::strerror`.
+// TODO(luiz): Substitute the `perror` calls with `psh::log_fmt` taking the error strings via a
+//       thread safe alternative to `strerror`.
 
 namespace psh {
     namespace impl_streams {
@@ -58,40 +58,40 @@ namespace psh {
     }  // namespace impl_streams
 
     FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) noexcept {
-        FILE* fhandle = std::fopen(path, impl_streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(static_cast<OpenFileFlag>(flag))]);
+        FILE* fhandle = fopen(path, impl_streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(static_cast<OpenFileFlag>(flag))]);
         if (psh_unlikely(fhandle == nullptr)) {
             return {.status = FileStatus::FAILED_TO_OPEN};
         }
 
-        if (psh_unlikely(std::fseek(fhandle, 0, SEEK_END) == -1)) {
-            std::perror("Couldn't seek end of file.");
+        if (psh_unlikely(fseek(fhandle, 0, SEEK_END) == -1)) {
+            perror("Couldn't seek end of file.");
             return {.status = FileStatus::FAILED_TO_READ};
         }
 
-        isize file_size = std::ftell(fhandle);
+        isize file_size = ftell(fhandle);
         if (psh_unlikely(file_size == -1)) {
-            std::perror("Couldn't tell the size of the file.\n");
+            perror("Couldn't tell the size of the file.\n");
             return {.status = FileStatus::SIZE_UNKNOWN};
         }
         usize size = static_cast<usize>(file_size);
 
-        if (psh_unlikely(std::fseek(fhandle, 0, SEEK_SET) == -1)) {
-            std::perror("Couldn't seek start of file.\n");
+        if (psh_unlikely(fseek(fhandle, 0, SEEK_SET) == -1)) {
+            perror("Couldn't seek start of file.\n");
             return {.status = FileStatus::FAILED_TO_READ};
         }
 
         usize     previous_arena_offset = arena->offset;
         Array<u8> content{arena, size + 1};
-        usize     read_count = std::fread(content.buf, sizeof(u8), size, fhandle);
+        usize     read_count = fread(content.buf, sizeof(u8), size, fhandle);
 
-        if (psh_unlikely(std::ferror(fhandle) != 0)) {
-            std::perror("Couldn't read file.\n");
+        if (psh_unlikely(ferror(fhandle) != 0)) {
+            perror("Couldn't read file.\n");
 
             arena->offset = previous_arena_offset;
             return {.status = FileStatus::FAILED_TO_READ};
         }
 
-        i32 res = std::fclose(reinterpret_cast<FILE*>(fhandle));
+        i32 res = fclose(reinterpret_cast<FILE*>(fhandle));
         if (psh_unlikely(res == EOF)) {
             psh_error_fmt("File %s failed to be closed.", path);
         }

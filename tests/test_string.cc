@@ -25,14 +25,14 @@
 #include <psh/buffer.h>
 #include <psh/core.h>
 #include <psh/string.h>
-#include <cstdlib>
-#include <cstring>
+#include <stdlib.h>
+#include <string.h>
 #include "utils.h"
 
 void test_str_type() {
     constexpr auto s = psh_str("Frodo Baggins");
     psh_assert(psh::str_equal(s.buf, "Frodo Baggins"));
-    psh_assert(s.size() == std::strlen("Frodo Baggins"));
+    psh_assert(s.size() == strlen("Frodo Baggins"));
     psh_assert(s.buf[s.size()] == 0);
     test_passed();
 }
@@ -40,31 +40,31 @@ void test_str_type() {
 void test_string_view_type() {
     psh::StringView v1{"Nine for the Elven-kings under moon and star"};
     psh_assert(psh::str_equal(v1.data.buf, "Nine for the Elven-kings under moon and star"));
-    psh_assert(v1.data.size == std::strlen("Nine for the Elven-kings under moon and star"));
+    psh_assert(v1.data.size == strlen("Nine for the Elven-kings under moon and star"));
     psh_assert(v1.data.buf[v1.data.size] == 0);
 
     constexpr psh::StringView v2 = psh_string_view("Nine for the Elven-kings under moon and star");
     psh_assert(psh::str_equal(v2.data.buf, "Nine for the Elven-kings under moon and star"));
-    psh_assert(v2.data.size == std::strlen("Nine for the Elven-kings under moon and star"));
+    psh_assert(v2.data.size == strlen("Nine for the Elven-kings under moon and star"));
     psh_assert(v2.data.buf[v1.data.size] == 0);
 
     psh::StringView v3{"Nine for the Elven-kings under moon and star"};
     psh_assert(psh::str_equal(v3.data.buf, "Nine for the Elven-kings under moon and star"));
-    psh_assert(v3.data.size == std::strlen("Nine for the Elven-kings under moon and star"));
+    psh_assert(v3.data.size == strlen("Nine for the Elven-kings under moon and star"));
     psh_assert(v3.data.buf[v1.data.size] == 0);
     test_passed();
 }
 
 void test_string_type() {
-    psh::Arena arena{reinterpret_cast<u8*>(std::malloc(512)), 512};
+    psh::Arena arena{reinterpret_cast<u8*>(malloc(512)), 512};
     {
         psh::String s{&arena, psh_string_view("Seven for the Dwarf-lords in their halls of stone")};
         psh_assert(psh::str_equal(s.data.buf, "Seven for the Dwarf-lords in their halls of stone"));
-        psh_assert(s.data.size == std::strlen("Seven for the Dwarf-lords in their halls of stone"));
+        psh_assert(s.data.size == strlen("Seven for the Dwarf-lords in their halls of stone"));
         psh_assert(s.data.capacity == s.data.size + 1);
         psh_assert(s.data.buf[s.data.capacity - 1] == 0);
     }
-    std::free(arena.buf);
+    free(arena.buf);
     test_passed();
 }
 
@@ -102,7 +102,7 @@ void test_string_join() {
         psh_string_view("In the Land of Mordor where the Shadows lie.\n"),
     };
 
-    psh::Arena arena{reinterpret_cast<u8*>(std::malloc(psh_kibibytes(5))), psh_kibibytes(5)};
+    psh::Arena arena{reinterpret_cast<u8*>(malloc(psh_kibibytes(5))), psh_kibibytes(5)};
     {
         // Empty string.
         psh::String estr{&arena, 20};
@@ -119,13 +119,8 @@ void test_string_join() {
         psh_assert(psh::str_equal(nestr.data.buf, check_str2.buf));
         psh_assert(nestr.data.capacity == nestr.data.size + 1);
         psh_assert(nestr.data.buf[nestr.data.size] == 0);
-
-        // With initializer list.
-        psh::String s{&arena, "Hello"};
-        psh_assert(s.join({"Middle", "Earth"}, " ++ ") == psh::Status::OK);
-        psh_assert(psh::str_equal(s.data.buf, "Hello ++ Middle ++ Earth"));
     }
-    std::free(arena.buf);
+    free(arena.buf);
     test_passed();
 }
 

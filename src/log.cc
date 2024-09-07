@@ -24,10 +24,10 @@
 
 #include <psh/log.h>
 
+#include <assert.h>
 #include <psh/core.h>
-#include <cassert>
-#include <cstdarg>
-#include <cstdio>
+#include <stdarg.h>
+#include <stdio.h>
 
 namespace psh {
     // -----------------------------------------------------------------------------
@@ -65,7 +65,7 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     void log(LogInfo info, strptr msg) {
-        psh_discard(std::fprintf(
+        psh_discard(fprintf(
             stderr,
             impl_log::LOG_FMT,
             impl_log::log_level_str(info.lvl),
@@ -82,8 +82,8 @@ namespace psh {
         va_start(args, fmt);
         {
             // Format the message with the given arguments.
-            i32 res_len = std::vsnprintf(msg, MAX_MSG_LEN, fmt, args);
-            assert(res_len != -1 && "std::snptrintf unable to parse the format string and arguments");
+            i32 res_len = vsnprintf(msg, MAX_MSG_LEN, fmt, args);
+            assert(res_len != -1 && "snptrintf unable to parse the format string and arguments");
 
             // Stamp the message with a null-terminator.
             usize ures_len = static_cast<usize>(res_len);
@@ -92,7 +92,7 @@ namespace psh {
         }
         va_end(args);
 
-        (void)std::fprintf(
+        (void)fprintf(
             stderr,
             impl_log::LOG_FMT,
             impl_log::log_level_str(info.lvl),

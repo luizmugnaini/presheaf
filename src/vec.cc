@@ -24,8 +24,8 @@
 
 #include <psh/vec.h>
 
+#include <math.h>
 #include <psh/assert.h>
-#include <cmath>
 
 namespace psh {
     // -----------------------------------------------------------------------------
@@ -61,7 +61,7 @@ namespace psh {
     }
 
     Vec2 Vec2::normalized() const noexcept {
-        f32 len = std::sqrt(x * x + y * y);
+        f32 len = sqrtf(x * x + y * y);
 
         if (psh_unlikely(len < F32_IS_ZERO_RANGE)) {
             return Vec2{};
@@ -137,7 +137,7 @@ namespace psh {
     }
 
     Vec3 Vec3::normalized() const noexcept {
-        f32 len = std::sqrt(x * x + y * y + z * z);
+        f32 len = sqrtf(x * x + y * y + z * z);
 
         if (psh_unlikely(f32_approx_equal(len, 0.0f))) {
             return Vec3{};
@@ -211,7 +211,7 @@ namespace psh {
     }
 
     Vec2 IVec2::normalized() const noexcept {
-        f32 len = std::sqrt(static_cast<f32>(x * x + y * y));
+        f32 len = sqrtf(static_cast<f32>(x * x + y * y));
 
         if (psh_unlikely(len < F32_IS_ZERO_RANGE)) {
             return Vec2{};
@@ -285,7 +285,7 @@ namespace psh {
     }
 
     Vec3 IVec3::normalized() const noexcept {
-        f32 len = std::sqrt(static_cast<f32>(x * x + y * y + z * z));
+        f32 len = sqrtf(static_cast<f32>(x * x + y * y + z * z));
 
         if (psh_unlikely(len < F32_IS_ZERO_RANGE)) {
             return Vec3{};
@@ -368,12 +368,12 @@ namespace psh {
     }
 
     Mat3 Mat3::rotation_tb(f32 rot_x, f32 rot_y, f32 rot_z) noexcept {
-        f32 xsin = std::sin(rot_x);
-        f32 ysin = std::sin(rot_y);
-        f32 zsin = std::sin(rot_z);
-        f32 xcos = std::cos(rot_x);
-        f32 ycos = std::cos(rot_y);
-        f32 zcos = std::cos(rot_z);
+        f32 xsin = sinf(rot_x);
+        f32 ysin = sinf(rot_y);
+        f32 zsin = sinf(rot_z);
+        f32 xcos = cosf(rot_x);
+        f32 ycos = cosf(rot_y);
+        f32 zcos = cosf(rot_z);
 
         // clang-format off
         return psh::Mat3{
@@ -473,7 +473,7 @@ namespace psh {
         f32 aspect,
         f32 near_plane,
         f32 far_plane) noexcept {
-        f32 tan_hfovy = std::tan(fovy * 0.5f);
+        f32 tan_hfovy = tanf(fovy * 0.5f);
 
         // clang-format off
         return ColMat4{

@@ -100,7 +100,7 @@ namespace psh {
                 psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
             }
 
-            std::memcpy(
+            memory_copy(
                 reinterpret_cast<u8*>(this->buf),
                 reinterpret_cast<u8 const*>(list.begin()),
                 sizeof(T) * this->size);
