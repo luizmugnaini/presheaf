@@ -1,5 +1,8 @@
 # Presheaf Library
 
+> WARNING: This library is currently in a very volatile state. Breaking changes will happen all the time
+> until I think the API is good enough.
+
 This is a C++ library that I use across my projects as an alternative to the STL. It's written in
 C++20 and its only dependence is a compiler supporting the language features. Compilers that are
 ensured to work are: Clang, GCC, MSVC.
