@@ -24,11 +24,11 @@
 
 #pragma once
 
+#include <psh/arena.h>
+#include <psh/core.h>
+#include <psh/memory_utils.h>
+#include <psh/option.h>
 #include <initializer_list>
-#include <psh/arena.hh>
-#include <psh/core.hh>
-#include <psh/memory_utils.hh>
-#include <psh/option.hh>
 
 namespace psh {
     /// Run-time variable length array.

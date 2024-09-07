@@ -22,7 +22,7 @@
 /// Description: Implementation of the stack memory allocator.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/stack.hh>
+#include <psh/stack.h>
 
 namespace psh {
     void Stack::init(u8* _buf, usize _size) noexcept {

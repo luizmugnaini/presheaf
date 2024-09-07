@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include <psh/core.hh>
-#include <psh/option.hh>
+#include <psh/core.h>
+#include <psh/option.h>
 
 namespace psh {
     Option<f64> current_time_in_seconds() noexcept;

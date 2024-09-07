@@ -24,9 +24,9 @@
 
 #pragma once
 
-#include <psh/core.hh>
-#include <psh/fat_ptr.hh>
-#include <psh/option.hh>
+#include <psh/core.h>
+#include <psh/fat_ptr.h>
+#include <psh/option.h>
 
 namespace psh {
     // -----------------------------------------------------------------------------

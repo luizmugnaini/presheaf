@@ -25,9 +25,9 @@
 
 #pragma once
 
-#include <psh/arena.hh>
-#include <psh/core.hh>
-#include <psh/memory_utils.hh>
+#include <psh/arena.h>
+#include <psh/core.h>
+#include <psh/memory_utils.h>
 
 namespace psh {
     /// Array with run-time known constant capacity.

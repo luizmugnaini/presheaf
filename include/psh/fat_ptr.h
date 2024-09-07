@@ -19,30 +19,29 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Buffer with compile-time known size.
+/// Description: Fat pointer type.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #pragma once
 
-#include <psh/core.hh>
-#include <psh/fat_ptr.hh>
+#include <psh/assert.h>
+#include <psh/core.h>
 
 namespace psh {
-    /// Buffer with a compile-time known size.
-    template <typename T, usize size_>
-    struct Buffer {
-        T buf[size_] = {};
+    /// Fat pointer, holds a pointer to a buffer and its corresponding size.
+    template <typename T>
+    struct FatPtr {
+        T*    buf  = nullptr;
+        usize size = 0;
 
-        // -----------------------------------------------------------------------------
-        // - Size related utilities -
-        // -----------------------------------------------------------------------------
-
-        constexpr usize size() const noexcept {
-            return size_;
+        FatPtr<T> slice(usize start, usize end) noexcept {
+            psh_assert_msg(start <= end, "Attempted to create a fat pointer slice with invalid bounds");
+            psh_assert_msg(end < this->size, "Attempted to create a fat pointer slice out of bounds");
+            return FatPtr<T>{psh_ptr_add(this->buf, start), 1 + end - start};
         }
 
-        usize size_bytes() const noexcept {
-            return sizeof(T) * size_;
+        constexpr usize size_bytes() const noexcept {
+            return sizeof(T) * this->size;
         }
 
         // -----------------------------------------------------------------------------
@@ -50,7 +49,7 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         constexpr T* begin() noexcept {
-            return static_cast<T*>(this->buf);
+            return this->buf;
         }
 
         constexpr T const* begin() const noexcept {
@@ -58,11 +57,11 @@ namespace psh {
         }
 
         constexpr T* end() noexcept {
-            return static_cast<T*>(this->buf) + size_;
+            return (this->buf == nullptr) ? nullptr : (this->buf + this->size);
         }
 
         constexpr T const* end() const noexcept {
-            return static_cast<T const*>(this->buf) + size_;
+            return (this->buf == nullptr) ? nullptr : static_cast<T const*>(this->buf + this->size);
         }
 
         // -----------------------------------------------------------------------------
@@ -70,25 +69,31 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         constexpr T& operator[](usize idx) noexcept {
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+            psh_assert_msg(idx < this->size, "Index out of bounds for fat pointer");
+#endif
             return this->buf[idx];
         }
 
         constexpr T const& operator[](usize idx) const noexcept {
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+            psh_assert_msg(idx < this->size, "Index out of bounds for fat pointer");
+#endif
             return this->buf[idx];
         }
     };
 
     // -----------------------------------------------------------------------------
-    // - Generating fat pointers -
+    // - Fat pointer creation for common usage patterns -
     // -----------------------------------------------------------------------------
 
-    template <typename T, usize size>
-    inline FatPtr<T> fat_ptr(Buffer<T, size>& b) noexcept {
-        return FatPtr<T>{b.buf, size};
+    template <typename T>
+    FatPtr<u8> fat_ptr_as_bytes(T* buf, usize length) noexcept {
+        return FatPtr<u8>{reinterpret_cast<u8*>(buf), sizeof(T) * length};
     }
 
-    template <typename T, usize size>
-    inline FatPtr<T const> const_fat_ptr(Buffer<T, size> const& b) noexcept {
-        return FatPtr<T const>{reinterpret_cast<T const*>(b.buf), size};
+    template <typename T>
+    FatPtr<u8 const> fat_ptr_as_bytes(T const* buf, usize length) noexcept {
+        return FatPtr<u8 const>{reinterpret_cast<u8 const*>(buf), sizeof(T) * length};
     }
 }  // namespace psh

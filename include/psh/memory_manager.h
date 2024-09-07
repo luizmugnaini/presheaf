@@ -25,10 +25,10 @@
 
 #pragma once
 
-#include <psh/arena.hh>
-#include <psh/core.hh>
-#include <psh/option.hh>
-#include <psh/stack.hh>
+#include <psh/arena.h>
+#include <psh/core.h>
+#include <psh/option.h>
+#include <psh/stack.h>
 
 namespace psh {
     /// A stack allocator manager that can be used as the central memory resource of an application.

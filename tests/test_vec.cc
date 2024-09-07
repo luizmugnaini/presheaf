@@ -22,9 +22,9 @@
 /// Description: Tests for the linear algebra types.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/assert.hh>
-#include <psh/vec.hh>
-#include "utils.hh"
+#include <psh/assert.h>
+#include <psh/vec.h>
+#include "utils.h"
 
 void test_matrix_indexed_access() {
     psh::Mat3 mat3 = psh::Mat3::id();

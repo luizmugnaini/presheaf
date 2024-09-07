@@ -198,7 +198,7 @@ end
 -- -----------------------------------------------------------------------------
 
 if options.fmt then
-    exec("clang-format -i include/psh/*.hh src/*.cc")
+    exec("clang-format -i include/psh/*.h src/*.cc tests/*.h tests/*.cc")
 end
 
 local out_dir = "build"

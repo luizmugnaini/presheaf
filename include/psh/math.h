@@ -24,9 +24,9 @@
 
 #pragma once
 
+#include <psh/core.h>
+#include <psh/log.h>
 #include <limits>
-#include <psh/core.hh>
-#include <psh/log.hh>
 
 namespace psh {
     constexpr f32 PI                = 3.14159265359f;

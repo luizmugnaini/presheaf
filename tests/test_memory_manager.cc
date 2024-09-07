@@ -25,14 +25,14 @@
 /// This test should be ran with sanitizer flags on in order to detect possible memory leaks that
 /// may go unseen.
 
-#include <psh/arena.hh>
-#include <psh/assert.hh>
-#include <psh/core.hh>
-#include <psh/dyn_array.hh>
-#include <psh/memory_utils.hh>
-#include <psh/memory_manager.hh>
-#include <psh/stack.hh>
-#include "utils.hh"
+#include <psh/arena.h>
+#include <psh/assert.h>
+#include <psh/core.h>
+#include <psh/dyn_array.h>
+#include <psh/memory_manager.h>
+#include <psh/memory_utils.h>
+#include <psh/stack.h>
+#include "utils.h"
 
 void test_memory_manager_zeroed_at_initialization() {
     psh::MemoryManager memory_manager{1024};

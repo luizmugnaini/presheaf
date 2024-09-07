@@ -19,46 +19,18 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Optional type.
+/// Description: Common components to implementation sources.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#pragma once
-
-#include <psh/assert.hh>
-
-namespace psh {
-    enum struct Status : bool {
-        OK     = true,
-        FAILED = false,
-    };
-
-    /// Option type.
-    ///
-    /// Note: This struct shouldn't be used with pointer types, as a null will still indicate a value
-    ///       being present.
-    template <typename T>
-    struct Option {
-        T    val     = {};
-        bool has_val = false;
-
-        constexpr Option() noexcept = default;
-
-        constexpr Option(T _val) noexcept
-            : val{_val}, has_val{true} {}
-
-        constexpr Option& operator=(T _val) noexcept {
-            this->val     = _val;
-            this->has_val = true;
-            return *this;
-        }
-
-        T const& val_or(T const& default_val = {}) const noexcept {
-            return this->has_val ? this->val : default_val;
-        }
-
-        T const& demand(strptr msg = "Option::demand failed") const noexcept {
-            psh_assert_msg(this->has_val, msg);
-            return this->val;
-        }
-    };
-}  // namespace psh
+#if defined(PSH_ABORT_AT_MEMORY_ERROR)
+#    include <psh/core.h>
+#    include <psh/log.h>
+#    define psh_impl_return_from_memory_error()                                     \
+        do {                                                                        \
+            psh_fatal("PSH_ABORT_AT_MEMORY_ERROR active, aborting the program..."); \
+            psh_abort();                                                            \
+        } while (0)
+#else
+#    define psh_impl_return_from_memory_error() \
+        return {}
+#endif

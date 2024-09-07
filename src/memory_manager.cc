@@ -22,7 +22,7 @@
 /// Description: Implementation of the memory allocation manager.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/memory_manager.hh>
+#include <psh/memory_manager.h>
 
 #include <cstdlib>
 #include <cstring>

@@ -22,12 +22,12 @@
 /// Description: Implementation of the IO stream utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/log.hh>
+#include <psh/log.h>
 
+#include <psh/core.h>
 #include <cassert>
 #include <cstdarg>
 #include <cstdio>
-#include <psh/core.hh>
 
 namespace psh {
     // -----------------------------------------------------------------------------

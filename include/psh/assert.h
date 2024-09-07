@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include <psh/core.hh>
-#include <psh/log.hh>
+#include <psh/core.h>
+#include <psh/log.h>
 
 #define PSH_IMPL_FMT_ASSERT_MSG     "Assertion failed: %s, msg: %s"
 #define PSH_IMPL_FMT_ASSERT_MSG_FMT "Assertion failed: %s, msg: "

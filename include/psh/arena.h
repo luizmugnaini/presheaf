@@ -23,7 +23,7 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 #pragma once
 
-#include <psh/core.hh>
+#include <psh/core.h>
 
 namespace psh {
     // Forward declaration.

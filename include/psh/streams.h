@@ -24,9 +24,9 @@
 
 #pragma once
 
-#include <psh/array.hh>
-#include <psh/core.hh>
-#include <psh/string.hh>
+#include <psh/array.h>
+#include <psh/core.h>
+#include <psh/string.h>
 
 namespace psh {
     enum struct OpenFileFlag {

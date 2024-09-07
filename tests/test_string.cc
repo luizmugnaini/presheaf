@@ -22,12 +22,12 @@
 /// Description: Tests for the string types.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/buffer.hh>
-#include <psh/core.hh>
-#include <psh/string.hh>
+#include <psh/buffer.h>
+#include <psh/core.h>
+#include <psh/string.h>
 #include <cstdlib>
 #include <cstring>
-#include "utils.hh"
+#include "utils.h"
 
 void test_str_type() {
     constexpr auto s = psh_str("Frodo Baggins");

@@ -22,7 +22,7 @@
 /// Description: Implementation of the system time interface.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
-#include <psh/time.hh>
+#include <psh/time.h>
 
 #if defined(PSH_OS_WINDOWS_32)
 #    include <Windows.h>

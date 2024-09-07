@@ -22,14 +22,14 @@
 /// Description: Tests for the stack memory allocator.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/arena.hh>
-#include <psh/assert.hh>
-#include <psh/core.hh>
-#include <psh/memory_utils.hh>
-#include <psh/stack.hh>
+#include <psh/arena.h>
+#include <psh/assert.h>
+#include <psh/core.h>
+#include <psh/memory_utils.h>
+#include <psh/stack.h>
 #include <cstdio>
 #include <cstdlib>
-#include "utils.hh"
+#include "utils.h"
 
 struct FooBar {
     f64 a;
