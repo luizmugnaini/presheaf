@@ -81,8 +81,8 @@ namespace psh {
         }
 
         usize     previous_arena_offset = arena->offset;
-        Array<u8> content{arena, size + 1};
-        usize     read_count = fread(content.buf, sizeof(u8), size, fhandle);
+        Array<u8> content{arena, size};
+        usize     read_count = fread(content.buf, sizeof(u8), content.size, fhandle);
 
         if (psh_unlikely(ferror(fhandle) != 0)) {
             perror("Couldn't read file.\n");
