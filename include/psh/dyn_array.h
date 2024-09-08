@@ -212,6 +212,15 @@ namespace psh {
             this->buf[this->size++] = new_element;
         }
 
+        void push(FatPtr<T const> new_elements) noexcept {
+            if (this->capacity < new_elements.size + this->size) {
+                this->resize(this->size + new_elements.size);
+            }
+
+            memory_copy(this->buf, new_elements.buf, sizeof(T) * new_elements.size);
+            this->size += new_elements.size;
+        }
+
         /// Try to pop the last element of the dynamic array.
         Status pop() noexcept {
             Status res = Status::FAILED;
