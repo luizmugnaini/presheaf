@@ -64,7 +64,7 @@ namespace psh {
         }
 
         if (psh_unlikely(fseek(fhandle, 0, SEEK_END) == -1)) {
-            perror("Couldn't seek end of file.");
+            perror("Couldn't seek end of file.\n");
             return {.status = FileStatus::FAILED_TO_READ};
         }
 
@@ -159,5 +159,4 @@ namespace psh {
 
         return s;
     }
-
 }  // namespace psh
