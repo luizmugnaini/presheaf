@@ -47,7 +47,7 @@ namespace psh {
         psh_discard(memset(fptr.buf, fill, fptr.size));
     }
 
-    void memory_copy(void* dest, void const* src, usize size) noexcept {
+    void memory_copy(void* psh_restrict dest, void const* psh_restrict src, usize size) noexcept {
         if (psh_unlikely((dest == nullptr) || (src == nullptr) || (size == 0))) {
             return;
         }
@@ -63,7 +63,7 @@ namespace psh {
         psh_discard(memcpy(dest, src, size));
     }
 
-    void memory_move(void* dest, void const* src, usize size) noexcept {
+    void memory_move(void* psh_restrict dest, void const* psh_restrict src, usize size) noexcept {
         if (psh_unlikely((dest == nullptr) || (src == nullptr) || (size == 0))) {
             return;
         }

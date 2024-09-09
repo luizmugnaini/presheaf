@@ -209,6 +209,14 @@ using strptr = char const*;
 /// Signals that a variable is available in the global scope.
 #define psh_global static
 
+#if defined(PSH_COMPILER_MSVC)
+#    define psh_restrict __restrict
+#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#    define psh_restrict __restrict__
+#else
+#    define psh_restrict
+#endif
+
 /// Compiler hints for branching patterns.
 #if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
 #    define psh_likely(expr)   __builtin_expect(!!(static_cast<long>(static_cast<bool>(expr))), 1)
@@ -274,7 +282,7 @@ using strptr = char const*;
 #define psh_max(lhs, rhs) (((lhs) > (rhs)) ? (lhs) : (rhs))
 
 /// Check if a value is a power of two.
-#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n) - 1)))
+#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n)-1)))
 
 /// Clamp a value to an interval.
 #define psh_clamp(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))
@@ -334,6 +342,9 @@ using strptr = char const*;
 #    endif
 #    ifndef global
 #        define global psh_global
+#    endif
+#    ifndef restrict
+#        define restrict psh_restrict
 #    endif
 #    ifndef likely
 #        define likely psh_likely
