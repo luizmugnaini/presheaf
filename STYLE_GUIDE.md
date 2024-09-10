@@ -38,8 +38,8 @@
 # Regarding `auto`
 
 Don't do `auto`, simple as that. Why?
-- Many may argue that it improves refactoring, but the fact is that if your return type changed,
-  the behaviour of the object changed and you should probably change the code anyway. So no
+- Many may argue that it improves refactoring, but the fact is: If your return type changed,
+  the behaviour of the object changed - and you should probably change the code anyway. So no
   refactoring improvement is gained by using `auto` - in fact, it makes it worse to refactor
   by obscuring the type.
 - No one has the obligation to use an LSP just because you use.
@@ -57,13 +57,13 @@ Don't do `auto`, simple as that. Why?
 Prefer using `constexpr` over a `#define` as it permits type safety. You should, however, not abuse
 the use of `constexpr`'s for functions that will clearly never be invoked at compile time. The latter
 will only make the code harder to read and give you the false feeling that that codepath is optimized
-in some way. Always remember that the compiler gives you no guarantee that the `constexpr` function
-*will* be evaluated at compile time, just that it *can*.
+in some way. Always remember that the compiler gives you **no guarantee** that the `constexpr`
+function **will** be evaluated at compile time, just that it **can**.
 
 # The `[[nodiscard]]` attribute
 
 I opted out of the use of the `nodiscard` attribute simply because it litters the codebase and
-decreases significantly the readability of the code just because of noise. Moreover, the kinds of
+decreases significantly the readability of the code - it adds too much  noise. Moreover, the kinds of
 bugs that `nodiscard` prevents are actually pretty uninteresting and should be uncommon in any well
 written codebase.
 
@@ -81,11 +81,11 @@ We mostly follow the advice given by the [C++ Core Guidelines](https://isocpp.gi
 
 - Have clear names over succinct ones.
 - Variables and functions should be named using snake case: `my_variable`.
-- Structs should be named using pascal case: `MyStructFoo`. The same applies for enums.
-- Global constants (declared with `const` or `constexpr`) should be all caps and in
-  snake case: `MY_CONSTANT_VAR`.
-- Enum types should be named with pascal case and their members should
-  be all caps with snake case, as they are constant expressions.
+- Structs should be named using pascal case: `MyStructFoo`.
+- Global constants (declared with `const` or `constexpr`) should be all caps and in snake case:
+  `MY_CONSTANT_VAR`.
+- Enum types should be named with pascal case and their members should be all caps with snake case,
+  as they are constant expressions.
 
 ## Classes and Structs
 
