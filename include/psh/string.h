@@ -72,6 +72,13 @@ namespace psh {
         constexpr usize size() const noexcept {
             return size_ - 1;
         }
+
+        char operator[](usize index) const noexcept {
+#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+            psh_assert_msg(index < size_, "Str access out of bounds");
+#endif
+            return this->buf[index];
+        }
     };
 
     /// Immutable view of a string.
