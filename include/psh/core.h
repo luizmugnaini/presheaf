@@ -24,7 +24,38 @@
 
 #pragma once
 
-#include <cstdint>
+#include <stdint.h>
+
+// -----------------------------------------------------------------------------
+// - Fundamental types -
+// -----------------------------------------------------------------------------
+
+/// Unsigned integer type.
+using u8    = uint8_t;
+using u16   = uint16_t;
+using u32   = uint32_t;
+using u64   = uint64_t;
+using usize = u64;
+
+/// Signed integer type.
+using i8    = int8_t;
+using i16   = int16_t;
+using i32   = int32_t;
+using i64   = int64_t;
+using isize = i64;
+
+/// Memory-address types.
+using uptr = u64;
+using iptr = i64;
+
+/// Floating-point types.
+using f32 = float;
+using f64 = double;
+
+/// Immutable zero-terminated string type
+///
+/// A pointer to a contiguous array of constant character values.
+using strptr = char const*;
 
 // -----------------------------------------------------------------------------
 // - Macros for operating system and compiler detection -
@@ -145,37 +176,6 @@
 #endif
 
 // -----------------------------------------------------------------------------
-// - Fundamental types -
-// -----------------------------------------------------------------------------
-
-/// Unsigned integer type.
-using u8    = uint8_t;
-using u16   = uint16_t;
-using u32   = uint32_t;
-using u64   = uint64_t;
-using usize = u64;
-
-/// Signed integer type.
-using i8    = int8_t;
-using i16   = int16_t;
-using i32   = int32_t;
-using i64   = int64_t;
-using isize = i64;
-
-/// Memory-address types.
-using uptr = u64;
-using iptr = i64;
-
-/// Floating-point types.
-using f32 = float;
-using f64 = double;
-
-/// Immutable zero-terminated string type
-///
-/// A pointer to a contiguous array of constant character values.
-using strptr = char const*;
-
-// -----------------------------------------------------------------------------
 // - Compiler hints -
 // -----------------------------------------------------------------------------
 
@@ -210,11 +210,11 @@ using strptr = char const*;
 #define psh_global static
 
 #if defined(PSH_COMPILER_MSVC)
-#    define psh_restrict __restrict
+#    define psh_restrict_ptr __restrict
 #elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-#    define psh_restrict __restrict__
+#    define psh_restrict_ptr __restrict__
 #else
-#    define psh_restrict
+#    define psh_restrict_ptr
 #endif
 
 /// Compiler hints for branching patterns.
@@ -268,7 +268,7 @@ using strptr = char const*;
 #define psh_ptr_add(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) + static_cast<uptr>(offset)))
 #define psh_ptr_sub(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) - static_cast<iptr>(offset)))
 
-#define psh_ptr_offset_bytes(end, start) (reinterpret_cast<iptr>(reinterpret_cast<u8 const*>(end)) - reinterpret_cast<iptr>(reinterpret_cast<u8 const*>(start)))
+#define psh_ptr_offset_bytes(end_ptr, start_ptr) reinterpret_cast<iptr>(psh_ptr_sub(reinterpret_cast<u8 const*>(end_ptr), reinterpret_cast<iptr>(reinterpret_cast<u8 const*>(start_ptr))))
 
 // -----------------------------------------------------------------------------
 // - Mathematical operations -
@@ -278,14 +278,17 @@ using strptr = char const*;
 #define psh_in_open_range(val, min, max)   (((min) < (val)) && ((val) < (max)))
 
 /// Minimum/maximum functions.
-#define psh_min(lhs, rhs) (((lhs) < (rhs)) ? (lhs) : (rhs))
-#define psh_max(lhs, rhs) (((lhs) > (rhs)) ? (lhs) : (rhs))
-
-/// Check if a value is a power of two.
-#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n)-1)))
+#define psh_min_val(lhs, rhs) (((lhs) < (rhs)) ? (lhs) : (rhs))
+#define psh_max_val(lhs, rhs) (((lhs) > (rhs)) ? (lhs) : (rhs))
 
 /// Clamp a value to an interval.
-#define psh_clamp(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))
+#define psh_clamp_val(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))
+
+// Get the sign of a number.
+#define psh_sign_val(x) ((static_cast<f64>(x) > 0.0) ? 1 : ((static_cast<f64>(x) != 0.0) ? -1 : 0))
+
+// Get the absolute value of a number.
+#define psh_abs_val(x) ((static_cast<f64>(x) > 0.0) ? (x) : -(x))
 
 /// Add values and clamp to a lower bound.
 #define psh_lb_add(lhs, rhs, lb) (((lhs) + (rhs)) < (lb) ? (lb) : ((lhs) + (rhs)))
@@ -293,11 +296,8 @@ using strptr = char const*;
 /// Add values and clamp to an upper bound.
 #define psh_ub_add(lhs, rhs, ub) (((lhs) + (rhs)) > (ub) ? (ub) : ((lhs) + (rhs)))
 
-// Get the sign of a number.
-#define psh_sign(x) ((static_cast<f64>(x) > 0.0) ? 1 : ((static_cast<f64>(x) != 0.0) ? -1 : 0))
-
-// Get the absolute value of a number.
-#define psh_abs(x) ((static_cast<f64>(x) > 0.0) ? (x) : -(x))
+/// Check if a value is a power of two.
+#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n)-1)))
 
 // -----------------------------------------------------------------------------
 // - Common memory sizes -
@@ -314,20 +314,29 @@ using strptr = char const*;
 /// Generate a string containing the given expression.
 #define psh_stringify(x) #x
 
+// -----------------------------------------------------------------------------
+// - Source introspection information -
+// -----------------------------------------------------------------------------
+
+/// Query the string representing the signature of the current function.
 #if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-#    define PSH_FUNCTION_SIGNATURE __PRETTY_FUNCTION__
+#    define psh_source_function_signature() __PRETTY_FUNCTION__
 #elif defined(PSH_COMPILER_MSVC)
-#    define PSH_FUNCTION_SIGNATURE __FUNCSIG__
+#    define psh_source_function_signature() __FUNCSIG__
 #else
-#    define PSH_FUNCTION_SIGNATURE "<unknown>"
+#    define psh_source_function_signature() "<unknown signature>"
+#endif
+
+#if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC) || defined(PSH_COMPILER_MSVC)
+#    define psh_source_file_name()   __builtin_FILE()
+#    define psh_source_line_number() __builtin_LINE()
+#else
+#    define psh_source_file_name()   "<unknown file>"
+#    define psh_source_line_number() (0)
 #endif
 
 // -----------------------------------------------------------------------------
 // - Short names -
-//
-// NOTE: Unfortunately, some of the above macros would cause name collisions
-//       with the majority of compilers, and for this reason they don't get
-//       assigned a short name. (Examples: min, max, clamp, abs, ...)
 // -----------------------------------------------------------------------------
 
 #if defined(PSH_DEFINE_SHORT_NAMES)
@@ -343,8 +352,8 @@ using strptr = char const*;
 #    ifndef global
 #        define global psh_global
 #    endif
-#    ifndef restrict
-#        define restrict psh_restrict
+#    ifndef restrict_ptr
+#        define restrict_ptr psh_restrict_ptr
 #    endif
 #    ifndef likely
 #        define likely psh_likely
@@ -373,6 +382,21 @@ using strptr = char const*;
 #    ifndef in_open_range
 #        define in_open_range psh_in_open_range
 #    endif
+#    ifndef min_val
+#        define min_val psh_min_val
+#    endif
+#    ifndef max_val
+#        define max_val psh_max_val
+#    endif
+#    ifndef clamp_val
+#        define clamp_val psh_clamp_val
+#    endif
+#    ifndef sign_val
+#        define sign_val psh_sign_val
+#    endif
+#    ifndef abs_val
+#        define abs_val psh_abs_val
+#    endif
 #    ifndef lb_add
 #        define lb_add psh_lb_add
 #    endif
@@ -390,5 +414,14 @@ using strptr = char const*;
 #    endif
 #    ifndef stringify
 #        define stringify psh_stringify
+#    endif
+#    ifndef source_function_signature
+#        define source_function_signature psh_source_function_signature
+#    endif
+#    ifndef source_file_name
+#        define source_file_name psh_source_file_name
+#    endif
+#    ifndef source_line_number
+#        define source_line_number psh_source_line_number
 #    endif
 #endif  // PSH_DEFINE_SHORT_NAMES

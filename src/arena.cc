@@ -143,7 +143,7 @@ namespace psh {
         u8* new_block = this->zero_alloc_align(new_size_bytes, alignment);
 
         // Copy the existing data to the new block.
-        usize copy_size = psh_min(current_block_size, new_block_size);
+        usize copy_size = psh_min_val(current_block_size, new_block_size);
         memory_copy(new_block, block_bytes, copy_size);
 
         return new_block;

@@ -126,7 +126,7 @@ namespace psh {
 
         u8* new_mem = this->alloc_align(new_size_bytes, alignment);
 
-        usize const copy_size = psh_min(header->size, new_size_bytes);
+        usize const copy_size = psh_min_val(header->size, new_size_bytes);
         memory_copy(reinterpret_cast<u8*>(new_mem), reinterpret_cast<u8 const*>(block), copy_size);
 
         return new_mem;

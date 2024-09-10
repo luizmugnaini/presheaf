@@ -46,8 +46,8 @@ namespace psh {
 
         consteval LogInfo(
             LogLevel _lvl,
-            strptr   _file = __builtin_FILE(),
-            u32      _line = __builtin_LINE())
+            strptr   _file = psh_source_file_name(),
+            u32      _line = psh_source_line_number())
             : file{_file}, line{_line}, lvl{_lvl} {}
     };
 

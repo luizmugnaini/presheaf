@@ -56,12 +56,12 @@ namespace psh {
     ///
     /// This function will assert that the blocks of memory don't overlap, avoiding undefined
     /// behaviour introduced by `memcpy` in this case.
-    void memory_copy(void* psh_restrict dest, void const* psh_restrict src, usize size) noexcept;
+    void memory_copy(void* psh_restrict_ptr dest, void const* psh_restrict_ptr src, usize size) noexcept;
 
     /// Simple wrapper around `memmove`.
     ///
     /// Does nothing if either `dest` or `src` are null pointers.
-    void memory_move(void* psh_restrict dest, void const* psh_restrict src, usize size) noexcept;
+    void memory_move(void* psh_restrict_ptr dest, void const* psh_restrict_ptr src, usize size) noexcept;
 
     // -----------------------------------------------------------------------------
     // - Alignment utilities -
