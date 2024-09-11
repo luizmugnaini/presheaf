@@ -102,61 +102,64 @@ namespace psh {
         };
     }
 
-    String read_stdin(Arena* arena) noexcept {
-        constexpr u32 INITIAL_SIZE = 128;
-        constexpr u32 CHUNK_SIZE   = 64;
-        String        s{arena, INITIAL_SIZE};
+    String read_stdin(Arena* arena, u32 initial_buf_size, u32 read_chunk_size) noexcept {
+        usize  previous_arena_offset = arena.offset;
+        String content{arena, initial_buf_size};
 
 #if defined(PSH_OS_WINDOWS_32)
         HANDLE handle_stdin = GetStdHandle(STD_INPUT_HANDLE);
         if (handle_stdin == INVALID_HANDLE_VALUE) {
             psh_error("Unable to acquire the handle to the stdin stream.");
-            return s;
+            arena.offset = previous_arena_offset;
+            return String{};
         }
 
         for (;;) {
-            if (s.data.size + CHUNK_SIZE > s.data.capacity) {
-                s.data.resize(s.data.size + CHUNK_SIZE);
+            if (content.data.size + read_chunk_size > content.data.capacity) {
+                content.data.resize(s.data.size + read_chunk_size);
             }
 
             DWORD bytes_read;
-            BOOL  success = ReadFile(handle_stdin, s.data.end(), CHUNK_SIZE, &bytes_read, nullptr);
-            s.data.size += bytes_read;
+            BOOL  success = ReadFile(handle_stdin, content.data.end(), read_chunk_size, &bytes_read, nullptr);
+            content.data.size += bytes_read;
             if (psh_unlikely(!success)) {
                 psh_error("Unable to read from the stdin stream.");
-                return s;
+                arena.offset = previous_arena_offset;
+                return String{};
             }
 
-            if (bytes_read < CHUNK_SIZE) {
+            if (bytes_read < read_chunk_size) {
                 break;
             }
         }
 #else
         for (;;) {
-            if (s.data.size + CHUNK_SIZE > s.data.capacity) {
-                s.data.resize(s.data.size + CHUNK_SIZE);
+            if (content.data.size + read_chunk_size > content.data.capacity) {
+                content.data.resize(content.data.size + read_chunk_size);
             }
 
-            isize bytes_read = read(STDIN_FILENO, s.data.end(), CHUNK_SIZE);
+            isize bytes_read = read(STDIN_FILENO, content.data.end(), read_chunk_size);
 
             if (psh_unlikely(bytes_read == -1)) {
                 psh_error("Unable to read from the stdin stream.");
-                return s;
+                arena.offset = previous_arena_offset;
+                return String{};
             }
 
-            s.data.size += static_cast<usize>(bytes_read);
-            if (static_cast<usize>(bytes_read) < CHUNK_SIZE) {
+            content.data.size += static_cast<usize>(bytes_read);
+            if (static_cast<usize>(bytes_read) < read_chunk_size) {
                 break;
             }
         }
 #endif
 
         // Add null terminator to the end of the string.
-        if (s.data.size == s.data.capacity) {
-            s.data.resize(s.data.size + 1);
+        if (content.data.size == content.data.capacity) {
+            content.data.resize(content.data.size + 1);
         }
-        s.data.buf[s.data.size] = 0;
+        content.data.buf[content.data.size] = 0;
 
-        return s;
+        return content;
+    }
     }
 }  // namespace psh

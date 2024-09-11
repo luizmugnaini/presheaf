@@ -113,5 +113,5 @@ namespace psh {
     FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) noexcept;
 
     /// Read the standard input stream bytes to a string.
-    String read_stdin(Arena* arena) noexcept;
+    String read_stdin(Arena* arena, u32 initial_buf_size = 128, u32 read_chunk_size = 64) noexcept;
 }  // namespace psh
