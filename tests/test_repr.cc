@@ -19,42 +19,42 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Single compilation unit containing all Presheaf library tests.
+/// Description: Tests for number representation conversions utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-// Prevent tests from defining a `main()` function.
-#define NOMAIN
+#include <psh/assert.h>
+#include <psh/core.h>
+#include <psh/repr.h>
+#include "utils.h"
 
-// -----------------------------------------------------------------------------
-// - Single compilation unit comprising the whole library implementation -
-// -----------------------------------------------------------------------------
+void test_binary_repr() {
+    u8*        memory = reinterpret_cast<u8*>(malloc(256));
+    psh::Arena arena{memory, 256};
+    {
+        psh::String repr0 = psh::binary_repr(&arena, 0b0);
+        psh_assert(psh::str_equal(repr0.data.buf, "0b0"));
 
-#include "../src/all.cc"
+        psh::String repr1 = psh::binary_repr(&arena, 0b010);
+        psh_assert(psh::str_equal(repr1.data.buf, "0b10"));
 
-// -----------------------------------------------------------------------------
-// - Invoke all test -
-// -----------------------------------------------------------------------------
+        psh::String repr2 = psh::binary_repr(&arena, 0b11010);
+        psh_assert(psh::str_equal(repr2.data.buf, "0b11010"));
 
-// Include all tests.
-// clang-format off
-#include "test_types.cc"
-#include "test_bit.cc"
-#include "test_repr.cc"
-#include "test_vec.cc"
-#include "test_allocators.cc"
-#include "test_memory_manager.cc"
-#include "test_dynarray.cc"
-#include "test_string.cc"
-// clang-format on
+        psh::String repr3 = psh::binary_repr(&arena, 0b000111110101010101011);
+        psh_assert(psh::str_equal(repr3.data.buf, "0b111110101010101011"));
+    }
+    free(memory);
 
+    test_passed();
+}
+
+void test_repr() {
+    test_binary_repr();
+}
+
+#if !defined(NOMAIN)
 int main() {
-    test_types();
-    test_bit();
     test_repr();
-    test_vec();
-    test_allocators();
-    test_memory_manager();
-    test_dynarray();
-    test_string();
     return 0;
 }
+#endif
