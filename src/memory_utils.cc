@@ -40,15 +40,15 @@ namespace psh {
         return static_cast<bool>(!*(reinterpret_cast<u8*>(&integer)));
     }
 
-    void memory_set(FatPtr<u8> fptr, i32 fill) noexcept {
-        if (psh_unlikely((fptr.size == 0) || (fptr.buf == nullptr))) {
+    void memory_set(void* buf, usize size_bytes, i32 fill) noexcept {
+        if (psh_unlikely((buf == nullptr) || (size_bytes == 0))) {
             return;
         }
-        psh_discard(memset(fptr.buf, fill, fptr.size));
+        psh_discard(memset(buf, fill, size_bytes));
     }
 
-    void memory_copy(void* psh_restrict_ptr dest, void const* psh_restrict_ptr src, usize size) noexcept {
-        if (psh_unlikely((dest == nullptr) || (src == nullptr) || (size == 0))) {
+    void memory_copy(void* psh_restrict_ptr dest, void const* psh_restrict_ptr src, usize size_bytes) noexcept {
+        if (psh_unlikely((dest == nullptr) || (src == nullptr) || (size_bytes == 0))) {
             return;
         }
 
@@ -56,18 +56,18 @@ namespace psh {
         uptr dest_addr = reinterpret_cast<uptr>(dest);
         uptr src_addr  = reinterpret_cast<uptr>(src);
         psh_assert_msg(
-            (dest_addr + size > src_addr) || (dest_addr < src_addr + size),
+            (dest_addr + size_bytes > src_addr) || (dest_addr < src_addr + size_bytes),
             "memcpy called but source and destination overlap, which produces UB");
 #endif
 
-        psh_discard(memcpy(dest, src, size));
+        psh_discard(memcpy(dest, src, size_bytes));
     }
 
-    void memory_move(void* psh_restrict_ptr dest, void const* psh_restrict_ptr src, usize size) noexcept {
-        if (psh_unlikely((dest == nullptr) || (src == nullptr) || (size == 0))) {
+    void memory_move(void* psh_restrict_ptr dest, void const* psh_restrict_ptr src, usize size_bytes) noexcept {
+        if (psh_unlikely((dest == nullptr) || (src == nullptr) || (size_bytes == 0))) {
             return;
         }
-        psh_discard(memmove(dest, src, size));
+        psh_discard(memmove(dest, src, size_bytes));
     }
 
     usize padding_with_header(

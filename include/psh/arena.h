@@ -128,6 +128,13 @@ namespace psh {
         ScratchArena decouple() const noexcept;
     };
 
+    struct ArenaCheckpoint {
+#if defined(PSH_DEBUG)
+        Arena* arena;
+#endif
+        usize offset;
+    };
+
     /// Arena allocator
     ///
     /// The arena allocator is great for the management of temporary allocation of memory, since an
@@ -144,17 +151,15 @@ namespace psh {
 
         // -----------------------------------------------------------------------------
         // - Allocation methods -
+        //
+        // NOTE: All allocation procedures will zero-out the whole allocated block.
         // -----------------------------------------------------------------------------
 
         u8* alloc_align(usize size_bytes, u32 alignment) noexcept;
-        u8* zero_alloc_align(usize size_bytes, u32 alignment) noexcept;
         u8* realloc_align(u8* block, usize current_size_bytes, usize new_size_bytes, u32 alignment) noexcept;
 
         template <typename T>
         T* alloc(usize count) noexcept;
-
-        template <typename T>
-        T* zero_alloc(usize count) noexcept;
 
         template <typename T>
         T* realloc(T* block, usize current_count, usize new_count) noexcept;
@@ -168,6 +173,13 @@ namespace psh {
 
         /// Create a new scratch arena with the current offset state.
         ScratchArena make_scratch() noexcept;
+
+        /// Create a restorable checkpoint for the arena. This is a more flexible alternative to the
+        /// `ScratchArena` construct since you can manually restore the arena, not relying in destructors.
+        ArenaCheckpoint make_checkpoint() noexcept;
+
+        /// Restore the arena state to a given checkpoint.
+        void restore_state(ArenaCheckpoint const& checkpoint) noexcept;
     };
 
     // -----------------------------------------------------------------------------
@@ -177,11 +189,6 @@ namespace psh {
     template <typename T>
     T* Arena::alloc(usize count) noexcept {
         return reinterpret_cast<T*>(this->alloc_align(sizeof(T) * count, alignof(T)));
-    }
-
-    template <typename T>
-    T* Arena::zero_alloc(usize count) noexcept {
-        return reinterpret_cast<T*>(this->zero_alloc_align(sizeof(T) * count, alignof(T)));
     }
 
     template <typename T>

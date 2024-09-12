@@ -36,13 +36,30 @@ namespace psh {
     /// Get the binary representation of a number
     template <typename T>
     String binary_repr(Arena* arena, T val) noexcept {
-        constexpr usize BIT_COUNT = psh_value_bit_count(val);
-        String          repr{arena, BIT_COUNT + 1};
-
-        repr.data.size = BIT_COUNT;
-        for (usize idx = 0; idx < repr.data.size; ++idx) {
-            repr.data[repr.data.size - 1 - idx] = digit_to_char(psh_bit_at(val, idx));
+        if (val == 0) {
+            return String{arena, StringView{"0b0"}};
         }
+
+        constexpr i32 BIT_COUNT = psh_type_bit_count(T);
+        String        repr{arena, 2 + BIT_COUNT + 1};
+
+        repr.data.buf[0] = '0';
+        repr.data.buf[1] = 'b';
+        repr.data.size += 2;
+
+        i32 leading_zeros_count = 0;
+        for (i32 idx = BIT_COUNT - 1; idx >= 0; --idx) {
+            if (psh_bit_at(val, idx) == 0) {
+                ++leading_zeros_count;
+            } else {
+                break;
+            }
+        }
+
+        for (i32 idx = BIT_COUNT - 1 - leading_zeros_count; idx >= 0; --idx) {
+            repr.data[repr.data.size++] = digit_to_char(psh_bit_at(val, idx));
+        }
+
         return repr;
     }
 }  // namespace psh

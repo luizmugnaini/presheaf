@@ -61,7 +61,7 @@ namespace psh {
             if (psh_likely(this->size != 0)) {
                 psh_assert_msg(_arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
 
-                this->buf = _arena->zero_alloc<T>(this->size);
+                this->buf = _arena->alloc<T>(this->size);
                 psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
             }
         }

@@ -47,7 +47,7 @@ void test_scratch_arena_ref() {
         psh::Arena ar{buf, size};
         usize      expected_offset = 0;
 
-        (void)ar.zero_alloc<u8>(32);
+        (void)ar.alloc<u8>(32);
         expected_offset += 32;
 
         {

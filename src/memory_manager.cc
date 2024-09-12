@@ -24,12 +24,14 @@
 
 #include <psh/memory_manager.h>
 
-#include <cstdlib>
-#include <cstring>
+#include <psh/memory_utils.h>
+#include <stdlib.h>
 
 namespace psh {
     void MemoryManager::init(usize capacity) noexcept {
-        this->allocator.init(reinterpret_cast<u8*>(psh_malloc(capacity)), capacity);
+        u8* memory = reinterpret_cast<u8*>(psh_malloc(capacity));
+        memory_set(memory, capacity, 0);
+        this->allocator.init(memory, capacity);
     }
 
     MemoryManager::MemoryManager(usize capacity) noexcept {
@@ -41,8 +43,8 @@ namespace psh {
     }
 
     Option<Arena> MemoryManager::make_arena(usize size) noexcept {
-        u8* mem = alloc<u8>(size);
-        return (mem == nullptr) ? Option<Arena>{} : Option<Arena>{Arena{mem, size}};
+        u8* memory = this->alloc<u8>(size);
+        return (memory == nullptr) ? Option<Arena>{} : Option<Arena>{Arena{memory, size}};
     }
 
     Status MemoryManager::pop() noexcept {
@@ -54,16 +56,16 @@ namespace psh {
     }
 
     Status MemoryManager::clear_until(u8 const* block) noexcept {
-        u8 const* mem_start = this->allocator.buf;
+        u8 const* memory_start = this->allocator.buf;
 
         // Check if the block lies within the allocator's memory.
-        if (psh_unlikely((block < mem_start) || (block > mem_start + this->allocator.previous_offset))) {
+        if (psh_unlikely((block < memory_start) || (block > memory_start + this->allocator.previous_offset))) {
             strptr fail_reason =
-                (block > mem_start + this->allocator.size)
+                (block > memory_start + this->allocator.size)
                     ? "MemoryManager::clear_until called with a pointer outside of the stack "
-                      "mem_start region."
+                      "memory_start region."
                     : "MemoryManager::clear_until called with a pointer to an already free region "
-                      "of the stack mem_start.";
+                      "of the stack memory_start.";
             psh_error(fail_reason);
             return Status::FAILED;
         }
@@ -73,7 +75,7 @@ namespace psh {
         // NOTE: If we were given the incorrect address, we end up clearing the whole memory.
         for (;;) {
             u8 const* top_block = this->allocator.top();
-            if (psh_unlikely(top_block == mem_start)) {
+            if (psh_unlikely(top_block == memory_start)) {
                 break;
             }
             if (psh_likely(this->allocator.pop() == Status::OK)) {

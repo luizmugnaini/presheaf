@@ -33,9 +33,11 @@ namespace psh {
     // - String comparison utilities -
     // -----------------------------------------------------------------------------
 
-    enum struct StrCmpResult { LESS_THAN,
-                               EQUAL,
-                               GREATER_THAN };
+    enum struct StrCmpResult {
+        LESS_THAN,
+        EQUAL,
+        GREATER_THAN,
+    };
 
     usize        str_length(strptr str) noexcept;
     StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept;

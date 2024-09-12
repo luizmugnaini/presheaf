@@ -136,10 +136,11 @@ namespace psh {
 
         // -----------------------------------------------------------------------------
         // - Allocation methods -
+        //
+        // NOTE: All allocation procedures will zero-out the whole allocated block.
         // -----------------------------------------------------------------------------
 
         u8* alloc_align(usize size_bytes, u32 alignment) noexcept;
-        u8* zero_alloc_align(usize size_bytes, u32 alignment) noexcept;
         u8* realloc_align(u8* block, usize new_size_bytes, u32 alignment) noexcept;
 
         /// Allocates a new block of memory.
@@ -148,13 +149,6 @@ namespace psh {
         ///     * `count`: Number of entities of type `T` that should fit in the new block.
         template <typename T>
         T* alloc(usize count) noexcept;
-
-        /// Allocate a new zeroed block of memory.
-        ///
-        /// Parameters:
-        ///     * `count`: Number of entities of type `T` that should fit in the new block.
-        template <typename T>
-        T* zero_alloc(usize count) noexcept;
 
         /// Reallocate a block of memory of a given type.
         ///
@@ -201,12 +195,6 @@ namespace psh {
     template <typename T>
     T* Stack::alloc(usize count) noexcept {
         u8* mem = this->alloc_align(sizeof(T) * count, alignof(T));
-        return reinterpret_cast<T*>(mem);
-    }
-
-    template <typename T>
-    T* Stack::zero_alloc(usize count) noexcept {
-        u8* mem = this->zero_alloc_align(sizeof(T) * count, alignof(T));
         return reinterpret_cast<T*>(mem);
     }
 

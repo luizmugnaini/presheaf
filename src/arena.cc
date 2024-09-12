@@ -39,10 +39,6 @@
 #define psh_impl_arena_is_empty(arena) (((arena)->size == 0) || ((arena)->buf == nullptr))
 
 namespace psh {
-    // -----------------------------------------------------------------------------
-    // - Arena implementation -
-    // -----------------------------------------------------------------------------
-
     u8* Arena::alloc_align(usize size_bytes, u32 alignment) noexcept {
         if (psh_unlikely(size_bytes == 0)) {
             return nullptr;
@@ -64,13 +60,9 @@ namespace psh {
         // Commit the new block of memory.
         this->offset = static_cast<usize>(block_size + new_block_addr - memory_addr);
 
-        return reinterpret_cast<u8*>(new_block_addr);
-    }
-
-    u8* Arena::zero_alloc_align(usize size_bytes, u32 alignment) noexcept {
-        u8* const ptr = this->alloc_align(size_bytes, alignment);
-        memory_set(FatPtr{ptr, size_bytes}, 0);
-        return ptr;
+        u8* new_block = reinterpret_cast<u8*>(new_block_addr);
+        memory_set(new_block, size_bytes, 0);
+        return new_block;
     }
 
     u8* Arena::realloc_align(
@@ -127,8 +119,7 @@ namespace psh {
             // Check if there is enough space.
             if (psh_unlikely(block_bytes + new_size_bytes > mem_end)) {
                 psh_error_fmt(
-                    "ArenaAlloc::realloc unable to reallocate block from %zu bytes to %zu "
-                    "bytes.",
+                    "ArenaAlloc::realloc unable to reallocate block from %zu bytes to %zu bytes.",
                     current_size_bytes,
                     new_size_bytes);
                 psh_impl_return_from_memory_error();
@@ -140,7 +131,7 @@ namespace psh {
             return block;
         }
 
-        u8* new_block = this->zero_alloc_align(new_size_bytes, alignment);
+        u8* new_block = this->alloc_align(new_size_bytes, alignment);
 
         // Copy the existing data to the new block.
         usize copy_size = psh_min_val(current_block_size, new_block_size);
@@ -153,28 +144,48 @@ namespace psh {
         this->offset = 0;
     }
 
-    ScratchArena Arena::make_scratch() noexcept {
-        return ScratchArena{this};
+    ArenaCheckpoint Arena::make_checkpoint() noexcept {
+        return ArenaCheckpoint {
+#if defined(PSH_DEBUG)
+            .arena = this,
+#endif
+            .offset = this->offset,
+        };
     }
 
-    // -----------------------------------------------------------------------------
-    // - Scratch arena implementation -
-    // -----------------------------------------------------------------------------
+    void Arena::restore_state(ArenaCheckpoint const& checkpoint) noexcept {
+#if defined(PSH_DEBUG)
+        psh_assert_msg(
+            checkpoint.arena == this,
+            "Tried to restore the arena to a checkpoint of a distinct originating arena.");
+        psh_assert_msg_fmt(
+            checkpoint.offset <= this->offset,
+            "Tried to restore an arena to an invalid checkpoint, you cannot restore the arena to an "
+            "offset bigger than the current. Checkpoint offset: %zu, Arena current offset: %zu.",
+            checkpoint.offset,
+            this->offset);
+#endif
+        this->offset = checkpoint.offset;
+    }
 
     ScratchArena::ScratchArena(Arena* parent) noexcept {
-        if (parent != nullptr) {
+        if (psh_likely(parent != nullptr)) {
             this->arena        = parent;
             this->saved_offset = parent->offset;
         }
     }
 
     ScratchArena::~ScratchArena() noexcept {
-        if (this->arena != nullptr) {
+        if (psh_likely(this->arena != nullptr)) {
             this->arena->offset = this->saved_offset;
         }
     }
 
     ScratchArena ScratchArena::decouple() const noexcept {
         return ScratchArena{this->arena};
+    }
+
+    ScratchArena Arena::make_scratch() noexcept {
+        return ScratchArena{this};
     }
 }  // namespace psh

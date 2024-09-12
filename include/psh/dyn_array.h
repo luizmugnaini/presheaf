@@ -72,7 +72,7 @@ namespace psh {
             if (psh_likely(this->capacity != 0)) {
                 psh_assert_msg(this->arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
 
-                this->buf = arena->zero_alloc<T>(this->capacity);
+                this->buf = arena->alloc<T>(this->capacity);
                 psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
             }
         }
@@ -176,7 +176,7 @@ namespace psh {
             } else {
                 // Create a new buffer with a default capacity.
                 this->capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY;
-                this->buf      = arena->zero_alloc<T>(this->capacity);
+                this->buf      = arena->alloc<T>(this->capacity);
             }
 
             if (psh_likely(this->capacity != 0)) {

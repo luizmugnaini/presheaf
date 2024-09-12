@@ -77,13 +77,8 @@ namespace psh {
         this->previous_offset = this->offset + padding;
         this->offset += padding + size_bytes;
 
+        memory_set(new_block, size_bytes, 0);
         return new_block;
-    }
-
-    u8* Stack::zero_alloc_align(usize size_bytes, u32 alignment) noexcept {
-        u8* mem = this->alloc_align(size_bytes, alignment);
-        memory_set(FatPtr{mem, size_bytes}, 0);
-        return mem;
     }
 
     u8* Stack::realloc_align(u8* block, usize new_size_bytes, u32 alignment) noexcept {

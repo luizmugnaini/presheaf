@@ -60,35 +60,37 @@ namespace psh {
     FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) noexcept {
         FILE* fhandle = fopen(path, impl_streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(static_cast<OpenFileFlag>(flag))]);
         if (psh_unlikely(fhandle == nullptr)) {
-            return {.status = FileStatus::FAILED_TO_OPEN};
+            return FileReadResult{.status = FileStatus::FAILED_TO_OPEN};
         }
 
         if (psh_unlikely(fseek(fhandle, 0, SEEK_END) == -1)) {
             perror("Couldn't seek end of file.\n");
-            return {.status = FileStatus::FAILED_TO_READ};
+            return FileReadResult{.status = FileStatus::FAILED_TO_READ};
         }
 
         isize file_size = ftell(fhandle);
         if (psh_unlikely(file_size == -1)) {
             perror("Couldn't tell the size of the file.\n");
-            return {.status = FileStatus::SIZE_UNKNOWN};
+            return FileReadResult{.status = FileStatus::SIZE_UNKNOWN};
         }
         usize size = static_cast<usize>(file_size);
 
         if (psh_unlikely(fseek(fhandle, 0, SEEK_SET) == -1)) {
             perror("Couldn't seek start of file.\n");
-            return {.status = FileStatus::FAILED_TO_READ};
+            return FileReadResult{.status = FileStatus::FAILED_TO_READ};
         }
 
-        usize     previous_arena_offset = arena->offset;
+        psh_assert_msg(arena != nullptr, "Invalid arena");
+        ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
+
         Array<u8> content{arena, size};
         usize     read_count = fread(content.buf, sizeof(u8), content.size, fhandle);
 
         if (psh_unlikely(ferror(fhandle) != 0)) {
             perror("Couldn't read file.\n");
 
-            arena->offset = previous_arena_offset;
-            return {.status = FileStatus::FAILED_TO_READ};
+            arena->restore_state(arena_checkpoint);
+            return FileReadResult{.status = FileStatus::FAILED_TO_READ};
         }
 
         i32 res = fclose(reinterpret_cast<FILE*>(fhandle));
@@ -103,20 +105,21 @@ namespace psh {
     }
 
     String read_stdin(Arena* arena, u32 initial_buf_size, u32 read_chunk_size) noexcept {
-        usize  previous_arena_offset = arena.offset;
-        String content{arena, initial_buf_size};
+        ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
+        String          content{arena, initial_buf_size};
 
 #if defined(PSH_OS_WINDOWS_32)
         HANDLE handle_stdin = GetStdHandle(STD_INPUT_HANDLE);
         if (handle_stdin == INVALID_HANDLE_VALUE) {
             psh_error("Unable to acquire the handle to the stdin stream.");
-            arena.offset = previous_arena_offset;
+
+            arena->restore_state(arena_checkpoint);
             return String{};
         }
 
         for (;;) {
             if (content.data.size + read_chunk_size > content.data.capacity) {
-                content.data.resize(s.data.size + read_chunk_size);
+                content.data.resize(content.data.size + read_chunk_size);
             }
 
             DWORD bytes_read;
@@ -124,7 +127,8 @@ namespace psh {
             content.data.size += bytes_read;
             if (psh_unlikely(!success)) {
                 psh_error("Unable to read from the stdin stream.");
-                arena.offset = previous_arena_offset;
+
+                arena->restore_state(arena_checkpoint);
                 return String{};
             }
 
@@ -142,7 +146,8 @@ namespace psh {
 
             if (psh_unlikely(bytes_read == -1)) {
                 psh_error("Unable to read from the stdin stream.");
-                arena.offset = previous_arena_offset;
+
+                arena->restore_state(arena_checkpoint);
                 return String{};
             }
 
