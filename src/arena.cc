@@ -49,16 +49,15 @@ namespace psh {
         }
 
         // Check if there is enough memory.
-        uptr  memory_addr    = reinterpret_cast<uptr>(this->buf);
-        uptr  new_block_addr = align_forward(memory_addr + this->offset, alignment);
-        usize block_size     = sizeof(u8) * size_bytes;
-        if (psh_unlikely(new_block_addr + block_size > size + memory_addr)) {
+        uptr memory_addr    = reinterpret_cast<uptr>(this->buf);
+        uptr new_block_addr = align_forward(memory_addr + this->offset, alignment);
+        if (psh_unlikely(new_block_addr + size_bytes > this->size + memory_addr)) {
             psh_impl_arena_report_out_of_memory(this, size_bytes, alignment);
             psh_impl_return_from_memory_error();
         }
 
         // Commit the new block of memory.
-        this->offset = static_cast<usize>(block_size + new_block_addr - memory_addr);
+        this->offset = static_cast<usize>(size_bytes + new_block_addr - memory_addr);
 
         u8* new_block = reinterpret_cast<u8*>(new_block_addr);
         memory_set(new_block, size_bytes, 0);
