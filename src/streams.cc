@@ -29,8 +29,11 @@
 
 #if defined(PSH_OS_WINDOWS_32)
 #    include <Windows.h>
+#    define PSH_IMPL_PATH_MAX_CHAR_COUNT MAX_PATH
 #else
+#    include <limits.h>
 #    include <unistd.h>
+#    define PSH_IMPL_PATH_MAX_CHAR_COUNT PATH_MAX
 #endif
 
 // TODO(luiz): Substitute the `perror` calls with `psh::log_fmt` taking the error strings via a
@@ -166,5 +169,31 @@ namespace psh {
 
         return content;
     }
+
+    String absolute_path(Arena* arena, strptr file_path) noexcept {
+        psh_assert_msg(arena != nullptr, "Invalid arena");
+        ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
+        String          abs_path{arena, PSH_IMPL_PATH_MAX_CHAR_COUNT};
+
+#if defined(PSH_OS_WINDOWS_32)
+        DWORD result = GetFullPathName(file_path, PSH_IMPL_PATH_MAX_CHAR_COUNT, abs_path.data.buf, nullptr);
+        if (result == 0) {
+            psh_error_fmt("Unable to obtain the full path of %s due to the error: %lu", file_path, GetLastError());
+
+            arena->restore_state(arena_checkpoint);
+            return String{};
+        }
+#else
+        char* result = realpath(file_path, abs_path.data.buf);
+        if (result == nullptr) {
+            psh_error_fmt("Unable to obtain the full path of %s due to the error:", file_path);
+            perror(nullptr);
+
+            arena->restore_state(arena_checkpoint);
+            return String{};
+        }
+#endif
+
+        return abs_path;
     }
 }  // namespace psh

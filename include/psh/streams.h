@@ -114,4 +114,6 @@ namespace psh {
 
     /// Read the standard input stream bytes to a string.
     String read_stdin(Arena* arena, u32 initial_buf_size = 128, u32 read_chunk_size = 64) noexcept;
+
+    String absolute_path(Arena* arena, strptr file_path) noexcept;
 }  // namespace psh
