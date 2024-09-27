@@ -296,6 +296,9 @@ using strptr = char const*;
 /// Add values and clamp to an upper bound.
 #define psh_ub_add(lhs, rhs, ub) (((lhs) + (rhs)) > (ub) ? (ub) : ((lhs) + (rhs)))
 
+/// Decrement an unsigned value without wrapping - the lower bound will always be zero.
+#define psh_nowrap_unsigned_dec(x) (((x) > 0) ? ((x)-1) : 0)
+
 /// Check if a value is a power of two.
 #define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n)-1)))
 
@@ -402,6 +405,12 @@ using strptr = char const*;
 #    endif
 #    ifndef ub_add
 #        define ub_add psh_ub_add
+#    endif
+#    ifndef nowrap_unsigned_dec
+#        define nowrap_unsigned_dec psh_nowrap_unsigned_dec
+#    endif
+#    ifndef is_pow_of_two
+#        define is_pow_of_two psh_is_pow_of_two
 #    endif
 #    ifndef kibibytes
 #        define kibibytes psh_kibibytes
