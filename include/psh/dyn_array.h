@@ -263,12 +263,12 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     template <typename T>
-    inline FatPtr<T> fat_ptr(DynArray<T>& d) noexcept {
+    FatPtr<T> fat_ptr(DynArray<T>& d) noexcept {
         return FatPtr{d.buf, d.size};
     }
 
     template <typename T>
-    inline FatPtr<T const> const_fat_ptr(DynArray<T> const& d) noexcept {
+    FatPtr<T const> const_fat_ptr(DynArray<T> const& d) noexcept {
         return FatPtr{static_cast<T const*>(d.buf), d.size};
     }
 }  // namespace psh

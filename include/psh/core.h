@@ -196,9 +196,9 @@ using strptr = char const*;
 #endif
 
 #if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-#    define psh_unreachable() (__builtin_unreachable())
+#    define psh_unreachable() __builtin_unreachable()
 #elif defined(PSH_COMPILER_MSVC)
-#    define psh_unreachable() (__assume(false))
+#    define psh_unreachable() __assume(false)
 #else
 #    define psh_unreachable() psh_abort()
 #endif

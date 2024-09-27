@@ -83,12 +83,12 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     template <typename T, usize size>
-    inline FatPtr<T> fat_ptr(Buffer<T, size>& b) noexcept {
+    FatPtr<T> fat_ptr(Buffer<T, size>& b) noexcept {
         return FatPtr<T>{b.buf, size};
     }
 
     template <typename T, usize size>
-    inline FatPtr<T const> const_fat_ptr(Buffer<T, size> const& b) noexcept {
+    FatPtr<T const> const_fat_ptr(Buffer<T, size> const& b) noexcept {
         return FatPtr<T const>{reinterpret_cast<T const*>(b.buf), size};
     }
 }  // namespace psh
