@@ -28,6 +28,11 @@
 #include <psh/fat_ptr.h>
 #include <psh/option.h>
 
+/// Range size threshold for the quick sort algorithm to fallback to the insertion sort algorithm.
+#ifndef QUICK_SORT_CUTOFF_TO_INSERTION_SORT
+#    define QUICK_SORT_CUTOFF_TO_INSERTION_SORT 10
+#endif
+
 namespace psh {
     // -----------------------------------------------------------------------------
     // - Search algorithms -
@@ -105,6 +110,73 @@ namespace psh {
         // Search the right side.
         T* new_hi = mid - 1;
         return impl_binary_search(FatPtr{low, static_cast<usize>(new_hi - low)}, match);
+    }
+
+    // -----------------------------------------------------------------------------
+    // - Sorting algorithms -
+    // -----------------------------------------------------------------------------
+
+    template <typename T>
+    void swap_elements(T* data, usize lhs_idx, usize rhs_idx) noexcept {
+        if (psh_unlikely(lhs_idx == rhs_idx)) {
+            return;
+        }
+
+        psh_debug_fmt("swapping %zu <-> %zu", lhs_idx, rhs_idx);
+        T tmp         = data[lhs_idx];
+        data[lhs_idx] = data[rhs_idx];
+        data[rhs_idx] = tmp;
+    }
+
+    template <typename T>
+    void insertion_sort(FatPtr<T> data) noexcept {
+        for (usize end = 1; end < data.size; ++end) {
+            usize idx = end;
+            for (usize idx = end; (idx > 0) && (data[idx - 1] > data[idx]); --idx) {
+                swap_elements(data.buf, idx, idx - 1);
+            }
+        }
+    }
+
+    template <typename T>
+    void quick_sort(FatPtr<T> data) noexcept {
+        quick_sort_range(data, 0, data.size - 1);
+    }
+
+    template <typename T>
+    void quick_sort_range(FatPtr<T> data, usize low, usize high) noexcept {
+        if (high <= low + QUICK_SORT_CUTOFF_TO_INSERTION_SORT) {
+            insertion_sort(data.slice(low, high));
+            return;
+        }
+
+        usize left_scan  = low + 1;
+        usize right_scan = high;
+        for (;;) {
+            while (data[left_scan] <= data[low]) {
+                if (left_scan == high) {
+                    break;
+                }
+                ++left_scan;
+            }
+
+            while (data[low] <= data[right_scan]) {
+                if (right_scan == low) {
+                    break;
+                }
+                right_scan = psh_nowrap_unsigned_dec(right_scan);
+            }
+
+            if (right_scan <= left_scan) {
+                break;
+            }
+
+            swap_elements(data.buf, left_scan, right_scan);
+        }
+        swap_elements(data.buf, low, right_scan);
+
+        quick_sort_range(data, low, psh_nowrap_unsigned_dec(right_scan));
+        quick_sort_range(data, right_scan + 1, high);
     }
 
     // -----------------------------------------------------------------------------
