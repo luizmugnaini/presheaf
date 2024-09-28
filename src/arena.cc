@@ -152,7 +152,7 @@ namespace psh {
         };
     }
 
-    void Arena::restore_state(ArenaCheckpoint const& checkpoint) noexcept {
+    void Arena::restore_state(ArenaCheckpoint& checkpoint) noexcept {
 #if defined(PSH_DEBUG)
         psh_assert_msg(
             checkpoint.arena == this,
@@ -163,6 +163,8 @@ namespace psh {
             "offset bigger than the current. Checkpoint offset: %zu, Arena current offset: %zu.",
             checkpoint.offset,
             this->offset);
+
+        checkpoint.arena = nullptr;  // Invalidate the checkpoint for further uses.
 #endif
         this->offset = checkpoint.offset;
     }

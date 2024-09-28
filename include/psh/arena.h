@@ -179,7 +179,7 @@ namespace psh {
         ArenaCheckpoint make_checkpoint() noexcept;
 
         /// Restore the arena state to a given checkpoint.
-        void restore_state(ArenaCheckpoint const& checkpoint) noexcept;
+        void restore_state(ArenaCheckpoint& checkpoint) noexcept;
     };
 
     // -----------------------------------------------------------------------------
