@@ -24,6 +24,9 @@
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
 // clang-format off
+#include <psh/all.h>
+
+#include "impl_common.h"
 #include "time.cc"
 #include "vec.cc"
 #include "log.cc"

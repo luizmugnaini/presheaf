@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <psh/assert.h>
 #include <psh/core.h>
 #include <psh/log.h>
 #include <limits>
@@ -33,9 +34,7 @@ namespace psh {
     constexpr f32 F32_IS_ZERO_RANGE = 1e-6f;
 
     constexpr bool f32_approx_equal(f32 a, f32 b, f32 zero_range = F32_IS_ZERO_RANGE) noexcept {
-#if defined(PSH_DEBUG)
         psh_assert_msg(zero_range > 0.0f, "Expected the 'within zero range' value to be positive");
-#endif
         f32 sub = a - b;
         return (-zero_range < sub) && (sub < zero_range);
     }
@@ -60,9 +59,7 @@ namespace psh {
 
     template <typename T>
     constexpr T next_multiple(T current, T mul) noexcept {
-#if defined(PSH_DEBUG)
         psh_assert_msg(mul != 0, "next_multiple expected the multiple base to be non-zero");
-#endif
         return mul * static_cast<T>(static_cast<i64>(current / mul) + 1);
     }
 }  // namespace psh

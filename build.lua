@@ -24,6 +24,12 @@
 --
 -- Running the build system:  lua build.lua [options]
 -- Example:                   lua build.lua fmt clang mold test
+--
+-- You can also pass ad-hoc flags directly to the compiler command. Any argument passed
+-- after `--` will be directed to the compilation command. For instance:
+--
+-- lua build.lua clang -- -fsanitize=address -DPSH_ABORT_AT_MEMORY_ERROR
+--
 
 local start_time = os.time()
 
@@ -47,8 +53,20 @@ local options = {
     quiet = false,
 }
 
+local custom_flags_idx = nil
 for i = 1, #arg do
+    if arg[i] == "--" then
+        custom_flags_idx = i + 1
+        break
+    end
     options[arg[i]] = true
+end
+
+local custom_compiler_flags = {}
+if custom_flags_idx ~= nil then
+    for i = custom_flags_idx, #arg do
+        custom_compiler_flags[i - custom_flags_idx + 1] = arg[i]
+    end
 end
 
 local os_windows = (package.config:sub(1, 1) == "\\")
@@ -76,6 +94,10 @@ function exec(cmd_str, quiet)
 end
 
 function concat(arr, join, is_prefix)
+    if arr == nil or #arr < 1 then
+        return ""
+    end
+
     local acc = nil
     if is_prefix then
         acc = join .. arr[1]
@@ -89,9 +111,23 @@ function concat(arr, join, is_prefix)
     return acc
 end
 
+function make_path(arr)
+    return concat(arr, os_info.path_sep, false)
+end
+
+function get_script_dir()
+    local info = debug.getinfo(1, "S").source:sub(2)
+    return info:match("(.*)[/\\]")
+end
+
 -- -----------------------------------------------------------------------------
 -- Project configuration
 -- -----------------------------------------------------------------------------
+
+local root_dir = get_script_dir()
+if not root_dir then
+    root_dir = "."
+end
 
 local compilers = {
     clang = {
@@ -157,12 +193,11 @@ local compilers = {
 }
 
 local presheaf = {
-    src = "src/all.cc",
-    test_src = "tests/test_all.cc",
-    include_dir = "include",
-    defines = { "_CRT_SECURE_NO_WARNINGS" },
-    debug_defines = { "PSH_DEBUG" },
-    lib = "libpresheaf",
+    src = make_path({ root_dir, "src", "all.cc" }),
+    test_src = make_path({ root_dir, "tests", "test_all.cc" }),
+    include_dir = make_path({ root_dir, "include" }),
+    debug_defines = { "PSH_DEBUG", "PSH_ABORT_AT_MEMORY_ERROR" },
+    lib = os_windows and "presheaf" or "libpresheaf",
     test_exe = "test_all",
     std = "c++20",
 }
@@ -198,24 +233,33 @@ end
 -- -----------------------------------------------------------------------------
 
 if options.fmt then
-    exec("clang-format -i include/psh/*.h src/*.cc tests/*.h tests/*.cc")
+    exec(
+        string.format(
+            "clang-format -i %s %s %s %s",
+            make_path({ root_dir, "include", "psh", "*.h" }),
+            make_path({ root_dir, "src", "*.cc" }),
+            make_path({ root_dir, "tests", "*.h" }),
+            make_path({ root_dir, "tests", "*.cc" })
+        )
+    )
 end
 
-local out_dir = "build"
-local obj_out = out_dir .. os_info.path_sep .. presheaf.lib .. os_info.obj_ext
-local lib_out = out_dir .. os_info.path_sep .. presheaf.lib .. os_info.lib_ext
+local out_dir = make_path({ ".", "build" })
+local obj_out = make_path({ out_dir, presheaf.lib .. os_info.obj_ext })
+local lib_out = make_path({ out_dir, presheaf.lib .. os_info.lib_ext })
 exec("mkdir " .. out_dir, true)
 
 -- Compile without linking.
 exec(
     string.format(
-        string.rep("%s ", 9),
+        string.rep("%s ", 10),
         tc.cc,
         tc.opt_no_link,
         tc.opt_std .. presheaf.std,
         tc.flags_common,
         options.release and tc.flags_release or tc.flags_debug,
-        concat(presheaf.defines, " " .. tc.opt_define, true),
+        concat(custom_compiler_flags, " ", false),
+        options.release and "" or concat(presheaf.debug_defines, " " .. tc.opt_define, true),
         tc.opt_include .. presheaf.include_dir,
         tc.opt_out_obj .. obj_out,
         presheaf.src
@@ -229,12 +273,11 @@ if options.test then
     local test_exe_out = out_dir .. os_info.path_sep .. presheaf.test_exe .. os_info.exe_ext
     exec(
         string.format(
-            string.rep("%s ", 10),
+            string.rep("%s ", 9),
             tc.cc,
             tc.opt_std .. presheaf.std,
             tc.flags_common,
             tc.flags_debug,
-            concat(presheaf.defines, " " .. tc.opt_define, true),
             concat(presheaf.debug_defines, " " .. tc.opt_define, true),
             tc.opt_include .. presheaf.include_dir,
             tc.opt_out_obj .. out_dir .. os_info.path_sep .. presheaf.test_exe .. os_info.obj_ext,

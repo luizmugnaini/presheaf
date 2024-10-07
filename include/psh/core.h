@@ -61,11 +61,13 @@ using strptr = char const*;
 // - Macros for operating system and compiler detection -
 // -----------------------------------------------------------------------------
 
-/// Macros for OS detection.
 #if defined(_WIN32)
 #    define PSH_OS_WINDOWS_32
 #elif defined(_WIN64)
 #    define PSH_OS_WINDOWS_64
+#endif
+#if defined(_WIN32) || defined(_WIN64)
+#    define PSH_OS_WINDOWS
 #endif
 #if defined(__APPLE__) || defined(__MACH__)
 #    define PSH_OS_APPLE
@@ -268,7 +270,14 @@ using strptr = char const*;
 #define psh_ptr_add(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) + static_cast<uptr>(offset)))
 #define psh_ptr_sub(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) - static_cast<iptr>(offset)))
 
-#define psh_ptr_offset_bytes(end_ptr, start_ptr) reinterpret_cast<iptr>(psh_ptr_sub(reinterpret_cast<u8 const*>(end_ptr), reinterpret_cast<iptr>(reinterpret_cast<u8 const*>(start_ptr))))
+#define psh_ptr_same_addr(lhs_ptr, rhs_ptr) (reinterpret_cast<u8*>(lhs_ptr) == reinterpret_cast<u8*>(rhs_ptr))
+
+#define psh_ptr_offset_bytes(end_ptr, start_ptr)                                           \
+    (psh_ptr_same_addr(end_ptr, start_ptr) ? 0                                             \
+                                           : reinterpret_cast<iptr>(                       \
+                                                 psh_ptr_sub(                              \
+                                                     reinterpret_cast<u8 const*>(end_ptr), \
+                                                     reinterpret_cast<iptr>(start_ptr))))
 
 // -----------------------------------------------------------------------------
 // - Mathematical operations -
@@ -297,10 +306,10 @@ using strptr = char const*;
 #define psh_ub_add(lhs, rhs, ub) (((lhs) + (rhs)) > (ub) ? (ub) : ((lhs) + (rhs)))
 
 /// Decrement an unsigned value without wrapping - the lower bound will always be zero.
-#define psh_nowrap_unsigned_dec(x) (((x) > 0) ? ((x)-1) : 0)
+#define psh_nowrap_unsigned_dec(x) (((x) > 0) ? ((x) - 1) : 0)
 
 /// Check if a value is a power of two.
-#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n)-1)))
+#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n) - 1)))
 
 // -----------------------------------------------------------------------------
 // - Common memory sizes -

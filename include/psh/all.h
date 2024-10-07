@@ -19,49 +19,30 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Conversion between number representations.
+/// Description: Single header containing all other library header files.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
 #pragma once
 
+// clang-format off
+#include <psh/core.h>
+#include <psh/math.h>
+#include <psh/time.h>
+#include <psh/vec.h>
+#include <psh/log.h>
+#include <psh/not_null.h>
+#include <psh/option.h>
+#include <psh/fat_ptr.h>
+#include <psh/buffer.h>
+#include <psh/array.h>
+#include <psh/dyn_array.h>
 #include <psh/arena.h>
-#include <psh/assert.h>
-#include <psh/bit.h>
+#include <psh/memory_utils.h>
+#include <psh/arena.h>
+#include <psh/stack.h>
+#include <psh/memory_manager.h>
 #include <psh/string.h>
-
-namespace psh {
-    inline char digit_to_char(u8 digit) noexcept {
-        psh_assert_msg(digit < 10, "Expected digit to be between 0 and 9");
-        return '0' + static_cast<char>(digit);
-    }
-
-    /// Get the binary representation of a number
-    template <typename T>
-    String binary_repr(Arena* arena, T val) noexcept {
-        if (val == 0) {
-            return String{arena, StringView{"0b0"}};
-        }
-
-        constexpr i32 BIT_COUNT = psh_type_bit_count(T);
-        String        repr{arena, 2 + BIT_COUNT + 1};
-
-        repr.data.buf[0] = '0';
-        repr.data.buf[1] = 'b';
-        repr.data.size += 2;
-
-        i32 leading_zeros_count = 0;
-        for (i32 idx = BIT_COUNT - 1; idx >= 0; --idx) {
-            if (psh_bit_at(val, idx) == 0) {
-                ++leading_zeros_count;
-            } else {
-                break;
-            }
-        }
-
-        for (i32 idx = BIT_COUNT - 1 - leading_zeros_count; idx >= 0; --idx) {
-            repr.data[repr.data.size++] = digit_to_char(psh_bit_at(val, idx));
-        }
-
-        return repr;
-    }
-}  // namespace psh
+#include <psh/streams.h>
+#include <psh/repr.h>
+#include <psh/bit.h>
+// clang-format on

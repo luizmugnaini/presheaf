@@ -144,7 +144,7 @@ namespace psh {
     }
 
     ArenaCheckpoint Arena::make_checkpoint() noexcept {
-        return ArenaCheckpoint {
+        return ArenaCheckpoint{
 #if defined(PSH_DEBUG)
             .arena = this,
 #endif
