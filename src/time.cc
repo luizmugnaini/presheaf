@@ -24,7 +24,7 @@
 
 #include <psh/time.h>
 
-#if defined(PSH_OS_WINDOWS_32)
+#if defined(PSH_OS_WINDOWS)
 #    include <Windows.h>
 #elif defined(PSH_OS_UNIX)
 #    include <time.h>
@@ -33,7 +33,7 @@
 namespace psh {
     Option<f64> current_time_in_seconds() noexcept {
         Option<f64> curr_time = {};
-#if defined(PSH_OS_WINDOWS_32)
+#if defined(PSH_OS_WINDOWS)
         LARGE_INTEGER frequency;
         LARGE_INTEGER counter;
         if (psh_likely(

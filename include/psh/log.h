@@ -32,11 +32,12 @@ namespace psh {
     /// The levels are set in an increasing level of vebosity, where `LogLevel::Fatal` is the lowest
     /// and `LogLevel::Debug` is the highest.
     enum struct LogLevel {
-        LEVEL_FATAL   = 0,  ///< Unrecoverable error.
-        LEVEL_ERROR   = 1,  ///< Recoverable error.
-        LEVEL_WARNING = 2,  ///< Indicates that something non-optimal may have happened.
-        LEVEL_INFO    = 3,  ///< General message to state any useful information.
-        LEVEL_DEBUG   = 4,  ///< Serves only for debugging purposes in development.
+        LEVEL_FATAL = 0,  ///< Unrecoverable error.
+        LEVEL_ERROR,      ///< Recoverable error.
+        LEVEL_WARNING,    ///< Indicates that something non-optimal may have happened.
+        LEVEL_INFO,       ///< General message to state any useful information.
+        LEVEL_DEBUG,      ///< Serves only for debugging purposes in development.
+        LEVEL_COUNT,
     };
 
     struct LogInfo {

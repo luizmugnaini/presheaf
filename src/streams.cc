@@ -27,7 +27,7 @@
 #include <psh/core.h>
 #include <stdio.h>
 
-#if defined(PSH_OS_WINDOWS_32)
+#if defined(PSH_OS_WINDOWS)
 #    include <Windows.h>
 #    define PSH_IMPL_PATH_MAX_CHAR_COUNT MAX_PATH
 #else
@@ -41,14 +41,26 @@
 
 namespace psh {
     namespace impl_streams {
+        // TODO(luiz): To be honest this is quite ugly, `OpenFileFlag` is just a concatenation of
+        // `ReadFileFlag` and `WriteFileFlag`. It is not exposed, but is still a weak maintainance point.
+        enum struct OpenFileFlag : u32 {
+            READ_TEXT = 0,
+            READ_TEXT_EXTENDED,
+            READ_BIN,
+            READ_BIN_EXTENDED,
+            WRITE,
+            WRITE_EXTENDED,
+            APPEND,
+            FLAG_COUNT,
+        };
         constexpr strptr OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(OpenFileFlag::FLAG_COUNT)] = {
-            "r",
-            "r+",
-            "rb",
-            "rb+",
-            "w",
-            "w+",
-            "a",
+            "r",    // ReadFileFlag::READ_TEXT
+            "r+",   // ReadFileFlag::READ_TEXT_EXTENDED
+            "rb",   // ReadFileFlag::READ_BIN
+            "rb+",  // ReadFileFlag::READ_BIN_EXTENDED
+            "w",    // WriteFileFlag::WRITE
+            "w+",   // WriteFileFlag::WRITE_EXTENDED
+            "a",    // WriteFileFlag::APPEND
         };
 
         constexpr bool has_read_permission(OpenFileFlag flag) noexcept {
@@ -61,7 +73,15 @@ namespace psh {
     }  // namespace impl_streams
 
     FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) noexcept {
-        FILE* fhandle = fopen(path, impl_streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(static_cast<OpenFileFlag>(flag))]);
+        strptr mode = impl_streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<u32>(flag)];
+        FILE*  fhandle;
+
+#if defined(PSH_OS_WINDOWS)
+        fopen_s(&fhandle, path, mode);
+#else
+        fhandle = fopen(path, mode);
+#endif
+
         if (psh_unlikely(fhandle == nullptr)) {
             return FileReadResult{.status = FileStatus::FAILED_TO_OPEN};
         }
@@ -111,7 +131,7 @@ namespace psh {
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
         String          content{arena, initial_buf_size};
 
-#if defined(PSH_OS_WINDOWS_32)
+#if defined(PSH_OS_WINDOWS)
         HANDLE handle_stdin = GetStdHandle(STD_INPUT_HANDLE);
         if (handle_stdin == INVALID_HANDLE_VALUE) {
             psh_error("Unable to acquire the handle to the stdin stream.");
@@ -175,7 +195,7 @@ namespace psh {
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
         String          abs_path{arena, PSH_IMPL_PATH_MAX_CHAR_COUNT};
 
-#if defined(PSH_OS_WINDOWS_32)
+#if defined(PSH_OS_WINDOWS)
         DWORD result = GetFullPathName(file_path, PSH_IMPL_PATH_MAX_CHAR_COUNT, abs_path.data.buf, nullptr);
         if (result == 0) {
             psh_error_fmt("Unable to obtain the full path of %s due to the error: %lu", file_path, GetLastError());

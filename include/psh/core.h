@@ -84,11 +84,6 @@ using strptr = char const*;
 
 /// Windows-specific tweaks.
 #if defined(PSH_OS_WINDOWS_32) || defined(PSH_OS_WINDOWS_64)
-// Stop MSVC from complaining about fopen and such.
-#    ifndef _CRT_SECURE_NO_WARNINGS
-#        define _CRT_SECURE_NO_WARNINGS
-#    endif
-// Macros disabling many of the annoying Windows headers macros.
 #    ifndef WIN32_LEAN_AND_MEAN
 #        define WIN32_LEAN_AND_MEAN
 #    endif
@@ -306,10 +301,10 @@ using strptr = char const*;
 #define psh_ub_add(lhs, rhs, ub) (((lhs) + (rhs)) > (ub) ? (ub) : ((lhs) + (rhs)))
 
 /// Decrement an unsigned value without wrapping - the lower bound will always be zero.
-#define psh_nowrap_unsigned_dec(x) (((x) > 0) ? ((x) - 1) : 0)
+#define psh_nowrap_unsigned_dec(x) (((x) > 0) ? ((x)-1) : 0)
 
 /// Check if a value is a power of two.
-#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n) - 1)))
+#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n)-1)))
 
 // -----------------------------------------------------------------------------
 // - Common memory sizes -
