@@ -193,8 +193,8 @@ local compilers = {
 }
 
 local presheaf = {
-    src = make_path({ root_dir, "src", "all.cc" }),
-    test_src = make_path({ root_dir, "tests", "test_all.cc" }),
+    src = make_path({ root_dir, "src", "all.cpp" }),
+    test_src = make_path({ root_dir, "tests", "test_all.cpp" }),
     include_dir = make_path({ root_dir, "include" }),
     debug_defines = { "PSH_DEBUG", "PSH_ABORT_AT_MEMORY_ERROR" },
     lib = os_windows and "presheaf" or "libpresheaf",
@@ -236,10 +236,10 @@ if options.fmt then
     exec(
         string.format(
             "clang-format -i %s %s %s %s",
-            make_path({ root_dir, "include", "psh", "*.h" }),
-            make_path({ root_dir, "src", "*.cc" }),
-            make_path({ root_dir, "tests", "*.h" }),
-            make_path({ root_dir, "tests", "*.cc" })
+            make_path({ root_dir, "include", "psh", "*.hpp" }),
+            make_path({ root_dir, "src", "*.cpp" }),
+            make_path({ root_dir, "tests", "*.hpp" }),
+            make_path({ root_dir, "tests", "*.cpp" })
         )
     )
 end
