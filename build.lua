@@ -69,9 +69,29 @@ if custom_flags_idx ~= nil then
     end
 end
 
-local os_windows = (package.config:sub(1, 1) == "\\")
-local os_info = {}
-if os_windows then
+-- -----------------------------------------------------------------------------
+-- Operating system information
+-- -----------------------------------------------------------------------------
+
+local os_info = {
+    windows = (package.config:sub(1, 1) == "\\"),
+    linux = false,
+    darwin = false,
+}
+
+if not os_info.windows then
+    local handle = io.popen("uname")
+    local result = handle:read("*a")
+    handle:close()
+
+    if string.match(result, "Linux") then
+        os_info.linux = true
+    elseif string.match(result, "Darwin") then
+        os_info.darwin = true
+    end
+end
+
+if os_info.windows then
     os_info.path_sep = "\\"
     os_info.silence_cmd = " > NUL 2>&1"
     os_info.obj_ext = ".obj"
@@ -85,37 +105,49 @@ else
     os_info.exe_ext = ""
 end
 
-function exec(cmd_str, quiet)
-    local cmd_res = (not (quiet or options.quiet)) and cmd_str or (cmd_str .. os_info.silence_cmd)
+-- -----------------------------------------------------------------------------
+-- Utility functions
+-- -----------------------------------------------------------------------------
+
+local function log_info(msg)
     if not options.quiet then
-        print("\x1b[1;35mexecuting ::\x1b[0m " .. cmd_res)
+        print("\x1b[1;35m[INFO]\x1b[0m " .. msg)
     end
-    os.execute(cmd_res)
 end
 
-function concat(arr, join, is_prefix)
-    if arr == nil or #arr < 1 then
+local function exec(cmd_str, quiet)
+    if quiet then
+        os.execute(cmd_str .. os_info.silence_cmd)
+    else
+        log_info("Executing: " .. cmd_str)
+        os.execute(cmd_str)
+    end
+end
+
+local function concat(arr, join, is_prefix)
+    if #arr < 1 then
         return ""
     end
 
-    local acc = nil
-    if is_prefix then
-        acc = join .. arr[1]
-    else
-        acc = arr[1]
+    local acc = arr[1]
+    for i = 2, #arr do
+        if arr[i] and (arr[i] ~= "") then -- Skip empty strings
+            acc = acc .. join .. arr[i]
+        end
     end
 
-    for i = 2, #arr do
-        acc = acc .. join .. arr[i]
+    if is_prefix then
+        acc = join .. acc
     end
+
     return acc
 end
 
-function make_path(arr)
+local function make_path(arr)
     return concat(arr, os_info.path_sep, false)
 end
 
-function get_script_dir()
+local function get_script_dir()
     local info = debug.getinfo(1, "S").source:sub(2)
     return info:match("(.*)[/\\]")
 end
@@ -197,32 +229,21 @@ local presheaf = {
     test_src = make_path({ root_dir, "tests", "test_all.cpp" }),
     include_dir = make_path({ root_dir, "include" }),
     debug_defines = { "PSH_DEBUG", "PSH_ABORT_AT_MEMORY_ERROR" },
-    lib = os_windows and "presheaf" or "libpresheaf",
+    lib = os_info.windows and "presheaf" or "libpresheaf",
     test_exe = "test_all",
     std = "c++20",
+    out_dir = make_path({ ".", "build" }),
 }
-
-function presheaf_flags(tc)
-    return string.format(
-        "%s %s %s %s %s %s",
-        tc.opt_std .. presheaf.std,
-        tc.flags_common,
-        options.release and tc.flags_release or tc.flags_debug,
-        concat(presheaf.defines, " " .. tc.opt_define, true),
-        options.release and "" or concat(presheaf.debug_defines, " " .. tc.opt_define, true),
-        tc.opt_include .. presheaf.include_dir
-    )
-end
 
 -- -----------------------------------------------------------------------------
 -- Toolchain
 -- -----------------------------------------------------------------------------
 
-local tc = os_windows and compilers.msvc or compilers.gcc
+local tc = os_info.windows and compilers.msvc or compilers.gcc
 if options.clang then
-    tc = os_windows and compilers.clang_cl or compilers.clang
+    tc = os_info.windows and compilers.clang_cl or compilers.clang
 elseif options.gcc then
-    assert(not os_windows, "GCC build not supported in Windows")
+    assert(not os_info.windows, "GCC build not supported on Windows")
     tc = compilers.gcc
 elseif options.msvc then
     tc = compilers.msvc
@@ -232,61 +253,86 @@ end
 -- Execute build instructions
 -- -----------------------------------------------------------------------------
 
-if options.fmt then
-    exec(
-        string.format(
-            "clang-format -i %s %s %s %s",
-            make_path({ root_dir, "include", "psh", "*.hpp" }),
-            make_path({ root_dir, "src", "*.cpp" }),
-            make_path({ root_dir, "tests", "*.hpp" }),
-            make_path({ root_dir, "tests", "*.cpp" })
-        )
-    )
+local function prepare_output_target()
+    local mkdir_cmd = os_info.windows and "mkdir" or "mkdir -p"
+    exec(mkdir_cmd .. " " .. presheaf.out_dir, true)
 end
 
-local out_dir = make_path({ ".", "build" })
-local obj_out = make_path({ out_dir, presheaf.lib .. os_info.obj_ext })
-local lib_out = make_path({ out_dir, presheaf.lib .. os_info.lib_ext })
-exec("mkdir " .. out_dir, true)
+local function format_source_files()
+    log_info("Formatting source files...")
+    exec(concat({
+        "clang-format -i",
+        make_path({ root_dir, "include", "psh", "*.hpp" }),
+        make_path({ root_dir, "src", "*.cpp" }),
+        make_path({ root_dir, "tests", "*.hpp" }),
+        make_path({ root_dir, "tests", "*.cpp" }),
+    }, " "))
+end
 
--- Compile without linking.
-exec(
-    string.format(
-        string.rep("%s ", 10),
+local function build_presheaf_lib()
+    log_info("Building the presheaf library...")
+
+    local default_flags = tc.flags_common .. " " .. (options.release and tc.flags_release or tc.flags_debug)
+    local custom_flags = concat(custom_compiler_flags, " ")
+    local defines = options.release and "" or concat(presheaf.debug_defines, " " .. tc.opt_define, true)
+
+    -- Compile without linking.
+    local obj_out = make_path({ presheaf.out_dir, presheaf.lib .. os_info.obj_ext })
+    exec(concat({
         tc.cc,
         tc.opt_no_link,
         tc.opt_std .. presheaf.std,
-        tc.flags_common,
-        options.release and tc.flags_release or tc.flags_debug,
-        concat(custom_compiler_flags, " ", false),
-        options.release and "" or concat(presheaf.debug_defines, " " .. tc.opt_define, true),
+        default_flags,
+        custom_flags,
+        defines,
         tc.opt_include .. presheaf.include_dir,
         tc.opt_out_obj .. obj_out,
-        presheaf.src
-    )
-)
--- Archive objs into a library.
-exec(string.format("%s %s %s %s", tc.ar, tc.ar_flags, tc.ar_out .. lib_out, obj_out))
+        presheaf.src,
+    }, " "))
 
-if options.test then
-    -- Compile tests with debug flags.
-    local test_exe_out = out_dir .. os_info.path_sep .. presheaf.test_exe .. os_info.exe_ext
-    exec(
-        string.format(
-            string.rep("%s ", 9),
-            tc.cc,
-            tc.opt_std .. presheaf.std,
-            tc.flags_common,
-            tc.flags_debug,
-            concat(presheaf.debug_defines, " " .. tc.opt_define, true),
-            tc.opt_include .. presheaf.include_dir,
-            tc.opt_out_obj .. out_dir .. os_info.path_sep .. presheaf.test_exe .. os_info.obj_ext,
-            tc.opt_out_exe .. test_exe_out,
-            presheaf.test_src
-        )
-    )
-    -- Run tests.
-    exec(test_exe_out)
+    -- Archive objs into a library.
+    local lib_out = make_path({ presheaf.out_dir, presheaf.lib .. os_info.lib_ext })
+    exec(concat({ tc.ar, tc.ar_flags, tc.ar_out .. lib_out, obj_out }, " "))
 end
 
-print(string.format("\x1b[1;35mtime elapsed ::\x1b[0m %.5f seconds", os.difftime(os.time(), start_time)))
+local function build_presheaf_tests()
+    log_info("Building the library tests...")
+
+    local default_flags = tc.flags_common .. " " .. tc.flags_debug
+    local custom_flags = concat(custom_compiler_flags, " ")
+    local defines = concat(presheaf.debug_defines, " " .. tc.opt_define, true)
+
+    local out_obj_flag = ""
+    if tc.cc == "cl" then
+        out_obj_flag = tc.opt_out_obj .. make_path({ presheaf.out_dir, presheaf.test_exe .. os_info.obj_ext })
+    end
+
+    local test_exe_out = make_path({ presheaf.out_dir, presheaf.test_exe .. os_info.exe_ext })
+    exec(concat({
+        tc.cc,
+        tc.opt_std .. presheaf.std,
+        default_flags,
+        custom_flags,
+        defines,
+        tc.opt_include .. presheaf.include_dir,
+        out_obj_flag,
+        tc.opt_out_exe .. test_exe_out,
+        presheaf.test_src,
+    }, " "))
+    return test_exe_out
+end
+
+if options.fmt then
+    format_source_files()
+end
+
+prepare_output_target()
+build_presheaf_lib()
+
+if options.test then
+    local test_exe = build_presheaf_tests()
+    exec(test_exe)
+end
+
+local end_time = os.time()
+log_info(string.format("Time elapsed: %.5f seconds", os.difftime(end_time, start_time)))
