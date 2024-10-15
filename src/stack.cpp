@@ -54,7 +54,7 @@ namespace psh {
         usize const required = padding + size_bytes;
 
         if (psh_unlikely(required > this->size - this->offset)) {
-            psh_error_fmt(
+            psh_log_error_fmt(
                 "StackAlloc::alloc unable to allocate %zu bytes of memory (%zu bytes required "
                 "due to alignment and padding). The stack allocator has only %zu bytes "
                 "remaining.",
@@ -95,14 +95,14 @@ namespace psh {
 
         // Check if the address is within the allocator's memory.
         if (psh_unlikely((block < this->buf) || (block >= this->buf + this->size))) {
-            psh_error("StackAlloc::realloc called with a pointer outside of the memory region "
-                      "managed by the stack allocator.");
+            psh_log_error("StackAlloc::realloc called with a pointer outside of the memory region "
+                          "managed by the stack allocator.");
             psh_impl_return_from_memory_error();
         }
 
         // Check if the address is already free.
         if (psh_unlikely(block >= this->buf + this->offset)) {
-            psh_error("StackAlloc::realloc called with a free block of memory (use-after-free error).");
+            psh_log_error("StackAlloc::realloc called with a free block of memory (use-after-free error).");
             psh_impl_return_from_memory_error();
         }
 
@@ -110,7 +110,7 @@ namespace psh {
 
         // Check memory availability.
         if (psh_unlikely(new_size_bytes > this->size - this->offset)) {
-            psh_error_fmt(
+            psh_log_error_fmt(
                 "StackAlloc::realloc cannot reallocate memory from size %zu to %zu. Only %zu "
                 "bytes of memory remaining.",
                 header->size,
@@ -158,17 +158,17 @@ namespace psh {
             valid = false;
         }
         if (psh_unlikely((block < this->buf) || (block >= this->buf + this->size))) {
-            psh_error("StackAlloc::header_of called with a pointer to a block of memory "
-                      "outside of the stack allocator scope.");
+            psh_log_error("StackAlloc::header_of called with a pointer to a block of memory "
+                          "outside of the stack allocator scope.");
             valid = false;
         }
         if (psh_unlikely(block > this->buf + this->previous_offset)) {
-            psh_error("StackAlloc::header_of called with a pointer to a freed block of memory.");
+            psh_log_error("StackAlloc::header_of called with a pointer to a freed block of memory.");
             valid = false;
         }
         if (psh_unlikely(block_header < this->buf)) {
-            psh_error("StackAlloc::header_of expected the memory block header to be contained "
-                      "in the stack allocator scope.");
+            psh_log_error("StackAlloc::header_of expected the memory block header to be contained "
+                          "in the stack allocator scope.");
             valid = false;
         }
 
@@ -209,7 +209,7 @@ namespace psh {
                 (block > this->buf + this->size)
                     ? "StackAlloc::free_at called with a pointer outside of the stack allocator memory region."
                     : "StackAlloc::free_at called with a pointer to an already free region of the stack allocator memory.";
-            psh_error(fail_reason);
+            psh_log_error(fail_reason);
 
             psh_impl_return_from_memory_error();
         }

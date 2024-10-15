@@ -27,31 +27,28 @@
 #include <psh/core.hpp>
 #include <psh/log.hpp>
 
-#define PSH_IMPL_FMT_ASSERT_MSG     "Assertion failed: %s, msg: %s"
-#define PSH_IMPL_FMT_ASSERT_MSG_FMT "Assertion failed: %s, msg: "
-
 /// Assertion macros.
 #if !defined(PSH_DISABLE_ASSERTS)
-#    define psh_assert(expr)                                                 \
-        do {                                                                 \
-            if (!static_cast<bool>(expr)) {                                  \
-                psh_fatal_fmt(PSH_IMPL_FMT_ASSERT_MSG, #expr, "no message"); \
-                psh_abort();                                                 \
-            }                                                                \
+#    define psh_assert(expr)                                                             \
+        do {                                                                             \
+            if (!static_cast<bool>(expr)) {                                              \
+                psh_log_fatal_fmt("Assertion failed: %s, msg: %s", #expr, "no message"); \
+                psh_abort_program();                                                     \
+            }                                                                            \
         } while (0)
-#    define psh_assert_msg(expr, msg)                                 \
-        do {                                                          \
-            if (!static_cast<bool>(expr)) {                           \
-                psh_fatal_fmt(PSH_IMPL_FMT_ASSERT_MSG, #expr, (msg)); \
-                psh_abort();                                          \
-            }                                                         \
+#    define psh_assert_msg(expr, msg)                                             \
+        do {                                                                      \
+            if (!static_cast<bool>(expr)) {                                       \
+                psh_log_fatal_fmt("Assertion failed: %s, msg: %s", #expr, (msg)); \
+                psh_abort_program();                                              \
+            }                                                                     \
         } while (0)
-#    define psh_assert_msg_fmt(expr, fmt, ...)                                      \
-        do {                                                                        \
-            if (!static_cast<bool>(expr)) {                                         \
-                psh_fatal_fmt(PSH_IMPL_FMT_ASSERT_MSG_FMT fmt, #expr, __VA_ARGS__); \
-                psh_abort();                                                        \
-            }                                                                       \
+#    define psh_assert_msg_fmt(expr, fmt, ...)                                            \
+        do {                                                                              \
+            if (!static_cast<bool>(expr)) {                                               \
+                psh_log_fatal_fmt("Assertion failed: %s, msg: " fmt, #expr, __VA_ARGS__); \
+                psh_abort_program();                                                      \
+            }                                                                             \
         } while (0)
 #else
 #    define psh_assert(expr)                   (void)(expr)
@@ -59,16 +56,16 @@
 #    define psh_assert_msg_fmt(expr, fmt, ...) (void)(expr)
 #endif
 
-#define psh_todo()                                   \
-    do {                                             \
-        psh_fatal("TODO: code-path unimplemented!"); \
-        psh_abort();                                 \
+#define psh_todo()                                       \
+    do {                                                 \
+        psh_log_fatal("TODO: code-path unimplemented!"); \
+        psh_abort_program();                             \
     } while (0)
 
-#define psh_todo_msg(msg)                                             \
-    do {                                                              \
-        psh_fatal_fmt("TODO: code-path unimplemented, msg: %s", msg); \
-        psh_abort();                                                  \
+#define psh_todo_msg(msg)                                                 \
+    do {                                                                  \
+        psh_log_fatal_fmt("TODO: code-path unimplemented, msg: %s", msg); \
+        psh_abort_program();                                              \
     } while (0)
 
 // -----------------------------------------------------------------------------
@@ -76,9 +73,6 @@
 // -----------------------------------------------------------------------------
 
 #if defined(PSH_DEFINE_SHORT_NAMES)
-#    ifndef assert
-#        define assert psh_assert
-#    endif
 #    ifndef assert_msg
 #        define assert_msg psh_assert_msg
 #    endif

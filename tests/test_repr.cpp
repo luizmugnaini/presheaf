@@ -27,7 +27,7 @@
 #include <psh/repr.hpp>
 #include "utils.hpp"
 
-void test_binary_repr() {
+psh_internal void test_binary_repr() {
     u8*        memory = reinterpret_cast<u8*>(malloc(256));
     psh::Arena arena{memory, 256};
     {
@@ -48,11 +48,11 @@ void test_binary_repr() {
     test_passed();
 }
 
-void test_repr() {
+psh_internal void test_repr() {
     test_binary_repr();
 }
 
-#if !defined(NOMAIN)
+#if !defined(PSH_TEST_NOMAIN)
 int main() {
     test_repr();
     return 0;

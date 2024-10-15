@@ -29,7 +29,7 @@
 #include <psh/string.hpp>
 #include "utils.hpp"
 
-void test_str_type() {
+psh_internal void test_str_type() {
     constexpr auto s = psh_str("Frodo Baggins");
     psh_assert(psh::str_equal(s.buf, "Frodo Baggins"));
     psh_assert(s.size() == strlen("Frodo Baggins"));
@@ -37,7 +37,7 @@ void test_str_type() {
     test_passed();
 }
 
-void test_string_view_type() {
+psh_internal void test_string_view_type() {
     psh::StringView v1{"Nine for the Elven-kings under moon and star"};
     psh_assert(psh::str_equal(v1.data.buf, "Nine for the Elven-kings under moon and star"));
     psh_assert(v1.data.size == strlen("Nine for the Elven-kings under moon and star"));
@@ -55,7 +55,7 @@ void test_string_view_type() {
     test_passed();
 }
 
-void test_string_type() {
+psh_internal void test_string_type() {
     psh::Arena arena{reinterpret_cast<u8*>(malloc(512)), 512};
     {
         psh::String s{&arena, psh_string_view("Seven for the Dwarf-lords in their halls of stone")};
@@ -68,7 +68,7 @@ void test_string_type() {
     test_passed();
 }
 
-void test_string_join() {
+psh_internal void test_string_join() {
     constexpr auto check_str1 = psh_str("One ring to rule them all, "
                                         "One ring to find them, "
                                         "One ring to bring them all, "
@@ -124,14 +124,14 @@ void test_string_join() {
     test_passed();
 }
 
-void test_string() {
+psh_internal void test_string() {
     test_str_type();
     test_string_view_type();
     test_string_type();
     test_string_join();
 }
 
-#if !defined(NOMAIN)
+#if !defined(PSH_TEST_NOMAIN)
 int main() {
     test_string();
     return 0;

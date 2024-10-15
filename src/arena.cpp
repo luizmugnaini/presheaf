@@ -28,7 +28,7 @@
 
 #define psh_impl_arena_report_out_of_memory(arena, requested_size, requested_alignment)  \
     do {                                                                                 \
-        psh_error_fmt(                                                                   \
+        psh_log_error_fmt(                                                               \
             "Arena unable to allocate %zu bytes (with %u bytes of alignment) of memory." \
             " The allocator has only %zu bytes remaining.",                              \
             requested_size,                                                              \
@@ -75,7 +75,7 @@ namespace psh {
         }
 
         if (psh_unlikely(new_size_bytes == 0)) {
-            psh_error_fmt(
+            psh_log_error_fmt(
                 "Arena requested to reallocate block from %zu bytes to 0 bytes, which isn't possible.",
                 current_size_bytes);
             psh_impl_return_from_memory_error();
@@ -91,13 +91,13 @@ namespace psh {
 
         // Check if the block lies within the allocator's memory.
         if (psh_unlikely((block_bytes < this->buf) || (block_bytes >= this->buf + this->size))) {
-            psh_error("ArenaAlloc::realloc called with pointer outside of its domain.");
+            psh_log_error("ArenaAlloc::realloc called with pointer outside of its domain.");
             psh_impl_return_from_memory_error();
         }
 
         // Check if the block is already free.
         if (psh_unlikely(block_bytes >= free_mem)) {
-            psh_error("ArenaAlloc::realloc called with a pointer to a free address of the arena domain.");
+            psh_log_error("ArenaAlloc::realloc called with a pointer to a free address of the arena domain.");
             psh_impl_return_from_memory_error();
         }
 
@@ -105,7 +105,7 @@ namespace psh {
         usize new_block_size     = sizeof(u8) * new_size_bytes;
 
         if (psh_unlikely(current_size_bytes > this->offset)) {
-            psh_error_fmt(
+            psh_log_error_fmt(
                 "Arena::realloc called with current_block_size (%zu) surpassing the current offset (%zu) of the "
                 "arena, which isn't possible",
                 current_size_bytes,
@@ -117,7 +117,7 @@ namespace psh {
         if (block_bytes == free_mem - current_size_bytes) {
             // Check if there is enough space.
             if (psh_unlikely(block_bytes + new_size_bytes > mem_end)) {
-                psh_error_fmt(
+                psh_log_error_fmt(
                     "ArenaAlloc::realloc unable to reallocate block from %zu bytes to %zu bytes.",
                     current_size_bytes,
                     new_size_bytes);

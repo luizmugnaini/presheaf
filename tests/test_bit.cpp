@@ -28,7 +28,7 @@
 #include <psh/log.hpp>
 #include "utils.hpp"
 
-void test_create_bit() {
+psh_internal void test_create_bit() {
     psh_assert(psh_bit(u32, 3) == 0b1000);
     psh_assert(psh_bit(u32, 1) == 0b10);
     psh_assert(psh_bit(u32, 0) == 0b1);
@@ -47,7 +47,7 @@ void test_create_bit() {
     test_passed();
 }
 
-void test_bit_set_and_clear() {
+psh_internal void test_bit_set_and_clear() {
     u32 x = 0;
     psh_bit_set(x, 6);
     psh_assert(x == 0b1000000);
@@ -87,7 +87,7 @@ void test_bit_set_and_clear() {
     test_passed();
 }
 
-void test_bit_at() {
+psh_internal void test_bit_at() {
     u32 x = 0b1011101011;
 
     psh_assert(psh_bit_at(x, 0) == 1);
@@ -120,7 +120,7 @@ void test_bit_at() {
     test_passed();
 }
 
-void test_u16_bytes() {
+psh_internal void test_u16_bytes() {
     psh_assert(psh_u16_from_bytes(0xFB, 0xA3) == 0xFBA3);
     psh_assert(psh_u16_from_bytes(0x01, 0x01) == 0x0101);
     psh_assert(psh_u16_from_bytes(0xAB, 0xBA) == 0xABBA);
@@ -142,7 +142,7 @@ void test_u16_bytes() {
     test_passed();
 }
 
-void test_u16_set_bytes() {
+psh_internal void test_u16_set_bytes() {
     u16 x = 0x01BB;
     psh_u16_set_hi(x, 0xFA);
     psh_assert(x == 0xFABB);
@@ -156,18 +156,18 @@ void test_u16_set_bytes() {
     test_passed();
 }
 
-void test_u8_bit() {
+psh_internal void test_u8_bit() {
     u16 x = 0xAB;
 
     psh_assert(psh_u8_lo(x) == 0x0B);
-    psh_assert(psh_u8_hi(x) == 0xA0);
+    psh_assert(psh_u8_hi(x) == 0x0A);
 
     psh_assert(psh_u8_to_u16_hi(0xFC) == 0xFC00);
 
     test_passed();
 }
 
-void test_sign() {
+psh_internal void test_sign() {
     psh_assert(!psh_int_opposite_sign(8127, 1209831));
     psh_assert(psh_int_opposite_sign(-8127, 1209831));
     psh_assert(psh_int_opposite_sign(8127, -1209831));
@@ -175,7 +175,7 @@ void test_sign() {
     test_passed();
 }
 
-void test_swap() {
+psh_internal void test_swap() {
     i32 x = -1238;
     i32 y = 2193;
     psh_int_swap(x, y);
@@ -189,17 +189,18 @@ void test_swap() {
     test_passed();
 }
 
-void test_bit() {
+psh_internal void test_bit() {
     test_create_bit();
     test_bit_set_and_clear();
     test_bit_at();
+    test_u8_bit();
     test_u16_bytes();
     test_u16_set_bytes();
     test_sign();
     test_swap();
 }
 
-#if !defined(NOMAIN)
+#if !defined(PSH_TEST_NOMAIN)
 int main() {
     test_bit();
     return 0;

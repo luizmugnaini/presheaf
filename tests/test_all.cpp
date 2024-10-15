@@ -23,7 +23,7 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 // Prevent tests from defining a `main()` function.
-#define NOMAIN
+#define PSH_TEST_NOMAIN
 
 // -----------------------------------------------------------------------------
 // - Single compilation unit comprising the whole library implementation -

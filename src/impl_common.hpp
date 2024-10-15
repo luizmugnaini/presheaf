@@ -25,10 +25,10 @@
 #if defined(PSH_ABORT_AT_MEMORY_ERROR)
 #    include <psh/core.hpp>
 #    include <psh/log.hpp>
-#    define psh_impl_return_from_memory_error()                                     \
-        do {                                                                        \
-            psh_fatal("PSH_ABORT_AT_MEMORY_ERROR active, aborting the program..."); \
-            psh_abort();                                                            \
+#    define psh_impl_return_from_memory_error()                                         \
+        do {                                                                            \
+            psh_log_fatal("PSH_ABORT_AT_MEMORY_ERROR active, aborting the program..."); \
+            psh_abort_program();                                                        \
         } while (0)
 #else
 #    define psh_impl_return_from_memory_error() \

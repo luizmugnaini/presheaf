@@ -118,7 +118,7 @@ namespace psh {
 
         i32 res = fclose(reinterpret_cast<FILE*>(fhandle));
         if (psh_unlikely(res == EOF)) {
-            psh_error_fmt("File %s failed to be closed.", path);
+            psh_log_error_fmt("File %s failed to be closed.", path);
         }
 
         return FileReadResult{
@@ -134,7 +134,7 @@ namespace psh {
 #if defined(PSH_OS_WINDOWS)
         HANDLE handle_stdin = GetStdHandle(STD_INPUT_HANDLE);
         if (handle_stdin == INVALID_HANDLE_VALUE) {
-            psh_error("Unable to acquire the handle to the stdin stream.");
+            psh_log_error("Unable to acquire the handle to the stdin stream.");
 
             arena->restore_state(arena_checkpoint);
             return String{};
@@ -149,7 +149,7 @@ namespace psh {
             BOOL  success = ReadFile(handle_stdin, content.data.end(), read_chunk_size, &bytes_read, nullptr);
             content.data.size += bytes_read;
             if (psh_unlikely(!success)) {
-                psh_error("Unable to read from the stdin stream.");
+                psh_log_error("Unable to read from the stdin stream.");
 
                 arena->restore_state(arena_checkpoint);
                 return String{};
@@ -168,7 +168,7 @@ namespace psh {
             isize bytes_read = read(STDIN_FILENO, content.data.end(), read_chunk_size);
 
             if (psh_unlikely(bytes_read == -1)) {
-                psh_error("Unable to read from the stdin stream.");
+                psh_log_error("Unable to read from the stdin stream.");
 
                 arena->restore_state(arena_checkpoint);
                 return String{};
@@ -198,7 +198,10 @@ namespace psh {
 #if defined(PSH_OS_WINDOWS)
         DWORD result = GetFullPathName(file_path, PSH_IMPL_PATH_MAX_CHAR_COUNT, abs_path.data.buf, nullptr);
         if (result == 0) {
-            psh_error_fmt("Unable to obtain the full path of %s due to the error: %lu", file_path, GetLastError());
+            psh_log_error_fmt(
+                "Unable to obtain the full path of %s due to the error: %lu",
+                file_path,
+                GetLastError());
 
             arena->restore_state(arena_checkpoint);
             return String{};
@@ -206,7 +209,7 @@ namespace psh {
 #else
         char* result = realpath(file_path, abs_path.data.buf);
         if (result == nullptr) {
-            psh_error_fmt("Unable to obtain the full path of %s due to the error:", file_path);
+            psh_log_error_fmt("Unable to obtain the full path of %s due to the error:", file_path);
             perror(nullptr);
 
             arena->restore_state(arena_checkpoint);

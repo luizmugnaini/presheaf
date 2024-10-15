@@ -34,7 +34,7 @@
 #include <psh/stack.hpp>
 #include "utils.hpp"
 
-void test_memory_manager_zeroed_at_initialization() {
+psh_internal void test_memory_manager_zeroed_at_initialization() {
     psh::MemoryManager memory_manager{1024};
 
     // Check validity.
@@ -52,7 +52,7 @@ void test_memory_manager_zeroed_at_initialization() {
     test_passed();
 }
 
-void test_memory_manager_initialization_and_shutdown() {
+psh_internal void test_memory_manager_initialization_and_shutdown() {
     usize              memory_manager_capacity = 2048;
     psh::MemoryManager memory_manager{memory_manager_capacity};
     u8 const*          mem_sys_alloc_mem_actual_addr = memory_manager.allocator.buf;
@@ -92,7 +92,7 @@ void test_memory_manager_initialization_and_shutdown() {
     test_passed();
 }
 
-void test_memory_manager_memory_statistics() {
+psh_internal void test_memory_manager_memory_statistics() {
     /** Expected statistics. **/
 
     constexpr usize expected_string_at_least =
@@ -219,13 +219,13 @@ void test_memory_manager_memory_statistics() {
     test_passed();
 }
 
-void test_memory_manager() {
+psh_internal void test_memory_manager() {
     test_memory_manager_zeroed_at_initialization();
     test_memory_manager_initialization_and_shutdown();
     test_memory_manager_memory_statistics();
 }
 
-#if !defined(NOMAIN)
+#if !defined(PSH_TEST_NOMAIN)
 int main() {
     test_memory_manager();
     return 0;

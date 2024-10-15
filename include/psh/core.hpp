@@ -184,12 +184,12 @@ using strptr = char const*;
 
 /// Macro for aborting a program at runtime.
 #if defined(PSH_COMPILER_MSVC)
-#    define psh_abort() __debugbreak()
+#    define psh_abort_program() __debugbreak()
 #elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-#    define psh_abort() __builtin_trap()
+#    define psh_abort_program() __builtin_trap()
 #else
 #    include <signal.h>
-#    define psh_abort() raise(SIGTRAP)
+#    define psh_abort_program() raise(SIGTRAP)
 #endif
 
 #if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
@@ -349,6 +349,9 @@ using strptr = char const*;
 #if defined(PSH_DEFINE_SHORT_NAMES)
 #    ifndef FALLTHROUGH
 #        define FALLTHROUGH PSH_FALLTHROUGH
+#    endif
+#    ifndef abort_program
+#        define abort_program psh_abort_program
 #    endif
 #    ifndef unreachable
 #        define unreachable psh_unreachable

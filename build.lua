@@ -95,14 +95,16 @@ if os_info.windows then
     os_info.path_sep = "\\"
     os_info.silence_cmd = " > NUL 2>&1"
     os_info.obj_ext = ".obj"
-    os_info.lib_ext = ".lib"
     os_info.exe_ext = ".exe"
+    os_info.lib_ext = ".lib"
+    os_info.lib_prefix = ""
 else
     os_info.path_sep = "/"
     os_info.silence_cmd = " > /dev/null 2>&1"
     os_info.obj_ext = ".o"
-    os_info.lib_ext = ".a"
     os_info.exe_ext = ""
+    os_info.lib_ext = ".a"
+    os_info.lib_prefix = "lib"
 end
 
 -- -----------------------------------------------------------------------------
@@ -111,7 +113,7 @@ end
 
 local function log_info(msg)
     if not options.quiet then
-        print("\x1b[1;35m[INFO]\x1b[0m " .. msg)
+        print("\x1b[1;35m[Presheaf INFO]\x1b[0m " .. msg)
     end
 end
 
@@ -215,7 +217,7 @@ local compilers = {
         opt_no_link = "-c",
         opt_out_obj = "-o",
         opt_out_exe = "-o",
-        flags_common = "/TP -Wall -Wextra -Wconversion -Wuninitialized -Wnull-pointer-arithmetic -Wnull-dereference -Wcast-align -Wformat=2 -Wno-unused-variable -Wno-missing-prototypes -Wno-unsafe-buffer-usage -Wno-c++20-compat -Wno-c++98-compat-pedantic",
+        flags_common = "/TP -Wall -Wextra -Wconversion -Wuninitialized -Wnull-pointer-arithmetic -Wnull-dereference -Wcast-align -Wformat=2 -Wno-unused-variable -Wno-unsafe-buffer-usage -Wno-c++20-compat -Wno-c++98-compat-pedantic",
         flags_debug = "-Ob0 /Od /Oy- /Z7 /RTC1 -g /MTd",
         flags_release = "-O2 /MT",
         ar = "llvm-lib",
@@ -239,14 +241,14 @@ local presheaf = {
 -- Toolchain
 -- -----------------------------------------------------------------------------
 
-local tc = os_info.windows and compilers.msvc or compilers.gcc
+local toolchain = os_info.windows and compilers.msvc or compilers.gcc
 if options.clang then
-    tc = os_info.windows and compilers.clang_cl or compilers.clang
+    toolchain = os_info.windows and compilers.clang_cl or compilers.clang
 elseif options.gcc then
     assert(not os_info.windows, "GCC build not supported on Windows")
-    tc = compilers.gcc
+    toolchain = compilers.gcc
 elseif options.msvc then
-    tc = compilers.msvc
+    toolchain = compilers.msvc
 end
 
 -- -----------------------------------------------------------------------------
@@ -269,11 +271,10 @@ local function format_source_files()
     }, " "))
 end
 
-local function build_presheaf_lib()
+local function build_presheaf_lib(tc, custom_flags)
     log_info("Building the presheaf library...")
 
     local default_flags = tc.flags_common .. " " .. (options.release and tc.flags_release or tc.flags_debug)
-    local custom_flags = concat(custom_compiler_flags, " ")
     local defines = options.release and "" or concat(presheaf.debug_defines, " " .. tc.opt_define, true)
 
     -- Compile without linking.
@@ -283,7 +284,7 @@ local function build_presheaf_lib()
         tc.opt_no_link,
         tc.opt_std .. presheaf.std,
         default_flags,
-        custom_flags,
+        concat(custom_flags, " "),
         defines,
         tc.opt_include .. presheaf.include_dir,
         tc.opt_out_obj .. obj_out,
@@ -291,12 +292,13 @@ local function build_presheaf_lib()
     }, " "))
 
     -- Archive objs into a library.
-    local lib_out = make_path({ presheaf.out_dir, presheaf.lib .. os_info.lib_ext })
+    local lib_name = os_info.lib_prefix .. presheaf.lib .. os_info.lib_ext
+    local lib_out = make_path({ presheaf.out_dir, lib_name })
     exec(concat({ tc.ar, tc.ar_flags, tc.ar_out .. lib_out, obj_out }, " "))
 end
 
-local function build_presheaf_tests()
-    log_info("Building the library tests...")
+local function build_presheaf_tests(tc)
+    log_info("Building the presheaf library tests...")
 
     local default_flags = tc.flags_common .. " " .. tc.flags_debug
     local custom_flags = concat(custom_compiler_flags, " ")
@@ -327,10 +329,10 @@ if options.fmt then
 end
 
 prepare_output_target()
-build_presheaf_lib()
+build_presheaf_lib(toolchain, custom_compiler_flags)
 
 if options.test then
-    local test_exe = build_presheaf_tests()
+    local test_exe = build_presheaf_tests(toolchain)
     exec(test_exe)
 end
 

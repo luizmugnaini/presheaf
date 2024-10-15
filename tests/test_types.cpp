@@ -26,7 +26,7 @@
 #include <psh/core.hpp>
 #include "utils.hpp"
 
-void test_types() {
+psh_internal void test_types() {
     psh_assert(sizeof(u8) == 1);
     psh_assert(sizeof(u16) == 2);
     psh_assert(sizeof(u32) == 4);
@@ -43,7 +43,7 @@ void test_types() {
     test_passed();
 }
 
-#if !defined(NOMAIN)
+#if !defined(PSH_TEST_NOMAIN)
 int main() {
     test_types();
     return 0;

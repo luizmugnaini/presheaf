@@ -189,7 +189,7 @@ namespace psh {
 
             if (psh_unlikely(new_buf == nullptr)) {
                 // TODO: should this be a fatal error?
-                psh_error(ERROR_RESIZE_OUT_OF_MEMORY);
+                psh_log_error(ERROR_RESIZE_OUT_OF_MEMORY);
                 return Status::FAILED;
             }
 
@@ -235,7 +235,7 @@ namespace psh {
         Status remove(usize idx) noexcept {
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
             if (psh_unlikely(idx >= this->size)) {
-                psh_error(ERROR_ACCESS_OUT_OF_BOUNDS);
+                psh_log_error(ERROR_ACCESS_OUT_OF_BOUNDS);
                 return Status::FAILED;
             }
 #endif

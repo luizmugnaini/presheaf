@@ -96,4 +96,14 @@ namespace psh {
     FatPtr<u8 const> fat_ptr_as_bytes(T const* buf, usize count) noexcept {
         return FatPtr<u8 const>{reinterpret_cast<u8 const*>(buf), sizeof(T) * count};
     }
+
+    template <typename T>
+    FatPtr<T> fat_ptr(T* ptr) noexcept {
+        return FatPtr<T>{ptr, 1};
+    }
+
+    template <typename T>
+    FatPtr<T const> const_fat_ptr(T const* ptr) noexcept {
+        return FatPtr<T const>{ptr, 1};
+    }
 }  // namespace psh

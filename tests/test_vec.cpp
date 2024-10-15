@@ -26,7 +26,7 @@
 #include <psh/vec.hpp>
 #include "utils.hpp"
 
-void test_matrix_indexed_access() {
+psh_internal void test_matrix_indexed_access() {
     psh::Mat3 mat3 = psh::Mat3::id();
     for (u32 row = 0; row < 3; ++row) {
         for (u32 column = 0; column < 3; ++column) {
@@ -52,11 +52,11 @@ void test_matrix_indexed_access() {
     test_passed();
 }
 
-void test_vec() {
+psh_internal void test_vec() {
     test_matrix_indexed_access();
 }
 
-#if !defined(NOMAIN)
+#if !defined(PSH_TEST_NOMAIN)
 int main() {
     test_vec();
     return 0;

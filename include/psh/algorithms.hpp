@@ -122,7 +122,6 @@ namespace psh {
             return;
         }
 
-        psh_debug_fmt("swapping %zu <-> %zu", lhs_idx, rhs_idx);
         T tmp         = data[lhs_idx];
         data[lhs_idx] = data[rhs_idx];
         data[rhs_idx] = tmp;
