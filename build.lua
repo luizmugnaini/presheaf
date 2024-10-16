@@ -242,7 +242,7 @@ local presheaf = {
 -- -----------------------------------------------------------------------------
 
 local toolchain = os_info.windows and compilers.msvc or compilers.gcc
-if options.clang then
+if options.clang or options["clang-cl"] then
     toolchain = os_info.windows and compilers.clang_cl or compilers.clang
 elseif options.gcc then
     assert(not os_info.windows, "GCC build not supported on Windows")
