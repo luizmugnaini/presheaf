@@ -202,9 +202,8 @@ using strptr = char const*;
 
 /// Signals internal linkage.
 #define psh_internal static
-
 /// Signals that a variable is available in the global scope.
-#define psh_global static
+#define psh_global   static
 
 #if defined(PSH_COMPILER_MSVC)
 #    define psh_restrict_ptr __restrict
@@ -347,6 +346,45 @@ using strptr = char const*;
 // -----------------------------------------------------------------------------
 
 #if defined(PSH_DEFINE_SHORT_NAMES)
+// OS detection macros.
+#    if defined(PSH_OS_WINDOWS_32) && !defined(OS_WINDOWS_32)
+#        define OS_WINDOWS_32 PSH_OS_WINDOWS_32
+#    endif
+#    if defined(PSH_OS_WINDOWS_64) && !defined(OS_WINDOWS_64)
+#        define OS_WINDOWS_64 PSH_OS_WINDOWS_64
+#    endif
+#    if defined(PSH_OS_WINDOWS) && !defined(OS_WINDOWS)
+#        define OS_WINDOWS PSH_OS_WINDOWS
+#    endif
+#    if defined(PSH_OS_APPLE) && !defined(OS_APPLE)
+#        define OS_APPLE PSH_OS_APPLE
+#    endif
+#    if defined(PSH_OS_LINUX) && !defined(OS_LINUX)
+#        define OS_LINUX PSH_OS_LINUX
+#    endif
+#    if defined(PSH_OS_UNIX) && !defined(OS_UNIX)
+#        define OS_UNIX PSH_OS_UNIX
+#    endif
+#    if defined(PSH_OS_POSIX) && !defined(OS_POSIX)
+#        define OS_POSIX PSH_OS_POSIX
+#    endif
+// Compiler detection macros.
+#    if defined(PSH_COMPILER_MSVC) && !defined(COMPILER_MSVC)
+#        define COMPILER_MSVC PSH_COMPILER_MSVC
+#    endif
+#    if defined(PSH_COMPILER_MSVC_YEAR) && !defined(COMPILER_MSVC_YEAR)
+#        define COMPILER_MSVC_YEAR PSH_COMPILER_MSVC_YEAR
+#    endif
+#    if defined(PSH_COMPILER_CLANG_CL) && !defined(COMPILER_CLANG_CL)
+#        define COMPILER_CLANG_CL PSH_COMPILER_CLANG_CL
+#    endif
+#    if defined(PSH_COMPILER_CLANG) && !defined(COMPILER_CLANG)
+#        define COMPILER_CLANG PSH_COMPILER_CLANG
+#    endif
+#    if defined(PSH_COMPILER_GCC) && !defined(COMPILER_GCC)
+#        define COMPILER_GCC PSH_COMPILER_GCC
+#    endif
+// Miscelaneous macros.
 #    ifndef FALLTHROUGH
 #        define FALLTHROUGH PSH_FALLTHROUGH
 #    endif
