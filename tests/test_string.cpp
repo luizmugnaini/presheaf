@@ -121,6 +121,7 @@ psh_internal void test_string_join() {
         psh_assert(nestr.data.buf[nestr.data.size] == 0);
     }
     free(arena.buf);
+
     test_passed();
 }
 

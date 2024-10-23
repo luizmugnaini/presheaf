@@ -333,6 +333,15 @@ using strptr = char const*;
 #    define psh_source_function_signature() "<unknown signature>"
 #endif
 
+/// Query the string representing the unadorned name of the current function.
+#if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#    define psh_source_function_name() __func__
+#elif defined(PSH_COMPILER_MSVC)
+#    define psh_source_function_name() __FUNCTION__
+#else
+#    define psh_source_function_name() "<unknown name>"
+#endif
+
 #if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC) || defined(PSH_COMPILER_MSVC)
 #    define psh_source_file_name()   __builtin_FILE()
 #    define psh_source_line_number() __builtin_LINE()

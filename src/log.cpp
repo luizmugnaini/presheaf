@@ -29,16 +29,11 @@
 #include <stdio.h>
 #include <psh/core.hpp>
 
-namespace psh {
-    // -----------------------------------------------------------------------------
-    // - Internal implementation details -
-    // -----------------------------------------------------------------------------
+namespace psh::impl::log {
+    constexpr strptr LOG_FMT = "%s [%s:%d:%s] %s\n";
 
-    namespace impl_log {
-        constexpr strptr LOG_FMT = "%s [%s:%d] %s\n";
-
-        constexpr strptr LOG_LEVEL_STR[static_cast<u32>(LogLevel::LEVEL_COUNT)] {
-            // clang-format off
+    constexpr strptr LOG_LEVEL_STR[static_cast<u32>(LogLevel::LEVEL_COUNT)] {
+        // clang-format off
 #if !defined(PSH_DISABLE_ANSI_COLORS)
             "\x1b[1;41m[FATAL]\x1b[0m",
             "\x1b[1;31m[ERROR]\x1b[0m",
@@ -52,21 +47,17 @@ namespace psh {
             "[INFO]",
             "[DEBUG]",
 #endif
-            // clang-format on
-        };
-    }  // namespace impl_log
+        // clang-format on
+    };
 
-    // -----------------------------------------------------------------------------
-    // - Implementation of the logging procedures -
-    // -----------------------------------------------------------------------------
-
-    void log(LogInfo info, strptr msg) {
+    void log_msg(LogInfo info, strptr msg) {
         psh_discard(fprintf(
             stderr,
-            impl_log::LOG_FMT,
-            impl_log::LOG_LEVEL_STR[static_cast<u32>(info.lvl)],
-            info.file,
+            impl::log::LOG_FMT,
+            impl::log::LOG_LEVEL_STR[static_cast<u32>(info.level)],
+            info.file_name,
             info.line,
+            info.function_name,
             msg));
     }
 
@@ -90,10 +81,11 @@ namespace psh {
 
         (void)fprintf(
             stderr,
-            impl_log::LOG_FMT,
-            impl_log::LOG_LEVEL_STR[static_cast<u32>(info.lvl)],
-            info.file,
+            impl::log::LOG_FMT,
+            impl::log::LOG_LEVEL_STR[static_cast<u32>(info.level)],
+            info.file_name,
             info.line,
+            info.function_name,
             msg);
     }
-}  // namespace psh
+}  // namespace psh::impl::log

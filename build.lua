@@ -203,7 +203,7 @@ local compilers = {
         opt_out_obj = "/Fo:",
         opt_out_exe = "/Fe:",
         flags_common = "-nologo -Oi -TP -MP -FC -GF -GA /fp:except- -GR- -EHsc- /INCREMENTAL:NO /W3",
-        flags_debug = "/Ob0 /Od /Oy- /Z7 /RTC1 /MTd",
+        flags_debug = "/Ob0 /Od /Oy- /Z7 /RTC1 /MTd /fsanitize=address",
         flags_release = "/O2 /MT",
         ar = "lib",
         ar_out = "/out:",

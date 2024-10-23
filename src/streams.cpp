@@ -40,7 +40,7 @@
 //       thread safe alternative to `strerror`.
 
 namespace psh {
-    namespace impl_streams {
+    namespace impl::streams {
         // TODO(luiz): To be honest this is quite ugly, `OpenFileFlag` is just a concatenation of
         // `ReadFileFlag` and `WriteFileFlag`. It is not exposed, but is still a weak maintainance point.
         enum struct OpenFileFlag : u32 {
@@ -70,10 +70,10 @@ namespace psh {
                    (flag == OpenFileFlag::READ_BIN_EXTENDED) ||
                    (flag == OpenFileFlag::WRITE_EXTENDED);
         }
-    }  // namespace impl_streams
+    }  // namespace impl::streams
 
     FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) noexcept {
-        strptr mode = impl_streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<u32>(flag)];
+        strptr mode = impl::streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<u32>(flag)];
         FILE*  fhandle;
 
 #if defined(PSH_OS_WINDOWS)

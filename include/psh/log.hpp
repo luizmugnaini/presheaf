@@ -26,55 +26,58 @@
 
 #include <psh/core.hpp>
 
-namespace psh {
+namespace psh::impl::log {
     /// Log level.
     ///
     /// The levels are set in an increasing level of vebosity, where `LogLevel::Fatal` is the lowest
     /// and `LogLevel::Debug` is the highest.
     enum struct LogLevel {
-        LEVEL_FATAL = 0,  ///< Unrecoverable error.
-        LEVEL_ERROR,      ///< Recoverable error.
-        LEVEL_WARNING,    ///< Indicates that something non-optimal may have happened.
-        LEVEL_INFO,       ///< General message to state any useful information.
-        LEVEL_DEBUG,      ///< Serves only for debugging purposes in development.
+        LEVEL_FATAL = 0,
+        LEVEL_ERROR,
+        LEVEL_WARNING,
+        LEVEL_INFO,
+        LEVEL_DEBUG,
         LEVEL_COUNT,
     };
 
     struct LogInfo {
-        strptr   file;  ///< Source file name.
-        u32      line;  ///< Source current line.
-        LogLevel lvl;   ///< Severity level.
-
-        consteval LogInfo(
-            LogLevel _lvl,
-            strptr   _file = psh_source_file_name(),
-            u32      _line = psh_source_line_number())
-            : file{_file}, line{_line}, lvl{_lvl} {}
+        strptr   file_name;
+        strptr   function_name;
+        u32      line;
+        LogLevel level;
     };
 
     /// Log a message to the standard error stream.
-    void log(LogInfo info, strptr msg);
+    void log_msg(LogInfo info, strptr msg);
 
     /// Log a formatted message to the standard error stream.
     psh_attr_fmt(2) void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept;
-}  // namespace psh
+}  // namespace psh::impl::log
 
 // -----------------------------------------------------------------------------
 // - Logging macro utilities intended for easier usage pattern  -
 // -----------------------------------------------------------------------------
 
+#define psh_impl_make_log_info(log_level)            \
+    psh::impl::log::LogInfo {                        \
+        .file_name     = psh_source_file_name(),     \
+        .function_name = psh_source_function_name(), \
+        .line          = psh_source_line_number(),   \
+        .level         = log_level,                  \
+    }
+
 #if !defined(PSH_DISABLE_LOGGING)
-#    define psh_log_fatal(msg)            psh::log(psh::LogInfo{psh::LogLevel::LEVEL_FATAL}, msg)
-#    define psh_log_error(msg)            psh::log(psh::LogInfo{psh::LogLevel::LEVEL_ERROR}, msg)
-#    define psh_log_warning(msg)          psh::log(psh::LogInfo{psh::LogLevel::LEVEL_WARNING}, msg)
-#    define psh_log_info(msg)             psh::log(psh::LogInfo{psh::LogLevel::LEVEL_INFO}, msg)
-#    define psh_log_fatal_fmt(fmt, ...)   psh::log_fmt(psh::LogInfo{psh::LogLevel::LEVEL_FATAL}, fmt, __VA_ARGS__)
-#    define psh_log_error_fmt(fmt, ...)   psh::log_fmt(psh::LogInfo{psh::LogLevel::LEVEL_ERROR}, fmt, __VA_ARGS__)
-#    define psh_log_warning_fmt(fmt, ...) psh::log_fmt(psh::LogInfo{psh::LogLevel::LEVEL_WARNING}, fmt, __VA_ARGS__)
-#    define psh_log_info_fmt(fmt, ...)    psh::log_fmt(psh::LogInfo{psh::LogLevel::LEVEL_INFO}, fmt, __VA_ARGS__)
+#    define psh_log_fatal(msg)            psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_FATAL), msg)
+#    define psh_log_error(msg)            psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_ERROR), msg)
+#    define psh_log_warning(msg)          psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_WARNING), msg)
+#    define psh_log_info(msg)             psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_INFO), msg)
+#    define psh_log_fatal_fmt(fmt, ...)   psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_FATAL), fmt, __VA_ARGS__)
+#    define psh_log_error_fmt(fmt, ...)   psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_ERROR), fmt, __VA_ARGS__)
+#    define psh_log_warning_fmt(fmt, ...) psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_WARNING), fmt, __VA_ARGS__)
+#    define psh_log_info_fmt(fmt, ...)    psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_INFO), fmt, __VA_ARGS__)
 #    if defined(PSH_DEBUG)
-#        define psh_log_debug(msg)          psh::log(psh::LogInfo{psh::LogLevel::LEVEL_DEBUG}, msg)
-#        define psh_log_debug_fmt(fmt, ...) psh::log_fmt(psh::LogInfo{psh::LogLevel::LEVEL_DEBUG}, fmt, __VA_ARGS__)
+#        define psh_log_debug(msg)          psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_DEBUG), msg)
+#        define psh_log_debug_fmt(fmt, ...) psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_DEBUG), fmt, __VA_ARGS__)
 #    else
 #        define psh_log_debug(msg)          0
 #        define psh_log_debug_fmt(fmt, ...) 0

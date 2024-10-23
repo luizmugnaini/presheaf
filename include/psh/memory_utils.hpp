@@ -56,12 +56,36 @@ namespace psh {
     ///
     /// This function will assert that the blocks of memory don't overlap, avoiding undefined
     /// behaviour introduced by `memcpy` in this case.
-    void memory_copy(void* psh_restrict_ptr dest, void const* psh_restrict_ptr src, usize size) noexcept;
+    void memory_copy(void* psh_restrict_ptr dst, void const* psh_restrict_ptr src, usize size_bytes) noexcept;
+
+    template <typename T>
+    void memory_copy(FatPtr<T> dst, FatPtr<T const> src, usize copy_count) noexcept {
+        psh_assert_fmt(
+            copy_count <= dst.size,
+            "Destination cannot hold %zu elements (max %zu).",
+            copy_count,
+            dst.size);
+        psh_assert_fmt(
+            copy_count <= src.size,
+            "Source doesn't have %zu elements (max %zu).",
+            copy_count,
+            src.size);
+
+        memory_copy(dst.buf, src.buf, sizeof(T) * copy_count);
+    }
 
     /// Simple wrapper around `memmove`.
     ///
-    /// Does nothing if either `dest` or `src` are null pointers.
-    void memory_move(void* psh_restrict_ptr dest, void const* psh_restrict_ptr src, usize size) noexcept;
+    /// Does nothing if either `dst` or `src` are null pointers.
+    void memory_move(void* psh_restrict_ptr dst, void const* psh_restrict_ptr src, usize size_bytes) noexcept;
+
+    template <typename T>
+    void memory_move(FatPtr<T> dst, FatPtr<T const> src, usize copy_count) noexcept {
+        psh_assert(copy_count <= dst.size);
+        psh_assert(copy_count <= src.size);
+
+        memory_move(dst.buf, src.buf, sizeof(T) * copy_count);
+    }
 
     // -----------------------------------------------------------------------------
     // - Alignment utilities -

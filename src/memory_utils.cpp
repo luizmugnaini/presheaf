@@ -47,27 +47,27 @@ namespace psh {
         psh_discard(memset(buf, fill, size_bytes));
     }
 
-    void memory_copy(void* psh_restrict_ptr dest, void const* psh_restrict_ptr src, usize size_bytes) noexcept {
-        if (psh_unlikely((dest == nullptr) || (src == nullptr) || (size_bytes == 0))) {
+    void memory_copy(void* psh_restrict_ptr dst, void const* psh_restrict_ptr src, usize size_bytes) noexcept {
+        if (psh_unlikely((dst == nullptr) || (src == nullptr) || (size_bytes == 0))) {
             return;
         }
 
 #if defined(PSH_DEBUG) || defined(PSH_CHECK_MEMCPY_OVERLAP)
-        uptr dest_addr = reinterpret_cast<uptr>(dest);
-        uptr src_addr  = reinterpret_cast<uptr>(src);
+        uptr dst_addr = reinterpret_cast<uptr>(dst);
+        uptr src_addr = reinterpret_cast<uptr>(src);
         psh_assert_msg(
-            (dest_addr + size_bytes > src_addr) || (dest_addr < src_addr + size_bytes),
-            "memcpy called but source and destination overlap, which produces UB");
+            (dst_addr + size_bytes > src_addr) || (dst_addr < src_addr + size_bytes),
+            "Source and destination overlap in copy region (UB).");
 #endif
 
-        psh_discard(memcpy(dest, src, size_bytes));
+        psh_discard(memcpy(dst, src, size_bytes));
     }
 
-    void memory_move(void* psh_restrict_ptr dest, void const* psh_restrict_ptr src, usize size_bytes) noexcept {
-        if (psh_unlikely((dest == nullptr) || (src == nullptr) || (size_bytes == 0))) {
+    void memory_move(void* psh_restrict_ptr dst, void const* psh_restrict_ptr src, usize size_bytes) noexcept {
+        if (psh_unlikely((dst == nullptr) || (src == nullptr) || (size_bytes == 0))) {
             return;
         }
-        psh_discard(memmove(dest, src, size_bytes));
+        psh_discard(memmove(dst, src, size_bytes));
     }
 
     usize padding_with_header(
@@ -75,9 +75,11 @@ namespace psh {
         usize alignment,
         usize header_size,
         usize header_alignment) noexcept {
-        psh_assert_msg(
+        psh_assert_fmt(
             psh_is_pow_of_two(alignment) && psh_is_pow_of_two(header_alignment),
-            "padding_with_header expected the alignments to be powers of two");
+            "Expected the alignments to be powers of two (alignment: %zu; header_alignment: %zu).",
+            alignment,
+            header_alignment);
 
         // Calculate the padding necessary for the alignment of the new block of memory.
         uptr padding = 0;
@@ -103,9 +105,10 @@ namespace psh {
     }
 
     usize align_forward(uptr ptr, usize alignment) noexcept {
-        psh_assert_msg(
+        psh_assert_fmt(
             psh_is_pow_of_two(alignment),
-            "align_forward expected the alignment to be a power of two");
+            "Expected alignment (%zu) to be a power of two.",
+            alignment);
 
         uptr align     = static_cast<uptr>(alignment);
         uptr mod_align = ptr & (align - 1);

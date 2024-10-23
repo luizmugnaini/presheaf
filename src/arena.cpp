@@ -118,7 +118,7 @@ namespace psh {
             // Check if there is enough space.
             if (psh_unlikely(block_bytes + new_size_bytes > mem_end)) {
                 psh_log_error_fmt(
-                    "ArenaAlloc::realloc unable to reallocate block from %zu bytes to %zu bytes.",
+                    "Unable to reallocate block from %zu bytes to %zu bytes.",
                     current_size_bytes,
                     new_size_bytes);
                 psh_impl_return_from_memory_error();
@@ -154,13 +154,10 @@ namespace psh {
 
     void Arena::restore_state(ArenaCheckpoint& checkpoint) noexcept {
 #if defined(PSH_DEBUG)
-        psh_assert_msg(
-            checkpoint.arena == this,
-            "Tried to restore the arena to a checkpoint of a distinct originating arena.");
-        psh_assert_msg_fmt(
+        psh_assert_msg(checkpoint.arena == this, "Checkpoint originates from a distinct arena.");
+        psh_assert_fmt(
             checkpoint.offset <= this->offset,
-            "Tried to restore an arena to an invalid checkpoint, you cannot restore the arena to an "
-            "offset bigger than the current. Checkpoint offset: %zu, Arena current offset: %zu.",
+            "Invalid checkpoint. Cannot restore the arena to an offset (%zu) bigger than the current (%zu).",
             checkpoint.offset,
             this->offset);
 

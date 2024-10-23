@@ -44,7 +44,7 @@ namespace psh {
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
     bool contains(T match, FatPtr<T const> container, MatchFn<T>* match_fn) {
-        psh_assert_msg(match_fn != nullptr, "contains expected a valid match function");
+        psh_assert_msg(match_fn != nullptr, "Expected a valid match function.");
         bool found = false;
         for (auto const& m : container) {
             if (match_fn(match, m)) {
@@ -104,12 +104,12 @@ namespace psh {
         // Search the left side.
         if (mid_elem < match) {
             T* new_low = mid + 1;
-            return impl_binary_search(FatPtr{new_low, static_cast<usize>(hi - new_low)}, match);
+            return binary_search(FatPtr{new_low, static_cast<usize>(hi - new_low)}, match);
         }
 
         // Search the right side.
         T* new_hi = mid - 1;
-        return impl_binary_search(FatPtr{low, static_cast<usize>(new_hi - low)}, match);
+        return binary_search(FatPtr{low, static_cast<usize>(new_hi - low)}, match);
     }
 
     // -----------------------------------------------------------------------------
@@ -118,6 +118,17 @@ namespace psh {
 
     template <typename T>
     void swap_elements(T* data, usize lhs_idx, usize rhs_idx) noexcept {
+        if (psh_unlikely(lhs_idx == rhs_idx)) {
+            return;
+        }
+
+        T tmp         = data[lhs_idx];
+        data[lhs_idx] = data[rhs_idx];
+        data[rhs_idx] = tmp;
+    }
+
+    template <typename T>
+    void swap_elements(FatPtr<T> data, usize lhs_idx, usize rhs_idx) noexcept {
         if (psh_unlikely(lhs_idx == rhs_idx)) {
             return;
         }

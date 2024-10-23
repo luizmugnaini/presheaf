@@ -376,7 +376,7 @@ namespace psh {
         f32 zcos = cosf(rot_z);
 
         // clang-format off
-        return psh::Mat3{
+        return Mat3{
             (zcos * ycos), (zcos * ysin * xsin - zsin * xcos), (xcos * ysin * xcos + zsin * xsin),
             (zsin * ycos), (zsin * ysin * xsin + zcos * xcos), (zsin * ysin * xcos - zcos * xsin),
                (-ysin),                  (ycos * xsin),                      (ycos * xcos),

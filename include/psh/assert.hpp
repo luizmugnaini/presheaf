@@ -43,7 +43,7 @@
                 psh_abort_program();                                              \
             }                                                                     \
         } while (0)
-#    define psh_assert_msg_fmt(expr, fmt, ...)                                            \
+#    define psh_assert_fmt(expr, fmt, ...)                                                \
         do {                                                                              \
             if (!static_cast<bool>(expr)) {                                               \
                 psh_log_fatal_fmt("Assertion failed: %s, msg: " fmt, #expr, __VA_ARGS__); \
@@ -51,9 +51,9 @@
             }                                                                             \
         } while (0)
 #else
-#    define psh_assert(expr)                   (void)(expr)
-#    define psh_assert_msg(expr, msg)          (void)(expr)
-#    define psh_assert_msg_fmt(expr, fmt, ...) (void)(expr)
+#    define psh_assert(expr)               (void)(expr)
+#    define psh_assert_msg(expr, msg)      (void)(expr)
+#    define psh_assert_fmt(expr, fmt, ...) (void)(expr)
 #endif
 
 #define psh_todo()                                       \
@@ -76,8 +76,8 @@
 #    ifndef assert_msg
 #        define assert_msg psh_assert_msg
 #    endif
-#    ifndef assert_msg_fmt
-#        define assert_msg_fmt psh_assert_msg_fmt
+#    ifndef assert_fmt
+#        define assert_fmt psh_assert_fmt
 #    endif
 #    ifndef todo
 #        define todo psh_todo

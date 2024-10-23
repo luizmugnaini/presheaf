@@ -37,8 +37,8 @@ namespace psh {
     template <typename T>
     struct DynArray {
         Arena* arena    = nullptr;
-        usize  size     = 0;
         usize  capacity = 0;
+        usize  size     = 0;
         T*     buf      = nullptr;
 
         static constexpr usize DYNARRAY_DEFAULT_INITIAL_CAPACITY = 4;
