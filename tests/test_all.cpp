@@ -45,6 +45,7 @@
 #include "test_memory_manager.cpp"
 #include "test_dynarray.cpp"
 #include "test_string.cpp"
+#include "test_algorithms.cpp"
 // clang-format on
 
 int main() {
@@ -56,5 +57,6 @@ int main() {
     test_memory_manager();
     test_dynarray();
     test_string();
+    test_algorithms();
     return 0;
 }
