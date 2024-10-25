@@ -32,11 +32,11 @@ namespace psh::test::algorithms {
         i32 y;
     };
 
-    psh_internal bool equal_fractions(Fraction lhs, Fraction rhs) {
+     bool equal_fractions(Fraction lhs, Fraction rhs) {
         return (lhs.x * rhs.y == lhs.y * rhs.x);
     }
 
-    psh_internal void contains() {
+     void contains() {
         Buffer<Fraction, 4>    buf      = {Fraction{3, 3}, Fraction{12, 3}, Fraction{2, 4}, Fraction{60, 8}};
         FatPtr<Fraction const> buf_fptr = const_fat_ptr(buf);
 
@@ -46,17 +46,18 @@ namespace psh::test::algorithms {
         psh_assert(contains(Fraction{30, 4}, buf_fptr, equal_fractions));
         psh_assert(contains(Fraction{15, 2}, buf_fptr, equal_fractions));
 
-        test_passed();
+        report_test_successful();
     }
-}  // namespace psh::test::algorithms
 
-psh_internal void test_algorithms() {
-    psh::test::algorithms::contains();
-}
+    void run_all() {
+        psh::test::algorithms::contains();
+    }
+
+}  // namespace psh::test::algorithms
 
 #if !defined(PSH_TEST_NOMAIN)
 int main() {
-    test_algorithms();
+    psh::test::algorithms::run_all();
     return 0;
 }
 #endif

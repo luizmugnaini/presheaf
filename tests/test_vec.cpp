@@ -26,39 +26,41 @@
 #include <psh/vec.hpp>
 #include "utils.hpp"
 
-psh_internal void test_matrix_indexed_access() {
-    psh::Mat3 mat3 = psh::Mat3::id();
-    for (u32 row = 0; row < 3; ++row) {
-        for (u32 column = 0; column < 3; ++column) {
-            if (row != column) {
-                psh_assert(psh::f32_approx_equal(mat3.at(row, column), 0.0f));
-            } else {
-                psh_assert(psh::f32_approx_equal(mat3.at(row, column), 1.0f));
+namespace psh::test::vec {
+    void matrix_indexed_access() {
+        psh::Mat3 mat3 = psh::Mat3::id();
+        for (u32 row = 0; row < 3; ++row) {
+            for (u32 column = 0; column < 3; ++column) {
+                if (row != column) {
+                    psh_assert(psh::f32_approx_equal(mat3.at(row, column), 0.0f));
+                } else {
+                    psh_assert(psh::f32_approx_equal(mat3.at(row, column), 1.0f));
+                }
             }
         }
-    }
 
-    psh::ColMat4 cmat4 = psh::ColMat4::id();
-    for (u32 row = 0; row < 4; ++row) {
-        for (u32 column = 0; column < 4; ++column) {
-            if (row != column) {
-                psh_assert(psh::f32_approx_equal(cmat4.at(row, column), 0.0f));
-            } else {
-                psh_assert(psh::f32_approx_equal(cmat4.at(row, column), 1.0f));
+        psh::ColMat4 cmat4 = psh::ColMat4::id();
+        for (u32 row = 0; row < 4; ++row) {
+            for (u32 column = 0; column < 4; ++column) {
+                if (row != column) {
+                    psh_assert(psh::f32_approx_equal(cmat4.at(row, column), 0.0f));
+                } else {
+                    psh_assert(psh::f32_approx_equal(cmat4.at(row, column), 1.0f));
+                }
             }
         }
+
+        report_test_successful();
     }
 
-    test_passed();
-}
-
-psh_internal void test_vec() {
-    test_matrix_indexed_access();
-}
+    void run_all() {
+        matrix_indexed_access();
+    }
+}  // namespace psh::test::vec
 
 #if !defined(PSH_TEST_NOMAIN)
 int main() {
-    test_vec();
+    psh::test::vec::run_all();
     return 0;
 }
 #endif

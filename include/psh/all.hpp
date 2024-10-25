@@ -45,4 +45,5 @@
 #include <psh/streams.hpp>
 #include <psh/repr.hpp>
 #include <psh/bit.hpp>
+#include <psh/defer.hpp>
 // clang-format on

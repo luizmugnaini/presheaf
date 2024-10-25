@@ -27,34 +27,36 @@
 #include <psh/repr.hpp>
 #include "utils.hpp"
 
-psh_internal void test_binary_repr() {
-    u8*        memory = reinterpret_cast<u8*>(malloc(256));
-    psh::Arena arena{memory, 256};
-    {
-        psh::String repr0 = psh::binary_repr(&arena, 0b0);
-        psh_assert(psh::str_equal(repr0.data.buf, "0b0"));
+namespace psh::test::repr {
+     void binary_representation() {
+        u8*        memory = reinterpret_cast<u8*>(malloc(256));
+        psh::Arena arena{memory, 256};
+        {
+            psh::String repr0 = psh::binary_repr(&arena, 0b0);
+            psh_assert(psh::str_equal(repr0.data.buf, "0b0"));
 
-        psh::String repr1 = psh::binary_repr(&arena, 0b010);
-        psh_assert(psh::str_equal(repr1.data.buf, "0b10"));
+            psh::String repr1 = psh::binary_repr(&arena, 0b010);
+            psh_assert(psh::str_equal(repr1.data.buf, "0b10"));
 
-        psh::String repr2 = psh::binary_repr(&arena, 0b11010);
-        psh_assert(psh::str_equal(repr2.data.buf, "0b11010"));
+            psh::String repr2 = psh::binary_repr(&arena, 0b11010);
+            psh_assert(psh::str_equal(repr2.data.buf, "0b11010"));
 
-        psh::String repr3 = psh::binary_repr(&arena, 0b000111110101010101011);
-        psh_assert(psh::str_equal(repr3.data.buf, "0b111110101010101011"));
+            psh::String repr3 = psh::binary_repr(&arena, 0b000111110101010101011);
+            psh_assert(psh::str_equal(repr3.data.buf, "0b111110101010101011"));
+        }
+        free(memory);
+
+        report_test_successful();
     }
-    free(memory);
 
-    test_passed();
-}
-
-psh_internal void test_repr() {
-    test_binary_repr();
-}
+     void run_all() {
+        binary_representation();
+    }
+}  // namespace psh::test::repr
 
 #if !defined(PSH_TEST_NOMAIN)
 int main() {
-    test_repr();
+    psh::test::repr::run_all();
     return 0;
 }
 #endif

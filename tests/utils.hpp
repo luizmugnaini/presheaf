@@ -25,5 +25,6 @@
 #pragma once
 
 #include <stdio.h>
+#include <psh/core.hpp>
 
-#define test_passed() printf("\x1b[1;32m[PASSED]\x1b[0m: %s.\n", psh_source_function_signature())
+#define report_test_successful() printf("\x1b[1;32m[PASSED]\x1b[0m: %s.\n", psh_source_function_signature())

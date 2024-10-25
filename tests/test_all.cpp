@@ -49,14 +49,14 @@
 // clang-format on
 
 int main() {
-    test_types();
-    test_bit();
-    test_repr();
-    test_vec();
-    test_allocators();
-    test_memory_manager();
-    test_dynarray();
-    test_string();
-    test_algorithms();
+    psh::test::types::run_all();
+    psh::test::bit::run_all();
+    psh::test::repr::run_all();
+    psh::test::vec::run_all();
+    psh::test::allocators::run_all();
+    psh::test::memory_manager::run_all();
+    psh::test::dynarray::run_all();
+    psh::test::string::run_all();
+    psh::test::algorithms::run_all();
     return 0;
 }

@@ -26,26 +26,33 @@
 #include <psh/core.hpp>
 #include "utils.hpp"
 
-psh_internal void test_types() {
-    psh_assert(sizeof(u8) == 1);
-    psh_assert(sizeof(u16) == 2);
-    psh_assert(sizeof(u32) == 4);
-    psh_assert(sizeof(u64) == 8);
-    psh_assert(sizeof(usize) == 8);
-    psh_assert(sizeof(i8) == 1);
-    psh_assert(sizeof(i16) == 2);
-    psh_assert(sizeof(i32) == 4);
-    psh_assert(sizeof(i64) == 8);
-    psh_assert(sizeof(f32) == 4);
-    psh_assert(sizeof(f64) == 8);
-    psh_assert(sizeof(uptr) == 8);
-    psh_assert(sizeof(iptr) == 8);
-    test_passed();
-}
+namespace psh::test::types {
+    void sizes() {
+        psh_assert(sizeof(u8) == 1);
+        psh_assert(sizeof(u16) == 2);
+        psh_assert(sizeof(u32) == 4);
+        psh_assert(sizeof(u64) == 8);
+        psh_assert(sizeof(usize) == 8);
+        psh_assert(sizeof(i8) == 1);
+        psh_assert(sizeof(i16) == 2);
+        psh_assert(sizeof(i32) == 4);
+        psh_assert(sizeof(i64) == 8);
+        psh_assert(sizeof(f32) == 4);
+        psh_assert(sizeof(f64) == 8);
+        psh_assert(sizeof(uptr) == 8);
+        psh_assert(sizeof(iptr) == 8);
+
+        report_test_successful();
+    }
+
+    void run_all() {
+        sizes();
+    }
+}  // namespace psh::test::types
 
 #if !defined(PSH_TEST_NOMAIN)
 int main() {
-    test_types();
+    psh::test::types::run_all();
     return 0;
 }
 #endif

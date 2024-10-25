@@ -47,7 +47,7 @@
 
 #include <type_traits>
 
-namespace psh::impl_defer {
+namespace psh::impl::defer {
     // -----------------------------------------------------------------------------
     // - Implementation details, some type trickery -
     // -----------------------------------------------------------------------------
@@ -66,10 +66,7 @@ namespace psh::impl_defer {
     };
 
     template <typename T>
-    concept NotLValueRef = !std::is_lvalue_reference_v<T>;
-
-    template <typename T>
-        requires NotLValueRef<T>
+        requires(!std::is_lvalue_reference_v<T>)
     T&& cast_forward(typename RemoveRef<T>::Type x) {
         return static_cast<T&&>(x);
     }
@@ -90,7 +87,7 @@ namespace psh::impl_defer {
     Deferrer<Func> make_defer_fn(Func&& fn) {
         return Deferrer{cast_forward<Func>(fn)};
     }
-}  // namespace psh::impl_defer
+}  // namespace psh::impl::defer
 
 #define psh_impl_defer_join(x, y)      x##y
 #define psh_impl_defer_var(prefix, id) psh_impl_defer_join(prefix, id)
@@ -101,6 +98,6 @@ namespace psh::impl_defer {
 
 #define psh_defer(code)                                                 \
     [[maybe_unused]] auto psh_impl_defer_var(psh_deferred_, __LINE__) = \
-        psh::impl_defer::impl_make_defer_fn([&]() {                     \
+        psh::impl::defer::make_defer_fn([&]() {                         \
             code;                                                       \
         })
