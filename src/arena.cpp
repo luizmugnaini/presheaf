@@ -144,26 +144,19 @@ namespace psh {
     }
 
     ArenaCheckpoint Arena::make_checkpoint() noexcept {
-        return ArenaCheckpoint {
-#if defined(PSH_DEBUG)
-            .arena = this,
-#endif
-            .offset = this->offset,
-        };
+        return ArenaCheckpoint{.arena = this, .saved_offset = this->offset};
     }
 
     void Arena::restore_state(ArenaCheckpoint& checkpoint) noexcept {
-#if defined(PSH_DEBUG)
         psh_assert_msg(checkpoint.arena == this, "Checkpoint originates from a distinct arena.");
         psh_assert_fmt(
-            checkpoint.offset <= this->offset,
+            checkpoint.saved_offset <= this->offset,
             "Invalid checkpoint. Cannot restore the arena to an offset (%zu) bigger than the current (%zu).",
-            checkpoint.offset,
+            checkpoint.saved_offset,
             this->offset);
 
         checkpoint.arena = nullptr;  // Invalidate the checkpoint for further uses.
-#endif
-        this->offset = checkpoint.offset;
+        this->offset     = checkpoint.saved_offset;
     }
 
     ScratchArena::ScratchArena(Arena* parent) noexcept {

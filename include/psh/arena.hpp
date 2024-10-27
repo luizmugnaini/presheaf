@@ -129,10 +129,8 @@ namespace psh {
     };
 
     struct ArenaCheckpoint {
-#if defined(PSH_DEBUG)
         Arena* arena;
-#endif
-        usize offset;
+        usize  saved_offset;
     };
 
     /// Arena allocator
