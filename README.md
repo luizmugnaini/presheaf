@@ -17,7 +17,7 @@ The library has a bundled compilation unit `src/all.cpp` which may be used if yo
 a unity build. This is as simple as, e.g.:
 ```sh
 # Build static library.
-clang++ -c -std=c++20 -Iinclude src/all.cpp -o presheaf.o && llvm-ar rc presheaf.a presheaf.o
+clang++ -c -std=c++20 -Iinclude src/all.cpp -o presheaf.o && llvm-ar rc libpresheaf.a presheaf.o
 # Build all library tests.
 clang++ -std=c+20 -Iinclude tests/test_all.cpp -o test
 ```
