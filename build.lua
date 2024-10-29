@@ -23,7 +23,7 @@
 -- Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 --
 -- Running the build system:  lua build.lua [options]
--- Example:                   lua build.lua fmt clang mold test
+-- Example:                   lua build.lua fmt clang test
 --
 -- You can also pass ad-hoc flags directly to the compiler command. Any argument passed
 -- after `--` will be directed to the compilation command. For instance:
@@ -37,36 +37,51 @@ local start_time = os.time()
 -- Available command line options
 -- -----------------------------------------------------------------------------
 
--- Available command line options.
 local options = {
-    -- Format source files.
-    fmt = false,
-    -- Build type (default: debug build).
-    release = false,
-    -- Compiler of choice (default: MSVC on Windows and GCC on Linux).
-    clang = false,
-    gcc = false,
-    msvc = false,
-    -- Build and run tests.
-    test = false,
-    -- Whether or not to print the commands ran by the build script and their output.
-    quiet = false,
+    help = { on = false, description = "Print the help message for the build script." },
+    quiet = { on = false, description = "Don't print information about the build process." },
+    release = { on = false, description = "Release build type (off by default)." },
+    debug = { on = false, description = "Debug build type (on by default)." },
+    test = { on = false, description = "Build and run tests." },
+    fmt = { on = false, description = "Format source files with clang-format before building." },
+    clang = { on = false, description = "Use the Clang compiler." },
+    gcc = { on = false, description = "Use the GCC compiler." },
+    msvc = { on = false, description = "Use the Visual C++ compiler." },
 }
 
+-- -----------------------------------------------------------------------------
+-- Collect command line arguments
+-- -----------------------------------------------------------------------------
+
+-- Collect build options.
 local custom_flags_idx = nil
 for i = 1, #arg do
     if arg[i] == "--" then
         custom_flags_idx = i + 1
         break
     end
-    options[arg[i]] = true
+    local start_idx = string.find(arg[i], "[^-]")
+    options[string.sub(arg[i], start_idx)].on = true
 end
 
+-- Collect flags to be directly passed to the compiler.
 local custom_compiler_flags = {}
 if custom_flags_idx ~= nil then
     for i = custom_flags_idx, #arg do
         custom_compiler_flags[i - custom_flags_idx + 1] = arg[i]
     end
+end
+
+-- Print the help message.
+if options.help.on then
+    print("Usage:\n    lua " .. arg[0] .. " [options] -- [custom compiler flags]\n\nOptions:")
+    for k, v in pairs(options) do
+        print(string.format("    -%-15s" .. "%s", k, v.description))
+    end
+    print(
+        "\nExample: Build the library with Clang, run all tests, and directly specify compiler flags:\n    lua build.lua -clang -test -- -fsanitize=address -DPSH_ABORT_AT_MEMORY_ERROR"
+    )
+    return
 end
 
 -- -----------------------------------------------------------------------------
@@ -112,7 +127,7 @@ end
 -- -----------------------------------------------------------------------------
 
 local function log_info(msg)
-    if not options.quiet then
+    if not options.quiet.on then
         print("\x1b[1;35m[Presheaf INFO]\x1b[0m " .. msg)
     end
 end
@@ -242,12 +257,12 @@ local presheaf = {
 -- -----------------------------------------------------------------------------
 
 local toolchain = os_info.windows and compilers.msvc or compilers.gcc
-if options.clang or options["clang-cl"] then
+if options.clang.on or options["clang-cl"] then
     toolchain = os_info.windows and compilers.clang_cl or compilers.clang
-elseif options.gcc then
+elseif options.gcc.on then
     assert(not os_info.windows, "GCC build not supported on Windows")
     toolchain = compilers.gcc
-elseif options.msvc then
+elseif options.msvc.on then
     toolchain = compilers.msvc
 end
 
@@ -274,8 +289,8 @@ end
 local function build_presheaf_lib(tc, custom_flags)
     log_info("Building the presheaf library...")
 
-    local default_flags = tc.flags_common .. " " .. (options.release and tc.flags_release or tc.flags_debug)
-    local defines = options.release and "" or concat(presheaf.debug_defines, " " .. tc.opt_define, true)
+    local default_flags = tc.flags_common .. " " .. (options.release.on and tc.flags_release or tc.flags_debug)
+    local defines = options.release.on and "" or concat(presheaf.debug_defines, " " .. tc.opt_define, true)
 
     -- Compile without linking.
     local obj_out = make_path({ presheaf.out_dir, presheaf.lib .. os_info.obj_ext })
@@ -324,14 +339,14 @@ local function build_presheaf_tests(tc)
     return test_exe_out
 end
 
-if options.fmt then
+if options.fmt.on then
     format_source_files()
 end
 
 prepare_output_target()
 build_presheaf_lib(toolchain, custom_compiler_flags)
 
-if options.test then
+if options.test.on then
     local test_exe = build_presheaf_tests(toolchain)
     exec(test_exe)
 end
