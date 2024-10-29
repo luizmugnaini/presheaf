@@ -30,7 +30,7 @@
 #include "utils.hpp"
 
 namespace psh::test::string {
-     void str_type() {
+    psh_internal void str_type() {
         constexpr auto s = psh_str("Frodo Baggins");
         psh_assert(psh::str_equal(s.buf, "Frodo Baggins"));
         psh_assert(s.size() == strlen("Frodo Baggins"));
@@ -38,7 +38,7 @@ namespace psh::test::string {
         report_test_successful();
     }
 
-     void string_view_type() {
+    psh_internal void string_view_type() {
         psh::StringView v1{"Nine for the Elven-kings under moon and star"};
         psh_assert(psh::str_equal(v1.data.buf, "Nine for the Elven-kings under moon and star"));
         psh_assert(v1.data.size == strlen("Nine for the Elven-kings under moon and star"));
@@ -56,7 +56,7 @@ namespace psh::test::string {
         report_test_successful();
     }
 
-     void string_type() {
+    psh_internal void string_type() {
         psh::Arena arena{reinterpret_cast<u8*>(malloc(512)), 512};
         {
             psh::String s{&arena, psh_string_view("Seven for the Dwarf-lords in their halls of stone")};
@@ -69,7 +69,7 @@ namespace psh::test::string {
         report_test_successful();
     }
 
-     void string_join() {
+    psh_internal void string_join() {
         constexpr auto check_str1 = psh_str("One ring to rule them all, "
                                             "One ring to find them, "
                                             "One ring to bring them all, "
@@ -126,7 +126,7 @@ namespace psh::test::string {
         report_test_successful();
     }
 
-     void run_all() {
+    psh_internal void run_all() {
         str_type();
         string_view_type();
         string_type();

@@ -35,7 +35,7 @@
 #include "utils.hpp"
 
 namespace psh::test::memory_manager {
-     void zeroed_at_initialization() {
+    psh_internal void zeroed_at_initialization() {
         psh::MemoryManager memory_manager{1024};
 
         // Check validity.
@@ -53,7 +53,7 @@ namespace psh::test::memory_manager {
         report_test_successful();
     }
 
-     void initialization_and_shutdown() {
+    psh_internal void initialization_and_shutdown() {
         usize              memory_manager_capacity = 2048;
         psh::MemoryManager memory_manager{memory_manager_capacity};
         u8 const*          mem_sys_alloc_mem_actual_addr = memory_manager.allocator.buf;
@@ -93,7 +93,7 @@ namespace psh::test::memory_manager {
         report_test_successful();
     }
 
-     void memory_statistics() {
+    psh_internal void memory_statistics() {
         /** Expected statistics. **/
 
         constexpr usize expected_string_at_least =
@@ -220,7 +220,7 @@ namespace psh::test::memory_manager {
         report_test_successful();
     }
 
-    void run_all() {
+    psh_internal void run_all() {
         zeroed_at_initialization();
         initialization_and_shutdown();
         memory_statistics();

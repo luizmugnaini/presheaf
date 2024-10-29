@@ -29,13 +29,13 @@
 #include "utils.hpp"
 
 namespace psh::test::bit {
-    void little_endian() {
+    psh_internal void little_endian() {
         psh_assert_msg(arch_is_little_endian(), "Expected the current machine architecture to be little endian.");
 
         report_test_successful();
     }
 
-    void create_with_bit() {
+    psh_internal void create_with_bit() {
         psh_assert(psh_bit(u32, 3) == 0b1000);
         psh_assert(psh_bit(u32, 1) == 0b10);
         psh_assert(psh_bit(u32, 0) == 0b1);
@@ -54,7 +54,7 @@ namespace psh::test::bit {
         report_test_successful();
     }
 
-    void set_and_clear_bit() {
+    psh_internal void set_and_clear_bit() {
         u32 x = 0;
         psh_bit_set(x, 6);
         psh_assert(x == 0b1000000);
@@ -94,7 +94,7 @@ namespace psh::test::bit {
         report_test_successful();
     }
 
-    void get_bit_at() {
+    psh_internal void get_bit_at() {
         u32 x = 0b1011101011;
 
         psh_assert(psh_bit_at(x, 0) == 1);
@@ -127,7 +127,7 @@ namespace psh::test::bit {
         report_test_successful();
     }
 
-    void get_u8_nibbles() {
+    psh_internal void get_u8_nibbles() {
         u16 x = 0xAB;
         psh_assert(psh_u8_lo(x) == 0x0B);
         psh_assert(psh_u8_hi(x) == 0x0A);
@@ -135,7 +135,7 @@ namespace psh::test::bit {
         report_test_successful();
     }
 
-    void make_u16_from_bytes() {
+    psh_internal void make_u16_from_bytes() {
         psh_assert(psh_u8_to_u16_hi(0xFC) == 0xFC00);
 
         psh_assert(psh_u16_from_bytes(0xFB, 0xA3) == 0xFBA3);
@@ -147,7 +147,7 @@ namespace psh::test::bit {
         report_test_successful();
     }
 
-    void get_u16_bytes() {
+    psh_internal void get_u16_bytes() {
         psh_assert(psh_u16_hi(0xFBA3) == 0xFB);
         psh_assert(psh_u16_hi(0x1101) == 0x11);
         psh_assert(psh_u16_hi(0xABBA) == 0xAB);
@@ -163,7 +163,7 @@ namespace psh::test::bit {
         report_test_successful();
     }
 
-    void set_u16_bytes() {
+    psh_internal void set_u16_bytes() {
         u16 x = 0x01BB;
         psh_u16_set_hi(x, 0xFA);
         psh_assert(x == 0xFABB);
@@ -177,7 +177,7 @@ namespace psh::test::bit {
         report_test_successful();
     }
 
-    void integers_have_opposite_sign() {
+    psh_internal void integers_have_opposite_sign() {
         psh_assert(!psh_int_opposite_sign(8127, 1209831));
         psh_assert(psh_int_opposite_sign(-8127, 1209831));
         psh_assert(psh_int_opposite_sign(8127, -1209831));
@@ -185,7 +185,7 @@ namespace psh::test::bit {
         report_test_successful();
     }
 
-    void integer_swap_values() {
+    psh_internal void integer_swap_values() {
         i32 x = -1238;
         i32 y = 2193;
         psh_int_swap(x, y);
@@ -199,7 +199,7 @@ namespace psh::test::bit {
         report_test_successful();
     }
 
-    void run_all() {
+    psh_internal void run_all() {
         little_endian();
         create_with_bit();
         set_and_clear_bit();

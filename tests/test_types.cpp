@@ -27,7 +27,7 @@
 #include "utils.hpp"
 
 namespace psh::test::types {
-    void sizes() {
+    psh_internal void sizes() {
         psh_assert(sizeof(u8) == 1);
         psh_assert(sizeof(u16) == 2);
         psh_assert(sizeof(u32) == 4);
@@ -45,7 +45,7 @@ namespace psh::test::types {
         report_test_successful();
     }
 
-    void run_all() {
+    psh_internal void run_all() {
         sizes();
     }
 }  // namespace psh::test::types

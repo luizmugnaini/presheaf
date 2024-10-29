@@ -27,7 +27,7 @@
 #include "utils.hpp"
 
 namespace psh::test::vec {
-    void matrix_indexed_access() {
+    psh_internal void matrix_indexed_access() {
         psh::Mat3 mat3 = psh::Mat3::id();
         for (u32 row = 0; row < 3; ++row) {
             for (u32 column = 0; column < 3; ++column) {
@@ -53,7 +53,7 @@ namespace psh::test::vec {
         report_test_successful();
     }
 
-    void run_all() {
+    psh_internal void run_all() {
         matrix_indexed_access();
     }
 }  // namespace psh::test::vec

@@ -34,7 +34,7 @@ namespace psh::test::dynarray {
         i32 bar;
     };
 
-     void push_elements(psh::MemoryManager& mem_manager) {
+    psh_internal void push_elements(psh::MemoryManager& mem_manager) {
         psh::Arena         arena = mem_manager.make_arena(sizeof(i32) * 1024).demand();
         psh::DynArray<i32> v{&arena};
         for (i32 i = 0; i < 100; ++i) {
@@ -49,7 +49,7 @@ namespace psh::test::dynarray {
         report_test_successful();
     }
 
-     void size_and_capacity(psh::MemoryManager& mem_manager) {
+    psh_internal void size_and_capacity(psh::MemoryManager& mem_manager) {
         psh::Arena         arena = mem_manager.make_arena(sizeof(Foo) * 100).demand();
         psh::DynArray<Foo> v{&arena};
 
@@ -76,7 +76,7 @@ namespace psh::test::dynarray {
         report_test_successful();
     }
 
-     void peek_and_pop(psh::MemoryManager& mem_manager) {
+    psh_internal void peek_and_pop(psh::MemoryManager& mem_manager) {
         psh::Arena         arena = mem_manager.make_arena(sizeof(i32) * 3).demand();
         psh::DynArray<i32> v{&arena, 3};
         v.push(4), v.push(5), v.push(6);
@@ -100,7 +100,7 @@ namespace psh::test::dynarray {
         report_test_successful();
     }
 
-     void remove(psh::MemoryManager& mem_manager) {
+    psh_internal void remove(psh::MemoryManager& mem_manager) {
         psh::Arena         arena = mem_manager.make_arena(sizeof(i32) * 5).demand();
         psh::DynArray<i32> v{&arena, 5};
         v.push(4), v.push(7), v.push(8), v.push(9), v.push(55);
@@ -152,7 +152,7 @@ namespace psh::test::dynarray {
         report_test_successful();
     }
 
-     void clear(psh::MemoryManager& mem_manager) {
+    psh_internal void clear(psh::MemoryManager& mem_manager) {
         psh::Arena         arena = mem_manager.make_arena(sizeof(f32) * 4).demand();
         psh::DynArray<f32> v{&arena, 4};
         v.push(7.0f), v.push(4.8f), v.push(6.1f), v.push(3.14f);
@@ -164,7 +164,7 @@ namespace psh::test::dynarray {
         report_test_successful();
     }
 
-     void run_all() {
+    psh_internal void run_all() {
         psh::MemoryManager mem_manager{10240};
         push_elements(mem_manager);
         size_and_capacity(mem_manager);

@@ -28,7 +28,7 @@
 #include "utils.hpp"
 
 namespace psh::test::repr {
-     void binary_representation() {
+    psh_internal void binary_representation() {
         u8*        memory = reinterpret_cast<u8*>(malloc(256));
         psh::Arena arena{memory, 256};
         {
@@ -49,7 +49,7 @@ namespace psh::test::repr {
         report_test_successful();
     }
 
-     void run_all() {
+    psh_internal void run_all() {
         binary_representation();
     }
 }  // namespace psh::test::repr

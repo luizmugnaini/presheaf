@@ -300,10 +300,10 @@ using strptr = char const*;
 #define psh_ub_add(lhs, rhs, ub) (((lhs) + (rhs)) > (ub) ? (ub) : ((lhs) + (rhs)))
 
 /// Decrement an unsigned value without wrapping - the lower bound will always be zero.
-#define psh_nowrap_unsigned_dec(x) (((x) > 0) ? ((x) - 1) : 0)
+#define psh_nowrap_unsigned_dec(x) (((x) > 0) ? (((x)) - 1) : 0)
 
 /// Check if a value is a power of two.
-#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & ((n) - 1)))
+#define psh_is_pow_of_two(n) (((n) > 0) && !((n) & (((n)) - 1)))
 
 // -----------------------------------------------------------------------------
 // - Common memory sizes -

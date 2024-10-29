@@ -37,7 +37,7 @@ namespace psh::test::allocators {
         u32 b;
     };
 
-     void scratch_arena_basic() {
+    psh_internal void scratch_arena_basic() {
         usize      size = 1024;
         u8* const  buf  = reinterpret_cast<u8*>(malloc(size));
         psh::Arena arena{buf, size};
@@ -220,18 +220,18 @@ namespace psh::test::allocators {
         report_test_successful();
     }
 
-     u8* fn_scratch_as_ref(psh::ScratchArena& s, usize size) {
+    psh_internal u8* fn_scratch_as_ref(psh::ScratchArena& s, usize size) {
         return s.arena->alloc<u8>(size);
     }
 
-     void scratch_arena_passed_as_reference() {
+    psh_internal void scratch_arena_passed_as_reference() {
         usize     size = 1024;
         u8* const buf  = reinterpret_cast<u8*>(malloc(size));
         {
             psh::Arena ar{buf, size};
             usize      expected_offset = 0;
 
-            (void)ar.alloc<u8>(32);
+            psh_discard(ar.alloc<u8>(32));
             expected_offset += 32;
 
             {
@@ -247,7 +247,7 @@ namespace psh::test::allocators {
         report_test_successful();
     }
 
-     void stack_allocation_with_default_alignment() {
+    psh_internal void stack_allocation_with_default_alignment() {
         usize      salloc_min_expected_size = 0;
         usize      expected_alloc_size      = 512;
         u8*        buf                      = reinterpret_cast<u8*>(malloc(expected_alloc_size));
@@ -321,7 +321,7 @@ namespace psh::test::allocators {
         report_test_successful();
     }
 
-     void stack_offsets_reads_and_writes() {
+    psh_internal void stack_offsets_reads_and_writes() {
         usize      size = 1024;
         u8*        buf  = reinterpret_cast<u8*>(malloc(size));
         psh::Stack stack{buf, size};
@@ -419,7 +419,7 @@ namespace psh::test::allocators {
         report_test_successful();
     }
 
-     void stack_memory_stress_and_free() {
+    psh_internal void stack_memory_stress_and_free() {
         usize      size = 2048;
         u8*        buf  = reinterpret_cast<u8*>(malloc(size));
         psh::Stack stack{buf, size};
@@ -507,7 +507,7 @@ namespace psh::test::allocators {
         report_test_successful();
     }
 
-     void stack_free_all() {
+    psh_internal void stack_free_all() {
         usize      size = 512;
         u8* const  buf  = reinterpret_cast<u8*>(malloc(size));
         psh::Stack salloc{buf, size};
@@ -546,7 +546,7 @@ namespace psh::test::allocators {
         report_test_successful();
     }
 
-     void run_all() {
+    psh_internal void run_all() {
         scratch_arena_basic();
         scratch_arena_passed_as_reference();
         stack_allocation_with_default_alignment();
