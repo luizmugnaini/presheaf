@@ -45,7 +45,7 @@ namespace psh {
         static constexpr usize DYNARRAY_RESIZE_CAPACITY_FACTOR   = 2;
 
         // -----------------------------------------------------------------------------
-        // - Diagnostic messages -
+        // Diagnostic messages.
         // -----------------------------------------------------------------------------
 
         static constexpr strptr ERROR_INIT_INCONSISTENT_ARENA =
@@ -59,7 +59,7 @@ namespace psh {
             "DynArray cannot be resized because its allocator is out of memory";
 
         // -----------------------------------------------------------------------------
-        // - Constructors and initializers -
+        // Constructors and initializers.
         // -----------------------------------------------------------------------------
 
         DynArray() noexcept = default;
@@ -120,7 +120,7 @@ namespace psh {
         }
 
         // -----------------------------------------------------------------------------
-        // - Iterator utilities -
+        // Iterator utilities.
         // -----------------------------------------------------------------------------
 
         T* begin() noexcept {
@@ -145,25 +145,25 @@ namespace psh {
         }
 
         // -----------------------------------------------------------------------------
-        // - Indexed reads -
+        // Indexed reads.
         // -----------------------------------------------------------------------------
 
         T& operator[](usize idx) noexcept {
-#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+#if defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(idx < this->size, ERROR_ACCESS_OUT_OF_BOUNDS);
 #endif
             return this->buf[idx];
         }
 
         T const& operator[](usize idx) const noexcept {
-#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+#if defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(idx < this->size, ERROR_ACCESS_OUT_OF_BOUNDS);
 #endif
             return this->buf[idx];
         }
 
         // -----------------------------------------------------------------------------
-        // - Memory resizing methods -
+        // Memory resizing methods.
         // -----------------------------------------------------------------------------
 
         /// Resize the dynamic array underlying buffer.
@@ -185,6 +185,9 @@ namespace psh {
         }
 
         Status resize(usize new_capacity) noexcept {
+            // NOTE: If T is a struct with a pointer to itself, this method will fail hard and create
+            //       a massive horrible memory bug. DO NOT use this array structure with types having
+            //       this property.
             T* new_buf = arena->realloc<T>(this->buf, this->capacity, new_capacity);
 
             if (psh_unlikely(new_buf == nullptr)) {
@@ -201,7 +204,7 @@ namespace psh {
         }
 
         // -----------------------------------------------------------------------------
-        // - Memory manipulation -
+        // Memory manipulation.
         // -----------------------------------------------------------------------------
 
         /// Inserts a new element to the end of the dynamic array.
@@ -233,7 +236,7 @@ namespace psh {
 
         /// Try to remove a dynamic array element at a given index.
         Status remove(usize idx) noexcept {
-#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+#if defined(PSH_CHECK_BOUNDS)
             if (psh_unlikely(idx >= this->size)) {
                 psh_log_error(ERROR_ACCESS_OUT_OF_BOUNDS);
                 return Status::FAILED;
@@ -259,7 +262,7 @@ namespace psh {
     };
 
     // -----------------------------------------------------------------------------
-    // - Generating fat pointers -
+    // Generating fat pointers.
     // -----------------------------------------------------------------------------
 
     template <typename T>

@@ -29,7 +29,7 @@
 
 namespace psh {
     // -----------------------------------------------------------------------------
-    // - 2-dimensional floating-point vector -
+    // 2-dimensional floating-point vector.
     // -----------------------------------------------------------------------------
 
     Vec2& Vec2::operator+=(Vec2 const& other) noexcept {
@@ -99,7 +99,7 @@ namespace psh {
     }
 
     // -----------------------------------------------------------------------------
-    // - 3-dimensional floating-point vector -
+    // 3-dimensional floating-point vector.
     // -----------------------------------------------------------------------------
 
     Vec3& Vec3::operator+=(Vec3 const& other) noexcept {
@@ -179,7 +179,7 @@ namespace psh {
     }
 
     // -----------------------------------------------------------------------------
-    // - 2-dimensional integer vector -
+    // 2-dimensional integer vector.
     // -----------------------------------------------------------------------------
 
     IVec2& IVec2::operator+=(IVec2 const& other) noexcept {
@@ -249,7 +249,7 @@ namespace psh {
     }
 
     // -----------------------------------------------------------------------------
-    // - 3-dimensional integer vector -
+    // 3-dimensional integer vector.
     // -----------------------------------------------------------------------------
 
     IVec3& IVec3::operator+=(IVec3 const& other) noexcept {
@@ -335,7 +335,7 @@ namespace psh {
     }
 
     // -----------------------------------------------------------------------------
-    // - Row-major 3-dimensional square matrix in floating-point space -
+    // Row-major 3-dimensional square matrix in floating-point space.
     // -----------------------------------------------------------------------------
 
     f32& Mat3::at(u32 r, u32 c) noexcept {
@@ -385,7 +385,7 @@ namespace psh {
     }
 
     // -----------------------------------------------------------------------------
-    // - Column-major 3-dimensional square matrix in floating-point space -
+    // Column-major 3-dimensional square matrix in floating-point space.
     // -----------------------------------------------------------------------------
 
     f32& ColMat3::at(u32 r, u32 c) noexcept {
@@ -406,7 +406,7 @@ namespace psh {
     }
 
     // -----------------------------------------------------------------------------
-    // - Column-major 4-dimensional square matrix in floating-point space -
+    // Column-major 4-dimensional square matrix in floating-point space.
     // -----------------------------------------------------------------------------
 
     f32& ColMat4::at(u32 r, u32 c) noexcept {
@@ -503,7 +503,7 @@ namespace psh {
     }
 
     // -----------------------------------------------------------------------------
-    // - Implementation of the matrix multiplication operations -
+    // Implementation of the matrix multiplication operations.
     // -----------------------------------------------------------------------------
 
     Vec2 mat_mul(Mat2 m, Vec2 v) noexcept {

@@ -31,7 +31,7 @@
 
 namespace psh {
     // -----------------------------------------------------------------------------
-    // - String utilities implementation -
+    // String utilities implementation.
     // -----------------------------------------------------------------------------
 
     usize str_length(strptr str) noexcept {
@@ -64,14 +64,14 @@ namespace psh {
     }
 
     // -----------------------------------------------------------------------------
-    // - String view implementation -
+    // String view implementation.
     // -----------------------------------------------------------------------------
 
     StringView::StringView(strptr str) noexcept
         : data{str, str_length(str)} {}
 
     // -----------------------------------------------------------------------------
-    // - String implementation -
+    // String implementation.
     // -----------------------------------------------------------------------------
 
     void String::init(Arena* arena, usize capacity) noexcept {

@@ -30,7 +30,7 @@
 
 namespace psh {
     // -----------------------------------------------------------------------------
-    // - String comparison utilities -
+    // String comparison utilities.
     // -----------------------------------------------------------------------------
 
     enum struct StrCmpResult {
@@ -45,7 +45,7 @@ namespace psh {
     bool         is_utf8(char c) noexcept;
 
     // -----------------------------------------------------------------------------
-    // - String types -
+    // String types.
     // -----------------------------------------------------------------------------
 
     /// String literal type.
@@ -76,7 +76,7 @@ namespace psh {
         }
 
         char operator[](usize index) const noexcept {
-#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+#if defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(index < size_, "Str access out of bounds");
 #endif
             return this->buf[index];
@@ -106,28 +106,28 @@ namespace psh {
         /// Make a view from the string.
         StringView view() const noexcept;
 
-        // Join an array of string views to the current string data. You can also provide a string
-        // to be attached to the end of each join.
-        //
-        // Example:
-        // ```cpp
-        // using namespace psh;
-        //
-        // Arena arena{...};
-        // String s{&arena, "Hello"};
-        // Buffer<StringView, 3> words = {"World", "Earth", "Terra"};
-        //
-        // assert(s.join(const_fat_ptr(words), ", ") == Result::OK);
-        // assert(strcmp(s.data.buf, "Hello, World, Earth, Terra") == 0);
-        // ```
-        // Although this example uses initializer lists, you can also achieve the same using the
-        // implementation based on `psh::FatPtr`.
+        /// Join an array of string views to the current string data. You can also provide a string
+        /// to be attached to the end of each join.
+        ///
+        /// Example:
+        /// ```cpp
+        /// using namespace psh;
+        ///
+        /// Arena arena{...};
+        /// String s{&arena, "Hello"};
+        /// Buffer<StringView, 3> words = {"World", "Earth", "Terra"};
+        ///
+        /// assert(s.join(const_fat_ptr(words), ", ") == Result::OK);
+        /// assert(strcmp(s.data.buf, "Hello, World, Earth, Terra") == 0);
+        /// ```
+        /// Although this example uses initializer lists, you can also achieve the same using the
+        /// implementation based on `psh::FatPtr`.
         Status join(FatPtr<StringView const> strs, strptr join_cstr = nullptr) noexcept;
     };
 }  // namespace psh
 
 // -----------------------------------------------------------------------------
-// - Compile-time string type construction macros -
+// Compile-time string type construction macros.
 // -----------------------------------------------------------------------------
 
 /// Create a string literal and a string view at compile time from a given c-string literal.

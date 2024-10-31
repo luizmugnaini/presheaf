@@ -45,7 +45,7 @@ namespace psh {
         }
 
         // -----------------------------------------------------------------------------
-        // - Iterator utilities -
+        // Iterator utilities.
         // -----------------------------------------------------------------------------
 
         constexpr T* begin() noexcept {
@@ -65,18 +65,18 @@ namespace psh {
         }
 
         // -----------------------------------------------------------------------------
-        // - Indexed reads -
+        // Indexed reads.
         // -----------------------------------------------------------------------------
 
         constexpr T& operator[](usize idx) noexcept {
-#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+#if defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(idx < this->size, "Index out of bounds for fat pointer");
 #endif
             return this->buf[idx];
         }
 
         constexpr T const& operator[](usize idx) const noexcept {
-#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+#if defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(idx < this->size, "Index out of bounds for fat pointer");
 #endif
             return this->buf[idx];
@@ -84,7 +84,7 @@ namespace psh {
     };
 
     // -----------------------------------------------------------------------------
-    // - Fat pointer creation for common usage patterns -
+    // Fat pointer creation for common usage patterns.
     // -----------------------------------------------------------------------------
 
     template <typename T>

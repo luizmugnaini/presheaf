@@ -29,7 +29,7 @@
 
 namespace psh {
     // -----------------------------------------------------------------------------
-    // - CPU architecture query utilities -
+    // CPU architecture query utilities.
     // -----------------------------------------------------------------------------
 
     /// Check whether the current architecture is little-endian or big-endian.
@@ -39,7 +39,7 @@ namespace psh {
     bool arch_is_bit_endian() noexcept;
 
     // -----------------------------------------------------------------------------
-    // - Memory manipulation utilities -
+    // Memory manipulation utilities.
     // -----------------------------------------------------------------------------
 
     /// Simple wrapper around `memset` that automatically deals with null values.
@@ -88,7 +88,7 @@ namespace psh {
     }
 
     // -----------------------------------------------------------------------------
-    // - Alignment utilities -
+    // Alignment utilities.
     // -----------------------------------------------------------------------------
 
     /// Compute the padding needed for the alignment of the memory and header.

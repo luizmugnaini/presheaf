@@ -148,7 +148,7 @@ namespace psh {
         usize offset = 0;        ///< The current offset to the free-space in the memory block.
 
         // -----------------------------------------------------------------------------
-        // - Allocation methods -
+        // Allocation methods.
         //
         // NOTE: All allocation procedures will zero-out the whole allocated block.
         // -----------------------------------------------------------------------------
@@ -163,7 +163,7 @@ namespace psh {
         T* realloc(T* block, usize current_count, usize new_count) noexcept;
 
         // -----------------------------------------------------------------------------
-        // - Temporary memory management -
+        // Temporary memory management.
         // -----------------------------------------------------------------------------
 
         /// Reset the offset of the allocator.
@@ -181,7 +181,7 @@ namespace psh {
     };
 
     // -----------------------------------------------------------------------------
-    // - Implementation of the arena allocation methods -
+    // Implementation of the arena allocation methods.
     // -----------------------------------------------------------------------------
 
     template <typename T>

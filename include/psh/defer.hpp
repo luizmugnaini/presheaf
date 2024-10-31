@@ -49,7 +49,7 @@
 
 namespace psh::impl::defer {
     // -----------------------------------------------------------------------------
-    // - Implementation details, some type trickery -
+    // Implementation details, some type trickery.
     // -----------------------------------------------------------------------------
 
     template <typename T>
@@ -93,7 +93,7 @@ namespace psh::impl::defer {
 #define psh_impl_defer_var(prefix, id) psh_impl_defer_join(prefix, id)
 
 // -----------------------------------------------------------------------------
-// - Defer interface -
+// Defer interface.
 // -----------------------------------------------------------------------------
 
 #define psh_defer(code)                                                 \

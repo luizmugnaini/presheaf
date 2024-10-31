@@ -30,7 +30,7 @@
 
 namespace psh {
     // -----------------------------------------------------------------------------
-    // - Floating point vectors -
+    // Floating point vectors.
     // -----------------------------------------------------------------------------
 
     /// 2-dimensional vector in floating-point space.
@@ -102,7 +102,7 @@ namespace psh {
     };
 
     // -----------------------------------------------------------------------------
-    // - Integer vectors -
+    // Integer vectors.
     // -----------------------------------------------------------------------------
 
     /// 2-dimensional vector in integer space.
@@ -157,7 +157,7 @@ namespace psh {
     bool  operator==(IVec3 lhs, IVec3 rhs) noexcept;
 
     // -----------------------------------------------------------------------------
-    // - Floating point matrices -
+    // Floating point matrices.
     // -----------------------------------------------------------------------------
 
     // TODO: implement Mat2 methods.

@@ -99,7 +99,7 @@ namespace psh {
         usize previous_offset = 0;
 
         // -----------------------------------------------------------------------------
-        // - Constructors and initializers -
+        // Constructors and initializers.
         // -----------------------------------------------------------------------------
 
         Stack() noexcept = default;
@@ -107,7 +107,7 @@ namespace psh {
         Stack(u8* _buf, usize _size) noexcept;
 
         // -----------------------------------------------------------------------------
-        // - Allocated memory information -
+        // Allocated memory information.
         // -----------------------------------------------------------------------------
 
         /// Gets the total size, in bytes, of the memory used by the allocator.
@@ -135,7 +135,7 @@ namespace psh {
         usize previous_offset_of(u8 const* mem) const noexcept;
 
         // -----------------------------------------------------------------------------
-        // - Allocation methods -
+        // Allocation methods.
         //
         // NOTE: All allocation procedures will zero-out the whole allocated block.
         // -----------------------------------------------------------------------------
@@ -163,7 +163,7 @@ namespace psh {
         T* realloc(T* block, usize new_count) noexcept;
 
         // -----------------------------------------------------------------------------
-        // - Memory manipulation utilities -
+        // Memory manipulation utilities.
         // -----------------------------------------------------------------------------
 
         /// Tries to pop the last memory block allocated by the given stack.
@@ -189,7 +189,7 @@ namespace psh {
     };
 
     // -----------------------------------------------------------------------------
-    // - Implementation of the stack allocation templated methods -
+    // Implementation of the stack allocation templated methods.
     // -----------------------------------------------------------------------------
 
     template <typename T>

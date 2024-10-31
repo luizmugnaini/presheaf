@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 // -----------------------------------------------------------------------------
-// - Fundamental types -
+// Fundamental types.
 // -----------------------------------------------------------------------------
 
 /// Unsigned integer type.
@@ -58,7 +58,38 @@ using f64 = double;
 using strptr = char const*;
 
 // -----------------------------------------------------------------------------
-// - Macros for operating system and compiler detection -
+// Presheaf library compile-time flags.
+// -----------------------------------------------------------------------------
+
+// Check integrity of the malloc/free overrides.
+#if defined(psh_malloc) && defined(psh_free)
+// Fine, all defined.
+#elif !defined(psh_malloc) && !defined(psh_free)
+// Fine, none defined.
+#else
+#    error "You must define all or none of the macros psh_malloc and psh_free."
+#endif
+
+// Define the default allocation procedures.
+#if !defined(psh_malloc)
+#    define psh_malloc malloc
+#endif
+#if !defined(psh_free)
+#    define psh_free free
+#endif
+
+// Activate default debug checks.
+#if defined(PSH_DEBUG)
+#    ifndef PSH_CHECK_BOUNDS
+#        define PSH_CHECK_BOUNDS
+#    endif
+#    ifndef PSH_CHECK_MEMCPY_OVERLAP
+#        define PSH_CHECK_MEMCPY_OVERLAP
+#    endif
+#endif
+
+// -----------------------------------------------------------------------------
+// Macros for operating system and compiler detection.
 // -----------------------------------------------------------------------------
 
 #if defined(_WIN32)
@@ -173,7 +204,13 @@ using strptr = char const*;
 #endif
 
 // -----------------------------------------------------------------------------
-// - Compiler hints -
+// Architecture information.
+// -----------------------------------------------------------------------------
+
+// TODO: SIMD type availability.
+
+// -----------------------------------------------------------------------------
+// Compiler hints.
 // -----------------------------------------------------------------------------
 
 #if __cplusplus >= 202002L  // Technically Presheaf only supports C++20.
@@ -237,27 +274,7 @@ using strptr = char const*;
 #define psh_discard(x) (void)(x)
 
 // -----------------------------------------------------------------------------
-// - Overriding allocation/deallocation -
-// -----------------------------------------------------------------------------
-
-#if defined(psh_malloc) && defined(psh_free)
-// Fine, all defined.
-#elif !defined(psh_malloc) && !defined(psh_free)
-// Fine, none defined.
-#else
-#    error "You must define all or none of the macros psh_malloc and psh_free."
-#endif
-
-// Define the default allocation procedures.
-#if !defined(psh_malloc)
-#    define psh_malloc malloc
-#endif
-#if !defined(psh_free)
-#    define psh_free free
-#endif
-
-// -----------------------------------------------------------------------------
-// - Pointer operations -
+// Pointer operations.
 // -----------------------------------------------------------------------------
 
 /// Add or subtract an offset from a pointer if and only if the pointer is not null.
@@ -274,7 +291,7 @@ using strptr = char const*;
                                                      reinterpret_cast<iptr>(start_ptr))))
 
 // -----------------------------------------------------------------------------
-// - Mathematical operations -
+// Mathematical operations.
 // -----------------------------------------------------------------------------
 
 #define psh_in_closed_range(val, min, max) (((min) <= (val)) && ((val) <= (max)))
@@ -306,7 +323,7 @@ using strptr = char const*;
 #define psh_is_pow_of_two(n) (((n) > 0) && !((n) & (((n)) - 1)))
 
 // -----------------------------------------------------------------------------
-// - Common memory sizes -
+// Common memory sizes.
 // -----------------------------------------------------------------------------
 
 #define psh_kibibytes(n) ((n) * (1 << 10))
@@ -314,14 +331,14 @@ using strptr = char const*;
 #define psh_gibibytes(n) ((n) * (1 << 30))
 
 // -----------------------------------------------------------------------------
-// - Misc. utilities -
+// Miscelaneous utilities.
 // -----------------------------------------------------------------------------
 
 /// Generate a string containing the given expression.
 #define psh_stringify(x) #x
 
 // -----------------------------------------------------------------------------
-// - Source introspection information -
+// Source introspection information.
 // -----------------------------------------------------------------------------
 
 /// Query the string representing the signature of the current function.
@@ -351,7 +368,7 @@ using strptr = char const*;
 #endif
 
 // -----------------------------------------------------------------------------
-// - Short names -
+// Short names.
 // -----------------------------------------------------------------------------
 
 #if defined(PSH_DEFINE_SHORT_NAMES)

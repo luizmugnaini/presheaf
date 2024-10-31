@@ -27,7 +27,7 @@
 #include <limits.h>
 
 // -----------------------------------------------------------------------------
-// - Bit Manipulations -
+// Bit Manipulations.
 // -----------------------------------------------------------------------------
 // Note: The bit indexing count starts at zero for all macros.
 
@@ -75,7 +75,7 @@
 #define psh_test_bit_at(val, n) static_cast<bool>(psh_bit_at((val), (n)))
 
 // -----------------------------------------------------------------------------
-// - Word (16-bit) manipulations -
+// 16-bit manipulations.
 // -----------------------------------------------------------------------------
 
 /// Construct a word with the pair (high byte, low byte).
@@ -103,7 +103,7 @@
     } while (0)
 
 // -----------------------------------------------------------------------------
-// - Byte manipulations -
+// Byte manipulations.
 // -----------------------------------------------------------------------------
 
 /// Low nibble of a byte.
@@ -119,7 +119,7 @@
 #define psh_u8_to_u16_hi(val_u8) (static_cast<unsigned short>((val_u8) << 8))
 
 // -----------------------------------------------------------------------------
-// - Integer manipulations -
+// Integer manipulations.
 // -----------------------------------------------------------------------------
 
 /// Check if a given pair of integers has the same sign.

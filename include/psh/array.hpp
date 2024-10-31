@@ -40,7 +40,7 @@ namespace psh {
         usize size = 0;
 
         // -----------------------------------------------------------------------------
-        // - Diagnostic messages -
+        // Diagnostic messages.
         // -----------------------------------------------------------------------------
 
         static constexpr strptr ERROR_INIT_INCONSISTENT_ARENA =
@@ -50,7 +50,7 @@ namespace psh {
         static constexpr strptr ERROR_ACCESS_OUT_OF_BOUNDS = "DynArray access out of bounds";
 
         // -----------------------------------------------------------------------------
-        // - Constructors and initializers -
+        // Constructors and initializers.
         // -----------------------------------------------------------------------------
 
         Array() noexcept = default;
@@ -76,7 +76,7 @@ namespace psh {
         }
 
         // -----------------------------------------------------------------------------
-        // - Iterator utilities -
+        // Iterator utilities.
         // -----------------------------------------------------------------------------
 
         T* begin() noexcept {
@@ -96,18 +96,18 @@ namespace psh {
         }
 
         // -----------------------------------------------------------------------------
-        // - Indexed reads -
+        // Indexed reads.
         // -----------------------------------------------------------------------------
 
         T& operator[](usize index) noexcept {
-#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+#if defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(index < this->size, ERROR_ACCESS_OUT_OF_BOUNDS);
 #endif
             return this->buf[index];
         }
 
         T const& operator[](usize index) const noexcept {
-#if defined(PSH_DEBUG) || defined(PSH_CHECK_BOUNDS)
+#if defined(PSH_CHECK_BOUNDS)
             psh_assert_msg(index < this->size, ERROR_ACCESS_OUT_OF_BOUNDS);
 #endif
             return this->buf[index];
@@ -115,7 +115,7 @@ namespace psh {
     };
 
     // -----------------------------------------------------------------------------
-    // - Generating fat pointers -
+    // Generating fat pointers.
     // -----------------------------------------------------------------------------
 
     template <typename T>

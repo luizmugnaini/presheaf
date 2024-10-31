@@ -26,13 +26,13 @@
 #define PSH_TEST_NOMAIN
 
 // -----------------------------------------------------------------------------
-// - Single compilation unit comprising the whole library implementation -
+// Single compilation unit comprising the whole library implementation.
 // -----------------------------------------------------------------------------
 
 #include "../src/all.cpp"
 
 // -----------------------------------------------------------------------------
-// - Invoke all test -
+// Invoke all test.
 // -----------------------------------------------------------------------------
 
 // Include all tests.

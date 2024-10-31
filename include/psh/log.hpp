@@ -55,7 +55,7 @@ namespace psh::impl::log {
 }  // namespace psh::impl::log
 
 // -----------------------------------------------------------------------------
-// - Logging macro utilities intended for easier usage pattern  -
+// Logging macro utilities intended for easier usage pattern.
 // -----------------------------------------------------------------------------
 
 #define psh_impl_make_log_info(log_level)            \
@@ -96,7 +96,7 @@ namespace psh::impl::log {
 #endif
 
 // -----------------------------------------------------------------------------
-// - Short names -
+// Short names.
 // -----------------------------------------------------------------------------
 
 #if defined(PSH_DEFINE_SHORT_NAMES)

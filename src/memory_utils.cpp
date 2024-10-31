@@ -52,7 +52,7 @@ namespace psh {
             return;
         }
 
-#if defined(PSH_DEBUG) || defined(PSH_CHECK_MEMCPY_OVERLAP)
+#if defined(PSH_CHECK_MEMCPY_OVERLAP)
         uptr dst_addr = reinterpret_cast<uptr>(dst);
         uptr src_addr = reinterpret_cast<uptr>(src);
         psh_assert_msg(
