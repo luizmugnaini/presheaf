@@ -27,38 +27,33 @@
 #include <psh/assert.hpp>
 
 namespace psh {
-    enum struct Status : bool {
-        OK     = true,
-        FAILED = false,
-    };
-
     /// Option type.
     ///
     /// Note: This struct shouldn't be used with pointer types, as a null will still indicate a value
     ///       being present.
     template <typename T>
     struct Option {
-        T    val     = {};
-        bool has_val = false;
-
         constexpr Option() noexcept = default;
 
-        constexpr Option(T _val) noexcept
-            : val{_val}, has_val{true} {}
+        constexpr Option(T value_) noexcept
+            : value{value_}, has_value{true} {}
 
-        constexpr Option& operator=(T _val) noexcept {
-            this->val     = _val;
-            this->has_val = true;
+        constexpr Option& operator=(T value_) noexcept {
+            this->value     = value_;
+            this->has_value = true;
             return *this;
         }
 
-        T const& val_or(T const& default_val = {}) const noexcept {
-            return this->has_val ? this->val : default_val;
+        T const& value_or(T const& default_value = {}) const noexcept {
+            return this->has_value ? this->value : default_value;
         }
 
-        T const& demand(strptr msg = "Option::demand failed") const noexcept {
-            psh_assert_msg(this->has_val, msg);
-            return this->val;
+        T const& demand(strptr msg = "") const noexcept {
+            psh_assert_msg(this->has_value, msg);
+            return this->value;
         }
+
+        T    value     = {};
+        bool has_value = false;
     };
 }  // namespace psh

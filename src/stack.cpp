@@ -187,7 +187,7 @@ namespace psh {
 
     Status Stack::pop() noexcept {
         if (psh_unlikely(this->previous_offset == 0)) {
-            return Status::FAILED;
+            return STATUS_FAILED;
         }
 
         u8 const*          top        = this->buf + this->previous_offset;
@@ -195,12 +195,12 @@ namespace psh {
 
         this->offset          = this->previous_offset - top_header->padding;
         this->previous_offset = top_header->previous_offset;
-        return Status::OK;
+        return STATUS_OK;
     }
 
     Status Stack::clear_at(u8 const* block) noexcept {
         if (psh_unlikely(block == nullptr)) {
-            return Status::FAILED;
+            return STATUS_FAILED;
         }
 
         // Check if the block is within the allocator's memory.
@@ -221,7 +221,7 @@ namespace psh {
             reinterpret_cast<uptr>(this->buf));
         this->previous_offset = header->previous_offset;
 
-        return Status::OK;
+        return STATUS_OK;
     }
 
     /// Reset the allocator's offset.

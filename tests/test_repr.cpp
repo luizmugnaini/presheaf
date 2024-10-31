@@ -29,20 +29,20 @@
 
 namespace psh::test::repr {
     psh_internal void binary_representation() {
-        u8*        memory = reinterpret_cast<u8*>(malloc(256));
-        psh::Arena arena{memory, 256};
+        u8*   memory = reinterpret_cast<u8*>(malloc(256));
+        Arena arena{memory, 256};
         {
-            psh::String repr0 = psh::binary_repr(&arena, 0b0);
-            psh_assert(psh::str_equal(repr0.data.buf, "0b0"));
+            String repr0 = binary_repr(&arena, 0b0);
+            psh_assert(str_equal(repr0.data.buf, "0b0"));
 
-            psh::String repr1 = psh::binary_repr(&arena, 0b010);
-            psh_assert(psh::str_equal(repr1.data.buf, "0b10"));
+            String repr1 = binary_repr(&arena, 0b010);
+            psh_assert(str_equal(repr1.data.buf, "0b10"));
 
-            psh::String repr2 = psh::binary_repr(&arena, 0b11010);
-            psh_assert(psh::str_equal(repr2.data.buf, "0b11010"));
+            String repr2 = binary_repr(&arena, 0b11010);
+            psh_assert(str_equal(repr2.data.buf, "0b11010"));
 
-            psh::String repr3 = psh::binary_repr(&arena, 0b000111110101010101011);
-            psh_assert(psh::str_equal(repr3.data.buf, "0b111110101010101011"));
+            String repr3 = binary_repr(&arena, 0b000111110101010101011);
+            psh_assert(str_equal(repr3.data.buf, "0b111110101010101011"));
         }
         free(memory);
 

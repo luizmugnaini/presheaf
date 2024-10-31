@@ -42,7 +42,10 @@ namespace psh {
     usize        str_length(strptr str) noexcept;
     StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept;
     bool         str_equal(strptr lhs, strptr rhs) noexcept;
-    bool         is_utf8(char c) noexcept;
+
+    constexpr bool is_utf8(char c) noexcept {
+        return (0x1F < c && c < 0x7F);
+    }
 
     // -----------------------------------------------------------------------------
     // String types.
@@ -53,8 +56,8 @@ namespace psh {
         strptr str;
 
         template <usize N>
-        consteval StringLiteral(char const (&_str)[N]) noexcept
-            : str{_str} {}
+        consteval StringLiteral(char const (&str_)[N]) noexcept
+            : str{str_} {}
     };
 
     /// A string with guaranteed compile-time known size.
@@ -77,7 +80,7 @@ namespace psh {
 
         char operator[](usize index) const noexcept {
 #if defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(index < size_, "Str access out of bounds");
+            psh_assert_fmt(index < size_, "Access out of bounds (%zu) for string of size %zu", index, size_);
 #endif
             return this->buf[index];
         }
@@ -85,22 +88,29 @@ namespace psh {
 
     /// Immutable view of a string.
     struct StringView {
-        FatPtr<char const> const data;
+        FatPtr<char const> data;
 
         constexpr StringView() noexcept = default;
-        constexpr StringView(strptr _str, usize _length) noexcept
-            : data{_str, _length} {}
-        StringView(strptr _str) noexcept;
+
+        template <usize size_>
+        constexpr StringView(Str<size_> str) noexcept
+            : data{str.buf, size_ - 1} {}
+
+        constexpr StringView(strptr str, usize size) noexcept
+            : data{str, size} {}
+
+        StringView(strptr str) noexcept
+            : data{str, str_length(str)} {}
     };
 
     /// Dynamically allocated string.
     struct String {
         DynArray<char> data;
 
-        String() = default;
-        String(Arena* arena, usize capacity) noexcept;
+        constexpr String() = default;
+        String(Arena* arena, usize size) noexcept;
         String(Arena* arena, StringView sv) noexcept;
-        void init(Arena* arena, usize capacity) noexcept;
+
         void init(Arena* arena, StringView sv) noexcept;
 
         /// Make a view from the string.
@@ -111,19 +121,29 @@ namespace psh {
         ///
         /// Example:
         /// ```cpp
-        /// using namespace psh;
+        /// psh::Arena arena{...};
+        /// psh::String s{&arena, "Hello"};
+        /// psh::Buffer<StringView, 3> words = {"World", "Earth", "Terra"};
         ///
-        /// Arena arena{...};
-        /// String s{&arena, "Hello"};
-        /// Buffer<StringView, 3> words = {"World", "Earth", "Terra"};
-        ///
-        /// assert(s.join(const_fat_ptr(words), ", ") == Result::OK);
-        /// assert(strcmp(s.data.buf, "Hello, World, Earth, Terra") == 0);
+        /// assert(s.join(psh::const_fat_ptr(words), ", "));
+        /// assert(psh::str_cmp(s.data.buf, "Hello, World, Earth, Terra") == psh::StrCmpResult::EQUAL);
         /// ```
         /// Although this example uses initializer lists, you can also achieve the same using the
         /// implementation based on `psh::FatPtr`.
-        Status join(FatPtr<StringView const> strs, strptr join_cstr = nullptr) noexcept;
+        Status join(FatPtr<StringView const> join_strings, StringView join = {}) noexcept;
     };
+
+    psh_inline String::String(Arena* arena, usize size) noexcept {
+        this->data.init(arena, size);
+    }
+
+    psh_inline String::String(Arena* arena, StringView sv) noexcept {
+        this->init(arena, sv);
+    }
+
+    psh_inline StringView String::view() const noexcept {
+        return StringView{this->data.buf, this->data.size};
+    }
 }  // namespace psh
 
 // -----------------------------------------------------------------------------
@@ -139,7 +159,7 @@ namespace psh {
     psh::Str<sizeof((cstr_literal))> { \
         (cstr_literal)                 \
     }
-#define psh_string_view(cstr_literal)              \
-    psh::StringView {                              \
-        (cstr_literal), sizeof((cstr_literal)) - 1 \
+#define psh_string_view(cstr_literal)             \
+    psh::StringView {                             \
+        (cstr_literal), sizeof(cstr_literal) - 1, \
     }

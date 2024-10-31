@@ -31,6 +31,14 @@
 #include <psh/option.hpp>
 
 namespace psh {
+    namespace impl::dyn_array {
+        static constexpr strptr ERROR_INIT_INCONSISTENT_ARENA             = "DynArray initialization called with non-zero capacity but an empty arena";
+        static constexpr strptr ERROR_INIT_OUT_OF_MEMORY                  = "DynArray initialization unable to acquire enough bytes of memory";
+        static constexpr strptr ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY = "DynArray initialization called with inconsistent data: capacity less than the size";
+        static constexpr strptr ERROR_ACCESS_OUT_OF_BOUNDS                = "DynArray access out of bounds";
+        static constexpr strptr ERROR_RESIZE_OUT_OF_MEMORY                = "DynArray cannot be resized because its allocator is out of memory";
+    }  // namespace impl::dyn_array
+
     /// Run-time variable length array.
     ///
     /// A dynamic array has its lifetime bound to its associated arena.
@@ -45,59 +53,45 @@ namespace psh {
         static constexpr usize DYNARRAY_RESIZE_CAPACITY_FACTOR   = 2;
 
         // -----------------------------------------------------------------------------
-        // Diagnostic messages.
-        // -----------------------------------------------------------------------------
-
-        static constexpr strptr ERROR_INIT_INCONSISTENT_ARENA =
-            "DynArray initialization called with non-zero capacity but an empty arena";
-        static constexpr strptr ERROR_INIT_OUT_OF_MEMORY =
-            "DynArray initialization unable to acquire enough bytes of memory";
-        static constexpr strptr ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY =
-            "DynArray initialization called with inconsistent data: capacity less than the size";
-        static constexpr strptr ERROR_ACCESS_OUT_OF_BOUNDS = "DynArray access out of bounds";
-        static constexpr strptr ERROR_RESIZE_OUT_OF_MEMORY =
-            "DynArray cannot be resized because its allocator is out of memory";
-
-        // -----------------------------------------------------------------------------
         // Constructors and initializers.
         // -----------------------------------------------------------------------------
 
         DynArray() noexcept = default;
 
         /// Initialize the dynamic array with a given capacity.
-        void init(Arena* _arena, usize _capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) noexcept {
-            this->arena    = _arena;
-            this->capacity = _capacity;
+        void init(Arena* arena_, usize capacity_ = DYNARRAY_DEFAULT_INITIAL_CAPACITY) noexcept {
+            this->arena    = arena_;
+            this->capacity = capacity_;
 
             if (psh_likely(this->capacity != 0)) {
-                psh_assert_msg(this->arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
+                psh_assert_msg(this->arena != nullptr, impl::dyn_array::ERROR_INIT_INCONSISTENT_ARENA);
 
                 this->buf = arena->alloc<T>(this->capacity);
-                psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
+                psh_assert_msg(this->buf != nullptr, impl::dyn_array::ERROR_INIT_OUT_OF_MEMORY);
             }
         }
 
         /// Construct a dynamic array with a given capacity.
-        DynArray(Arena* _arena, usize _capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) noexcept {
-            this->init(_arena, _capacity);
+        DynArray(Arena* arena_, usize capacity_ = DYNARRAY_DEFAULT_INITIAL_CAPACITY) noexcept {
+            this->init(arena_, capacity_);
         }
 
         /// Initialize the dynamic array with the contents of an initializer list, and optionally
         /// reserve a given capacity.
         void init(
             std::initializer_list<T> const& list,
-            Arena*                          _arena,
-            Option<usize> const&            _capacity = {}) noexcept {
-            this->arena    = _arena;
+            Arena*                          arena_,
+            usize                           capacity_ = 0) noexcept {
+            this->arena    = arena_;
             this->size     = list.size();
-            this->capacity = _capacity.val_or(DYNARRAY_RESIZE_CAPACITY_FACTOR * this->size);
-            psh_assert_msg(this->size <= this->capacity, ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY);
+            this->capacity = psh_max_val(capacity_, DYNARRAY_RESIZE_CAPACITY_FACTOR * this->size);
+            psh_assert_msg(this->size <= this->capacity, impl::dyn_array::ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY);
 
             if (psh_likely(this->capacity != 0)) {
-                psh_assert_msg(this->arena != nullptr, ERROR_INIT_INCONSISTENT_ARENA);
+                psh_assert_msg(this->arena != nullptr, impl::dyn_array::ERROR_INIT_INCONSISTENT_ARENA);
 
                 this->buf = arena->alloc<T>(this->capacity);
-                psh_assert_msg(this->buf != nullptr, ERROR_INIT_OUT_OF_MEMORY);
+                psh_assert_msg(this->buf != nullptr, impl::dyn_array::ERROR_INIT_OUT_OF_MEMORY);
             }
 
             memory_copy(
@@ -110,9 +104,9 @@ namespace psh {
         /// reserve a given capacity.
         DynArray(
             std::initializer_list<T> list,
-            Arena*                   _arena,
-            Option<usize>            _capacity = {}) noexcept {
-            this->init(list, _arena, _capacity);
+            Arena*                   arena_,
+            usize                    capacity_ = 0) noexcept {
+            this->init(list, arena_, capacity_);
         }
 
         usize size_bytes() noexcept {
@@ -150,14 +144,14 @@ namespace psh {
 
         T& operator[](usize idx) noexcept {
 #if defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(idx < this->size, ERROR_ACCESS_OUT_OF_BOUNDS);
+            psh_assert_msg(idx < this->size, impl::dyn_array::ERROR_ACCESS_OUT_OF_BOUNDS);
 #endif
             return this->buf[idx];
         }
 
         T const& operator[](usize idx) const noexcept {
 #if defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(idx < this->size, ERROR_ACCESS_OUT_OF_BOUNDS);
+            psh_assert_msg(idx < this->size, impl::dyn_array::ERROR_ACCESS_OUT_OF_BOUNDS);
 #endif
             return this->buf[idx];
         }
@@ -180,7 +174,7 @@ namespace psh {
             }
 
             if (psh_likely(this->capacity != 0)) {
-                psh_assert_msg(this->buf != nullptr, ERROR_RESIZE_OUT_OF_MEMORY);
+                psh_assert_msg(this->buf != nullptr, impl::dyn_array::ERROR_RESIZE_OUT_OF_MEMORY);
             }
         }
 
@@ -192,15 +186,15 @@ namespace psh {
 
             if (psh_unlikely(new_buf == nullptr)) {
                 // TODO: should this be a fatal error?
-                psh_log_error(ERROR_RESIZE_OUT_OF_MEMORY);
-                return Status::FAILED;
+                psh_log_error(impl::dyn_array::ERROR_RESIZE_OUT_OF_MEMORY);
+                return STATUS_FAILED;
             }
 
             // Commit the resizing.
             this->buf      = new_buf;
             this->capacity = new_capacity;
 
-            return Status::OK;
+            return STATUS_OK;
         }
 
         // -----------------------------------------------------------------------------
@@ -226,10 +220,10 @@ namespace psh {
 
         /// Try to pop the last element of the dynamic array.
         Status pop() noexcept {
-            Status res = Status::FAILED;
+            Status res = STATUS_FAILED;
             if (psh_likely(this->size > 0)) {
                 this->size -= 1;
-                res = Status::OK;
+                res = STATUS_OK;
             }
             return res;
         }
@@ -238,8 +232,8 @@ namespace psh {
         Status remove(usize idx) noexcept {
 #if defined(PSH_CHECK_BOUNDS)
             if (psh_unlikely(idx >= this->size)) {
-                psh_log_error(ERROR_ACCESS_OUT_OF_BOUNDS);
-                return Status::FAILED;
+                psh_log_error(impl::dyn_array::ERROR_ACCESS_OUT_OF_BOUNDS);
+                return STATUS_FAILED;
             }
 #endif
 
@@ -252,7 +246,7 @@ namespace psh {
 
             this->size -= 1;
 
-            return Status::OK;
+            return STATUS_OK;
         }
 
         /// Clear the dynamic array data, resetting its size.

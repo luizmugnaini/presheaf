@@ -57,6 +57,13 @@ using f64 = double;
 /// A pointer to a contiguous array of constant character values.
 using strptr = char const*;
 
+namespace psh {
+    enum Status : bool {
+        STATUS_FAILED = false,
+        STATUS_OK     = true,
+    };
+}
+
 // -----------------------------------------------------------------------------
 // Presheaf library compile-time flags.
 // -----------------------------------------------------------------------------
@@ -212,6 +219,9 @@ using strptr = char const*;
 // -----------------------------------------------------------------------------
 // Compiler hints.
 // -----------------------------------------------------------------------------
+
+// TODO: force inline.
+#define psh_inline inline
 
 #if __cplusplus >= 202002L  // Technically Presheaf only supports C++20.
 #    define PSH_FALLTHROUGH [[fallthrough]]

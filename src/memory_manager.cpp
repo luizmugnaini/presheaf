@@ -49,7 +49,7 @@ namespace psh {
 
     Status MemoryManager::pop() noexcept {
         Status st = this->allocator.pop();
-        if (psh_likely(st == Status::OK)) {
+        if (psh_likely(st == STATUS_OK)) {
             --this->allocation_count;
         }
         return st;
@@ -67,7 +67,7 @@ namespace psh {
                     : "MemoryManager::clear_until called with a pointer to an already free region "
                       "of the stack memory_start.";
             psh_log_error(fail_reason);
-            return Status::FAILED;
+            return STATUS_FAILED;
         }
 
         // Pop the top memory block until popping `block` or reaching the end of the allocator.
@@ -78,7 +78,7 @@ namespace psh {
             if (psh_unlikely(top_block == memory_start)) {
                 break;
             }
-            if (psh_likely(this->allocator.pop() == Status::OK)) {
+            if (psh_likely(this->allocator.pop() == STATUS_OK)) {
                 --this->allocation_count;
             }
             if (psh_unlikely(top_block == block)) {
@@ -86,7 +86,7 @@ namespace psh {
             }
         }
 
-        return Status::OK;
+        return STATUS_OK;
     }
 
     void MemoryManager::clear() noexcept {
