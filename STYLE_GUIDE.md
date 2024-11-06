@@ -10,7 +10,7 @@
 - "Where are my beloved private members" - you might ask. They are not allowed, this library is created
   to be as hackable as possible as it only aims to provide the basic building block of a program
   (where C failed to deliver). The users are always treated as having better understanding of their
-  program than the library, so everything is open for them to enjoy and exploit. 
+  program than the library, so everything is open for them to enjoy and exploit.
 - Your templates should be as simple as possible, and should not be overused. In particular, templates
   should **never** be used for some kind of internal logic, only for generalising structures and
   functions over types.
@@ -18,18 +18,20 @@
   considerable bloat to the software and worsen both the compile time and runtime, as well as a
   larger memory footprint. Unfortunately, some STL constructs (`std::initializer_list` for instance)
   are compiler intrinsic so we have to include headers providing them if we wish to use these features.
-- Prefer including the direct LibC headers (e.g. `stdio.h`) instead of the C++ wrappers (e.g. `cstdio`).
+- Prefer including the direct libc headers (e.g. `stdio.h`) instead of the C++ wrappers (e.g. `cstdio`).
+  A common misconception is that the C++ wrappers make the global namespace clear of libc functions,
+  which is definitely not the case (you can access both `std::printf` and `printf` from `cstdio`).
 - Always provide useful documentation. Note however that some docs may not be really that relevant:
   for instance, the method `psh::Array::size_bytes` is obvious, it simply returns the size of the
   array in bytes.
 - Don't write in a comment what can be clearly stated in code.
 - Don't try to be clever, be pragmatic and simple.
 - Use the following comment tags (BUG, FIXME, TODO, NOTE) for an easier way to search them later.
-- Write fault tolerant code, if some value fails to meet some expectation, try to find a way to make
-  it a default value if possible.
+- Write fault tolerant code, if some value fails to meet some expectation, try to use a default value
+  whenever possible.
 - In case there is no possible default value, don't be shy of asserts! If you **are** going to fail,
-  fail as fast as possible.
-- Always use the type aliases declared in `<psh/core.h>`.
+  fail as fast as possible. This makes debugging way easier for both the users and the library devs.
+- Always use the type aliases declared in `<psh/core.h>`. These provide uniformity for the codebase.
 
 # Formatting
 
@@ -67,12 +69,6 @@ decreases significantly the readability of the code - it adds too much  noise. M
 bugs that `nodiscard` prevents are actually pretty uninteresting and should be uncommon in any well
 written codebase.
 
-# Strings
-
-- Raw string pointers should always have the type `char const* const`, that is, a constant pointer
-  to an array of constant characters. If a string is being returned from a function, the return type
-  should be `char const*` since we can't ensure that the caller won't change the pointer itself.
-
 # Naming Conventions
 
 We mostly follow the advice given by the [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-naming).
@@ -93,7 +89,7 @@ We mostly follow the advice given by the [C++ Core Guidelines](https://isocpp.gi
 - Private variables should *not* be used, everything should be accessible. The user is responsible for their
   usage, not the library - if one wants to break some implicit contract, let it be.
 - Regarding **method argument names**, if you need to avoid name collisions with member variables, you can
-  put an underscore to the start of the argument: `_arg_avoiding_collision`.
+  put an underscore to the start of the argument: `arg_avoiding_collision_`.
 
 # Enumerations
 
