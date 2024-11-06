@@ -32,30 +32,6 @@ namespace psh {
     // 2-dimensional floating-point vector.
     // -----------------------------------------------------------------------------
 
-    Vec2& Vec2::operator+=(Vec2 const& other) noexcept {
-        x += other.x;
-        y += other.y;
-        return *this;
-    }
-
-    Vec2& Vec2::operator-=(Vec2 const& other) noexcept {
-        x -= other.x;
-        y -= other.y;
-        return *this;
-    }
-
-    Vec2& Vec2::operator*=(Vec2 const& other) noexcept {
-        x *= other.x;
-        y *= other.y;
-        return *this;
-    }
-
-    Vec2& Vec2::operator*=(f32 scalar) noexcept {
-        x *= scalar;
-        y *= scalar;
-        return *this;
-    }
-
     bool Vec2::is_zero(f32 zero_range) const noexcept {
         return f32_approx_equal(x, 0.0f, zero_range) && f32_approx_equal(y, 0.0f, zero_range);
     }
@@ -70,65 +46,61 @@ namespace psh {
         return Vec2{x / len, y / len};
     }
 
-    f32 Vec2::dot(Vec2 const& other) const noexcept {
+    f32 Vec2::dot(Vec2 other) const noexcept {
         return x * other.x + y * other.y;
     }
 
-    bool Vec2::is_to_the_left_of(Vec2 const& other) const noexcept {
+    bool Vec2::is_to_the_left_of(Vec2 other) const noexcept {
         return ((other.x * y - other.y * x) >= 0.0f);
     }
 
-    Vec2 operator+(Vec2 lhs, Vec2 rhs) noexcept {
-        return Vec2{lhs.x + rhs.x, lhs.y + rhs.y};
+    Vec2& Vec2::operator+=(Vec2 other) noexcept {
+        x += other.x;
+        y += other.y;
+        return *this;
     }
 
-    Vec2 operator-(Vec2 lhs, Vec2 rhs) noexcept {
-        return Vec2{lhs.x - rhs.x, lhs.y - rhs.y};
+    Vec2& Vec2::operator-=(Vec2 other) noexcept {
+        x -= other.x;
+        y -= other.y;
+        return *this;
     }
 
-    Vec2 operator*(Vec2 lhs, Vec2 rhs) noexcept {
-        return Vec2{lhs.x * rhs.x, lhs.y * rhs.y};
+    Vec2& Vec2::operator*=(Vec2 other) noexcept {
+        x *= other.x;
+        y *= other.y;
+        return *this;
     }
 
-    Vec2 operator*(Vec2 v, f32 scalar) noexcept {
-        return Vec2{v.x * scalar, v.y * scalar};
+    Vec2& Vec2::operator*=(f32 scalar) noexcept {
+        x *= scalar;
+        y *= scalar;
+        return *this;
     }
 
-    Vec2 operator-(Vec2 v) noexcept {
-        return Vec2{-v.x, -v.y};
+    Vec2 Vec2::operator+(Vec2 other) const noexcept {
+        return Vec2{x + other.x, y + other.y};
+    }
+
+    Vec2 Vec2::operator-(Vec2 other) const noexcept {
+        return Vec2{x - other.x, y - other.y};
+    }
+
+    Vec2 Vec2::operator-() const noexcept {
+        return Vec2{-x, -y};
+    }
+
+    Vec2 Vec2::operator*(Vec2 other) const noexcept {
+        return Vec2{x * other.x, y * other.y};
+    }
+
+    Vec2 Vec2::operator*(f32 scalar) const noexcept {
+        return Vec2{x * scalar, y * scalar};
     }
 
     // -----------------------------------------------------------------------------
     // 3-dimensional floating-point vector.
     // -----------------------------------------------------------------------------
-
-    Vec3& Vec3::operator+=(Vec3 const& other) noexcept {
-        x += other.x;
-        y += other.y;
-        z += other.z;
-        return *this;
-    }
-
-    Vec3& Vec3::operator-=(Vec3 const& other) noexcept {
-        x -= other.x;
-        y -= other.y;
-        z -= other.z;
-        return *this;
-    }
-
-    Vec3& Vec3::operator*=(Vec3 const& other) noexcept {
-        x *= other.x;
-        y *= other.y;
-        z *= other.z;
-        return *this;
-    }
-
-    Vec3& Vec3::operator*=(f32 scalar) noexcept {
-        x *= scalar;
-        y *= scalar;
-        z *= scalar;
-        return *this;
-    }
 
     bool Vec3::is_zero(f32 zero_range) const noexcept {
         return f32_approx_equal(x, 0.0f, zero_range) &&
@@ -146,11 +118,11 @@ namespace psh {
         return Vec3{x / len, y / len, z / len};
     }
 
-    f32 Vec3::dot(Vec3 const& other) const noexcept {
+    f32 Vec3::dot(Vec3 other) const noexcept {
         return x * other.x + y * other.y + z * other.z;
     }
 
-    Vec3 Vec3::cross(Vec3 const& other) const noexcept {
+    Vec3 Vec3::cross(Vec3 other) const noexcept {
         return Vec3{
             y * other.z - z * other.y,
             z * other.x - x * other.z,
@@ -158,53 +130,57 @@ namespace psh {
         };
     }
 
-    Vec3 operator+(Vec3 lhs, Vec3 rhs) noexcept {
-        return Vec3{lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
+    Vec3& Vec3::operator+=(Vec3 other) noexcept {
+        x += other.x;
+        y += other.y;
+        z += other.z;
+        return *this;
     }
 
-    Vec3 operator-(Vec3 lhs, Vec3 rhs) noexcept {
-        return Vec3{lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z};
+    Vec3& Vec3::operator-=(Vec3 other) noexcept {
+        x -= other.x;
+        y -= other.y;
+        z -= other.z;
+        return *this;
     }
 
-    Vec3 operator*(Vec3 lhs, Vec3 rhs) noexcept {
-        return Vec3{lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z};
+    Vec3& Vec3::operator*=(Vec3 other) noexcept {
+        x *= other.x;
+        y *= other.y;
+        z *= other.z;
+        return *this;
     }
 
-    Vec3 operator*(Vec3 v, f32 scalar) noexcept {
-        return Vec3{v.x * scalar, v.y * scalar, v.z * scalar};
+    Vec3& Vec3::operator*=(f32 scalar) noexcept {
+        x *= scalar;
+        y *= scalar;
+        z *= scalar;
+        return *this;
     }
 
-    Vec3 operator-(Vec3 v) noexcept {
-        return Vec3{-v.x, -v.y, -v.z};
+    Vec3 Vec3::operator+(Vec3 other) const noexcept {
+        return Vec3{x + other.x, y + other.y, z + other.z};
+    }
+
+    Vec3 Vec3::operator-(Vec3 other) const noexcept {
+        return Vec3{x - other.x, y - other.y, z - other.z};
+    }
+
+    Vec3 Vec3::operator-() const noexcept {
+        return Vec3{-x, -y, -z};
+    }
+
+    Vec3 Vec3::operator*(Vec3 other) const noexcept {
+        return Vec3{x * other.x, y * other.y, z * other.z};
+    }
+
+    Vec3 Vec3::operator*(f32 scalar) const noexcept {
+        return Vec3{x * scalar, y * scalar, z * scalar};
     }
 
     // -----------------------------------------------------------------------------
     // 2-dimensional integer vector.
     // -----------------------------------------------------------------------------
-
-    IVec2& IVec2::operator+=(IVec2 const& other) noexcept {
-        x += other.x;
-        y += other.y;
-        return *this;
-    }
-
-    IVec2& IVec2::operator-=(IVec2 const& other) noexcept {
-        x -= other.x;
-        y -= other.y;
-        return *this;
-    }
-
-    IVec2& IVec2::operator*=(IVec2 const& other) noexcept {
-        x *= other.x;
-        y *= other.y;
-        return *this;
-    }
-
-    IVec2& IVec2::operator*=(i32 scalar) noexcept {
-        x *= scalar;
-        y *= scalar;
-        return *this;
-    }
 
     bool IVec2::is_zero() const noexcept {
         return (x == 0) && (y == 0);
@@ -220,65 +196,61 @@ namespace psh {
         return Vec2{static_cast<f32>(x) / len, static_cast<f32>(y) / len};
     }
 
-    i32 IVec2::dot(IVec2 const& other) const noexcept {
+    i32 IVec2::dot(IVec2 other) const noexcept {
         return x * other.x + y * other.y;
     }
 
-    IVec2 operator+(IVec2 lhs, IVec2 rhs) noexcept {
-        return IVec2{lhs.x + rhs.x, lhs.y + rhs.y};
+    IVec2& IVec2::operator+=(IVec2 other) noexcept {
+        x += other.x;
+        y += other.y;
+        return *this;
     }
 
-    IVec2 operator-(IVec2 lhs, IVec2 rhs) noexcept {
-        return IVec2{lhs.x - rhs.x, lhs.y - rhs.y};
+    IVec2& IVec2::operator-=(IVec2 other) noexcept {
+        x -= other.x;
+        y -= other.y;
+        return *this;
     }
 
-    IVec2 operator-(IVec2 v) noexcept {
-        return IVec2{-v.x, -v.y};
+    IVec2& IVec2::operator*=(IVec2 other) noexcept {
+        x *= other.x;
+        y *= other.y;
+        return *this;
     }
 
-    IVec2 operator*(IVec2 lhs, IVec2 rhs) noexcept {
-        return IVec2{lhs.x * rhs.x, lhs.y * rhs.y};
+    IVec2& IVec2::operator*=(i32 scalar) noexcept {
+        x *= scalar;
+        y *= scalar;
+        return *this;
     }
 
-    IVec2 operator*(IVec2 v, i32 scalar) noexcept {
-        return IVec2{v.x * scalar, v.y * scalar};
+    IVec2 IVec2::operator+(IVec2 other) const noexcept {
+        return IVec2{x + other.x, y + other.y};
     }
 
-    bool operator==(IVec2 lhs, IVec2 rhs) noexcept {
-        return (lhs.x == rhs.x) && (lhs.y == rhs.y);
+    IVec2 IVec2::operator-(IVec2 other) const noexcept {
+        return IVec2{x - other.x, y - other.y};
+    }
+
+    IVec2 IVec2::operator-() const noexcept {
+        return IVec2{-x, -y};
+    }
+
+    IVec2 IVec2::operator*(IVec2 other) const noexcept {
+        return IVec2{x * other.x, y * other.y};
+    }
+
+    IVec2 IVec2::operator*(i32 scalar) const noexcept {
+        return IVec2{x * scalar, y * scalar};
+    }
+
+    bool IVec2::operator==(IVec2 other) const noexcept {
+        return (x == other.x) && (y == other.y);
     }
 
     // -----------------------------------------------------------------------------
     // 3-dimensional integer vector.
     // -----------------------------------------------------------------------------
-
-    IVec3& IVec3::operator+=(IVec3 const& other) noexcept {
-        x += other.x;
-        y += other.y;
-        z += other.z;
-        return *this;
-    }
-
-    IVec3& IVec3::operator-=(IVec3 const& other) noexcept {
-        x -= other.x;
-        y -= other.y;
-        z -= other.z;
-        return *this;
-    }
-
-    IVec3& IVec3::operator*=(IVec3 const& other) noexcept {
-        x *= other.x;
-        y *= other.y;
-        z *= other.z;
-        return *this;
-    }
-
-    IVec3& IVec3::operator*=(i32 scalar) noexcept {
-        x *= scalar;
-        y *= scalar;
-        z *= scalar;
-        return *this;
-    }
 
     bool IVec3::is_zero() const noexcept {
         return (x == 0) && (y == 0) && (z == 0);
@@ -310,28 +282,56 @@ namespace psh {
         };
     }
 
-    IVec3 operator+(IVec3 lhs, IVec3 rhs) noexcept {
-        return IVec3{lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
+    IVec3& IVec3::operator+=(IVec3 const& other) noexcept {
+        x += other.x;
+        y += other.y;
+        z += other.z;
+        return *this;
     }
 
-    IVec3 operator-(IVec3 lhs, IVec3 rhs) noexcept {
-        return IVec3{lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z};
+    IVec3& IVec3::operator-=(IVec3 const& other) noexcept {
+        x -= other.x;
+        y -= other.y;
+        z -= other.z;
+        return *this;
     }
 
-    IVec3 operator-(IVec3 v) noexcept {
-        return IVec3{-v.x, -v.y, -v.z};
+    IVec3& IVec3::operator*=(IVec3 const& other) noexcept {
+        x *= other.x;
+        y *= other.y;
+        z *= other.z;
+        return *this;
     }
 
-    IVec3 operator*(IVec3 lhs, IVec3 rhs) noexcept {
-        return IVec3{lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z};
+    IVec3& IVec3::operator*=(i32 scalar) noexcept {
+        x *= scalar;
+        y *= scalar;
+        z *= scalar;
+        return *this;
     }
 
-    IVec3 operator*(IVec3 v, i32 scalar) noexcept {
-        return IVec3{v.x * scalar, v.y * scalar, v.z * scalar};
+    IVec3 IVec3::operator+(IVec3 other) const noexcept {
+        return IVec3{x + other.x, y + other.y, z + other.z};
     }
 
-    bool operator==(IVec3 lhs, IVec3 rhs) noexcept {
-        return (lhs.x == rhs.x) && (lhs.y == rhs.y) && (lhs.z == rhs.z);
+    IVec3 IVec3::operator-(IVec3 other) const noexcept {
+        return IVec3{x - other.x, y - other.y, z - other.z};
+    }
+
+    IVec3 IVec3::operator-() const noexcept {
+        return IVec3{-x, -y, -z};
+    }
+
+    IVec3 IVec3::operator*(IVec3 other) const noexcept {
+        return IVec3{x * other.x, y * other.y, z * other.z};
+    }
+
+    IVec3 IVec3::operator*(i32 scalar) const noexcept {
+        return IVec3{x * scalar, y * scalar, z * scalar};
+    }
+
+    bool IVec3::operator==(IVec3 other) const noexcept {
+        return (x == other.x) && (y == other.y) && (z == other.z);
     }
 
     // -----------------------------------------------------------------------------

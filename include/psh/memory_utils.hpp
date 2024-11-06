@@ -35,8 +35,8 @@ namespace psh {
     /// Check whether the current architecture is little-endian or big-endian.
     ///
     /// Note: Unfortunately, these checks can only be reliably made at runtime.
-    bool arch_is_little_endian() noexcept;
-    bool arch_is_bit_endian() noexcept;
+    psh_api bool arch_is_little_endian() noexcept;
+    psh_api bool arch_is_bit_endian() noexcept;
 
     // -----------------------------------------------------------------------------
     // Memory manipulation utilities.
@@ -45,7 +45,7 @@ namespace psh {
     /// Simple wrapper around `memset` that automatically deals with null values.
     ///
     /// Does nothing if `ptr` is a null pointer.
-    void memory_set(void* buf, usize size_bytes, i32 fill) noexcept;
+    psh_api void memory_set(void* buf, usize size_bytes, i32 fill) noexcept;
 
     template <typename T>
     void zero_struct(T& s) noexcept {
@@ -56,7 +56,7 @@ namespace psh {
     ///
     /// This function will assert that the blocks of memory don't overlap, avoiding undefined
     /// behaviour introduced by `memcpy` in this case.
-    void memory_copy(void* psh_restrict_ptr dst, void const* psh_restrict_ptr src, usize size_bytes) noexcept;
+    psh_api void memory_copy(void* psh_restrict_ptr dst, void const* psh_restrict_ptr src, usize size_bytes) noexcept;
 
     template <typename T>
     void memory_copy(FatPtr<T> dst, FatPtr<T const> src, usize copy_count) noexcept {
@@ -77,7 +77,7 @@ namespace psh {
     /// Simple wrapper around `memmove`.
     ///
     /// Does nothing if either `dst` or `src` are null pointers.
-    void memory_move(void* psh_restrict_ptr dst, void const* psh_restrict_ptr src, usize size_bytes) noexcept;
+    psh_api void memory_move(void* psh_restrict_ptr dst, void const* psh_restrict_ptr src, usize size_bytes) noexcept;
 
     template <typename T>
     void memory_move(FatPtr<T> dst, FatPtr<T const> src, usize copy_count) noexcept {
@@ -105,7 +105,7 @@ namespace psh {
     ///
     /// Return: The resulting padding with respect to `ptr` that should satisfy the alignment
     ///         requirements, as well as accommodating the associated header.
-    usize padding_with_header(
+    psh_api usize padding_with_header(
         uptr  ptr,
         usize alignment,
         usize header_size,
@@ -121,5 +121,5 @@ namespace psh {
     ///
     /// Return: The next address, relative to `ptr` that satisfies the alignment requirement imposed
     ///         by `alignment`.
-    usize align_forward(uptr ptr, usize alignment) noexcept;
+    psh_api usize align_forward(uptr ptr, usize alignment) noexcept;
 }  // namespace psh

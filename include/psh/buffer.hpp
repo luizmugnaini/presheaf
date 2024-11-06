@@ -30,7 +30,7 @@
 namespace psh {
     /// Buffer with a compile-time known size.
     template <typename T, usize size_>
-    struct Buffer {
+    struct psh_api Buffer {
         T buf[size_] = {};
 
         // -----------------------------------------------------------------------------

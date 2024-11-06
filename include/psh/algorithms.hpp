@@ -43,7 +43,7 @@ namespace psh {
 
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
-    bool contains(T match, FatPtr<T const> container, MatchFn<T>* match_fn) {
+    bool contains(T match, FatPtr<T const> container, MatchFn<T>* match_fn) noexcept {
         psh_assert_msg(match_fn != nullptr, "Expected a valid match function.");
         bool found = false;
         for (auto const& m : container) {
@@ -57,7 +57,7 @@ namespace psh {
 
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
-    bool contains(T match, FatPtr<T const> container) {
+    bool contains(T match, FatPtr<T const> container) noexcept {
         bool found = false;
         for (auto const& m : container) {
             if (match == m) {

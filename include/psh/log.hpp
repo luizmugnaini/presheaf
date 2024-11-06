@@ -40,7 +40,7 @@ namespace psh::impl::log {
         LEVEL_COUNT,
     };
 
-    struct LogInfo {
+    struct psh_api LogInfo {
         strptr   file_name;
         strptr   function_name;
         u32      line;
@@ -48,10 +48,10 @@ namespace psh::impl::log {
     };
 
     /// Log a message to the standard error stream.
-    void log_msg(LogInfo info, strptr msg);
+    psh_api void log_msg(LogInfo info, strptr msg) noexcept;
 
     /// Log a formatted message to the standard error stream.
-    psh_attr_fmt(2) void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept;
+    psh_api psh_attr_fmt(2) void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept;
 }  // namespace psh::impl::log
 
 // -----------------------------------------------------------------------------

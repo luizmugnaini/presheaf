@@ -47,7 +47,7 @@ namespace psh {
     ///
     /// where "header" represents this current header, and "memory" represents the memory block
     /// associated to this header.
-    struct StackHeader {
+    struct psh_api StackHeader {
         /// Padding, in bytes, needed for the alignment of the memory block associated with the
         /// header. The padding accounts for both the size of the header and the needed alignment.
         usize padding;
@@ -92,7 +92,7 @@ namespace psh {
     /// later free it via a `StackAlloc::clear_at`, you'll end up with a dangling pointer and
     /// use-after-free problems may arise if you later read from this pointer. This goes to say that
     /// the user should know how to correctly handle their memory reads and writes.
-    struct Stack {
+    struct psh_api Stack {
         u8*   buf             = nullptr;
         usize size            = 0;
         usize offset          = 0;

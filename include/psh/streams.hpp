@@ -86,7 +86,7 @@ namespace psh {
         OK,
     };
 
-    struct FileReadResult {
+    struct psh_api FileReadResult {
         Array<u8>  content = {};
         FileStatus status  = {};
     };
@@ -97,10 +97,10 @@ namespace psh {
     ///     * arena: The arena allocator that will carry the contents of the resulting string.
     ///     * path: A zero-terminated string containing the path to the file to be read.
     ///     * flag: Can be any flag with read permission.
-    FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag = ReadFileFlag::READ_BIN) noexcept;
+    psh_api FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag = ReadFileFlag::READ_BIN) noexcept;
 
     /// Read the standard input stream bytes to a string.
-    String read_stdin(Arena* arena, u32 initial_buf_size = 128, u32 read_chunk_size = 64) noexcept;
+    psh_api String read_stdin(Arena* arena, u32 initial_buf_size = 128, u32 read_chunk_size = 64) noexcept;
 
-    String absolute_path(Arena* arena, strptr file_path) noexcept;
+    psh_api String absolute_path(Arena* arena, strptr file_path) noexcept;
 }  // namespace psh

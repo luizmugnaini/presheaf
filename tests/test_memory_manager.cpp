@@ -120,7 +120,7 @@ namespace psh::test::memory_manager {
         psh_assert(memory_manager.allocation_count == static_cast<usize>(2));
 
         DynArray<usize> b{&arena, 33};
-        psh_discard(b);
+        psh_discard_value(b);
         constexpr usize b_size = sizeof(usize) * 33;
         // The manager shouldn't have a bump in its usage.
         psh_assert(memory_manager.allocator.offset == used);
@@ -135,7 +135,7 @@ namespace psh::test::memory_manager {
         psh_assert(memory_manager.allocation_count == static_cast<usize>(3));
 
         DynArray<f32> d{&arena, 45};
-        psh_discard(d);
+        psh_discard_value(d);
         constexpr usize d_size = sizeof(f32) * 45;
         // Expect no change in the manager.
         psh_assert(memory_manager.allocator.offset == used);

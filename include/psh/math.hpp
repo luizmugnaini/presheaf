@@ -33,10 +33,14 @@ namespace psh {
     constexpr f32 PI                = 3.14159265359f;
     constexpr f32 F32_IS_ZERO_RANGE = 1e-6f;
 
-    constexpr bool f32_approx_equal(f32 a, f32 b, f32 zero_range = F32_IS_ZERO_RANGE) noexcept {
+    psh_api constexpr bool f32_approx_equal(f32 a, f32 b, f32 zero_range = F32_IS_ZERO_RANGE) noexcept {
         psh_assert_msg(zero_range > 0.0f, "Expected the 'within zero range' value to be positive");
         f32 sub = a - b;
         return (-zero_range < sub) && (sub < zero_range);
+    }
+
+    psh_api constexpr f32 as_radians(f32 deg) noexcept {
+        return deg * PI / 180.0f;
     }
 
     /// Add two values wrapping the result to the corresponding maximal numeric limit.
@@ -51,10 +55,6 @@ namespace psh {
     constexpr T wrap_sub(T a, T b) noexcept {
         T c = a - b;
         return (c <= a) ? c : std::numeric_limits<T>::min();
-    }
-
-    constexpr f32 as_radians(f32 deg) noexcept {
-        return deg * PI / 180.0f;
     }
 
     template <typename T>

@@ -27,44 +27,6 @@
 #include <stdint.h>
 
 // -----------------------------------------------------------------------------
-// Fundamental types.
-// -----------------------------------------------------------------------------
-
-/// Unsigned integer type.
-using u8    = uint8_t;
-using u16   = uint16_t;
-using u32   = uint32_t;
-using u64   = uint64_t;
-using usize = u64;
-
-/// Signed integer type.
-using i8    = int8_t;
-using i16   = int16_t;
-using i32   = int32_t;
-using i64   = int64_t;
-using isize = i64;
-
-/// Memory-address types.
-using uptr = u64;
-using iptr = i64;
-
-/// Floating-point types.
-using f32 = float;
-using f64 = double;
-
-/// Immutable zero-terminated string type
-///
-/// A pointer to a contiguous array of constant character values.
-using strptr = char const*;
-
-namespace psh {
-    enum Status : bool {
-        STATUS_FAILED = false,
-        STATUS_OK     = true,
-    };
-}
-
-// -----------------------------------------------------------------------------
 // Presheaf library compile-time flags.
 // -----------------------------------------------------------------------------
 
@@ -211,18 +173,81 @@ namespace psh {
 #endif
 
 // -----------------------------------------------------------------------------
+// DLL support - importing/exporting function declarations
+// -----------------------------------------------------------------------------
+
+#if defined(PSH_DLL) && defined(PSH_BUILD_DLL)
+#    error "The user of the DLL version of the library should only define PSH_DLL." \
+           "The macro PSH_BUILD_DLL should only be defined in the internal compilation stage of the library as a DLL."
+#endif
+
+#if defined(PSH_DLL)
+#    if defined(PSH_OS_WINDOWS)
+#        define psh_api __declspec(dllimport)
+#    endif
+#elif defined(PSH_BUILD_DLL)
+#    if defined(PSH_OS_WINDOWS)
+#        define psh_api __declspec(dllexport)
+#    else
+#        define psh_api __attribute__((visibility("default"))
+#    endif
+#else
+#    define psh_api
+#endif
+
+// -----------------------------------------------------------------------------
 // Architecture information.
 // -----------------------------------------------------------------------------
 
-// TODO: SIMD type availability.
+/// Processor architecture.
+#if defined(__x86_64__) || defined(_M_X64) || defined(__amd64__)
+#    define PSH_ARCH_X64
+#elif defined(__arm__) || defined(_ARM_) || defined(_ARM_ARCH)
+#    define PSH_ARCH_ARM
+#endif
+
+/// SIMD availability in x64 processors.
+#if defined(PSH_ARCH_X64)
+#    if defined(PSH_COMPILER_MSVC)
+#        if defined(_M_AMD64)
+#            define PSH_ARCH_SIMD_SSE
+#            define PSH_ARCH_SIMD_SSE2
+#        endif
+#        if defined(__AVX2__)
+#            define PSH_ARCH_SIMD_AVX
+#            define PSH_ARCH_SIMD_AVX2
+#        elif defined(__AVX__)
+#            define PSH_ARCH_SIMD_AVX
+#        endif
+#    elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#        if defined(__SSE__)
+#            define PSH_ARCH_SIMD_SSE
+#        endif
+#        if defined(__SSE2__)
+#            define PSH_ARCH_SIMD_SSE2
+#        endif
+#        if defined(__AVX__)
+#            define PSH_ARCH_SIMD_AVX
+#        endif
+#        if defined(__AVX2__)
+#            define PSH_ARCH_SIMD_AVX2
+#        endif
+#    endif
+#endif  // PSH_ARCH_X64
+
+/// SIMD availability in ARM processors.
+#if defined(PSH_ARCH_ARM) && defined(__ARM_NEON)
+#    define PSH_ARCH_SIMD_NEON
+#endif  // PSH_ARCH_ARM
 
 // -----------------------------------------------------------------------------
 // Compiler hints.
 // -----------------------------------------------------------------------------
 
-// TODO: force inline.
+/// Hint for function inlining.
 #define psh_inline inline
 
+/// Hints that the current switch branch should fallthrough the next.
 #if __cplusplus >= 202002L  // Technically Presheaf only supports C++20.
 #    define PSH_FALLTHROUGH [[fallthrough]]
 #else
@@ -239,19 +264,20 @@ namespace psh {
 #    define psh_abort_program() raise(SIGTRAP)
 #endif
 
-#if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-#    define psh_unreachable() __builtin_unreachable()
-#elif defined(PSH_COMPILER_MSVC)
+/// Code-path should be unreachable.
+#if defined(PSH_COMPILER_MSVC)
 #    define psh_unreachable() __assume(false)
+#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#    define psh_unreachable() __builtin_unreachable()
 #else
 #    define psh_unreachable() psh_abort()
 #endif
 
-/// Signals internal linkage.
+/// Linkage hits.
 #define psh_internal static
-/// Signals that a variable is available in the global scope.
 #define psh_global   static
 
+/// Hints for pointer aliasing rules.
 #if defined(PSH_COMPILER_MSVC)
 #    define psh_restrict_ptr __restrict
 #elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
@@ -281,7 +307,45 @@ namespace psh {
 #endif
 
 /// Discard the value of a given expression.
-#define psh_discard(x) (void)(x)
+#define psh_discard_value(x) (void)(x)
+
+// -----------------------------------------------------------------------------
+// Fundamental types.
+// -----------------------------------------------------------------------------
+
+/// Unsigned integer type.
+using u8    = uint8_t;
+using u16   = uint16_t;
+using u32   = uint32_t;
+using u64   = uint64_t;
+using usize = u64;
+
+/// Signed integer type.
+using i8    = int8_t;
+using i16   = int16_t;
+using i32   = int32_t;
+using i64   = int64_t;
+using isize = i64;
+
+/// Memory-address types.
+using uptr = u64;
+using iptr = i64;
+
+/// Floating-point types.
+using f32 = float;
+using f64 = double;
+
+/// Immutable zero-terminated string type
+///
+/// A pointer to a contiguous array of constant character values.
+using strptr = char const*;
+
+namespace psh {
+    enum Status : bool {
+        STATUS_FAILED = false,
+        STATUS_OK     = true,
+    };
+}  // namespace psh
 
 // -----------------------------------------------------------------------------
 // Pointer operations.
@@ -448,8 +512,8 @@ namespace psh {
 #    ifndef attr_fmt
 #        define attr_fmt psh_attr_fmt
 #    endif
-#    ifndef discard
-#        define discard psh_discard
+#    ifndef discard_value
+#        define discard_value psh_discard_value
 #    endif
 #    ifndef ptr_add
 #        define ptr_add psh_ptr_add

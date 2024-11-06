@@ -72,7 +72,7 @@ namespace psh::impl::defer {
     }
 
     template <typename Func>
-    struct Deferrer {
+    struct psh_api Deferrer {
         Func fn;
 
         Deferrer(Func&& _fn) {
@@ -96,8 +96,8 @@ namespace psh::impl::defer {
 // Defer interface.
 // -----------------------------------------------------------------------------
 
-#define psh_defer(code)                                                 \
-    [[maybe_unused]] auto psh_impl_defer_var(psh_deferred_, __LINE__) = \
-        psh::impl::defer::make_defer_fn([&]() {                         \
-            code;                                                       \
+#define psh_defer(code)                                                                 \
+    [[maybe_unused]] auto psh_impl_defer_var(psh_deferred_, psh_source_line_number()) = \
+        psh::impl::defer::make_defer_fn([&]() {                                         \
+            code;                                                                       \
         })

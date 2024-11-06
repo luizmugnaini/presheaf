@@ -51,7 +51,7 @@ namespace psh::impl::log {
     };
 
     void log_msg(LogInfo info, strptr msg) {
-        psh_discard(fprintf(
+        psh_discard_value(fprintf(
             stderr,
             impl::log::LOG_FMT,
             impl::log::LOG_LEVEL_STR[static_cast<u32>(info.level)],

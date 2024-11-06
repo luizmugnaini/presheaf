@@ -38,8 +38,7 @@ local start_time = os.time()
 -- -----------------------------------------------------------------------------
 
 local options = {
-    help = { on = false, description = "Print the help message for the build script." },
-    quiet = { on = false, description = "Don't print information about the build process." },
+    dll = { on = false, description = "Build as a DLL (shared object)." },
     release = { on = false, description = "Release build type (off by default)." },
     debug = { on = false, description = "Debug build type (on by default)." },
     test = { on = false, description = "Build and run tests." },
@@ -47,6 +46,8 @@ local options = {
     clang = { on = false, description = "Use the Clang compiler." },
     gcc = { on = false, description = "Use the GCC compiler." },
     msvc = { on = false, description = "Use the Visual C++ compiler." },
+    help = { on = false, description = "Print the help message for the build script." },
+    quiet = { on = false, description = "Don't print information about the build process." },
 }
 
 -- -----------------------------------------------------------------------------
@@ -109,8 +110,10 @@ end
 if os_info.windows then
     os_info.path_sep = "\\"
     os_info.silence_cmd = " > NUL 2>&1"
+    os_info.dbg_ext = ".pdb"
     os_info.obj_ext = ".obj"
     os_info.exe_ext = ".exe"
+    os_info.dll_ext = ".dll"
     os_info.lib_ext = ".lib"
     os_info.lib_prefix = ""
 else
@@ -118,6 +121,7 @@ else
     os_info.silence_cmd = " > /dev/null 2>&1"
     os_info.obj_ext = ".o"
     os_info.exe_ext = ""
+    os_info.dll_ext = ".so"
     os_info.lib_ext = ".a"
     os_info.lib_prefix = "lib"
 end
@@ -183,6 +187,7 @@ local compilers = {
         cc = "clang++",
         opt_include = "-I",
         opt_define = "-D",
+        opt_dll = "-shared",
         opt_std = "-std=",
         opt_no_link = "-c",
         opt_out_obj = "-o",
@@ -198,6 +203,7 @@ local compilers = {
         cc = "g++",
         opt_include = "-I",
         opt_define = "-D",
+        opt_dll = "-shared",
         opt_std = "-std=",
         opt_no_link = "-c",
         opt_out_obj = "-o",
@@ -213,10 +219,13 @@ local compilers = {
         cc = "cl",
         opt_include = "/I",
         opt_define = "/D",
+        opt_link_flags_start = "/link",
+        opt_dll = "/DLL",
         opt_std = "/std:",
         opt_no_link = "/c",
-        opt_out_obj = "/Fo:",
-        opt_out_exe = "/Fe:",
+        opt_out_obj = "/Fo",
+        opt_out_exe = "/Fe",
+        opt_out_pdb = "/Fd",
         flags_common = "-nologo -Oi -TP -MP -FC -GF -GA /fp:except- -GR- -EHsc- /INCREMENTAL:NO /W3",
         flags_debug = "/Ob0 /Od /Oy- /Z7 /RTC1 /MTd /fsanitize=address",
         flags_release = "/O2 /MT",
@@ -228,10 +237,10 @@ local compilers = {
         cc = "clang-cl",
         opt_include = "/I",
         opt_define = "/D",
+        opt_link_flags_start = "/link",
+        opt_dll = "/DLL",
         opt_std = "/std:",
         opt_no_link = "-c",
-        opt_out_obj = "-o",
-        opt_out_exe = "-o",
         flags_common = "/TP -Wall -Wextra -Wconversion -Wuninitialized -Wnull-pointer-arithmetic -Wnull-dereference -Wcast-align -Wformat=2 -Wno-unused-variable -Wno-unsafe-buffer-usage -Wno-c++20-compat -Wno-c++98-compat-pedantic",
         flags_debug = "-Ob0 /Od /Oy- /Z7 /RTC1 -g /MTd",
         flags_release = "-O2 /MT",
@@ -246,8 +255,9 @@ local presheaf = {
     test_src = make_path({ root_dir, "tests", "test_all.cpp" }),
     include_dir = make_path({ root_dir, "include" }),
     debug_defines = { "PSH_DEBUG", "PSH_ABORT_AT_MEMORY_ERROR" },
+    dll_build_define = "PSH_BUILD_DLL",
     lib = "presheaf",
-    test_exe = "test_all",
+    test_exe = "presheaf_tests",
     std = "c++20",
     out_dir = make_path({ ".", "build" }),
 }
@@ -286,30 +296,69 @@ local function format_source_files()
     }, " "))
 end
 
-local function build_presheaf_lib(tc, custom_flags)
+local function build_presheaf_lib(tc, custom_flags_)
     log_info("Building the presheaf library...")
 
+    local custom_flags = concat(custom_flags_, " ")
     local default_flags = tc.flags_common .. " " .. (options.release.on and tc.flags_release or tc.flags_debug)
     local defines = options.release.on and "" or concat(presheaf.debug_defines, " " .. tc.opt_define, true)
 
-    -- Compile without linking.
-    local obj_out = make_path({ presheaf.out_dir, presheaf.lib .. os_info.obj_ext })
-    exec(concat({
-        tc.cc,
-        tc.opt_no_link,
-        tc.opt_std .. presheaf.std,
-        default_flags,
-        concat(custom_flags, " "),
-        defines,
-        tc.opt_include .. presheaf.include_dir,
-        tc.opt_out_obj .. obj_out,
-        presheaf.src,
-    }, " "))
+    local output_artifacts_flags = ""
+    if tc.cc == "cl" then
+        output_artifacts_flags = tc.opt_out_obj
+            .. make_path({ presheaf.out_dir, presheaf.lib .. os_info.obj_ext })
+            .. " "
+            .. tc.opt_out_pdb
+            .. make_path({ presheaf.out_dir, presheaf.lib .. os_info.dbg_ext })
+    elseif not options.dll.on then
+        output_artifacts_flags = tc.opt_out_obj .. make_path({ presheaf.out_dir, presheaf.lib .. os_info.obj_ext })
+    end
 
-    -- Archive objs into a library.
-    local lib_name = os_info.lib_prefix .. presheaf.lib .. os_info.lib_ext
-    local lib_out = make_path({ presheaf.out_dir, lib_name })
-    exec(concat({ tc.ar, tc.ar_flags, tc.ar_out .. lib_out, obj_out }, " "))
+    if options.dll.on then
+        local dll_flags
+        local dll_lib_out_flag -- Windows-only thing, library with the DLL symbols to be imported by the user.
+        if os_info.windows then
+            dll_flags = "/LD"
+            dll_lib_out_flag = "/IMPLIB:" .. make_path({ presheaf.out_dir, presheaf.lib .. "dll" .. ".lib" })
+        else
+            dll_flags = "-shared -fPIC"
+        end
+
+        local dll_out = make_path({ presheaf.out_dir, os_info.lib_prefix .. presheaf.lib .. os_info.dll_ext })
+        exec(concat({
+            tc.cc,
+            tc.opt_std .. presheaf.std,
+            default_flags,
+            custom_flags,
+            defines,
+            tc.opt_define .. presheaf.dll_build_define,
+            tc.opt_include .. presheaf.include_dir,
+            output_artifacts_flags,
+            dll_lib_out_flag,
+            tc.opt_out_exe .. dll_out,
+            dll_flags,
+            presheaf.src,
+        }, " "))
+    else
+        local obj_out = make_path({ presheaf.out_dir, presheaf.lib .. os_info.obj_ext })
+
+        -- Compile without linking.
+        exec(concat({
+            tc.cc,
+            tc.opt_no_link,
+            tc.opt_std .. presheaf.std,
+            default_flags,
+            custom_flags,
+            defines,
+            tc.opt_include .. presheaf.include_dir,
+            output_artifacts_flags,
+            presheaf.src,
+        }, " "))
+
+        -- Archive objs into a library.
+        local lib_out = make_path({ presheaf.out_dir, os_info.lib_prefix .. presheaf.lib .. os_info.lib_ext })
+        exec(concat({ tc.ar, tc.ar_flags, tc.ar_out .. lib_out, obj_out }, " "))
+    end
 end
 
 local function build_presheaf_tests(tc)

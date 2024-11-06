@@ -34,7 +34,7 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     /// 2-dimensional vector in floating-point space.
-    struct Vec2 {
+    struct psh_api Vec2 {
         f32 x = 0.0f;
         f32 y = 0.0f;
 
@@ -47,23 +47,24 @@ namespace psh {
         Vec2 normalized() const noexcept;
 
         /// Euclidean inner product.
-        f32 dot(Vec2 const& other) const noexcept;
+        f32 dot(Vec2 other) const noexcept;
 
-        bool is_to_the_left_of(Vec2 const& other) const noexcept;
+        bool is_to_the_left_of(Vec2 other) const noexcept;
 
-        Vec2& operator+=(Vec2 const& other) noexcept;
-        Vec2& operator-=(Vec2 const& other) noexcept;
-        Vec2& operator*=(Vec2 const& other) noexcept;
+        Vec2& operator+=(Vec2 other) noexcept;
+        Vec2& operator-=(Vec2 other) noexcept;
+        Vec2& operator*=(Vec2 other) noexcept;
         Vec2& operator*=(f32 scalar) noexcept;
+
+        Vec2 operator+(Vec2 other) const noexcept;
+        Vec2 operator-(Vec2 other) const noexcept;
+        Vec2 operator-() const noexcept;
+        Vec2 operator*(Vec2 other) const noexcept;
+        Vec2 operator*(f32 scalar) const noexcept;
     };
-    Vec2 operator+(Vec2 lhs, Vec2 rhs) noexcept;
-    Vec2 operator-(Vec2 lhs, Vec2 rhs) noexcept;
-    Vec2 operator*(Vec2 lhs, Vec2 rhs) noexcept;
-    Vec2 operator*(Vec2 v, f32 scalar) noexcept;
-    Vec2 operator-(Vec2 v) noexcept;
 
     /// 3-dimensional vector in floating-point space.
-    struct Vec3 {
+    struct psh_api Vec3 {
         f32 x = 0.0f;
         f32 y = 0.0f;
         f32 z = 0.0f;
@@ -77,24 +78,25 @@ namespace psh {
         Vec3 normalized() const noexcept;
 
         /// Euclidean inner product.
-        f32 dot(Vec3 const& other) const noexcept;
+        f32 dot(Vec3 other) const noexcept;
 
         /// Cross product.
-        Vec3 cross(Vec3 const& other) const noexcept;
+        Vec3 cross(Vec3 other) const noexcept;
 
-        Vec3& operator+=(Vec3 const& other) noexcept;
-        Vec3& operator-=(Vec3 const& other) noexcept;
-        Vec3& operator*=(Vec3 const& other) noexcept;
+        Vec3& operator+=(Vec3 other) noexcept;
+        Vec3& operator-=(Vec3 other) noexcept;
+        Vec3& operator*=(Vec3 other) noexcept;
         Vec3& operator*=(f32 scalar) noexcept;
+
+        Vec3 operator+(Vec3 other) const noexcept;
+        Vec3 operator-(Vec3 other) const noexcept;
+        Vec3 operator-() const noexcept;
+        Vec3 operator*(Vec3 other) const noexcept;
+        Vec3 operator*(f32 scalar) const noexcept;
     };
-    Vec3 operator+(Vec3 lhs, Vec3 rhs) noexcept;
-    Vec3 operator-(Vec3 lhs, Vec3 rhs) noexcept;
-    Vec3 operator*(Vec3 lhs, Vec3 rhs) noexcept;
-    Vec3 operator*(Vec3 v, f32 scalar) noexcept;
-    Vec3 operator-(Vec3 v) noexcept;
 
     /// 4-dimensional vector in floating-point space.
-    struct Vec4 {
+    struct psh_api Vec4 {
         f32 x = 0.0f;
         f32 y = 0.0f;
         f32 z = 0.0f;
@@ -106,28 +108,29 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     /// 2-dimensional vector in integer space.
-    struct IVec2 {
+    struct psh_api IVec2 {
         i32 x = 0;
         i32 y = 0;
 
         bool is_zero() const noexcept;
         Vec2 normalized() const noexcept;
-        i32  dot(IVec2 const& other) const noexcept;
+        i32  dot(IVec2 other) const noexcept;
 
-        IVec2& operator+=(IVec2 const& other) noexcept;
-        IVec2& operator-=(IVec2 const& other) noexcept;
-        IVec2& operator*=(IVec2 const& other) noexcept;
+        IVec2& operator+=(IVec2 other) noexcept;
+        IVec2& operator-=(IVec2 other) noexcept;
+        IVec2& operator*=(IVec2 other) noexcept;
         IVec2& operator*=(i32 scalar) noexcept;
+
+        IVec2 operator+(IVec2 other) const noexcept;
+        IVec2 operator-(IVec2 other) const noexcept;
+        IVec2 operator-() const noexcept;
+        IVec2 operator*(IVec2 other) const noexcept;
+        IVec2 operator*(i32 scalar) const noexcept;
+        bool  operator==(IVec2 other) const noexcept;
     };
-    IVec2 operator+(IVec2 lhs, IVec2 rhs) noexcept;
-    IVec2 operator-(IVec2 lhs, IVec2 rhs) noexcept;
-    IVec2 operator*(IVec2 lhs, IVec2 rhs) noexcept;
-    IVec2 operator*(IVec2 v, i32 scalar) noexcept;
-    IVec2 operator-(IVec2 v) noexcept;
-    bool  operator==(IVec2 lhs, IVec2 rhs) noexcept;
 
     /// 3-dimensional vector in integer space.
-    struct IVec3 {
+    struct psh_api IVec3 {
         i32 x = 0;
         i32 y = 0;
         i32 z = 0;
@@ -148,25 +151,26 @@ namespace psh {
         IVec3& operator-=(IVec3 const& other) noexcept;
         IVec3& operator*=(IVec3 const& other) noexcept;
         IVec3& operator*=(i32 scalar) noexcept;
+
+        IVec3 operator+(IVec3 other) const noexcept;
+        IVec3 operator-(IVec3 other) const noexcept;
+        IVec3 operator-() const noexcept;
+        IVec3 operator*(IVec3 other) const noexcept;
+        IVec3 operator*(i32 scalar) const noexcept;
+        bool  operator==(IVec3 other) const noexcept;
     };
-    IVec3 operator+(IVec3 lhs, IVec3 rhs) noexcept;
-    IVec3 operator-(IVec3 lhs, IVec3 rhs) noexcept;
-    IVec3 operator*(IVec3 lhs, IVec3 rhs) noexcept;
-    IVec3 operator*(IVec3 v, i32 scalar) noexcept;
-    IVec3 operator-(IVec3 v) noexcept;
-    bool  operator==(IVec3 lhs, IVec3 rhs) noexcept;
 
     // -----------------------------------------------------------------------------
     // Floating point matrices.
     // -----------------------------------------------------------------------------
 
     // TODO: implement Mat2 methods.
-    struct Mat2 {
+    struct psh_api Mat2 {
         f32 buf[4] = {0.0f};
     };
 
     /// Row-major 3-dimensional square matrix in floating-point space.
-    struct Mat3 {
+    struct psh_api Mat3 {
         f32 buf[9] = {0.0f};
 
         /// Get a reference to the matrix component whose row is `r` and column is `c`.
@@ -190,7 +194,7 @@ namespace psh {
     };
 
     /// Column-major 3-dimensional square matrix in floating-point space.
-    struct ColMat3 {
+    struct psh_api ColMat3 {
         f32 buf[9] = {0.0f};
 
         /// Get a reference to the matrix component whose row is `r` and column is `c`.
@@ -201,7 +205,7 @@ namespace psh {
     };
 
     /// Column-major 4-dimensional square matrix in floating-point space.
-    struct ColMat4 {
+    struct psh_api ColMat4 {
         f32 buf[16] = {0.0f};
 
         /// Get the matrix component whose row is `r` and column is `c`.
@@ -267,17 +271,17 @@ namespace psh {
     };
 
     /// Left-multiply a 2D vector by a 2D square matrix.
-    Vec2 mat_mul(Mat2 m, Vec2 v) noexcept;
+    psh_api Vec2 mat_mul(Mat2 m, Vec2 v) noexcept;
 
     /// Left-multiply a 3D vector by a 3D square matrix.
-    Vec3 mat_mul(Mat3 m, Vec3 v) noexcept;
+    psh_api Vec3 mat_mul(Mat3 m, Vec3 v) noexcept;
 
     /// Multiply a pair of 3D square matrices.
-    Mat3 mat_mul(Mat3 lhs, Mat3 rhs) noexcept;
+    psh_api Mat3 mat_mul(Mat3 lhs, Mat3 rhs) noexcept;
 
     /// Left-multiply a 4D vector by a 4D square column-major matrix.
-    Vec4 mat_mul(ColMat4 m, Vec4 v) noexcept;
+    psh_api Vec4 mat_mul(ColMat4 m, Vec4 v) noexcept;
 
     /// Multiply a pair of 4D square column-major matrices.
-    ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) noexcept;
+    psh_api ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) noexcept;
 }  // namespace psh

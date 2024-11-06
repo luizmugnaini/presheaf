@@ -30,7 +30,7 @@
 namespace psh {
     /// Fat pointer, holds a pointer to a buffer and its corresponding size.
     template <typename T>
-    struct FatPtr {
+    struct psh_api FatPtr {
         T*    buf  = nullptr;
         usize size = 0;
 

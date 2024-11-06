@@ -29,7 +29,7 @@ namespace psh {
     // Forward declaration.
     struct Arena;
 
-    /// Scratch arena.
+    /// Scratch arena, an automatic checkpoint for arena offsets.
     ///
     /// This allocator is used to save the state of the parent arena at creation time and
     /// restore the parent arena offset state at destruction time.
@@ -117,18 +117,26 @@ namespace psh {
     /// prohibits passing the scratch arena by rvalue.
     ///
     /// In general, your options will then be to pass as `ScratchArena&` or `ScratchArena&&`.
-    struct ScratchArena {
+    struct psh_api ScratchArena {
         Arena* arena;
         usize  saved_offset = 0;
 
+        /// Create an automatic checkpoint for the arena.
         ScratchArena(Arena* arena) noexcept;
+
+        /// Automatically restore the state of the parent arena.
         ~ScratchArena() noexcept;
 
         /// Create a new scratch arena with the current state of the parent.
         ScratchArena decouple() const noexcept;
+
+        // NOTE: Required bullshit when compiling as a DLL since the compiler will require all
+        //       standard member functions to be defined.
+        ScratchArena& operator=(ScratchArena&) = delete;
     };
 
-    struct ArenaCheckpoint {
+    /// Manually managed checkpoint for arenas.
+    struct psh_api ArenaCheckpoint {
         Arena* arena;
         usize  saved_offset;
     };
@@ -142,7 +150,7 @@ namespace psh {
     ///     * The arena does not own memory, thus it is not responsible for the freeing of it.
     ///     * Any functions that return a raw pointer should be checked for nullity since allocation
     ///       may fail.
-    struct Arena {
+    struct psh_api Arena {
         u8*   buf    = nullptr;  ///< Non-owned memory block managed by the arena allocator.
         usize size   = 0;        ///< The capacity, in bytes, of the memory block.
         usize offset = 0;        ///< The current offset to the free-space in the memory block.

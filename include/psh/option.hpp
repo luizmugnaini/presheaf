@@ -32,7 +32,7 @@ namespace psh {
     /// Note: This struct shouldn't be used with pointer types, as a null will still indicate a value
     ///       being present.
     template <typename T>
-    struct Option {
+    struct psh_api Option {
         constexpr Option() noexcept = default;
 
         constexpr Option(T value_) noexcept

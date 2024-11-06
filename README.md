@@ -7,24 +7,34 @@ This is a C++ library that I use across my projects as an alternative to the STL
 C++20 and its only dependency is libc and a compiler supporting the language features - which should be
 available virtually anywhere. Compilers that are ensured to work are: Clang, GCC, MSVC.
 
-The code is written with simplicity of use in mind and does **not** adhere to the principles of the so
+The code is written with simplicity in mind and does **not** adhere to the principles of the so
 called "modern" C++. There is no use of exceptions, inheritance, and only a few standard headers are
 used. For more information, check the [style guide](./STYLE_GUIDE.md).
 
-# Development
+# Building
+
+# Custom Build System
+
+The library comes with its custom build system [`build.lua`](./build.lua), which will manage the project
+with many custom options. An usage _example_ would be:
+```sh
+lua build.lua -release -clang -dll -- -DPSH_CHECK_BOUNDS -fsanitize=undefined
+```
+where you are building the release version of Presheaf as a DLL (or shared object if on Unix)
+using Clang. Additionally you are also activating the UB sanitizer for the build, and bounds checking
+assertions. The script will make sure to print out the final invoked command for the compilation, so
+no mysteries arise in the build process.
+
+For more information, please run the script with the `-help` flag or refer to the file itself.
+
+## Ad-Hoc Approach
 
 The library has a bundled compilation unit `src/all.cpp` which may be used if you wish to compile as
-a unity build. This is as simple as, e.g.:
+a unity build. This can be as simple as, e.g.:
 ```sh
-# Build static library.
-clang++ -c -std=c++20 -Iinclude src/all.cpp -o presheaf.o && llvm-ar rc libpresheaf.a presheaf.o
-# Build all library tests.
-clang++ -std=c+20 -Iinclude tests/test_all.cpp -o test
+clang++ -c -std=c++20 -Iinclude src/all.cpp -o presheaf.o  # Build object files without linking.
+llvm-ar rc libpresheaf.a presheaf.o                        # Archive object files into a library.
 ```
-
-Another option is to use the [`build.lua`](./build.lua) script, which will manage to build the project
-with many custom options. For more information, please run the script with the `--help` flag or refer
-to the file itself.
 
 # Integrating with another project
 
@@ -53,4 +63,4 @@ The following `#define` macros can be used to tweak the behaviour of the library
 - `PSH_ABORT_AT_MEMORY_ERROR`: Aborts the program at any memory (re)allocation errors, for debugging
   purposes. Not enabled by `PSH_DEBUG` due to its intrusiveness on the behaviour of fault tolerancy.
 - `PSH_DEFINE_SHORT_NAMES`: Define shorter names for function-like macros defined in `psh/core.h`,
-  `psh/log.h`, and `psh/assert.h`.
+  `psh/log.h`, and `psh/assert.h`. Examples: `psh_max_value

@@ -35,7 +35,7 @@ namespace psh {
     ///
     /// Note: any method returning a pointer should be checked for nullity, since allocation may
     ///       fail.
-    struct MemoryManager {
+    struct psh_api MemoryManager {
         usize allocation_count = 0;
         Stack allocator        = {};
 
@@ -82,6 +82,10 @@ namespace psh {
 
         /// Resets the manager by zeroing the memory offset and statistics.
         void clear() noexcept;
+
+        // NOTE: Required bullshit when compiling as a DLL since the compiler will require all
+        //       standard member functions to be defined.
+        MemoryManager& operator=(MemoryManager&) = delete;
     };
 
     template <typename T>

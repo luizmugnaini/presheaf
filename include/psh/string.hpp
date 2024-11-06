@@ -39,11 +39,11 @@ namespace psh {
         GREATER_THAN,
     };
 
-    usize        str_length(strptr str) noexcept;
-    StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept;
-    bool         str_equal(strptr lhs, strptr rhs) noexcept;
+    psh_api usize        str_length(strptr str) noexcept;
+    psh_api StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept;
+    psh_api bool         str_equal(strptr lhs, strptr rhs) noexcept;
 
-    constexpr bool is_utf8(char c) noexcept {
+    psh_api constexpr bool is_utf8(char c) noexcept {
         return (0x1F < c && c < 0x7F);
     }
 
@@ -52,7 +52,7 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     /// String literal type.
-    struct StringLiteral {
+    struct psh_api StringLiteral {
         strptr str;
 
         template <usize N>
@@ -70,7 +70,7 @@ namespace psh {
     /// auto my_str = psh_str("hey this is a compile time array of constant characters");
     /// ```
     template <usize size_>
-    struct Str {
+    struct psh_api Str {
         char const buf[size_];
 
         /// The size of the string, disregarding its null-terminator.
@@ -87,7 +87,7 @@ namespace psh {
     };
 
     /// Immutable view of a string.
-    struct StringView {
+    struct psh_api StringView {
         FatPtr<char const> data;
 
         constexpr StringView() noexcept = default;
@@ -104,7 +104,7 @@ namespace psh {
     };
 
     /// Dynamically allocated string.
-    struct String {
+    struct psh_api String {
         DynArray<char> data;
 
         constexpr String() = default;

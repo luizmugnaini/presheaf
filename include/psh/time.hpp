@@ -28,5 +28,5 @@
 #include <psh/option.hpp>
 
 namespace psh {
-    Option<f64> current_time_in_seconds() noexcept;
+    psh_api Option<f64> current_time_in_seconds() noexcept;
 }

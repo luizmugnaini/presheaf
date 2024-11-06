@@ -81,8 +81,8 @@ namespace psh::test::allocators {
                 last_offset += a2_size;
 
                 // Throw away.
-                psh_discard(a1);
-                psh_discard(a2);
+                psh_discard_value(a1);
+                psh_discard_value(a2);
             }
             psh_assert(s1.saved_offset == base_offset);
             psh_assert(s1.arena == &arena);
@@ -110,8 +110,8 @@ namespace psh::test::allocators {
                     last_offset += b2_size;
 
                     // Throw away.
-                    psh_discard(b1);
-                    psh_discard(b2);
+                    psh_discard_value(b1);
+                    psh_discard_value(b2);
                 }
                 psh_assert(s2.arena == &arena);
                 psh_assert(s2.saved_offset == s2_base_offset);
@@ -138,8 +138,8 @@ namespace psh::test::allocators {
                     last_offset += c2_size;
 
                     // Throw away.
-                    psh_discard(c1);
-                    psh_discard(c2);
+                    psh_discard_value(c1);
+                    psh_discard_value(c2);
                 }
                 psh_assert(s3.arena == &arena);
                 psh_assert(s3.saved_offset == s3_base_offset);
@@ -166,8 +166,8 @@ namespace psh::test::allocators {
                     last_offset += c2_size;
 
                     // Throw away.
-                    psh_discard(c1);
-                    psh_discard(c2);
+                    psh_discard_value(c1);
+                    psh_discard_value(c2);
                 }
                 psh_assert(s4.arena == &arena);
                 psh_assert(s4.saved_offset == s4_base_offset);
@@ -197,8 +197,8 @@ namespace psh::test::allocators {
                         psh_assert(s1.arena->offset == last_offset);
 
                         // Throw away.
-                        psh_discard(d1);
-                        psh_discard(c2);
+                        psh_discard_value(d1);
+                        psh_discard_value(c2);
                     }
                     psh_assert(s5.arena == &arena);
                     psh_assert(s5.saved_offset == s5_base_offset);
@@ -231,12 +231,12 @@ namespace psh::test::allocators {
             Arena ar{buf, size};
             usize expected_offset = 0;
 
-            psh_discard(ar.alloc<u8>(32));
+            psh_discard_value(ar.alloc<u8>(32));
             expected_offset += 32;
 
             {
                 ScratchArena s = ar.make_scratch();
-                psh_discard(fn_scratch_as_ref(s, 64));
+                psh_discard_value(fn_scratch_as_ref(s, 64));
                 expected_offset += 64;
                 psh_assert(ar.offset == expected_offset);
             }

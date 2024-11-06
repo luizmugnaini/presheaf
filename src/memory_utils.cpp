@@ -44,7 +44,7 @@ namespace psh {
         if (psh_unlikely((buf == nullptr) || (size_bytes == 0))) {
             return;
         }
-        psh_discard(memset(buf, fill, size_bytes));
+        psh_discard_value(memset(buf, fill, size_bytes));
     }
 
     void memory_copy(void* psh_restrict_ptr dst, void const* psh_restrict_ptr src, usize size_bytes) noexcept {
@@ -60,14 +60,14 @@ namespace psh {
             "Source and destination overlap in copy region (UB).");
 #endif
 
-        psh_discard(memcpy(dst, src, size_bytes));
+        psh_discard_value(memcpy(dst, src, size_bytes));
     }
 
     void memory_move(void* psh_restrict_ptr dst, void const* psh_restrict_ptr src, usize size_bytes) noexcept {
         if (psh_unlikely((dst == nullptr) || (src == nullptr) || (size_bytes == 0))) {
             return;
         }
-        psh_discard(memmove(dst, src, size_bytes));
+        psh_discard_value(memmove(dst, src, size_bytes));
     }
 
     usize padding_with_header(

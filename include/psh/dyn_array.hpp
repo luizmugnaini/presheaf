@@ -43,7 +43,7 @@ namespace psh {
     ///
     /// A dynamic array has its lifetime bound to its associated arena.
     template <typename T>
-    struct DynArray {
+    struct psh_api DynArray {
         Arena* arena    = nullptr;
         usize  capacity = 0;
         usize  size     = 0;

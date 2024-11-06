@@ -35,7 +35,7 @@ namespace psh {
     /// The array lifetime is bound to the lifetime of the arena passed at initialization, being
     /// responsible to allocate the memory referenced by the array.
     template <typename T>
-    struct Array {
+    struct psh_api Array {
         T*    buf  = nullptr;
         usize size = 0;
 
