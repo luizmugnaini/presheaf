@@ -32,11 +32,10 @@
 
 namespace psh {
     namespace impl::dyn_array {
-        static constexpr strptr ERROR_INIT_INCONSISTENT_ARENA             = "DynArray initialization called with non-zero capacity but an empty arena";
-        static constexpr strptr ERROR_INIT_OUT_OF_MEMORY                  = "DynArray initialization unable to acquire enough bytes of memory";
-        static constexpr strptr ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY = "DynArray initialization called with inconsistent data: capacity less than the size";
-        static constexpr strptr ERROR_ACCESS_OUT_OF_BOUNDS                = "DynArray access out of bounds";
-        static constexpr strptr ERROR_RESIZE_OUT_OF_MEMORY                = "DynArray cannot be resized because its allocator is out of memory";
+        static constexpr strptr ERROR_INIT_INCONSISTENT_ARENA             = "DynArray initialization called with non-zero capacity but an empty arena.";
+        static constexpr strptr ERROR_INIT_OUT_OF_MEMORY                  = "DynArray initialization unable to acquire enough bytes of memory.";
+        static constexpr strptr ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY = "DynArray initialization called with inconsistent data: capacity less than the size.";
+        static constexpr strptr ERROR_RESIZE_OUT_OF_MEMORY                = "DynArray cannot be resized because its allocator is out of memory.";
     }  // namespace impl::dyn_array
 
     /// Run-time variable length array.
@@ -84,7 +83,7 @@ namespace psh {
             usize                           capacity_ = 0) noexcept {
             this->arena    = arena_;
             this->size     = list.size();
-            this->capacity = psh_max_val(capacity_, DYNARRAY_RESIZE_CAPACITY_FACTOR * this->size);
+            this->capacity = psh_max_value(capacity_, DYNARRAY_RESIZE_CAPACITY_FACTOR * this->size);
             psh_assert_msg(this->size <= this->capacity, impl::dyn_array::ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY);
 
             if (psh_likely(this->capacity != 0)) {
@@ -144,14 +143,14 @@ namespace psh {
 
         T& operator[](usize idx) noexcept {
 #if defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(idx < this->size, impl::dyn_array::ERROR_ACCESS_OUT_OF_BOUNDS);
+            psh_assert_fmt(idx < this->size, "Index %zu out of bounds for DynArray of size %zu.", idx, this->size);
 #endif
             return this->buf[idx];
         }
 
         T const& operator[](usize idx) const noexcept {
 #if defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(idx < this->size, impl::dyn_array::ERROR_ACCESS_OUT_OF_BOUNDS);
+            psh_assert_fmt(idx < this->size, "Index %zu out of bounds for DynArray of size %zu.", idx, this->size);
 #endif
             return this->buf[idx];
         }
@@ -232,7 +231,7 @@ namespace psh {
         Status remove(usize idx) noexcept {
 #if defined(PSH_CHECK_BOUNDS)
             if (psh_unlikely(idx >= this->size)) {
-                psh_log_error(impl::dyn_array::ERROR_ACCESS_OUT_OF_BOUNDS);
+                psh_log_error_fmt("Index %zu out of bounds for DynArray of size %zu.", idx, this->size);
                 return STATUS_FAILED;
             }
 #endif

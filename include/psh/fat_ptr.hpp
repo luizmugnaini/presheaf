@@ -35,8 +35,8 @@ namespace psh {
         usize size = 0;
 
         FatPtr<T> slice(usize start, usize end) noexcept {
-            psh_assert_msg(start <= end, "Attempted to create a fat pointer slice with invalid bounds");
-            psh_assert_msg(end < this->size, "Attempted to create a fat pointer slice out of bounds");
+            psh_assert_msg(start <= end, "Invalid bounds for slice.");
+            psh_assert_msg(end < this->size, "Slice bound surpasses the FatPtr region.");
             return FatPtr<T>{psh_ptr_add(this->buf, start), 1 + end - start};
         }
 
@@ -70,14 +70,14 @@ namespace psh {
 
         constexpr T& operator[](usize idx) noexcept {
 #if defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(idx < this->size, "Index out of bounds for fat pointer");
+            psh_assert_fmt(idx < this->size, "Index %zu out of bounds for FatPtr with size %zu.", idx, this->size);
 #endif
             return this->buf[idx];
         }
 
         constexpr T const& operator[](usize idx) const noexcept {
 #if defined(PSH_CHECK_BOUNDS)
-            psh_assert_msg(idx < this->size, "Index out of bounds for fat pointer");
+            psh_assert_fmt(idx < this->size, "Index %zu out of bounds for FatPtr with size %zu.", idx, this->size);
 #endif
             return this->buf[idx];
         }

@@ -341,6 +341,10 @@ using f64 = double;
 using strptr = char const*;
 
 namespace psh {
+    /// Status of an operation.
+    ///
+    /// This gives a better semantic meaning of the return of a failable function, while still
+    /// preserving the use of booleans for simple use.
     enum Status : bool {
         STATUS_FAILED = false,
         STATUS_OK     = true,
@@ -355,8 +359,10 @@ namespace psh {
 #define psh_ptr_add(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) + static_cast<uptr>(offset)))
 #define psh_ptr_sub(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) - static_cast<iptr>(offset)))
 
+/// Check if two pointers refer to the same address in memory.
 #define psh_ptr_same_addr(lhs_ptr, rhs_ptr) (reinterpret_cast<u8*>(lhs_ptr) == reinterpret_cast<u8*>(rhs_ptr))
 
+/// Compute the offset, in bytes, between two pointers.
 #define psh_ptr_offset_bytes(end_ptr, start_ptr)                                           \
     (psh_ptr_same_addr(end_ptr, start_ptr) ? 0                                             \
                                            : reinterpret_cast<iptr>(                       \
@@ -372,23 +378,23 @@ namespace psh {
 #define psh_in_open_range(val, min, max)   (((min) < (val)) && ((val) < (max)))
 
 /// Minimum/maximum functions.
-#define psh_min_val(lhs, rhs) (((lhs) < (rhs)) ? (lhs) : (rhs))
-#define psh_max_val(lhs, rhs) (((lhs) > (rhs)) ? (lhs) : (rhs))
+#define psh_min_value(lhs, rhs) (((lhs) < (rhs)) ? (lhs) : (rhs))
+#define psh_max_value(lhs, rhs) (((lhs) > (rhs)) ? (lhs) : (rhs))
 
 /// Clamp a value to an interval.
-#define psh_clamp_val(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))
+#define psh_clamp_value(x, min, max) (((x) < (min)) ? (min) : (((x) > (max)) ? (max) : (x)))
 
 // Get the sign of a number.
-#define psh_sign_val(x) ((static_cast<f64>(x) > 0.0) ? 1 : ((static_cast<f64>(x) != 0.0) ? -1 : 0))
+#define psh_sign_value(x) ((static_cast<f64>(x) > 0.0) ? 1 : ((static_cast<f64>(x) != 0.0) ? -1 : 0))
 
 // Get the absolute value of a number.
-#define psh_abs_val(x) ((static_cast<f64>(x) > 0.0) ? (x) : -(x))
+#define psh_abs_value(x) ((static_cast<f64>(x) > 0.0) ? (x) : -(x))
 
 /// Add values and clamp to a lower bound.
-#define psh_lb_add(lhs, rhs, lb) (((lhs) + (rhs)) < (lb) ? (lb) : ((lhs) + (rhs)))
+#define psh_lower_bound_add(lhs, rhs, lb) (((lhs) + (rhs)) < (lb) ? (lb) : ((lhs) + (rhs)))
 
 /// Add values and clamp to an upper bound.
-#define psh_ub_add(lhs, rhs, ub) (((lhs) + (rhs)) > (ub) ? (ub) : ((lhs) + (rhs)))
+#define psh_upper_bound_add(lhs, rhs, ub) (((lhs) + (rhs)) > (ub) ? (ub) : ((lhs) + (rhs)))
 
 /// Decrement an unsigned value without wrapping - the lower bound will always be zero.
 #define psh_nowrap_unsigned_dec(x) (((x) > 0) ? (((x)) - 1) : 0)
@@ -530,26 +536,26 @@ namespace psh {
 #    ifndef in_open_range
 #        define in_open_range psh_in_open_range
 #    endif
-#    ifndef min_val
-#        define min_val psh_min_val
+#    ifndef min_value
+#        define min_value psh_min_value
 #    endif
-#    ifndef max_val
-#        define max_val psh_max_val
+#    ifndef max_value
+#        define max_value psh_max_value
 #    endif
-#    ifndef clamp_val
-#        define clamp_val psh_clamp_val
+#    ifndef clamp_value
+#        define clamp_value psh_clamp_value
 #    endif
-#    ifndef sign_val
-#        define sign_val psh_sign_val
+#    ifndef sign_value
+#        define sign_value psh_sign_value
 #    endif
-#    ifndef abs_val
-#        define abs_val psh_abs_val
+#    ifndef abs_value
+#        define abs_value psh_abs_value
 #    endif
-#    ifndef lb_add
-#        define lb_add psh_lb_add
+#    ifndef lower_bound_add
+#        define lower_bound_add psh_lower_bound_add
 #    endif
-#    ifndef ub_add
-#        define ub_add psh_ub_add
+#    ifndef upper_bound_add
+#        define upper_bound_add psh_upper_bound_add
 #    endif
 #    ifndef nowrap_unsigned_dec
 #        define nowrap_unsigned_dec psh_nowrap_unsigned_dec

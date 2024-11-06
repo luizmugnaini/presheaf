@@ -339,8 +339,8 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     f32& Mat3::at(u32 r, u32 c) noexcept {
-        psh_assert_msg(r <= 3, "Mat3::at called with row outside range");
-        psh_assert_msg(c <= 3, "Mat3::at called with column outside range");
+        psh_assert_msg(r <= 3, "Row outside range.");
+        psh_assert_msg(c <= 3, "Column outside range.");
 
         return buf[r + c * 3];
     }
@@ -389,8 +389,8 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     f32& ColMat3::at(u32 r, u32 c) noexcept {
-        psh_assert_msg(r <= 3, "ColMat3::at called with row outside range");
-        psh_assert_msg(c <= 3, "ColMat3::at called with column outside range");
+        psh_assert_msg(r <= 3, "Row outside range.");
+        psh_assert_msg(c <= 3, "Column outside range.");
 
         return buf[r * 3 + c];
     }
@@ -410,8 +410,8 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     f32& ColMat4::at(u32 r, u32 c) noexcept {
-        psh_assert_msg(r <= 4, "ColMat4::at called with row outside range");
-        psh_assert_msg(c <= 4, "ColMat4::at called with column outside range");
+        psh_assert_msg(r <= 4, "Row outside range.");
+        psh_assert_msg(c <= 4, "Column outside range.");
 
         return buf[r * 4 + c];
     }

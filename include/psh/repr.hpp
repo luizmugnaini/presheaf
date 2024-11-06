@@ -31,7 +31,7 @@
 
 namespace psh {
     psh_api psh_inline char digit_to_char(u8 digit) noexcept {
-        psh_assert_msg(digit < 10, "Expected digit to be between 0 and 9");
+        psh_assert_msg(digit < 10, "Expected digit to be between 0 and 9.");
         return '0' + static_cast<char>(digit);
     }
 

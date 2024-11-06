@@ -75,8 +75,8 @@ namespace psh::impl::defer {
     struct psh_api Deferrer {
         Func fn;
 
-        Deferrer(Func&& _fn) {
-            this->fn = _fn;
+        Deferrer(Func&& fn_) {
+            this->fn = fn_;
         }
         ~Deferrer() {
             fn();

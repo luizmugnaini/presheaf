@@ -103,8 +103,9 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         Stack() noexcept = default;
-        void init(u8* _buf, usize _size) noexcept;
-        Stack(u8* _buf, usize _size) noexcept;
+        Stack(u8* buf, usize size) noexcept;
+
+        void init(u8* buf, usize size) noexcept;
 
         // -----------------------------------------------------------------------------
         // Allocated memory information.

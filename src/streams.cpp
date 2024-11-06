@@ -103,7 +103,7 @@ namespace psh {
             return FileReadResult{.status = FileStatus::FAILED_TO_READ};
         }
 
-        psh_assert_msg(arena != nullptr, "Invalid arena");
+        psh_assert_msg(arena != nullptr, "Invalid arena.");
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
 
         Array<u8> content{arena, size};
@@ -191,7 +191,7 @@ namespace psh {
     }
 
     String absolute_path(Arena* arena, strptr file_path) noexcept {
-        psh_assert_msg(arena != nullptr, "Invalid arena");
+        psh_assert_msg(arena != nullptr, "Invalid arena.");
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
         String          abs_path{arena, PSH_IMPL_PATH_MAX_CHAR_COUNT};
 

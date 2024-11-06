@@ -50,7 +50,7 @@ namespace psh::impl::log {
         // clang-format on
     };
 
-    void log_msg(LogInfo info, strptr msg) {
+    void log_msg(LogInfo info, strptr msg) noexcept {
         psh_discard_value(fprintf(
             stderr,
             impl::log::LOG_FMT,

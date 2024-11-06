@@ -28,6 +28,24 @@
 #include <psh/core.hpp>
 #include <psh/dyn_array.hpp>
 
+// -----------------------------------------------------------------------------
+// Compile-time string type construction macros.
+// -----------------------------------------------------------------------------
+
+/// Create a string literal and a string view at compile time from a given c-string literal.
+///
+/// Note: Use this macro with care, you should only use it with literal strings. Otherwise the
+///       length of the string won't be computed corrected by the compiler and you may obtain the
+///       size of a pointer instead the length of the string.
+#define psh_str(cstr_literal)          \
+    psh::Str<sizeof((cstr_literal))> { \
+        (cstr_literal)                 \
+    }
+#define psh_string_view(cstr_literal)             \
+    psh::StringView {                             \
+        (cstr_literal), sizeof(cstr_literal) - 1, \
+    }
+
 namespace psh {
     // -----------------------------------------------------------------------------
     // String comparison utilities.
@@ -93,14 +111,17 @@ namespace psh {
         constexpr StringView() noexcept = default;
 
         template <usize size_>
-        constexpr StringView(Str<size_> str) noexcept
-            : data{str.buf, size_ - 1} {}
+        constexpr StringView(Str<size_> str) noexcept {
+            this->data = {str.buf, size_ - 1};
+        }
 
-        constexpr StringView(strptr str, usize size) noexcept
-            : data{str, size} {}
+        constexpr StringView(strptr str, usize size) noexcept {
+            this->data = {str, size};
+        }
 
-        StringView(strptr str) noexcept
-            : data{str, str_length(str)} {}
+        StringView(strptr str) noexcept {
+            this->data = {str, str_length(str)};
+        }
     };
 
     /// Dynamically allocated string.
@@ -145,21 +166,3 @@ namespace psh {
         return StringView{this->data.buf, this->data.size};
     }
 }  // namespace psh
-
-// -----------------------------------------------------------------------------
-// Compile-time string type construction macros.
-// -----------------------------------------------------------------------------
-
-/// Create a string literal and a string view at compile time from a given c-string literal.
-///
-/// Note: Use this macro with care, you should only use it with literal strings. Otherwise the
-///       length of the string won't be computed corrected by the compiler and you may obtain the
-///       size of a pointer instead the length of the string.
-#define psh_str(cstr_literal)          \
-    psh::Str<sizeof((cstr_literal))> { \
-        (cstr_literal)                 \
-    }
-#define psh_string_view(cstr_literal)             \
-    psh::StringView {                             \
-        (cstr_literal), sizeof(cstr_literal) - 1, \
-    }

@@ -25,9 +25,9 @@
 #include <psh/stack.hpp>
 
 namespace psh {
-    void Stack::init(u8* _buf, usize _size) noexcept {
-        this->buf  = _buf;
-        this->size = _size;
+    void Stack::init(u8* buf_, usize size_) noexcept {
+        this->buf  = buf_;
+        this->size = size_;
 
         if (this->size > 0) {
             psh_assert_msg(
@@ -36,8 +36,8 @@ namespace psh {
         }
     }
 
-    Stack::Stack(u8* _buf, usize _size) noexcept {
-        this->init(_buf, _size);
+    Stack::Stack(u8* buf_, usize size_) noexcept {
+        this->init(buf_, size_);
     }
 
     u8* Stack::alloc_align(usize size_bytes, u32 alignment) noexcept {
@@ -55,9 +55,8 @@ namespace psh {
 
         if (psh_unlikely(required > this->size - this->offset)) {
             psh_log_error_fmt(
-                "StackAlloc::alloc unable to allocate %zu bytes of memory (%zu bytes required "
-                "due to alignment and padding). The stack allocator has only %zu bytes "
-                "remaining.",
+                "Unable to allocate %zu bytes of memory (%zu bytes required due to alignment and padding)."
+                " The stack allocator has only %zu bytes remaining.",
                 size_bytes,
                 required,
                 this->size - this->offset);
@@ -95,8 +94,7 @@ namespace psh {
 
         // Check if the address is within the allocator's memory.
         if (psh_unlikely((block < this->buf) || (block >= this->buf + this->size))) {
-            psh_log_error("StackAlloc::realloc called with a pointer outside of the memory region "
-                          "managed by the stack allocator.");
+            psh_log_error("Pointer outside of the memory region managed by the stack allocator.");
             psh_impl_return_from_memory_error();
         }
 
@@ -121,7 +119,7 @@ namespace psh {
 
         u8* new_mem = this->alloc_align(new_size_bytes, alignment);
 
-        usize const copy_size = psh_min_val(header->size, new_size_bytes);
+        usize const copy_size = psh_min_value(header->size, new_size_bytes);
         memory_copy(reinterpret_cast<u8*>(new_mem), reinterpret_cast<u8 const*>(block), copy_size);
 
         return new_mem;

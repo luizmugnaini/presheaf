@@ -44,7 +44,7 @@ namespace psh {
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
     bool contains(T match, FatPtr<T const> container, MatchFn<T>* match_fn) noexcept {
-        psh_assert_msg(match_fn != nullptr, "Expected a valid match function.");
+        psh_assert_msg(match_fn != nullptr, "Invalid match function.");
         bool found = false;
         for (auto const& m : container) {
             if (match_fn(match, m)) {
@@ -198,9 +198,9 @@ namespace psh {
     /// This is the virtually same as `memory_set` but can copy elements of any type. However it
     /// will be slower.
     template <typename T>
-    void fill(FatPtr<T> fat_ptr, T _fill) noexcept {
+    void fill(FatPtr<T> fat_ptr, T value) noexcept {
         for (T& elem : fat_ptr) {
-            elem = _fill;
+            elem = value;
         }
     }
 }  // namespace psh

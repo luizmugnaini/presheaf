@@ -33,10 +33,15 @@ namespace psh {
     ///       being present.
     template <typename T>
     struct psh_api Option {
+        T    value     = {};
+        bool has_value = false;
+
         constexpr Option() noexcept = default;
 
-        constexpr Option(T value_) noexcept
-            : value{value_}, has_value{true} {}
+        constexpr Option(T value_) noexcept {
+            this->value     = value_;
+            this->has_value = true;
+        }
 
         constexpr Option& operator=(T value_) noexcept {
             this->value     = value_;
@@ -52,8 +57,5 @@ namespace psh {
             psh_assert_msg(this->has_value, msg);
             return this->value;
         }
-
-        T    value     = {};
-        bool has_value = false;
     };
 }  // namespace psh
