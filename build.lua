@@ -39,11 +39,11 @@ local start_time = os.time()
 
 local options = {
     dll = { on = false, description = "Build as a DLL (shared object)." },
-    release = { on = false, description = "Release build type (off by default)." },
-    debug = { on = false, description = "Debug build type (on by default)." },
+    release = { on = false, description = "Release build type (on by default)." },
+    debug = { on = false, description = "Debug build type (off by default)." },
     test = { on = false, description = "Build and run tests." },
     fmt = { on = false, description = "Format source files with clang-format before building." },
-    clang = { on = false, description = "Use the Clang compiler." },
+    clang = { on = false, description = "Use the Clang compiler (Clang-cl on Windows)." },
     gcc = { on = false, description = "Use the GCC compiler." },
     msvc = { on = false, description = "Use the Visual C++ compiler." },
     help = { on = false, description = "Print the help message for the build script." },
@@ -63,6 +63,10 @@ for i = 1, #arg do
     end
     local start_idx = string.find(arg[i], "[^-]")
     options[string.sub(arg[i], start_idx)].on = true
+end
+
+if not options.release and not options.debug then
+    options.release = true
 end
 
 -- Collect flags to be directly passed to the compiler.
@@ -138,34 +142,47 @@ end
 
 local function exec(cmd_str, quiet)
     if quiet then
-        os.execute(cmd_str .. os_info.silence_cmd)
-    else
-        log_info("Executing: " .. cmd_str)
-        os.execute(cmd_str)
+        cmd_str = cmd_str .. os_info.silence_cmd
     end
+
+    log_info("Executing: " .. cmd_str)
+    os.execute(cmd_str)
 end
 
-local function concat(arr, join, is_prefix)
+local function concat(arr, join, is_prefix, no_space)
     if #arr < 1 then
         return ""
     end
 
-    local acc = arr[1]
+    if not join then
+        join = ""
+    end
+
+    local space = " "
+    if no_space then
+        space = ""
+    end
+
+    local acc = arr[1] .. space
     for i = 2, #arr do
-        if arr[i] and (arr[i] ~= "") then -- Skip empty strings
-            acc = acc .. join .. arr[i]
+        if arr[i] and (arr[i] ~= "") then
+            acc = acc .. join .. arr[i] .. space
         end
     end
 
     if is_prefix then
-        acc = join .. acc
+        acc = join .. acc -- Add the prefix to the start of the string
+    end
+
+    if not no_space then
+        acc = string.sub(acc, 1, #acc - 1) -- Remove the extraneous space at the end.
     end
 
     return acc
 end
 
 local function make_path(arr)
-    return concat(arr, os_info.path_sep, false)
+    return concat(arr, os_info.path_sep, false, true)
 end
 
 local function get_script_dir()
@@ -217,8 +234,8 @@ local compilers = {
     },
     msvc = {
         cc = "cl",
-        opt_include = "/I",
-        opt_define = "/D",
+        opt_include = "-I",
+        opt_define = "-D",
         opt_link_flags_start = "/link",
         opt_dll = "/DLL",
         opt_std = "/std:",
@@ -226,8 +243,8 @@ local compilers = {
         opt_out_obj = "/Fo",
         opt_out_exe = "/Fe",
         opt_out_pdb = "/Fd",
-        flags_common = "-nologo -Oi -TP -MP -FC -GF -GA /fp:except- -GR- -EHsc- /INCREMENTAL:NO /W3",
-        flags_debug = "/Ob0 /Od /Oy- /Z7 /RTC1 /MTd /fsanitize=address",
+        flags_common = "-nologo /INCREMENTAL:NO -Oi -TP -MP -FC -GF -GA /fp:except- -GR- -EHsc-",
+        flags_debug = "/W3 /Ob0 /Od /Oy- /Z7 /RTC1 /MTd /fsanitize=address",
         flags_release = "/O2 /MT",
         ar = "lib",
         ar_out = "/out:",
@@ -235,14 +252,16 @@ local compilers = {
     },
     clang_cl = {
         cc = "clang-cl",
-        opt_include = "/I",
-        opt_define = "/D",
+        opt_include = "-I",
+        opt_define = "-D",
         opt_link_flags_start = "/link",
         opt_dll = "/DLL",
         opt_std = "/std:",
         opt_no_link = "-c",
-        flags_common = "/TP -Wall -Wextra -Wconversion -Wuninitialized -Wnull-pointer-arithmetic -Wnull-dereference -Wcast-align -Wformat=2 -Wno-unused-variable -Wno-unsafe-buffer-usage -Wno-c++20-compat -Wno-c++98-compat-pedantic",
-        flags_debug = "-Ob0 /Od /Oy- /Z7 /RTC1 -g /MTd",
+        opt_out_obj = "-o",
+        opt_out_exe = "-o",
+        flags_common = "/TP /INCREMENTAL:NO -EHsc- -Wno-unused-variable -Wno-unsafe-buffer-usage -Wno-c++20-compat -Wno-c++98-compat-pedantic",
+        flags_debug = "-Wall -Wextra -Wconversion -Wuninitialized -Wnull-pointer-arithmetic -Wnull-dereference -Wcast-align -Wformat=2 -Ob0 /Od /Oy- /Z7 /RTC1 -g /MTd",
         flags_release = "-O2 /MT",
         ar = "llvm-lib",
         ar_out = "/out:",
@@ -254,8 +273,9 @@ local presheaf = {
     src = make_path({ root_dir, "src", "all.cpp" }),
     test_src = make_path({ root_dir, "tests", "test_all.cpp" }),
     include_dir = make_path({ root_dir, "include" }),
-    debug_defines = { "PSH_DEBUG", "PSH_ABORT_AT_MEMORY_ERROR" },
     dll_build_define = "PSH_BUILD_DLL",
+    debug_defines = { "PSH_DEBUG" },
+    test_defines = { "PSH_DEBUG", "PSH_ABORT_AT_MEMORY_ERROR" },
     lib = "presheaf",
     test_exe = "presheaf_tests",
     std = "c++20",
@@ -293,15 +313,15 @@ local function format_source_files()
         make_path({ root_dir, "src", "*.cpp" }),
         make_path({ root_dir, "tests", "*.hpp" }),
         make_path({ root_dir, "tests", "*.cpp" }),
-    }, " "))
+    }))
 end
 
 local function build_presheaf_lib(tc, custom_flags_)
     log_info("Building the presheaf library...")
 
-    local custom_flags = concat(custom_flags_, " ")
+    local custom_flags = concat(custom_flags_)
     local default_flags = tc.flags_common .. " " .. (options.release.on and tc.flags_release or tc.flags_debug)
-    local defines = options.release.on and "" or concat(presheaf.debug_defines, " " .. tc.opt_define, true)
+    local defines = options.debug.on and concat(presheaf.debug_defines, tc.opt_define, true) or nil
 
     local output_artifacts_flags = ""
     if tc.cc == "cl" then
@@ -338,7 +358,7 @@ local function build_presheaf_lib(tc, custom_flags_)
             tc.opt_out_exe .. dll_out,
             dll_flags,
             presheaf.src,
-        }, " "))
+        }))
     else
         local obj_out = make_path({ presheaf.out_dir, presheaf.lib .. os_info.obj_ext })
 
@@ -353,11 +373,11 @@ local function build_presheaf_lib(tc, custom_flags_)
             tc.opt_include .. presheaf.include_dir,
             output_artifacts_flags,
             presheaf.src,
-        }, " "))
+        }))
 
         -- Archive objs into a library.
         local lib_out = make_path({ presheaf.out_dir, os_info.lib_prefix .. presheaf.lib .. os_info.lib_ext })
-        exec(concat({ tc.ar, tc.ar_flags, tc.ar_out .. lib_out, obj_out }, " "))
+        exec(concat({ tc.ar, tc.ar_flags, tc.ar_out .. lib_out, obj_out }))
     end
 end
 
@@ -365,8 +385,8 @@ local function build_presheaf_tests(tc)
     log_info("Building the presheaf library tests...")
 
     local default_flags = tc.flags_common .. " " .. tc.flags_debug
-    local custom_flags = concat(custom_compiler_flags, " ")
-    local defines = concat(presheaf.debug_defines, " " .. tc.opt_define, true)
+    local custom_flags = concat(custom_compiler_flags)
+    local defines = concat(presheaf.test_defines, tc.opt_define, true)
 
     local out_obj_flag = ""
     if tc.cc == "cl" then
@@ -384,7 +404,7 @@ local function build_presheaf_tests(tc)
         out_obj_flag,
         tc.opt_out_exe .. test_exe_out,
         presheaf.test_src,
-    }, " "))
+    }))
     return test_exe_out
 end
 
