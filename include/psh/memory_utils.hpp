@@ -56,7 +56,7 @@ namespace psh {
     ///
     /// This function will assert that the blocks of memory don't overlap, avoiding undefined
     /// behaviour introduced by `memcpy` in this case.
-    psh_api void memory_copy(void* psh_restrict_ptr dst, void const* psh_restrict_ptr src, usize size_bytes) noexcept;
+    psh_api void memory_copy(void* psh_no_alias dst, void const* psh_no_alias src, usize size_bytes) noexcept;
 
     template <typename T>
     void memory_copy(FatPtr<T> dst, FatPtr<T const> src, usize copy_count) noexcept {
@@ -77,7 +77,7 @@ namespace psh {
     /// Simple wrapper around `memmove`.
     ///
     /// Does nothing if either `dst` or `src` are null pointers.
-    psh_api void memory_move(void* psh_restrict_ptr dst, void const* psh_restrict_ptr src, usize size_bytes) noexcept;
+    psh_api void memory_move(void* psh_no_alias dst, void const* psh_no_alias src, usize size_bytes) noexcept;
 
     template <typename T>
     void memory_move(FatPtr<T> dst, FatPtr<T const> src, usize copy_count) noexcept {

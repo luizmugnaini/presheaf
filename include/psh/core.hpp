@@ -279,11 +279,11 @@
 
 /// Hints for pointer aliasing rules.
 #if defined(PSH_COMPILER_MSVC)
-#    define psh_restrict_ptr __restrict
+#    define psh_no_alias __restrict
 #elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-#    define psh_restrict_ptr __restrict__
+#    define psh_no_alias __restrict__
 #else
-#    define psh_restrict_ptr
+#    define psh_no_alias
 #endif
 
 /// Compiler hints for branching patterns.
@@ -352,6 +352,16 @@ namespace psh {
 }  // namespace psh
 
 // -----------------------------------------------------------------------------
+// Stringification and tokenization utilities.
+// -----------------------------------------------------------------------------
+
+/// Generate a string containing the given expression.
+#define psh_stringify(x) #x
+
+#define psh_impl_token_concat(x, y)      x##y
+#define psh_token_concat(prefix, suffix) psh_impl_token_concat(prefix, suffix)
+
+// -----------------------------------------------------------------------------
 // Pointer operations.
 // -----------------------------------------------------------------------------
 
@@ -374,8 +384,11 @@ namespace psh {
 // Mathematical operations.
 // -----------------------------------------------------------------------------
 
-#define psh_in_closed_range(val, min, max) (((min) <= (val)) && ((val) <= (max)))
-#define psh_in_open_range(val, min, max)   (((min) < (val)) && ((val) < (max)))
+/// Checks if a value is in the closed interval [min, max].
+#define psh_in_range(value, min, max) (((min) <= (value)) && ((value) <= (max)))
+
+/// Checks if a value is in the open intervalue (min, max).
+#define psh_within_range(value, min, max) (((min) < (value)) && ((value) < (max)))
 
 /// Minimum/maximum functions.
 #define psh_min_value(lhs, rhs) (((lhs) < (rhs)) ? (lhs) : (rhs))
@@ -409,13 +422,6 @@ namespace psh {
 #define psh_kibibytes(n) ((n) * (1 << 10))
 #define psh_mebibytes(n) ((n) * (1 << 20))
 #define psh_gibibytes(n) ((n) * (1 << 30))
-
-// -----------------------------------------------------------------------------
-// Miscelaneous utilities.
-// -----------------------------------------------------------------------------
-
-/// Generate a string containing the given expression.
-#define psh_stringify(x) #x
 
 // -----------------------------------------------------------------------------
 // Source introspection information.
@@ -490,6 +496,28 @@ namespace psh {
 #    if defined(PSH_COMPILER_GCC) && !defined(COMPILER_GCC)
 #        define COMPILER_GCC PSH_COMPILER_GCC
 #    endif
+// Architecture detection
+#    if defined(PSH_ARCH_X64) && !defined(ARCH_X64)
+#        define ARCH_X64 PSH_ARCH_X64
+#    endif
+#    if defined(PSH_ARCH_ARM) && !defined(ARCH_ARM)
+#        define ARCH_ARM PSH_ARCH_ARM
+#    endif
+#    if defined(PSH_ARCH_SIMD_SSE) && !defined(ARCH_SIMD_SSE)
+#        define ARCH_SIMD_SSE PSH_ARCH_SIMD_SSE
+#    endif
+#    if defined(PSH_ARCH_SIMD_SSE2) && !defined(ARCH_SIMD_SSE2)
+#        define ARCH_SIMD_SSE2 PSH_ARCH_SIMD_SSE2
+#    endif
+#    if defined(PSH_ARCH_SIMD_AVX) && !defined(ARCH_SIMD_AVX)
+#        define ARCH_SIMD_AVX PSH_ARCH_SIMD_AVX
+#    endif
+#    if defined(PSH_ARCH_SIMD_AVX2) && !defined(ARCH_SIMD_AVX2)
+#        define ARCH_SIMD_AVX2 PSH_ARCH_SIMD_AVX2
+#    endif
+#    if defined(PSH_ARCH_SIMD_NEON) && !defined(ARCH_SIMD_NEON)
+#        define ARCH_SIMD_NEON PSH_ARCH_SIMD_NEON
+#    endif
 // Miscelaneous macros.
 #    ifndef FALLTHROUGH
 #        define FALLTHROUGH PSH_FALLTHROUGH
@@ -506,8 +534,8 @@ namespace psh {
 #    ifndef global
 #        define global psh_global
 #    endif
-#    ifndef restrict_ptr
-#        define restrict_ptr psh_restrict_ptr
+#    ifndef no_alias
+#        define no_alias psh_no_alias
 #    endif
 #    ifndef likely
 #        define likely psh_likely
@@ -521,6 +549,12 @@ namespace psh {
 #    ifndef discard_value
 #        define discard_value psh_discard_value
 #    endif
+#    ifndef stringify
+#        define stringify psh_stringify
+#    endif
+#    ifndef token_concat
+#        define token_concat psh_token_concat
+#    endif
 #    ifndef ptr_add
 #        define ptr_add psh_ptr_add
 #    endif
@@ -530,11 +564,11 @@ namespace psh {
 #    ifndef ptr_offset_bytes
 #        define ptr_offset_bytes psh_ptr_offset_bytes
 #    endif
-#    ifndef in_closed_range
-#        define in_closed_range psh_in_closed_range
+#    ifndef in_range
+#        define in_range psh_in_range
 #    endif
-#    ifndef in_open_range
-#        define in_open_range psh_in_open_range
+#    ifndef within_range
+#        define within_range psh_within_range
 #    endif
 #    ifndef min_value
 #        define min_value psh_min_value
@@ -571,9 +605,6 @@ namespace psh {
 #    endif
 #    ifndef gibibytes
 #        define gibibytes psh_gibibytes
-#    endif
-#    ifndef stringify
-#        define stringify psh_stringify
 #    endif
 #    ifndef source_function_signature
 #        define source_function_signature psh_source_function_signature

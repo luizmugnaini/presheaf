@@ -89,15 +89,12 @@ namespace psh::impl::defer {
     }
 }  // namespace psh::impl::defer
 
-#define psh_impl_defer_join(x, y)      x##y
-#define psh_impl_defer_var(prefix, id) psh_impl_defer_join(prefix, id)
-
 // -----------------------------------------------------------------------------
 // Defer interface.
 // -----------------------------------------------------------------------------
 
-#define psh_defer(code)                                                                 \
-    [[maybe_unused]] auto psh_impl_defer_var(psh_deferred_, psh_source_line_number()) = \
-        psh::impl::defer::make_defer_fn([&]() {                                         \
-            code;                                                                       \
+#define psh_defer(code)                                                               \
+    [[maybe_unused]] auto psh_token_concat(psh_deferred_, psh_source_line_number()) = \
+        psh::impl::defer::make_defer_fn([&]() {                                       \
+            code;                                                                     \
         })
