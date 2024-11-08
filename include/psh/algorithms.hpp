@@ -98,7 +98,7 @@ namespace psh {
 
         // Found.
         if (mid_elem == match) {
-            return Option{static_cast<usize>(mid - low)};
+            return {static_cast<usize>(mid - low)};
         }
 
         // Search the left side.
@@ -141,7 +141,6 @@ namespace psh {
     template <typename T>
     void insertion_sort(FatPtr<T> data) noexcept {
         for (usize end = 1; end < data.size; ++end) {
-            usize idx = end;
             for (usize idx = end; (idx > 0) && (data[idx - 1] > data[idx]); --idx) {
                 swap_elements(data.buf, idx, idx - 1);
             }
