@@ -43,11 +43,15 @@ local options = {
     debug = { on = false, description = "Debug build type (off by default)." },
     test = { on = false, description = "Build and run tests." },
     fmt = { on = false, description = "Format source files with clang-format before building." },
-    clang = { on = false, description = "Use the Clang compiler (Clang-cl on Windows)." },
+    clang = {
+        on = false,
+        description = "Use the Clang compiler (Clang-cl on Windows). If you want to build with clang-cl on Linux, use: `-msvc -clang`",
+    },
     gcc = { on = false, description = "Use the GCC compiler." },
     msvc = { on = false, description = "Use the Visual C++ compiler." },
     help = { on = false, description = "Print the help message for the build script." },
     quiet = { on = false, description = "Don't print information about the build process." },
+    target = { system_name = "windows", description = "The target system that the library should be compiled to." },
 }
 
 -- -----------------------------------------------------------------------------
@@ -62,7 +66,8 @@ for i = 1, #arg do
         break
     end
     local start_idx = string.find(arg[i], "[^-]")
-    options[string.sub(arg[i], start_idx)].on = true
+    local opt = string.sub(arg[i], start_idx)
+    options[opt].on = true
 end
 
 if not options.release and not options.debug then
@@ -114,21 +119,28 @@ end
 if os_info.windows then
     os_info.path_sep = "\\"
     os_info.silence_cmd = " > NUL 2>&1"
-    os_info.dbg_ext = ".pdb"
-    os_info.obj_ext = ".obj"
-    os_info.exe_ext = ".exe"
-    os_info.dll_ext = ".dll"
-    os_info.lib_ext = ".lib"
-    os_info.lib_prefix = ""
 else
     os_info.path_sep = "/"
     os_info.silence_cmd = " > /dev/null 2>&1"
-    os_info.obj_ext = ".o"
-    os_info.exe_ext = ""
-    os_info.dll_ext = ".so"
-    os_info.lib_ext = ".a"
-    os_info.lib_prefix = "lib"
 end
+
+local os_file_info = {
+    unix = {
+        obj = ".o",
+        exe = "",
+        dll = ".so",
+        lib = ".a",
+        lib_prefix = "lib",
+    },
+    windows = {
+        dbg = ".pdb",
+        obj = ".obj",
+        exe = ".exe",
+        dll = ".dll",
+        lib = ".lib",
+        lib_prefix = "",
+    },
+}
 
 -- -----------------------------------------------------------------------------
 -- Utility functions
@@ -286,9 +298,14 @@ local presheaf = {
 -- Toolchain
 -- -----------------------------------------------------------------------------
 
-local toolchain = os_info.windows and compilers.msvc or compilers.gcc
-if options.clang.on or options["clang-cl"] then
-    toolchain = os_info.windows and compilers.clang_cl or compilers.clang
+local target_windows = os_info.windows or options.msvc
+
+-- Defaults per platform.
+local toolchain = target_windows and compilers.msvc or compilers.gcc
+local os_ext = target_windows and os_file_info.windows or os_file_info.unix
+
+if options.clang.on then
+    toolchain = target_windows and compilers.clang_cl or compilers.clang
 elseif options.gcc.on then
     assert(not os_info.windows, "GCC build not supported on Windows")
     toolchain = compilers.gcc
@@ -326,25 +343,25 @@ local function build_presheaf_lib(tc, custom_flags_)
     local output_artifacts_flags = ""
     if tc.cc == "cl" then
         output_artifacts_flags = tc.opt_out_obj
-            .. make_path({ presheaf.out_dir, presheaf.lib .. os_info.obj_ext })
+            .. make_path({ presheaf.out_dir, presheaf.lib .. os_ext.obj })
             .. " "
             .. tc.opt_out_pdb
-            .. make_path({ presheaf.out_dir, presheaf.lib .. os_info.dbg_ext })
+            .. make_path({ presheaf.out_dir, presheaf.lib .. os_ext.dbg })
     elseif not options.dll.on then
-        output_artifacts_flags = tc.opt_out_obj .. make_path({ presheaf.out_dir, presheaf.lib .. os_info.obj_ext })
+        output_artifacts_flags = tc.opt_out_obj .. make_path({ presheaf.out_dir, presheaf.lib .. os_ext.obj })
     end
 
     if options.dll.on then
         local dll_flags
         local dll_lib_out_flag -- Windows-only thing, library with the DLL symbols to be imported by the user.
-        if os_info.windows then
+        if os_info.windows or options.msvc then
             dll_flags = "/LD"
             dll_lib_out_flag = "/IMPLIB:" .. make_path({ presheaf.out_dir, presheaf.lib .. "dll" .. ".lib" })
         else
             dll_flags = "-shared -fPIC"
         end
 
-        local dll_out = make_path({ presheaf.out_dir, os_info.lib_prefix .. presheaf.lib .. os_info.dll_ext })
+        local dll_out = make_path({ presheaf.out_dir, os_ext.lib_prefix .. presheaf.lib .. os_ext.dll })
         exec(concat({
             tc.cc,
             tc.opt_std .. presheaf.std,
@@ -360,7 +377,7 @@ local function build_presheaf_lib(tc, custom_flags_)
             presheaf.src,
         }))
     else
-        local obj_out = make_path({ presheaf.out_dir, presheaf.lib .. os_info.obj_ext })
+        local obj_out = make_path({ presheaf.out_dir, presheaf.lib .. os_ext.obj })
 
         -- Compile without linking.
         exec(concat({
@@ -376,7 +393,7 @@ local function build_presheaf_lib(tc, custom_flags_)
         }))
 
         -- Archive objs into a library.
-        local lib_out = make_path({ presheaf.out_dir, os_info.lib_prefix .. presheaf.lib .. os_info.lib_ext })
+        local lib_out = make_path({ presheaf.out_dir, os_ext.lib_prefix .. presheaf.lib .. os_ext.lib })
         exec(concat({ tc.ar, tc.ar_flags, tc.ar_out .. lib_out, obj_out }))
     end
 end
@@ -390,10 +407,10 @@ local function build_presheaf_tests(tc)
 
     local out_obj_flag = ""
     if tc.cc == "cl" then
-        out_obj_flag = tc.opt_out_obj .. make_path({ presheaf.out_dir, presheaf.test_exe .. os_info.obj_ext })
+        out_obj_flag = tc.opt_out_obj .. make_path({ presheaf.out_dir, presheaf.test_exe .. os_ext.obj })
     end
 
-    local test_exe_out = make_path({ presheaf.out_dir, presheaf.test_exe .. os_info.exe_ext })
+    local test_exe_out = make_path({ presheaf.out_dir, presheaf.test_exe .. os_ext.exe })
     exec(concat({
         tc.cc,
         tc.opt_std .. presheaf.std,
