@@ -27,6 +27,7 @@
 #if defined(PSH_OS_WINDOWS)
 #    include <Windows.h>
 #elif defined(PSH_OS_UNIX)
+#    include <errno.h>
 #    include <time.h>
 #endif
 
@@ -44,10 +45,25 @@ namespace psh {
 #elif defined(PSH_OS_UNIX)
         timespec time_spec;
         if (psh_likely(clock_gettime(CLOCK_MONOTONIC, &time_spec) == 0)) {
-            curr_time =
-                static_cast<f64>(time_spec.tv_sec) + (static_cast<f64>(time_spec.tv_nsec) / 1e9);
+            curr_time = static_cast<f64>(time_spec.tv_sec) + (static_cast<f64>(time_spec.tv_nsec) / 1e9L);
         }
 #endif
         return curr_time;
     }
+
+    void sleep_milliseconds(u32 millis) noexcept {
+#if defined(PSH_OS_WINDOWS)
+        Sleep(millis);
+#elif defined(PSH_OS_UNIX)
+#    error "TODO: implement sleep_milliseconds"
+        // timespec request_sleep = {
+        //     .tv_sec  = 0,
+        //     .tv_nsec = static_cast<f64>(millis) / 1000L,
+        // };
+        // timespec remaining_sleep = {};
+        //
+        // i32 status = nanosleep(&request_sleep, &remaining_sleep);
+        // psh_assert(status != -1);  // TODO: proper error handling.
+#endif
+    }  // namespace psh
 }  // namespace psh
