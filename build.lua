@@ -354,7 +354,7 @@ local function build_presheaf_lib(tc, custom_flags_)
     if options.dll.on then
         local dll_flags
         local dll_lib_out_flag -- Windows-only thing, library with the DLL symbols to be imported by the user.
-        if os_info.windows or options.msvc then
+        if target_windows then
             dll_flags = "/LD"
             dll_lib_out_flag = "/IMPLIB:" .. make_path({ presheaf.out_dir, presheaf.lib .. "dll" .. ".lib" })
         else
