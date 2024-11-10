@@ -30,10 +30,10 @@
 #include <psh/core.hpp>
 
 namespace psh::impl::log {
-    constexpr strptr LOG_FMT = "%s [%s:%d:%s] %s\n";
+    constexpr strptr LOG_FMT = "%s [%s:%u:%s] %s\n";
 
-    constexpr strptr LOG_LEVEL_STR[static_cast<u32>(LogLevel::LEVEL_COUNT)] {
-        // clang-format off
+    constexpr strptr LOG_LEVEL_STR[static_cast<u32>(LogLevel::LEVEL_COUNT)]{
+    // clang-format off
 #if !defined(PSH_DISABLE_ANSI_COLORS)
             "\x1b[1;41m[FATAL]\x1b[0m",
             "\x1b[1;31m[ERROR]\x1b[0m",
