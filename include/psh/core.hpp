@@ -385,10 +385,10 @@ namespace psh {
 // -----------------------------------------------------------------------------
 
 /// Checks if a value is in the closed interval [min, max].
-#define psh_in_range(value, min, max) (((min) <= (value)) && ((value) <= (max)))
+#define psh_value_in_range(value, min, max) (((min) <= (value)) && ((value) <= (max)))
 
 /// Checks if a value is in the open intervalue (min, max).
-#define psh_within_range(value, min, max) (((min) < (value)) && ((value) < (max)))
+#define psh_value_within_range(value, min, max) (((min) < (value)) && ((value) < (max)))
 
 /// Minimum/maximum functions.
 #define psh_min_value(lhs, rhs) (((lhs) < (rhs)) ? (lhs) : (rhs))
@@ -564,11 +564,11 @@ namespace psh {
 #    ifndef ptr_offset_bytes
 #        define ptr_offset_bytes psh_ptr_offset_bytes
 #    endif
-#    ifndef in_range
-#        define in_range psh_in_range
+#    ifndef value_in_range
+#        define value_in_range psh_value_in_range
 #    endif
-#    ifndef within_range
-#        define within_range psh_within_range
+#    ifndef value_within_range
+#        define value_within_range psh_value_within_range
 #    endif
 #    ifndef min_value
 #        define min_value psh_min_value
