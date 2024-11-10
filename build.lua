@@ -70,8 +70,8 @@ for i = 1, #arg do
     options[opt].on = true
 end
 
-if not options.release and not options.debug then
-    options.release = true
+if not options.release.on and not options.debug.on then
+    options.release.on = true
 end
 
 -- Collect flags to be directly passed to the compiler.
@@ -298,7 +298,7 @@ local presheaf = {
 -- Toolchain
 -- -----------------------------------------------------------------------------
 
-local target_windows = os_info.windows or options.msvc
+local target_windows = os_info.windows or options.msvc.on
 
 -- Defaults per platform.
 local toolchain = target_windows and compilers.msvc or compilers.gcc
