@@ -31,13 +31,13 @@ namespace psh::impl::log {
     ///
     /// The levels are set in an increasing level of vebosity, where `LogLevel::Fatal` is the lowest
     /// and `LogLevel::Debug` is the highest.
-    enum struct LogLevel {
-        LEVEL_FATAL = 0,
-        LEVEL_ERROR,
-        LEVEL_WARNING,
-        LEVEL_INFO,
-        LEVEL_DEBUG,
-        LEVEL_COUNT,
+    enum LogLevel : u32 {
+        LOG_LEVEL_FATAL = 0,
+        LOG_LEVEL_ERROR,
+        LOG_LEVEL_WARNING,
+        LOG_LEVEL_INFO,
+        LOG_LEVEL_DEBUG,
+        LOG_LEVEL_COUNT,
     };
 
     struct psh_api LogInfo {
@@ -67,17 +67,17 @@ namespace psh::impl::log {
     }
 
 #if !defined(PSH_DISABLE_LOGGING)
-#    define psh_log_fatal(msg)            psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_FATAL), msg)
-#    define psh_log_error(msg)            psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_ERROR), msg)
-#    define psh_log_warning(msg)          psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_WARNING), msg)
-#    define psh_log_info(msg)             psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_INFO), msg)
-#    define psh_log_fatal_fmt(fmt, ...)   psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_FATAL), fmt, __VA_ARGS__)
-#    define psh_log_error_fmt(fmt, ...)   psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_ERROR), fmt, __VA_ARGS__)
-#    define psh_log_warning_fmt(fmt, ...) psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_WARNING), fmt, __VA_ARGS__)
-#    define psh_log_info_fmt(fmt, ...)    psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_INFO), fmt, __VA_ARGS__)
+#    define psh_log_fatal(msg)            psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_FATAL), msg)
+#    define psh_log_error(msg)            psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_ERROR), msg)
+#    define psh_log_warning(msg)          psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_WARNING), msg)
+#    define psh_log_info(msg)             psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_INFO), msg)
+#    define psh_log_fatal_fmt(fmt, ...)   psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_FATAL), fmt, __VA_ARGS__)
+#    define psh_log_error_fmt(fmt, ...)   psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_ERROR), fmt, __VA_ARGS__)
+#    define psh_log_warning_fmt(fmt, ...) psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_WARNING), fmt, __VA_ARGS__)
+#    define psh_log_info_fmt(fmt, ...)    psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_INFO), fmt, __VA_ARGS__)
 #    if defined(PSH_DEBUG)
-#        define psh_log_debug(msg)          psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_DEBUG), msg)
-#        define psh_log_debug_fmt(fmt, ...) psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LogLevel::LEVEL_DEBUG), fmt, __VA_ARGS__)
+#        define psh_log_debug(msg)          psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_DEBUG), msg)
+#        define psh_log_debug_fmt(fmt, ...) psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_DEBUG), fmt, __VA_ARGS__)
 #    else
 #        define psh_log_debug(msg)          0
 #        define psh_log_debug_fmt(fmt, ...) 0

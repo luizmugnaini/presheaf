@@ -29,32 +29,31 @@
 #include <stdio.h>
 #include <psh/core.hpp>
 
+// TODO: enable the user to set a different output stream for the logs.
 namespace psh::impl::log {
     constexpr strptr LOG_FMT = "%s [%s:%u:%s] %s\n";
 
-    constexpr strptr LOG_LEVEL_STR[static_cast<u32>(LogLevel::LEVEL_COUNT)]{
-    // clang-format off
+    constexpr Buffer<strptr, LOG_LEVEL_COUNT> LOG_LEVEL_STR = {
 #if !defined(PSH_DISABLE_ANSI_COLORS)
-            "\x1b[1;41m[FATAL]\x1b[0m",
-            "\x1b[1;31m[ERROR]\x1b[0m",
-            "\x1b[1;33m[WARNING]\x1b[0m",
-            "\x1b[1;32m[INFO]\x1b[0m",
-            "\x1b[1;34m[DEBUG]\x1b[0m",
+        "\x1b[1;41m[FATAL]\x1b[0m",
+        "\x1b[1;31m[ERROR]\x1b[0m",
+        "\x1b[1;33m[WARNING]\x1b[0m",
+        "\x1b[1;32m[INFO]\x1b[0m",
+        "\x1b[1;34m[DEBUG]\x1b[0m",
 #else
-            "[FATAL]",
-            "[ERROR]",
-            "[WARNING]",
-            "[INFO]",
-            "[DEBUG]",
+        "[FATAL]",
+        "[ERROR]",
+        "[WARNING]",
+        "[INFO]",
+        "[DEBUG]",
 #endif
-        // clang-format on
     };
 
     void log_msg(LogInfo info, strptr msg) noexcept {
         psh_discard_value(fprintf(
             stderr,
-            impl::log::LOG_FMT,
-            impl::log::LOG_LEVEL_STR[static_cast<u32>(info.level)],
+            LOG_FMT,
+            LOG_LEVEL_STR[info.level],
             info.file_name,
             info.line,
             info.function_name,
@@ -62,30 +61,30 @@ namespace psh::impl::log {
     }
 
     void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept {
-        constexpr usize MAX_MSG_LEN = 8192;
-        char            msg[MAX_MSG_LEN];
+        constexpr usize           MAX_MSG_LEN = 8192;
+        Buffer<char, MAX_MSG_LEN> msg;
 
         va_list args;
         va_start(args, fmt);
         {
             // Format the message with the given arguments.
-            i32 res_len = vsnprintf(msg, MAX_MSG_LEN, fmt, args);
-            assert(res_len != -1 && "snptrintf unable to parse the format string and arguments");
+            i32 res_len = vsnprintf(msg.buf, MAX_MSG_LEN, fmt, args);
+            assert((res_len != -1) && "snptrintf unable to parse the format string and arguments");
 
             // Stamp the message with a null-terminator.
             usize ures_len = static_cast<usize>(res_len);
-            usize msg_len  = (ures_len < MAX_MSG_LEN) ? ures_len : MAX_MSG_LEN;
+            usize msg_len  = psh_min_value(ures_len, MAX_MSG_LEN);
             msg[msg_len]   = 0;
         }
         va_end(args);
 
-        (void)fprintf(
+        psh_discard_value(fprintf(
             stderr,
-            impl::log::LOG_FMT,
-            impl::log::LOG_LEVEL_STR[static_cast<u32>(info.level)],
+            LOG_FMT,
+            LOG_LEVEL_STR[info.level],
             info.file_name,
             info.line,
             info.function_name,
-            msg);
+            msg.buf));
     }
 }  // namespace psh::impl::log
