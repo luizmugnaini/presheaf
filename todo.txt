@@ -1,0 +1,10 @@
+TODO
+
+- Test psh::sleep_milliseconds for Unix.
+- Threading abstraction for Windows/pthreads.
+- Shouldn't allocation procedures return FatPtr? I think this would be safer.
+- Tests for `pth/algorithms.h`.
+- Tests for `psh/stream.h`.
+- Make arenas thread safe (opt-in overhead).
+- Thread safe asynchronous stream functions.
+
