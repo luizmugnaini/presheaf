@@ -38,20 +38,19 @@ local start_time = os.time()
 -- -----------------------------------------------------------------------------
 
 local options = {
-    dll = { on = false, description = "Build as a DLL (shared object)." },
+    dll     = { on = false, description = "Build as a DLL (shared object)." },
     release = { on = false, description = "Release build type (on by default)." },
-    debug = { on = false, description = "Debug build type (off by default)." },
-    test = { on = false, description = "Build and run tests." },
-    fmt = { on = false, description = "Format source files with clang-format before building." },
-    clang = {
+    debug   = { on = false, description = "Debug build type (off by default)." },
+    test    = { on = false, description = "Build and run tests." },
+    fmt     = { on = false, description = "Format source files with clang-format before building." },
+    clang   = {
         on = false,
         description = "Use the Clang compiler (Clang-cl on Windows). If you want to build with clang-cl on Linux, use: `-msvc -clang`",
     },
-    gcc = { on = false, description = "Use the GCC compiler." },
-    msvc = { on = false, description = "Use the Visual C++ compiler." },
-    help = { on = false, description = "Print the help message for the build script." },
-    quiet = { on = false, description = "Don't print information about the build process." },
-    target = { system_name = "windows", description = "The target system that the library should be compiled to." },
+    gcc     = { on = false, description = "Use the GCC compiler." },
+    msvc    = { on = false, description = "Use the Visual C++ compiler." },
+    help    = { on = false, description = "Print the help message for the build script." },
+    quiet   = { on = false, description = "Don't print information about the build process." },
 }
 
 -- -----------------------------------------------------------------------------
@@ -66,7 +65,7 @@ for i = 1, #arg do
         break
     end
     local start_idx = string.find(arg[i], "[^-]")
-    local opt = string.sub(arg[i], start_idx)
+    local opt       = string.sub(arg[i], start_idx)
     options[opt].on = true
 end
 
@@ -89,7 +88,8 @@ if options.help.on then
         print(string.format("    -%-15s" .. "%s", k, v.description))
     end
     print(
-        "\nExample: Build the library with Clang, run all tests, and directly specify compiler flags:\n    lua build.lua -clang -test -- -fsanitize=address -DPSH_ABORT_AT_MEMORY_ERROR"
+        "\nExample: Build the library with Clang, run all tests, and directly specify compiler flags:\n"
+        .. "    lua build.lua -clang -test -- -fsanitize=address -DPSH_ABORT_AT_MEMORY_ERROR"
     )
     return
 end
@@ -100,8 +100,8 @@ end
 
 local os_info = {
     windows = (package.config:sub(1, 1) == "\\"),
-    linux = false,
-    darwin = false,
+    linux   = false,
+    darwin  = false,
 }
 
 if not os_info.windows then
@@ -117,27 +117,27 @@ if not os_info.windows then
 end
 
 if os_info.windows then
-    os_info.path_sep = "\\"
+    os_info.path_sep    = "\\"
     os_info.silence_cmd = " > NUL 2>&1"
 else
-    os_info.path_sep = "/"
+    os_info.path_sep    = "/"
     os_info.silence_cmd = " > /dev/null 2>&1"
 end
 
 local os_file_info = {
     unix = {
-        obj = ".o",
-        exe = "",
-        dll = ".so",
-        lib = ".a",
+        obj        = ".o",
+        exe        = "",
+        dll        = ".so",
+        lib        = ".a",
         lib_prefix = "lib",
     },
     windows = {
-        dbg = ".pdb",
-        obj = ".obj",
-        exe = ".exe",
-        dll = ".dll",
-        lib = ".lib",
+        dbg        = ".pdb",
+        obj        = ".obj",
+        exe        = ".exe",
+        dll        = ".dll",
+        lib        = ".lib",
         lib_prefix = "",
     },
 }
@@ -213,85 +213,85 @@ end
 
 local compilers = {
     clang = {
-        cc = "clang++",
-        opt_include = "-I",
-        opt_define = "-D",
-        opt_dll = "-shared",
-        opt_std = "-std=",
-        opt_no_link = "-c",
-        opt_out_obj = "-o",
-        opt_out_exe = "-o",
-        flags_common = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-pointer-arithmetic -Wnull-dereference -Wformat=2 -Wpointer-arith -Wno-unsafe-buffer-usage -fno-rtti -fno-exceptions -Werror=implicit-function-declaration",
-        flags_debug = "-Wno-unused-variable -Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
+        cc            = "clang++",
+        opt_include   = "-I",
+        opt_define    = "-D",
+        opt_dll       = "-shared",
+        opt_std       = "-std=",
+        opt_no_link   = "-c",
+        opt_out_obj   = "-o",
+        opt_out_exe   = "-o",
+        flags_common  = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-pointer-arithmetic -Wnull-dereference -Wformat=2 -Wpointer-arith -Wno-unsafe-buffer-usage -fno-rtti -fno-exceptions -Werror=implicit-function-declaration",
+        flags_debug   = "-Wno-unused-variable -Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
         flags_release = "-Wunused -O2",
-        ar = "llvm-ar",
-        ar_out = "",
-        ar_flags = "rcs",
+        ar            = "llvm-ar",
+        ar_out        = "",
+        ar_flags      = "rcs",
     },
     gcc = {
-        cc = "g++",
-        opt_include = "-I",
-        opt_define = "-D",
-        opt_dll = "-shared",
-        opt_std = "-std=",
-        opt_no_link = "-c",
-        opt_out_obj = "-o",
-        opt_out_exe = "-o",
-        flags_common = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-dereference -Wformat=2 -Wno-unused-variable -fno-rtti -fno-exceptions",
-        flags_debug = "-Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
+        cc            = "g++",
+        opt_include   = "-I",
+        opt_define    = "-D",
+        opt_dll       = "-shared",
+        opt_std       = "-std=",
+        opt_no_link   = "-c",
+        opt_out_obj   = "-o",
+        opt_out_exe   = "-o",
+        flags_common  = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-dereference -Wformat=2 -Wno-unused-variable -fno-rtti -fno-exceptions",
+        flags_debug   = "-Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
         flags_release = "-O2",
-        ar = "ar",
-        ar_out = "",
-        ar_flags = "rcs",
+        ar            = "ar",
+        ar_out        = "",
+        ar_flags      = "rcs",
     },
     msvc = {
-        cc = "cl",
-        opt_include = "-I",
-        opt_define = "-D",
+        cc                   = "cl",
+        opt_include          = "-I",
+        opt_define           = "-D",
         opt_link_flags_start = "/link",
-        opt_dll = "/DLL",
-        opt_std = "/std:",
-        opt_no_link = "/c",
-        opt_out_obj = "/Fo",
-        opt_out_exe = "/Fe",
-        opt_out_pdb = "/Fd",
-        flags_common = "-nologo /INCREMENTAL:NO -Oi -TP -MP -FC -GF -GA /fp:except- -GR- -EHsc-",
-        flags_debug = "/W3 /Ob0 /Od /Oy- /Z7 /RTC1 /MTd /fsanitize=address",
-        flags_release = "/O2 /MT",
-        ar = "lib",
-        ar_out = "/out:",
-        ar_flags = "/nologo",
+        opt_dll              = "/DLL",
+        opt_std              = "/std:",
+        opt_no_link          = "/c",
+        opt_out_obj          = "/Fo",
+        opt_out_exe          = "/Fe",
+        opt_out_pdb          = "/Fd",
+        flags_common         = "-nologo /INCREMENTAL:NO -Oi -TP -MP -FC -GF -GA /fp:except- -GR- -EHsc-",
+        flags_debug          = "/W3 /Ob0 /Od /Oy- /Z7 /RTC1 /MTd /fsanitize=address",
+        flags_release        = "/O2 /MT",
+        ar                   = "lib",
+        ar_out               = "/out:",
+        ar_flags             = "/nologo",
     },
     clang_cl = {
-        cc = "clang-cl",
-        opt_include = "-I",
-        opt_define = "-D",
+        cc                   = "clang-cl",
+        opt_include          = "-I",
+        opt_define           = "-D",
         opt_link_flags_start = "/link",
-        opt_dll = "/DLL",
-        opt_std = "/std:",
-        opt_no_link = "-c",
-        opt_out_obj = "-o",
-        opt_out_exe = "-o",
-        flags_common = "/TP /INCREMENTAL:NO -EHsc- -Wno-unused-variable -Wno-unsafe-buffer-usage -Wno-c++20-compat -Wno-c++98-compat-pedantic",
-        flags_debug = "-Wall -Wextra -Wconversion -Wuninitialized -Wnull-pointer-arithmetic -Wnull-dereference -Wcast-align -Wformat=2 -Ob0 /Od /Oy- /Z7 /RTC1 -g /MTd",
-        flags_release = "-O2 /MT",
-        ar = "llvm-lib",
-        ar_out = "/out:",
-        ar_flags = "/nologo",
+        opt_dll              = "/DLL",
+        opt_std              = "/std:",
+        opt_no_link          = "-c",
+        opt_out_obj          = "-o",
+        opt_out_exe          = "-o",
+        flags_common         = "/TP /INCREMENTAL:NO -EHsc- -Wno-unused-variable -Wno-unsafe-buffer-usage -Wno-c++20-compat -Wno-c++98-compat-pedantic",
+        flags_debug          = "-Wall -Wextra -Wconversion -Wuninitialized -Wnull-pointer-arithmetic -Wnull-dereference -Wcast-align -Wformat=2 -Ob0 /Od /Oy- /Z7 /RTC1 -g /MTd",
+        flags_release        = "-O2 /MT",
+        ar                   = "llvm-lib",
+        ar_out               = "/out:",
+        ar_flags             = "/nologo",
     },
 }
 
 local presheaf = {
-    src = make_path({ root_dir, "src", "all.cpp" }),
-    test_src = make_path({ root_dir, "tests", "test_all.cpp" }),
-    include_dir = make_path({ root_dir, "include" }),
+    src              = make_path({ root_dir, "src", "all.cpp" }),
+    test_src         = make_path({ root_dir, "tests", "test_all.cpp" }),
+    include_dir      = make_path({ root_dir, "include" }),
     dll_build_define = "PSH_BUILD_DLL",
-    debug_defines = { "PSH_DEBUG" },
-    test_defines = { "PSH_DEBUG", "PSH_ABORT_AT_MEMORY_ERROR" },
-    lib = "presheaf",
-    test_exe = "presheaf_tests",
-    std = "c++20",
-    out_dir = make_path({ ".", "build" }),
+    debug_defines    = { "PSH_DEBUG" },
+    test_defines     = { "PSH_DEBUG", "PSH_ABORT_AT_MEMORY_ERROR" },
+    lib              = "presheaf",
+    test_exe         = "presheaf_tests",
+    std              = "c++20",
+    out_dir          = make_path({ ".", "build" }),
 }
 
 -- -----------------------------------------------------------------------------
@@ -302,7 +302,7 @@ local target_windows = os_info.windows or options.msvc.on
 
 -- Defaults per platform.
 local toolchain = target_windows and compilers.msvc or compilers.gcc
-local os_ext = target_windows and os_file_info.windows or os_file_info.unix
+local os_ext    = target_windows and os_file_info.windows or os_file_info.unix
 
 if options.clang.on then
     toolchain = target_windows and compilers.clang_cl or compilers.clang
@@ -355,7 +355,7 @@ local function build_presheaf_lib(tc, custom_flags_)
         local dll_flags
         local dll_lib_out_flag -- Windows-only thing, library with the DLL symbols to be imported by the user.
         if target_windows then
-            dll_flags = "/LD"
+            dll_flags        = "/LD"
             dll_lib_out_flag = "/IMPLIB:" .. make_path({ presheaf.out_dir, presheaf.lib .. "dll" .. ".lib" })
         else
             dll_flags = "-shared -fPIC"
@@ -368,7 +368,7 @@ local function build_presheaf_lib(tc, custom_flags_)
             default_flags,
             custom_flags,
             defines,
-            tc.opt_define .. presheaf.dll_build_define,
+            tc.opt_define  .. presheaf.dll_build_define,
             tc.opt_include .. presheaf.include_dir,
             output_artifacts_flags,
             dll_lib_out_flag,
@@ -402,8 +402,8 @@ local function build_presheaf_tests(tc)
     log_info("Building the presheaf library tests...")
 
     local default_flags = tc.flags_common .. " " .. tc.flags_debug
-    local custom_flags = concat(custom_compiler_flags)
-    local defines = concat(presheaf.test_defines, tc.opt_define, true)
+    local custom_flags  = concat(custom_compiler_flags)
+    local defines       = concat(presheaf.test_defines, tc.opt_define, true)
 
     local out_obj_flag = ""
     if tc.cc == "cl" then
