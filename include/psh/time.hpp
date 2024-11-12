@@ -31,5 +31,5 @@ namespace psh {
     psh_api Option<f64> current_time_in_seconds() noexcept;
 
     /// Suspend the current thread by a certain number of milliseconds.
-    psh_api void sleep_milliseconds(u32 millis) noexcept;
+    psh_api void sleep_milliseconds(f64 ms) noexcept;
 }  // namespace psh

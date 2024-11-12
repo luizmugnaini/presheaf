@@ -37,9 +37,11 @@ namespace psh {
 #if defined(PSH_OS_WINDOWS)
         LARGE_INTEGER frequency;
         LARGE_INTEGER counter;
-        if (psh_likely(
-                (QueryPerformanceFrequency(&frequency) != 0) &&
-                (QueryPerformanceCounter(&counter) != 0))) {
+
+        bool success = (QueryPerformanceFrequency(&frequency) != 0);
+        success &= (QueryPerformanceCounter(&counter) != 0);
+
+        if (psh_likely(success)) {
             curr_time = static_cast<f64>(counter.QuadPart) / static_cast<f64>(frequency.QuadPart);
         }
 #elif defined(PSH_OS_UNIX)
@@ -51,19 +53,18 @@ namespace psh {
         return curr_time;
     }
 
-    void sleep_milliseconds(u32 millis) noexcept {
+    void sleep_milliseconds(f64 ms) noexcept {
 #if defined(PSH_OS_WINDOWS)
-        Sleep(millis);
+        u32 ms_count = psh_value_within_range(ms, 0.0, 1.0) ? 1 : static_cast<u32>(ms);
+        Sleep(ms_count);
 #elif defined(PSH_OS_UNIX)
-#    error "TODO: implement sleep_milliseconds"
-        // timespec request_sleep = {
-        //     .tv_sec  = 0,
-        //     .tv_nsec = static_cast<f64>(millis) / 1000L,
-        // };
-        // timespec remaining_sleep = {};
-        //
-        // i32 status = nanosleep(&request_sleep, &remaining_sleep);
-        // psh_assert(status != -1);  // TODO: proper error handling.
+        timespec request_sleep;
+        request_sleep.tv_sec     = static_cast<time_t>(ms / 1000);
+        request_sleep.tv_nsec    = static_cast<i64>((ms - (request_sleep.tv_sec * 1000)) * 1'000'000);
+        timespec remaining_sleep = {};
+
+        i32 status = nanosleep(&request_sleep, &remaining_sleep);
+        psh_assert(status != -1);  // @TODO: proper error handling.
 #endif
-    }  // namespace psh
+    }
 }  // namespace psh
