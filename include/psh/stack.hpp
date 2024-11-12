@@ -138,7 +138,7 @@ namespace psh {
         // -----------------------------------------------------------------------------
         // Allocation methods.
         //
-        // NOTE: All allocation procedures will zero-out the whole allocated block.
+        // @NOTE: All allocation procedures will zero-out the whole allocated block.
         // -----------------------------------------------------------------------------
 
         u8* alloc_align(usize size_bytes, u32 alignment) noexcept;

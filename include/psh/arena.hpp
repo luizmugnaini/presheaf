@@ -130,7 +130,7 @@ namespace psh {
         /// Create a new scratch arena with the current state of the parent.
         ScratchArena decouple() const noexcept;
 
-        // NOTE: Required bullshit when compiling as a DLL since the compiler will require all
+        // @NOTE: Required bullshit when compiling as a DLL since the compiler will require all
         //       standard member functions to be defined.
         ScratchArena& operator=(ScratchArena&) = delete;
     };
@@ -158,7 +158,7 @@ namespace psh {
         // -----------------------------------------------------------------------------
         // Allocation methods.
         //
-        // NOTE: All allocation procedures will zero-out the whole allocated block.
+        // @NOTE: All allocation procedures will zero-out the whole allocated block.
         // -----------------------------------------------------------------------------
 
         u8* alloc_align(usize size_bytes, u32 alignment) noexcept;

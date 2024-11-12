@@ -83,7 +83,7 @@ namespace psh {
         /// Resets the manager by zeroing the memory offset and statistics.
         void clear() noexcept;
 
-        // NOTE: Required bullshit when compiling as a DLL since the compiler will require all
+        // @NOTE: Required bullshit when compiling as a DLL since the compiler will require all
         //       standard member functions to be defined.
         MemoryManager& operator=(MemoryManager&) = delete;
     };

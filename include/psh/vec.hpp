@@ -164,7 +164,7 @@ namespace psh {
     // Floating point matrices.
     // -----------------------------------------------------------------------------
 
-    // TODO: implement Mat2 methods.
+    // @TODO: implement Mat2 methods.
     struct psh_api Mat2 {
         f32 buf[4] = {0.0f};
     };
@@ -190,7 +190,7 @@ namespace psh {
         ///     * rot_z: The angle to rotate about the z axis (aka yaw angle).
         static Mat3 rotation_tb(f32 rot_x, f32 rot_y, f32 rot_z) noexcept;
 
-        // TODO: rotation with Euler angles.
+        // @TODO: rotation with Euler angles.
     };
 
     /// Column-major 3-dimensional square matrix in floating-point space.
@@ -259,7 +259,7 @@ namespace psh {
         static ColMat4
         perspective_projection_rhzo(f32 fovy, f32 aspect, f32 near_plane, f32 far_plane) noexcept;
 
-        // TODO: perspective_projection_rhno following OpenGL conventions.
+        // @TODO: perspective_projection_rhno following OpenGL conventions.
 
         static ColMat4 orthographic_projection_rhzo(
             f32 left,

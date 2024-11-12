@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <psh/core.hpp>
 
-// TODO: enable the user to set a different output stream for the logs.
+// @TODO: enable the user to set a different output stream for the logs.
 namespace psh::impl::log {
     constexpr strptr LOG_FMT = "%s [%s:%u:%s] %s\n";
 

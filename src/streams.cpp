@@ -36,12 +36,12 @@
 #    define PSH_IMPL_PATH_MAX_CHAR_COUNT PATH_MAX
 #endif
 
-// TODO(luiz): Substitute the `perror` calls with `psh::log_fmt` taking the error strings via a
+// @TODO(luiz): Substitute the `perror` calls with `psh::log_fmt` taking the error strings via a
 //       thread safe alternative to `strerror`.
 
 namespace psh {
     namespace impl::streams {
-        // TODO(luiz): To be honest this is quite ugly, `OpenFileFlag` is just a concatenation of
+        // @TODO(luiz): To be honest this is quite ugly, `OpenFileFlag` is just a concatenation of
         // `ReadFileFlag` and `WriteFileFlag`. It is not exposed, but is still a weak maintainance point.
         enum struct OpenFileFlag : u32 {
             READ_TEXT = 0,

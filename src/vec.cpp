@@ -356,7 +356,7 @@ namespace psh {
     }
 
     Mat3 Mat3::change_of_basis(Vec3 v1, Vec3 v2, Vec3 v3) noexcept {
-        // TODO: should we check if v1, v2, v3 form an orthogonal triple?
+        // @TODO: should we check if v1, v2, v3 form an orthogonal triple?
 
         // clang-format off
         return Mat3{

@@ -74,7 +74,7 @@ namespace psh {
         /// current end of the file. If the file doesn't exist, it is created.
         APPEND = 6,
 
-        // NOTE: the append extended flag won't be supported due to its non-portable behaviour. The
+        // @NOTE: the append extended flag won't be supported due to its non-portable behaviour. The
         //       user may use the WRITE_EXTENDED instead.
     };
 

@@ -178,13 +178,13 @@ namespace psh {
         }
 
         Status resize(usize new_capacity) noexcept {
-            // NOTE: If T is a struct with a pointer to itself, this method will fail hard and create
+            // @NOTE: If T is a struct with a pointer to itself, this method will fail hard and create
             //       a massive horrible memory bug. DO NOT use this array structure with types having
             //       this property.
             T* new_buf = arena->realloc<T>(this->buf, this->capacity, new_capacity);
 
             if (psh_unlikely(new_buf == nullptr)) {
-                // TODO: should this be a fatal error?
+                // @TODO: should this be a fatal error?
                 psh_log_error(impl::dyn_array::ERROR_RESIZE_OUT_OF_MEMORY);
                 return STATUS_FAILED;
             }

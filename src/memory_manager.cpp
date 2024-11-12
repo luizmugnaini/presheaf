@@ -72,7 +72,7 @@ namespace psh {
 
         // Pop the top memory block until popping `block` or reaching the end of the allocator.
         //
-        // NOTE: If we were given the incorrect address, we end up clearing the whole memory.
+        // @NOTE: If we were given the incorrect address, we end up clearing the whole memory.
         for (;;) {
             u8 const* top_block = this->allocator.top();
             if (psh_unlikely(top_block == memory_start)) {
