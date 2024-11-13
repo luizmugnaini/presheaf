@@ -32,8 +32,11 @@ For more information, please run the script with the `-help` flag or refer to th
 The library has a bundled compilation unit `src/all.cpp` which may be used if you wish to compile as
 a unity build. This can be as simple as, e.g.:
 ```sh
-clang++ -c -std=c++20 -Iinclude src/all.cpp -o presheaf.o  # Build object files without linking.
-llvm-ar rc libpresheaf.a presheaf.o                        # Archive object files into a library.
+# Build object files without linking.
+clang++ -c -std=c++20 -Iinclude src/all.cpp -o presheaf.o
+
+# Archive object files into a library.
+llvm-ar rc libpresheaf.a presheaf.o
 ```
 
 # Integrating with another project
