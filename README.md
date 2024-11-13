@@ -65,5 +65,5 @@ The following `#define` macros can be used to tweak the behaviour of the library
 - `PSH_DEBUG`: Enables all debug checks.
 - `PSH_ABORT_AT_MEMORY_ERROR`: Aborts the program at any memory (re)allocation errors, for debugging
   purposes. Not enabled by `PSH_DEBUG` due to its intrusiveness on the behaviour of fault tolerancy.
-- `PSH_DEFINE_SHORT_NAMES`: Define shorter names for function-like macros defined in `psh/core.h`,
-  `psh/log.h`, and `psh/assert.h`. Examples: `psh_max_value` to `max_value`, `psh_no_alias` to `no_alias`, etc.
+- `PSH_DEFINE_SHORT_NAMES`: Define shorter names for essential macros. Examples: `psh_max_value` to
+  `max_value`, `psh_no_alias` to `no_alias`, etc.
