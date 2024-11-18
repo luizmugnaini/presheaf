@@ -1,32 +1,30 @@
-# Good Practices and Rules
+# Rules
 
-- No third-party code.
-- Classes & inheritance: no.
+- No STL (and no third-party code in general).
+- No inclusion of C++ wrappers for libc headers.
 - No exceptions.
 - No RTTI.
-- No smart pointers, manage your lifetimes.
+- No smart pointers.
+- No template logic or template overuse.
+- No encapsulation.
+- No classes nor inheritance.
+- No private members.
+
+This library is created to be as hackable as possible as it only aims to provide the basic building
+block of a program (where C failed to deliver). The users are always treated as having better
+understanding of their program than the library, so everything is open for them to enjoy and
+exploit.
+
+# Good practices
+
 - Pointers should **never** indicate ownership, only the possibility that a reference does not exist.
 - Don't be afraid of pointers, know how to use them and be careful, that's all.
-- "Where are my beloved private members" - you might ask. They are not allowed, this library is created
-  to be as hackable as possible as it only aims to provide the basic building block of a program
-  (where C failed to deliver). The users are always treated as having better understanding of their
-  program than the library, so everything is open for them to enjoy and exploit.
-- Your templates should be as simple as possible, and should not be overused. In particular, templates
-  should **never** be used for some kind of internal logic, only for generalising structures and
-  functions over types.
-- Use the least amount of STL you can - possibly don't use it at all as it can introduce
-  considerable bloat to the software and worsen both the compile time and runtime, as well as a
-  larger memory footprint. Unfortunately, some STL constructs (`std::initializer_list` for instance)
-  are compiler intrinsic so we have to include headers providing them if we wish to use these features.
-- Prefer including the direct libc headers (e.g. `stdio.h`) instead of the C++ wrappers (e.g. `cstdio`).
-  A common misconception is that the C++ wrappers make the global namespace clear of libc functions,
-  which is definitely not the case (you can access both `std::printf` and `printf` from `cstdio`).
 - Always provide useful documentation. Note however that some docs may not be really that relevant:
   for instance, the method `psh::Array::size_bytes` is obvious, it simply returns the size of the
   array in bytes.
 - Don't write in a comment what can be clearly stated in code.
 - Don't try to be clever, be pragmatic and simple.
-- Use the following comment tags (BUG, FIXME, TODO, NOTE) for an easier way to search them later.
+- Use the following comment tags for an easier way to search them later: @BUG, @FIXME, @TODO, @NOTE.
 - Write fault tolerant code, if some value fails to meet some expectation, try to use a default value
   whenever possible.
 - In case there is no possible default value, don't be shy of asserts! If you **are** going to fail,
@@ -58,7 +56,7 @@ Don't do `auto`, simple as that. Why?
 
 Prefer using `constexpr` over a `#define` as it permits type safety. You should, however, not abuse
 the use of `constexpr`'s for functions that will clearly never be invoked at compile time. The latter
-will only make the code harder to read and give you the false feeling that that codepath is optimized
+will only make the code harder to read and give you the false feeling that that codepath is optimised
 in some way. Always remember that the compiler gives you **no guarantee** that the `constexpr`
 function **will** be evaluated at compile time, just that it **can**.
 
