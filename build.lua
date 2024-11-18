@@ -256,7 +256,7 @@ local compilers = {
         opt_out_exe          = "/Fe",
         opt_out_pdb          = "/Fd",
         flags_common         = "-nologo /INCREMENTAL:NO -Oi -TP -MP -FC -GF -GA /fp:except- -GR- -EHsc-",
-        flags_debug          = "/W3 /Ob0 /Od /Oy- /Z7 /RTC1 /MTd /fsanitize=address",
+        flags_debug          = "/W4 /Ob1 /Od /Oy- /Z7 /RTC1 /MTd /fsanitize=address",
         flags_release        = "/O2 /MT",
         ar                   = "lib",
         ar_out               = "/out:",
