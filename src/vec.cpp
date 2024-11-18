@@ -33,7 +33,7 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     bool Vec2::is_zero(f32 zero_range) const noexcept {
-        return f32_approx_equal(x, 0.0f, zero_range) && f32_approx_equal(y, 0.0f, zero_range);
+        return approx_equal(x, 0.0f, zero_range) && approx_equal(y, 0.0f, zero_range);
     }
 
     Vec2 Vec2::normalized() const noexcept {
@@ -103,15 +103,15 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     bool Vec3::is_zero(f32 zero_range) const noexcept {
-        return f32_approx_equal(x, 0.0f, zero_range) &&
-               f32_approx_equal(y, 0.0f, zero_range) &&
-               f32_approx_equal(z, 0.0f, zero_range);
+        return approx_equal(x, 0.0f, zero_range) &&
+               approx_equal(y, 0.0f, zero_range) &&
+               approx_equal(z, 0.0f, zero_range);
     }
 
     Vec3 Vec3::normalized() const noexcept {
         f32 len = sqrtf(x * x + y * y + z * z);
 
-        if (psh_unlikely(f32_approx_equal(len, 0.0f))) {
+        if (psh_unlikely(approx_equal(len, 0.0f))) {
             return Vec3{};
         }
 

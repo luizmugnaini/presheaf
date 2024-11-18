@@ -22,11 +22,10 @@
 /// Description: Tests for the bit twiddling utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
+#include <stdlib.h>  // For rand.
 #include <psh/algorithms.hpp>
 #include <psh/assert.hpp>
 #include "utils.hpp"
-
-#include <stdlib.h>  // For rand.
 
 namespace psh::test::algorithms {
     struct Fraction {

@@ -97,13 +97,6 @@ namespace psh {
         usize offset          = 0;
         usize previous_offset = 0;
 
-        // -----------------------------------------------------------------------------
-        // Constructors and initializers.
-        // -----------------------------------------------------------------------------
-
-        Stack() noexcept = default;
-        Stack(u8* buf, usize size) noexcept;
-
         void init(u8* buf, usize size) noexcept;
 
         // -----------------------------------------------------------------------------

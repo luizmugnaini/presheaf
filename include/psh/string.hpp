@@ -120,9 +120,12 @@ namespace psh {
     using String = DynArray<char>;
 
     psh_inline String make_string(Arena* arena, StringView sv) noexcept {
-        String string{arena, sv.count + 1};
+        String string;
+        string.init(arena, sv.count + 1);
+
         memory_copy(string.buf, sv.buf, sizeof(char) * sv.count);
         string.count = sv.count;
+
         return string;
     }
 

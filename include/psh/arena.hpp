@@ -29,7 +29,7 @@ namespace psh {
     // Forward declaration.
     struct Arena;
 
-    /// Scratch arena, an automatic checkpoint for arena offsets.
+    /// Scratch arena, an automatic checkpoint manager for arena offsets.
     ///
     /// This allocator is used to save the state of the parent arena at creation time and
     /// restore the parent arena offset state at destruction time.
@@ -41,7 +41,9 @@ namespace psh {
     ///
     /// ```cpp
     /// f32 do_temp_work_and_restore_arena(ScratchArena&& s) {
-    ///    DynArray<f32> arr{s.arena};
+    ///    DynArray<f32> arr;
+    ///    arr.init(s.arena);
+    ///
     ///    arr.push(4.0f);
     ///    arr.push(5.5f);
     ///    arr.push(20.5f);

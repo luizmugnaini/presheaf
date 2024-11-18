@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include <initializer_list>
 #include <psh/arena.hpp>
 #include <psh/core.hpp>
 #include <psh/memory_utils.hpp>
@@ -73,39 +72,6 @@ namespace psh {
         /// Construct a dynamic array with a given capacity.
         DynArray(Arena* arena_, usize capacity_ = impl::dyn_array::DEFAULT_INITIAL_CAPACITY) noexcept {
             this->init(arena_, capacity_);
-        }
-
-        /// Initialize the dynamic array with the contents of an initializer list, and optionally
-        /// reserve a given capacity.
-        void init(
-            std::initializer_list<T> const& list,
-            Arena*                          arena_,
-            usize                           capacity_ = 0) noexcept {
-            this->arena    = arena_;
-            this->count    = list.size();
-            this->capacity = psh_max_value(capacity_, impl::dyn_array::RESIZE_CAPACITY_FACTOR * this->count);
-            psh_assert_msg(this->count <= this->capacity, impl::dyn_array::ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY);
-
-            if (psh_likely(this->capacity != 0)) {
-                psh_assert_msg(this->arena != nullptr, impl::dyn_array::ERROR_INIT_INCONSISTENT_ARENA);
-
-                this->buf = arena->alloc<T>(this->capacity);
-                psh_assert_msg(this->buf != nullptr, impl::dyn_array::ERROR_INIT_OUT_OF_MEMORY);
-            }
-
-            memory_copy(
-                reinterpret_cast<u8*>(this->buf),
-                reinterpret_cast<u8 const*>(list.begin()),
-                sizeof(T) * this->count);
-        }
-
-        /// Construct a dynamic array with the contents of an initializer list, and optionally
-        /// reserve a given capacity.
-        DynArray(
-            std::initializer_list<T> list,
-            Arena*                   arena_,
-            usize                    capacity_ = 0) noexcept {
-            this->init(list, arena_, capacity_);
         }
 
         usize size_bytes() noexcept {

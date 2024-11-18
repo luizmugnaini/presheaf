@@ -248,43 +248,44 @@ namespace psh::test::allocators {
     }
 
     psh_internal void stack_allocation_with_default_alignment() {
-        usize salloc_min_expected_size = 0;
-        usize expected_alloc_size      = 512;
-        u8*   buf                      = reinterpret_cast<u8*>(malloc(expected_alloc_size));
-        Stack salloc{buf, expected_alloc_size};
+        usize stack_min_expected_size = 0;
+        usize expected_alloc_size     = 512;
+        u8*   buf                     = reinterpret_cast<u8*>(malloc(expected_alloc_size));
+        Stack stack;
+        stack.init(buf, expected_alloc_size);
 
         u8    expected_u8_vec[5]   = {51, 102, 153, 204, 255};
         usize expected_u8_vec_size = 5 * sizeof(u8);  // 5 bytes
-        u8*   test_vec_u8          = salloc.alloc<u8>(expected_u8_vec_size);
+        u8*   test_vec_u8          = stack.alloc<u8>(expected_u8_vec_size);
         psh_assert(test_vec_u8 != nullptr);
         for (usize i = 0; i < 5; ++i) {
             test_vec_u8[i] = expected_u8_vec[i];
         }
-        salloc_min_expected_size += sizeof(StackHeader) + expected_u8_vec_size;
+        stack_min_expected_size += sizeof(StackHeader) + expected_u8_vec_size;
 
         // The first allocation has a zero alignment so we can check for equality.
-        psh_assert(salloc.used() == salloc_min_expected_size);
+        psh_assert(stack.used() == stack_min_expected_size);
 
         u32   expected_u32_vec[3]   = {1, 1024, 1073741824};
         usize expected_u32_vec_size = 3 * sizeof(u32);  // 12 bytes
-        u32*  test_vec_u32          = salloc.alloc<u32>(3);
+        u32*  test_vec_u32          = stack.alloc<u32>(3);
         psh_assert(test_vec_u32 != nullptr);
         for (usize i = 0; i < 3; ++i) {
             test_vec_u32[i] = expected_u32_vec[i];
         }
-        salloc_min_expected_size += sizeof(StackHeader) + expected_u32_vec_size;
+        stack_min_expected_size += sizeof(StackHeader) + expected_u32_vec_size;
 
-        psh_assert(salloc.used() >= salloc_min_expected_size);
+        psh_assert(stack.used() >= stack_min_expected_size);
 
-        usize size = salloc.size;
+        usize size = stack.size;
         psh_assert(size == expected_alloc_size);
 
-        StackHeader const* th_u32 = salloc.top_header();
+        StackHeader const* th_u32 = stack.top_header();
         psh_assert(th_u32 != nullptr);
         usize actual_u32_vec_size = th_u32->size;
         psh_assert(actual_u32_vec_size == expected_u32_vec_size);
 
-        u8* top_u32 = salloc.top();
+        u8* top_u32 = stack.top();
         psh_assert(top_u32 != nullptr);
         u32* actual_u32_vec = reinterpret_cast<u32*>(top_u32);
         for (usize i = 0; i < 3; ++i) {
@@ -293,14 +294,14 @@ namespace psh::test::allocators {
             psh_assert(actual == expected);
         }
 
-        psh_assert_msg(salloc.pop(), "ExpectedStackAlloc to be able to pop the top memory in the stack");
+        psh_assert(stack.pop());
 
-        StackHeader const* th_u8 = salloc.top_header();
+        StackHeader const* th_u8 = stack.top_header();
         psh_assert(th_u8 != nullptr);
         usize actual_u8_vec_size = th_u8->size;
         psh_assert(actual_u8_vec_size == 5ull);
 
-        u8* actual_u8_vec = salloc.top();
+        u8* actual_u8_vec = stack.top();
         psh_assert(actual_u8_vec != nullptr);
         for (usize i = 0; i < 5; ++i) {
             u32 actual   = actual_u8_vec[i];
@@ -308,10 +309,10 @@ namespace psh::test::allocators {
             psh_assert(actual == expected);
         }
 
-        psh_assert_msg(salloc.pop(), "ExpectedStackAlloc to be able to pop the top memory in the stack");
+        psh_assert(stack.pop());
 
-        psh_assert_msg(salloc.offset == 0ull, "Expected emptyStackAlloc");
-        psh_assert_msg(salloc.previous_offset == 0ull, "%s Expected emptyStackAlloc");
+        psh_assert(stack.offset == 0ull);
+        psh_assert(stack.previous_offset == 0ull);
 
         free(buf);
         report_test_successful();
@@ -320,7 +321,8 @@ namespace psh::test::allocators {
     psh_internal void stack_offsets_reads_and_writes() {
         usize size = 1024;
         u8*   buf  = reinterpret_cast<u8*>(malloc(size));
-        Stack stack{buf, size};
+        Stack stack;
+        stack.init(buf, size);
 
         u8* buf_start = buf;
 
@@ -349,7 +351,7 @@ namespace psh::test::allocators {
         usize array1_actual_padding         = array1_header->padding;
         usize array1_actual_previous_offset = array1_header->previous_offset;
         psh_assert(array1_actual_padding == array1_expected_padding);
-        psh_assert_msg(array1_actual_previous_offset == 0ull, "Expected `array1` header to have a previous offset of zero");
+        psh_assert(array1_actual_previous_offset == 0ull);
 
         // Manually read from `stack.buf` checking for the values of `array1`.
         for (usize idx = 0; idx < array1_len; ++idx) {
@@ -416,7 +418,8 @@ namespace psh::test::allocators {
     psh_internal void stack_memory_stress_and_free() {
         usize size = 2048;
         u8*   buf  = reinterpret_cast<u8*>(malloc(size));
-        Stack stack{buf, size};
+        Stack stack;
+        stack.init(buf, size);
 
         iptr  stack_buf_diff = reinterpret_cast<iptr>(stack.buf);
         usize zero           = 0ull;
@@ -492,12 +495,13 @@ namespace psh::test::allocators {
     psh_internal void stack_free_all() {
         usize     size = 512;
         u8* const buf  = reinterpret_cast<u8*>(malloc(size));
-        Stack     salloc{buf, size};
+        Stack     stack;
+        stack.init(buf, size);
 
         usize expected_min_size = 0;
 
         usize fib_size  = 30 * sizeof(u64);
-        u64*  fibonacci = salloc.alloc<u64>(30);
+        u64*  fibonacci = stack.alloc<u64>(30);
         psh_assert(fibonacci != nullptr);
         expected_min_size += fib_size;
         fibonacci[0] = 1;
@@ -506,23 +510,23 @@ namespace psh::test::allocators {
             fibonacci[idx] = fibonacci[idx - 1] + fibonacci[idx - 2];
         }
 
-        psh_assert(salloc.used() >= expected_min_size);
+        psh_assert(stack.used() >= expected_min_size);
 
         usize   foos_size = 10 * sizeof(FooBar);
-        FooBar* foos      = salloc.alloc<FooBar>(10);
+        FooBar* foos      = stack.alloc<FooBar>(10);
         psh_assert(foos != nullptr);
         expected_min_size += foos_size;
         for (u32 idx = 0; idx < 10; ++idx) {
             foos[idx] = FooBar{static_cast<f64>(idx) / 2.0, idx};
         }
 
-        psh_assert(salloc.used() >= expected_min_size);
+        psh_assert(stack.used() >= expected_min_size);
 
-        salloc.clear();
-        psh_assert(salloc.used() == 0ull);
+        stack.clear();
+        psh_assert(stack.used() == 0ull);
 
-        psh_assert_msg(salloc.offset == 0ull, "Expected emptyStackAlloc");
-        psh_assert_msg(salloc.previous_offset == 0ull, "Expected emptyStackAlloc");
+        psh_assert(stack.offset == 0ull);
+        psh_assert(stack.previous_offset == 0ull);
 
         free(buf);
         report_test_successful();

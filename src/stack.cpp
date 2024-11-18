@@ -26,18 +26,16 @@
 
 namespace psh {
     void Stack::init(u8* buf_, usize size_) noexcept {
-        this->buf  = buf_;
-        this->size = size_;
+        this->buf             = buf_;
+        this->size            = size_;
+        this->offset          = 0;
+        this->previous_offset = 0;
 
         if (this->size > 0) {
             psh_assert_msg(
                 this->buf != nullptr,
                 "Stack initialized with non-zero capacity but an empty buffer");
         }
-    }
-
-    Stack::Stack(u8* buf_, usize size_) noexcept {
-        this->init(buf_, size_);
     }
 
     u8* Stack::alloc_align(usize size_bytes, u32 alignment) noexcept {
@@ -214,8 +212,8 @@ namespace psh {
 
         StackHeader const* header = reinterpret_cast<StackHeader const*>(block - sizeof(StackHeader));
 
-        this->offset = wrap_sub(
-            wrap_sub(reinterpret_cast<uptr>(block), header->padding),
+        this->offset = no_wrap_sub(
+            no_wrap_sub(reinterpret_cast<uptr>(block), header->padding),
             reinterpret_cast<uptr>(this->buf));
         this->previous_offset = header->previous_offset;
 

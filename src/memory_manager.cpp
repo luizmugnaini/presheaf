@@ -31,14 +31,12 @@ namespace psh {
     void MemoryManager::init(usize capacity) noexcept {
         u8* memory = reinterpret_cast<u8*>(psh_malloc(capacity));
         memory_set(memory, capacity, 0);
+
+        this->allocation_count = 0;
         this->allocator.init(memory, capacity);
     }
 
-    MemoryManager::MemoryManager(usize capacity) noexcept {
-        this->init(capacity);
-    }
-
-    MemoryManager::~MemoryManager() noexcept {
+    void MemoryManager::destroy() noexcept {
         psh_free(this->allocator.buf);
     }
 

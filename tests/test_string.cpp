@@ -105,29 +105,37 @@ namespace psh::test::string {
         Arena arena{reinterpret_cast<u8*>(malloc(psh_kibibytes(5))), psh_kibibytes(5)};
         {
             // Empty string.
-            String estr{&arena, 20};
-            psh_assert(join_strings(estr, make_const_fat_ptr(views1), psh_comptime_make_string_view(", ")));
+            {
+                String estr;
+                estr.init(&arena, 20);
+                psh_assert(join_strings(estr, make_const_fat_ptr(views1), psh_comptime_make_string_view(", ")));
 
-            psh_assert(str_equal(estr.buf, check_str1.buf));
-            psh_assert(estr.count == check_str1.count());
-            psh_assert(estr.capacity == estr.count + 1);
-            psh_assert(estr.buf[estr.count] == 0);
+                psh_assert(str_equal(estr.buf, check_str1.buf));
+                psh_assert(estr.count == check_str1.count());
+                psh_assert(estr.capacity == estr.count + 1);
+                psh_assert(estr.buf[estr.count] == 0);
+            }
 
             // Non-empty string.
-            String nestr = make_string(&arena, views2[0]);
-            psh_assert(join_strings(nestr, FatPtr{&views2[1], views2.count() - 1}));
-            psh_assert(str_equal(nestr.buf, check_str2.buf));
-            psh_assert(nestr.capacity == nestr.count + 1);
-            psh_assert(nestr.buf[nestr.count] == 0);
+            {
+                String nestr = make_string(&arena, views2[0]);
+                psh_assert(join_strings(nestr, FatPtr{&views2[1], views2.count() - 1}));
+                psh_assert(str_equal(nestr.buf, check_str2.buf));
+                psh_assert(nestr.capacity == nestr.count + 1);
+                psh_assert(nestr.buf[nestr.count] == 0);
+            }
 
-            String                s     = make_string(&arena, make_string_view("One"));
-            Buffer<StringView, 3> words = {
-                make_string_view("Ring"),
-                make_string_view("to"),
-                make_string_view("rule"),
-            };
-            psh_assert(join_strings(s, make_const_fat_ptr(words), psh_comptime_make_string_view(", ")));
-            psh_assert(str_equal(s.buf, "One, Ring, to, rule"));
+            {
+                Buffer<StringView, 3> words = {
+                    make_string_view("Ring"),
+                    make_string_view("to"),
+                    make_string_view("rule"),
+                };
+                String s = make_string(&arena, make_string_view("One"));
+
+                psh_assert(join_strings(s, make_const_fat_ptr(words), psh_comptime_make_string_view(", ")));
+                psh_assert(str_equal(s.buf, "One, Ring, to, rule"));
+            }
         }
         free(arena.buf);
 

@@ -106,8 +106,11 @@ namespace psh {
         psh_assert_msg(arena != nullptr, "Invalid arena.");
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
 
-        Array<u8> content{arena, size};
-        usize     read_count = fread(content.buf, sizeof(u8), content.count, fhandle);
+        Array<u8> content;
+        content.init(arena, size);
+
+        usize read_count = fread(content.buf, sizeof(u8), content.count, fhandle);
+        psh_discard_value(read_count);  // @TODO: Maybe we should check this.
 
         if (psh_unlikely(ferror(fhandle) != 0)) {
             perror("Couldn't read file.\n");
@@ -129,7 +132,9 @@ namespace psh {
 
     String read_stdin(Arena* arena, u32 initial_buf_size, u32 read_chunk_size) noexcept {
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
-        String          content{arena, initial_buf_size};
+
+        String content;
+        content.init(arena, initial_buf_size);
 
 #if defined(PSH_OS_WINDOWS)
         HANDLE handle_stdin = GetStdHandle(STD_INPUT_HANDLE);
@@ -137,7 +142,7 @@ namespace psh {
             psh_log_error("Unable to acquire the handle to the stdin stream.");
 
             arena->restore_state(arena_checkpoint);
-            return String{};
+            return {};
         }
 
         for (;;) {
@@ -152,7 +157,7 @@ namespace psh {
                 psh_log_error("Unable to read from the stdin stream.");
 
                 arena->restore_state(arena_checkpoint);
-                return String{};
+                return {};
             }
 
             if (bytes_read < read_chunk_size) {
@@ -171,7 +176,7 @@ namespace psh {
                 psh_log_error("Unable to read from the stdin stream.");
 
                 arena->restore_state(arena_checkpoint);
-                return String{};
+                return {};
             }
 
             content.count += static_cast<usize>(bytes_read);
@@ -193,7 +198,9 @@ namespace psh {
     String absolute_path(Arena* arena, strptr file_path) noexcept {
         psh_assert_msg(arena != nullptr, "Invalid arena.");
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
-        String          abs_path{arena, PSH_IMPL_PATH_MAX_CHAR_COUNT};
+
+        String abs_path;
+        abs_path.init(arena, PSH_IMPL_PATH_MAX_CHAR_COUNT);
 
 #if defined(PSH_OS_WINDOWS)
         DWORD result = GetFullPathName(file_path, PSH_IMPL_PATH_MAX_CHAR_COUNT, abs_path.buf, nullptr);
@@ -204,7 +211,7 @@ namespace psh {
                 GetLastError());
 
             arena->restore_state(arena_checkpoint);
-            return String{};
+            return {};
         }
 #else
         char* result = realpath(file_path, abs_path.data.buf);
@@ -213,7 +220,7 @@ namespace psh {
             perror(nullptr);
 
             arena->restore_state(arena_checkpoint);
-            return String{};
+            return {};
         }
 #endif
 

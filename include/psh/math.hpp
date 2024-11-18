@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <limits>
+#include <limits.h>
 #include <psh/assert.hpp>
 #include <psh/core.hpp>
 #include <psh/log.hpp>
@@ -33,7 +33,7 @@ namespace psh {
     constexpr f32 PI                = 3.14159265359f;
     constexpr f32 F32_IS_ZERO_RANGE = 1e-6f;
 
-    psh_api constexpr bool f32_approx_equal(f32 a, f32 b, f32 zero_range = F32_IS_ZERO_RANGE) noexcept {
+    psh_api constexpr bool approx_equal(f32 a, f32 b, f32 zero_range = F32_IS_ZERO_RANGE) noexcept {
         psh_assert_msg(zero_range > 0.0f, "Expected the 'within zero range' value to be positive.");
         f32 sub = a - b;
         return (-zero_range < sub) && (sub < zero_range);
@@ -43,23 +43,13 @@ namespace psh {
         return deg * PI / 180.0f;
     }
 
-    /// Add two values wrapping the result to the corresponding maximal numeric limit.
-    template <typename T>
-    constexpr T wrap_add(T a, T b) noexcept {
-        T c = a + b;
-        return (c >= a) ? c : std::numeric_limits<T>::max();
+    psh_api constexpr u32 no_wrap_sub(u32 a, u32 b) noexcept {
+        u32 c = a - b;
+        return (c <= a) ? c : 0;
     }
 
-    /// Subtract two values wrapping the result to the corresponding minimal numeric limit.
-    template <typename T>
-    constexpr T wrap_sub(T a, T b) noexcept {
-        T c = a - b;
-        return (c <= a) ? c : std::numeric_limits<T>::min();
-    }
-
-    template <typename T>
-    constexpr T next_multiple(T current, T mul) noexcept {
-        psh_assert_msg(mul != 0, "Multiple base should be non-zero.");
-        return mul * static_cast<T>(static_cast<i64>(current / mul) + 1);
+    psh_api constexpr u64 no_wrap_sub(u64 a, u64 b) noexcept {
+        u64 c = a - b;
+        return (c <= a) ? c : 0;
     }
 }  // namespace psh

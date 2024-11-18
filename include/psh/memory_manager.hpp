@@ -19,8 +19,7 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: A memory manager that is capable of managing the whole allocation system of an
-///              application.
+/// Description: A stack allocator based memory manager.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #pragma once
@@ -32,19 +31,15 @@
 
 namespace psh {
     /// A stack allocator manager that can be used as the central memory resource of an application.
-    ///
-    /// Note: any method returning a pointer should be checked for nullity, since allocation may
-    ///       fail.
     struct psh_api MemoryManager {
         usize allocation_count = 0;
         Stack allocator        = {};
 
-        constexpr MemoryManager() noexcept = default;
-
+        /// Allocate memory and initialize the underlying memory allocator.
         void init(usize capacity) noexcept;
-        MemoryManager(usize capacity) noexcept;
 
-        ~MemoryManager() noexcept;
+        /// Free all acquired memory.
+        void destroy() noexcept;
 
         /// Make a new arena allocator with a given size.
         Option<Arena> make_arena(usize size) noexcept;
@@ -83,8 +78,8 @@ namespace psh {
         /// Resets the manager by zeroing the memory offset and statistics.
         void clear() noexcept;
 
-        // @NOTE: Required bullshit when compiling as a DLL since the compiler will require all
-        //       standard member functions to be defined.
+        // @NOTE: Required when compiling as a DLL since the compiler will require all standard member
+        //        functions to be defined.
         MemoryManager& operator=(MemoryManager&) = delete;
     };
 

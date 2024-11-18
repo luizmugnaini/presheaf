@@ -25,7 +25,6 @@
 #include <psh/string.hpp>
 
 #include <string.h>
-#include <initializer_list>
 #include <psh/memory_utils.hpp>
 #include <psh/option.hpp>
 

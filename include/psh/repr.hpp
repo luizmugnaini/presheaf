@@ -43,7 +43,9 @@ namespace psh {
         }
 
         constexpr i32 BIT_COUNT = psh_type_bit_count(T);
-        String        repr{arena, 2 + BIT_COUNT + 1};
+
+        String repr;
+        repr.init(arena, 2 + BIT_COUNT + 1);
 
         repr.buf[0] = '0';
         repr.buf[1] = 'b';

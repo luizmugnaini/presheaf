@@ -34,9 +34,12 @@ namespace psh::test::dynarray {
         i32 bar;
     };
 
-    psh_internal void push_elements(MemoryManager& mem_manager) {
-        Arena         arena = mem_manager.make_arena(sizeof(i32) * 1024).demand();
-        DynArray<i32> v{&arena};
+    psh_internal void push_elements(MemoryManager& memory_manager) {
+        Arena arena = memory_manager.make_arena(sizeof(i32) * 1024).demand();
+
+        DynArray<i32> v;
+        v.init(&arena);
+
         for (i32 i = 0; i < 100; ++i) {
             v.push(i);
             for (i32 j = 0; j < i; ++j) {
@@ -45,14 +48,15 @@ namespace psh::test::dynarray {
             }
         }
 
-        mem_manager.pop();
+        memory_manager.pop();
         report_test_successful();
     }
 
-    psh_internal void count_and_capacity(MemoryManager& mem_manager) {
-        Arena         arena = mem_manager.make_arena(sizeof(Foo) * 100).demand();
-        DynArray<Foo> v{&arena};
+    psh_internal void count_and_capacity(MemoryManager& memory_manager) {
+        Arena arena = memory_manager.make_arena(sizeof(Foo) * 100).demand();
 
+        DynArray<Foo> v;
+        v.init(&arena);
         v.push(Foo{0});
 
         usize last_capacity = v.capacity;
@@ -72,89 +76,120 @@ namespace psh::test::dynarray {
             last_capacity = current_capacity;
         }
 
-        mem_manager.pop();
+        memory_manager.pop();
         report_test_successful();
     }
 
-    psh_internal void peek_and_pop(MemoryManager& mem_manager) {
-        Arena         arena = mem_manager.make_arena(sizeof(i32) * 3).demand();
-        DynArray<i32> v{&arena, 3};
+    psh_internal void peek_and_pop(MemoryManager& memory_manager) {
+        Arena arena = memory_manager.make_arena(sizeof(i32) * 3).demand();
+
+        DynArray<i32> v;
+        v.init(&arena, 3);
         v.push(4), v.push(5), v.push(6);
-        i32* p = nullptr;
 
-        p = v.peek();
-        psh_assert((p != nullptr) && (*p == 6));
-        psh_assert(v.pop());
+        // Peek then pop 6.
+        {
+            i32* p = v.peek();
+            psh_assert((p != nullptr) && (*p == 6));
+            psh_assert(v.pop());
+        }
 
-        p = v.peek();
-        psh_assert((p != nullptr) && (*p == 5));
-        psh_assert(v.pop());
+        // Peek then pop 5;
+        {
+            i32* p = v.peek();
+            psh_assert((p != nullptr) && (*p == 5));
+            psh_assert(v.pop());
+        }
 
-        p = v.peek();
-        psh_assert((p != nullptr) && (*p == 4));
-        psh_assert(v.pop());
+        // Peek then pop 6.
+        {
+            i32* p = v.peek();
+            psh_assert((p != nullptr) && (*p == 4));
+            psh_assert(v.pop());
+        }
 
         psh_assert(v.count == 0ull);
 
-        mem_manager.pop();
+        memory_manager.pop();
         report_test_successful();
     }
 
-    psh_internal void remove(MemoryManager& mem_manager) {
-        Arena         arena = mem_manager.make_arena(sizeof(i32) * 5).demand();
-        DynArray<i32> v{&arena, 5};
+    psh_internal void remove(MemoryManager& memory_manager) {
+        Arena arena = memory_manager.make_arena(sizeof(i32) * 5).demand();
+
+        DynArray<i32> v;
+        v.init(&arena, 5);
         v.push(4), v.push(7), v.push(8), v.push(9), v.push(55);
-        i32* p = nullptr;
 
-        psh_assert(v.count == 5ull);
-        psh_assert(v[0] == 4);
-        psh_assert(v[1] == 7);
-        psh_assert(v[2] == 8);
-        psh_assert(v[3] == 9);
-        psh_assert(v[4] == 55);
-        p = v.peek();
-        psh_assert((p != nullptr) && (*p == 55));
+        // Do nothing.
+        {
+            psh_assert(v.count == 5ull);
+            psh_assert(v[0] == 4);
+            psh_assert(v[1] == 7);
+            psh_assert(v[2] == 8);
+            psh_assert(v[3] == 9);
+            psh_assert(v[4] == 55);
+            i32* p = v.peek();
+            psh_assert((p != nullptr) && (*p == 55));
+        }
 
-        psh_assert(v.remove(1));
-        psh_assert(v.count == 4ull);
-        psh_assert(v[0] == 4);
-        psh_assert(v[1] == 8);
-        psh_assert(v[2] == 9);
-        psh_assert(v[3] == 55);
-        p = v.peek();
-        psh_assert((p != nullptr) && (*p == 55));
+        // Remove at index 1.
+        {
+            psh_assert(v.remove(1));
+            psh_assert(v.count == 4ull);
+            psh_assert(v[0] == 4);
+            psh_assert(v[1] == 8);
+            psh_assert(v[2] == 9);
+            psh_assert(v[3] == 55);
+            i32* p = v.peek();
+            psh_assert((p != nullptr) && (*p == 55));
+        }
 
-        psh_assert(v.remove(2));
-        psh_assert(v.count == 3ull);
-        psh_assert(v[0] == 4);
-        psh_assert(v[1] == 8);
-        psh_assert(v[2] == 55);
-        p = v.peek();
-        psh_assert((p != nullptr) && (*p == 55));
+        // Remove at index 2.
+        {
+            psh_assert(v.remove(2));
+            psh_assert(v.count == 3ull);
+            psh_assert(v[0] == 4);
+            psh_assert(v[1] == 8);
+            psh_assert(v[2] == 55);
+            i32* p = v.peek();
+            psh_assert((p != nullptr) && (*p == 55));
+        }
 
-        psh_assert(v.remove(0));
-        psh_assert(v.count == 2ull);
-        psh_assert(v[0] == 8);
-        psh_assert(v[1] == 55);
-        p = v.peek();
-        psh_assert((p != nullptr) && (*p == 55));
+        // Remove at index 0.
+        {
+            psh_assert(v.remove(0));
+            psh_assert(v.count == 2ull);
+            psh_assert(v[0] == 8);
+            psh_assert(v[1] == 55);
+            i32* p = v.peek();
+            psh_assert((p != nullptr) && (*p == 55));
+        }
 
-        psh_assert(v.remove(1));
-        psh_assert(v.count == 1ull);
-        psh_assert(v[0] == 8);
-        p = v.peek();
-        psh_assert((p != nullptr) && (*p == 8));
+        // Remove at index 1.
+        {
+            psh_assert(v.remove(1));
+            psh_assert(v.count == 1ull);
+            psh_assert(v[0] == 8);
+            i32* p = v.peek();
+            psh_assert((p != nullptr) && (*p == 8));
+        }
 
-        psh_assert(v.remove(0));
-        psh_assert(v.count == 0ull);
+        // Remove at index 0.
+        {
+            psh_assert(v.remove(0));
+            psh_assert(v.count == 0ull);
+        }
 
-        mem_manager.pop();
+        memory_manager.pop();
         report_test_successful();
     }
 
-    psh_internal void clear(MemoryManager& mem_manager) {
-        Arena         arena = mem_manager.make_arena(sizeof(f32) * 4).demand();
-        DynArray<f32> v{&arena, 4};
+    psh_internal void clear(MemoryManager& memory_manager) {
+        Arena arena = memory_manager.make_arena(sizeof(f32) * 4).demand();
+
+        DynArray<f32> v;
+        v.init(&arena, 4);
 
         v.push(7.0f), v.push(4.8f), v.push(6.1f), v.push(3.14f);
         psh_assert(v.count == static_cast<usize>(4));
@@ -162,17 +197,19 @@ namespace psh::test::dynarray {
         v.clear();
         psh_assert(v.count == 0ull);
 
-        mem_manager.pop();
+        memory_manager.pop();
         report_test_successful();
     }
 
     psh_internal void run_all() {
-        MemoryManager mem_manager{10240};
-        push_elements(mem_manager);
-        count_and_capacity(mem_manager);
-        peek_and_pop(mem_manager);
-        remove(mem_manager);
-        clear(mem_manager);
+        MemoryManager memory_manager;
+        memory_manager.init(10240);
+
+        push_elements(memory_manager);
+        count_and_capacity(memory_manager);
+        peek_and_pop(memory_manager);
+        remove(memory_manager);
+        clear(memory_manager);
     }
 }  // namespace psh::test::dynarray
 
