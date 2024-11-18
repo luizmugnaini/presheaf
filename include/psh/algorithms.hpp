@@ -43,21 +43,7 @@ namespace psh {
 
     /// Check if a range given by a fat pointer contains a given `match` element.
     template <typename T>
-    bool contains(T match, FatPtr<T const> container, MatchFn<T>* match_fn) noexcept {
-        psh_assert_msg(match_fn != nullptr, "Invalid match function.");
-        bool found = false;
-        for (auto const& m : container) {
-            if (match_fn(match, m)) {
-                found = true;
-                break;
-            }
-        }
-        return found;
-    }
-
-    /// Check if a range given by a fat pointer contains a given `match` element.
-    template <typename T>
-    bool contains(T match, FatPtr<T const> container) noexcept {
+    bool contains(FatPtr<T const> container, T match) noexcept {
         bool found = false;
         for (auto const& m : container) {
             if (match == m) {
@@ -68,13 +54,39 @@ namespace psh {
         return found;
     }
 
+    /// Check if a range given by a fat pointer contains a given `match` element.
+    template <typename T>
+    bool contains(FatPtr<T const> container, T match, MatchFn<T>* match_fn) noexcept {
+        psh_assert_msg(match_fn != nullptr, "Invalid match function.");
+        bool found = false;
+        for (auto const& m : container) {
+            if (match_fn(m, match)) {
+                found = true;
+                break;
+            }
+        }
+        return found;
+    }
+
     /// Try to find the index of the first match.
     template <typename T>
     Option<usize> linear_search(FatPtr<T const> fptr, T match) noexcept {
-        Option<usize> match_idx   = {};
-        usize         search_size = fptr.size;
-        for (usize idx = 0; idx < search_size; ++idx) {
+        Option<usize> match_idx = {};
+        for (usize idx = 0; idx < fptr.count; ++idx) {
             if (fptr[idx] == match) {
+                match_idx = idx;
+                break;
+            }
+        }
+        return match_idx;
+    }
+
+    /// Try to find the index of the first match.
+    template <typename T>
+    Option<usize> linear_search(FatPtr<T const> fptr, T match, MatchFn<T>* match_fn) noexcept {
+        Option<usize> match_idx = {};
+        for (usize idx = 0; idx < fptr.count; ++idx) {
+            if (match_fn(fptr[idx], match)) {
                 match_idx = idx;
                 break;
             }
@@ -87,29 +99,30 @@ namespace psh {
     /// Note: We assume that the buffer of data is ordered.
     template <typename T>
     Option<usize> binary_search(FatPtr<T const> fptr, T match) noexcept {
-        if (psh_unlikely(fptr.size == 0)) {
+        return binary_search_range(fptr, match, 0, fptr.count - 1);
+    }
+
+    template <typename T>
+    Option<usize> binary_search_range(FatPtr<T const> fptr, T match, usize low, usize high) noexcept {
+        if (psh_unlikely(high < low)) {
             return {};
         }
 
-        T* low      = fptr.begin();
-        T* hi       = fptr.end();
-        T* mid      = (low + hi) / 2;
-        T  mid_elem = *mid;
+        usize mid      = (low + high) / 2;
+        T     mid_elem = fptr[mid];
 
         // Found.
         if (mid_elem == match) {
-            return {static_cast<usize>(mid - low)};
+            return {mid};
         }
 
         // Search the left side.
         if (mid_elem < match) {
-            T* new_low = mid + 1;
-            return binary_search(FatPtr{new_low, static_cast<usize>(hi - new_low)}, match);
+            return binary_search_range(fptr, match, mid + 1, high);
         }
 
         // Search the right side.
-        T* new_hi = mid - 1;
-        return binary_search(FatPtr{low, static_cast<usize>(new_hi - low)}, match);
+        return binary_search_range(fptr, match, low, mid - 1);
     }
 
     // -----------------------------------------------------------------------------
@@ -118,10 +131,6 @@ namespace psh {
 
     template <typename T>
     void swap_elements(T* data, usize lhs_idx, usize rhs_idx) noexcept {
-        if (psh_unlikely(lhs_idx == rhs_idx)) {
-            return;
-        }
-
         T tmp         = data[lhs_idx];
         data[lhs_idx] = data[rhs_idx];
         data[rhs_idx] = tmp;
@@ -129,10 +138,6 @@ namespace psh {
 
     template <typename T>
     void swap_elements(FatPtr<T> data, usize lhs_idx, usize rhs_idx) noexcept {
-        if (psh_unlikely(lhs_idx == rhs_idx)) {
-            return;
-        }
-
         T tmp         = data[lhs_idx];
         data[lhs_idx] = data[rhs_idx];
         data[rhs_idx] = tmp;
@@ -140,7 +145,7 @@ namespace psh {
 
     template <typename T>
     void insertion_sort(FatPtr<T> data) noexcept {
-        for (usize end = 1; end < data.size; ++end) {
+        for (usize end = 1; end < data.count; ++end) {
             for (usize idx = end; (idx > 0) && (data[idx - 1] > data[idx]); --idx) {
                 swap_elements(data.buf, idx, idx - 1);
             }
@@ -149,13 +154,13 @@ namespace psh {
 
     template <typename T>
     void quick_sort(FatPtr<T> data) noexcept {
-        quick_sort_range(data, 0, data.size - 1);
+        quick_sort_range(data, 0, data.count - 1);
     }
 
     template <typename T>
     void quick_sort_range(FatPtr<T> data, usize low, usize high) noexcept {
         if (high <= low + QUICK_SORT_CUTOFF_TO_INSERTION_SORT) {
-            insertion_sort(data.slice(low, high));
+            insertion_sort(data.slice(low, (high + 1) - low));
             return;
         }
 
@@ -197,8 +202,8 @@ namespace psh {
     /// This is the virtually same as `memory_set` but can copy elements of any type. However it
     /// will be slower.
     template <typename T>
-    void fill(FatPtr<T> fat_ptr, T value) noexcept {
-        for (T& elem : fat_ptr) {
+    void fill(FatPtr<T> fptr, T value) noexcept {
+        for (T& elem : fptr) {
             elem = value;
         }
     }
