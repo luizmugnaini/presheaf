@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include <cstring>
 #include <psh/core.hpp>
 #include <psh/log.hpp>
 #include <psh/math.hpp>
@@ -93,7 +92,7 @@ namespace psh {
     /// use-after-free problems may arise if you later read from this pointer. This goes to say that
     /// the user should know how to correctly handle their memory reads and writes.
     struct psh_api Stack {
-        u8*   buf             = nullptr;
+        u8*   buf;
         usize size            = 0;
         usize offset          = 0;
         usize previous_offset = 0;

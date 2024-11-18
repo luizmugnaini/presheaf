@@ -1,5 +1,7 @@
 TODO
 
+- Let arenas own their memory.
+- Implement a hash map.
 - Test psh::sleep_milliseconds for Unix.
 - Threading abstraction for Windows/pthreads.
 - Shouldn't allocation procedures return FatPtr? I think this would be safer.

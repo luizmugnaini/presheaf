@@ -107,7 +107,7 @@ namespace psh {
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
 
         Array<u8> content{arena, size};
-        usize     read_count = fread(content.buf, sizeof(u8), content.size, fhandle);
+        usize     read_count = fread(content.buf, sizeof(u8), content.count, fhandle);
 
         if (psh_unlikely(ferror(fhandle) != 0)) {
             perror("Couldn't read file.\n");
@@ -141,13 +141,13 @@ namespace psh {
         }
 
         for (;;) {
-            if (content.data.size + read_chunk_size > content.data.capacity) {
-                content.data.resize(content.data.size + read_chunk_size);
+            if (content.count + read_chunk_size > content.capacity) {
+                content.resize(content.count + read_chunk_size);
             }
 
             DWORD bytes_read;
-            BOOL  success = ReadFile(handle_stdin, content.data.end(), read_chunk_size, &bytes_read, nullptr);
-            content.data.size += bytes_read;
+            BOOL  success = ReadFile(handle_stdin, content.end(), read_chunk_size, &bytes_read, nullptr);
+            content.count += bytes_read;
             if (psh_unlikely(!success)) {
                 psh_log_error("Unable to read from the stdin stream.");
 
@@ -161,11 +161,11 @@ namespace psh {
         }
 #else
         for (;;) {
-            if (content.data.size + read_chunk_size > content.data.capacity) {
-                content.data.resize(content.data.size + read_chunk_size);
+            if (content.count + read_chunk_size > content.capacity) {
+                content.resize(content.count + read_chunk_size);
             }
 
-            isize bytes_read = read(STDIN_FILENO, content.data.end(), read_chunk_size);
+            isize bytes_read = read(STDIN_FILENO, content.end(), read_chunk_size);
 
             if (psh_unlikely(bytes_read == -1)) {
                 psh_log_error("Unable to read from the stdin stream.");
@@ -174,7 +174,7 @@ namespace psh {
                 return String{};
             }
 
-            content.data.size += static_cast<usize>(bytes_read);
+            content.count += static_cast<usize>(bytes_read);
             if (static_cast<usize>(bytes_read) < read_chunk_size) {
                 break;
             }
@@ -182,10 +182,10 @@ namespace psh {
 #endif
 
         // Add null terminator to the end of the string.
-        if (content.data.size == content.data.capacity) {
-            content.data.resize(content.data.size + 1);
+        if (content.count == content.capacity) {
+            content.resize(content.count + 1);
         }
-        content.data.buf[content.data.size] = 0;
+        content.buf[content.count] = 0;
 
         return content;
     }
@@ -196,7 +196,7 @@ namespace psh {
         String          abs_path{arena, PSH_IMPL_PATH_MAX_CHAR_COUNT};
 
 #if defined(PSH_OS_WINDOWS)
-        DWORD result = GetFullPathName(file_path, PSH_IMPL_PATH_MAX_CHAR_COUNT, abs_path.data.buf, nullptr);
+        DWORD result = GetFullPathName(file_path, PSH_IMPL_PATH_MAX_CHAR_COUNT, abs_path.buf, nullptr);
         if (result == 0) {
             psh_log_error_fmt(
                 "Unable to obtain the full path of %s due to the error: %lu",

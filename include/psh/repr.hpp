@@ -39,15 +39,15 @@ namespace psh {
     template <typename T>
     psh_api String binary_repr(Arena* arena, T val) noexcept {
         if (val == 0) {
-            return String{arena, StringView{"0b0"}};
+            return make_string(arena, psh_comptime_make_string_view("0b0"));
         }
 
         constexpr i32 BIT_COUNT = psh_type_bit_count(T);
         String        repr{arena, 2 + BIT_COUNT + 1};
 
-        repr.data.buf[0] = '0';
-        repr.data.buf[1] = 'b';
-        repr.data.size += 2;
+        repr.buf[0] = '0';
+        repr.buf[1] = 'b';
+        repr.count += 2;
 
         i32 leading_zeros_count = 0;
         for (i32 idx = BIT_COUNT - 1; idx >= 0; --idx) {
@@ -59,7 +59,7 @@ namespace psh {
         }
 
         for (i32 idx = BIT_COUNT - 1 - leading_zeros_count; idx >= 0; --idx) {
-            repr.data[repr.data.size++] = digit_to_char(psh_bit_at(val, idx));
+            repr[repr.count++] = digit_to_char(psh_bit_at(val, idx));
         }
 
         return repr;

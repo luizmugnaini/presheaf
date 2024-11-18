@@ -49,7 +49,7 @@ namespace psh::test::dynarray {
         report_test_successful();
     }
 
-    psh_internal void size_and_capacity(MemoryManager& mem_manager) {
+    psh_internal void count_and_capacity(MemoryManager& mem_manager) {
         Arena         arena = mem_manager.make_arena(sizeof(Foo) * 100).demand();
         DynArray<Foo> v{&arena};
 
@@ -59,8 +59,8 @@ namespace psh::test::dynarray {
         for (i32 i = 2; i < 50; ++i) {
             v.push(Foo{i});
 
-            usize const size = v.size;
-            psh_assert(size == static_cast<usize>(i));
+            usize const count = v.count;
+            psh_assert(count == static_cast<usize>(i));
 
             usize const current_capacity = v.capacity;
             if (i == static_cast<i32>(last_capacity + 1)) {
@@ -94,7 +94,7 @@ namespace psh::test::dynarray {
         psh_assert((p != nullptr) && (*p == 4));
         psh_assert(v.pop());
 
-        psh_assert(v.size == 0ull);
+        psh_assert(v.count == 0ull);
 
         mem_manager.pop();
         report_test_successful();
@@ -106,7 +106,7 @@ namespace psh::test::dynarray {
         v.push(4), v.push(7), v.push(8), v.push(9), v.push(55);
         i32* p = nullptr;
 
-        psh_assert(v.size == 5ull);
+        psh_assert(v.count == 5ull);
         psh_assert(v[0] == 4);
         psh_assert(v[1] == 7);
         psh_assert(v[2] == 8);
@@ -116,7 +116,7 @@ namespace psh::test::dynarray {
         psh_assert((p != nullptr) && (*p == 55));
 
         psh_assert(v.remove(1));
-        psh_assert(v.size == 4ull);
+        psh_assert(v.count == 4ull);
         psh_assert(v[0] == 4);
         psh_assert(v[1] == 8);
         psh_assert(v[2] == 9);
@@ -125,7 +125,7 @@ namespace psh::test::dynarray {
         psh_assert((p != nullptr) && (*p == 55));
 
         psh_assert(v.remove(2));
-        psh_assert(v.size == 3ull);
+        psh_assert(v.count == 3ull);
         psh_assert(v[0] == 4);
         psh_assert(v[1] == 8);
         psh_assert(v[2] == 55);
@@ -133,20 +133,20 @@ namespace psh::test::dynarray {
         psh_assert((p != nullptr) && (*p == 55));
 
         psh_assert(v.remove(0));
-        psh_assert(v.size == 2ull);
+        psh_assert(v.count == 2ull);
         psh_assert(v[0] == 8);
         psh_assert(v[1] == 55);
         p = v.peek();
         psh_assert((p != nullptr) && (*p == 55));
 
         psh_assert(v.remove(1));
-        psh_assert(v.size == 1ull);
+        psh_assert(v.count == 1ull);
         psh_assert(v[0] == 8);
         p = v.peek();
         psh_assert((p != nullptr) && (*p == 8));
 
         psh_assert(v.remove(0));
-        psh_assert(v.size == 0ull);
+        psh_assert(v.count == 0ull);
 
         mem_manager.pop();
         report_test_successful();
@@ -155,10 +155,12 @@ namespace psh::test::dynarray {
     psh_internal void clear(MemoryManager& mem_manager) {
         Arena         arena = mem_manager.make_arena(sizeof(f32) * 4).demand();
         DynArray<f32> v{&arena, 4};
+
         v.push(7.0f), v.push(4.8f), v.push(6.1f), v.push(3.14f);
-        psh_assert_msg(v.size == static_cast<usize>(4), "Expected vector size to be 4");
+        psh_assert(v.count == static_cast<usize>(4));
+
         v.clear();
-        psh_assert_msg(v.size == 0ull, "Expected vector size to be zero after clean");
+        psh_assert(v.count == 0ull);
 
         mem_manager.pop();
         report_test_successful();
@@ -167,7 +169,7 @@ namespace psh::test::dynarray {
     psh_internal void run_all() {
         MemoryManager mem_manager{10240};
         push_elements(mem_manager);
-        size_and_capacity(mem_manager);
+        count_and_capacity(mem_manager);
         peek_and_pop(mem_manager);
         remove(mem_manager);
         clear(mem_manager);

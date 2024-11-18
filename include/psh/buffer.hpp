@@ -29,20 +29,20 @@
 
 namespace psh {
     /// Buffer with a compile-time known size.
-    template <typename T, usize size_>
+    template <typename T, usize count_>
     struct psh_api Buffer {
-        T buf[size_] = {};
+        T buf[count_] = {};
 
         // -----------------------------------------------------------------------------
         // Size related utilities.
         // -----------------------------------------------------------------------------
 
-        constexpr usize size() const noexcept {
-            return size_;
+        constexpr usize count() const noexcept {
+            return count_;
         }
 
-        usize size_bytes() const noexcept {
-            return sizeof(T) * size_;
+        constexpr usize size_bytes() const noexcept {
+            return sizeof(T) * count_;
         }
 
         // -----------------------------------------------------------------------------
@@ -58,11 +58,11 @@ namespace psh {
         }
 
         constexpr T* end() noexcept {
-            return static_cast<T*>(this->buf) + size_;
+            return static_cast<T*>(this->buf) + count_;
         }
 
         constexpr T const* end() const noexcept {
-            return static_cast<T const*>(this->buf) + size_;
+            return static_cast<T const*>(this->buf) + count_;
         }
 
         // -----------------------------------------------------------------------------
@@ -82,13 +82,13 @@ namespace psh {
     // Generating fat pointers.
     // -----------------------------------------------------------------------------
 
-    template <typename T, usize size>
-    FatPtr<T> fat_ptr(Buffer<T, size>& b) noexcept {
-        return FatPtr<T>{b.buf, size};
+    template <typename T, usize count>
+    FatPtr<T> make_fat_ptr(Buffer<T, count>& b) noexcept {
+        return FatPtr<T>{b.buf, count};
     }
 
-    template <typename T, usize size>
-    FatPtr<T const> const_fat_ptr(Buffer<T, size> const& b) noexcept {
-        return FatPtr<T const>{reinterpret_cast<T const*>(b.buf), size};
+    template <typename T, usize count>
+    FatPtr<T const> make_const_fat_ptr(Buffer<T, count> const& b) noexcept {
+        return FatPtr<T const>{reinterpret_cast<T const*>(b.buf), count};
     }
 }  // namespace psh

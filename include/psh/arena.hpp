@@ -41,7 +41,7 @@ namespace psh {
     ///
     /// ```cpp
     /// f32 do_temp_work_and_restore_arena(ScratchArena&& s) {
-    ///    DynArray<f32> arr{s.arena, 3};
+    ///    DynArray<f32> arr{s.arena};
     ///    arr.push(4.0f);
     ///    arr.push(5.5f);
     ///    arr.push(20.5f);
@@ -119,7 +119,7 @@ namespace psh {
     /// In general, your options will then be to pass as `ScratchArena&` or `ScratchArena&&`.
     struct psh_api ScratchArena {
         Arena* arena;
-        usize  saved_offset = 0;
+        usize  saved_offset;
 
         /// Create an automatic checkpoint for the arena.
         ScratchArena(Arena* arena) noexcept;
@@ -130,8 +130,8 @@ namespace psh {
         /// Create a new scratch arena with the current state of the parent.
         ScratchArena decouple() const noexcept;
 
-        // @NOTE: Required bullshit when compiling as a DLL since the compiler will require all
-        //       standard member functions to be defined.
+        // @NOTE: Required when compiling as a DLL since the compiler will require all standard
+        //        member functions to be defined.
         ScratchArena& operator=(ScratchArena&) = delete;
     };
 
@@ -151,9 +151,12 @@ namespace psh {
     ///     * Any functions that return a raw pointer should be checked for nullity since allocation
     ///       may fail.
     struct psh_api Arena {
-        u8*   buf    = nullptr;  ///< Non-owned memory block managed by the arena allocator.
-        usize size   = 0;        ///< The capacity, in bytes, of the memory block.
-        usize offset = 0;        ///< The current offset to the free-space in the memory block.
+        /// Non-owned memory block managed by the arena allocator.
+        u8*   buf;
+        /// The capacity, in bytes, of the memory block.
+        usize capacity = 0;
+        /// The current offset to the free-space in the memory block.
+        usize offset   = 0;
 
         // -----------------------------------------------------------------------------
         // Allocation methods.

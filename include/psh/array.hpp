@@ -1,4 +1,4 @@
-///                             Presheaf library
+///                             Presheaf libraryarray
 /// Copyright (C) 2024 Luiz Gustavo Mugnaini Anselmo
 ///
 /// Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -42,8 +42,8 @@ namespace psh {
     /// responsible to allocate the memory referenced by the array.
     template <typename T>
     struct psh_api Array {
-        T*    buf  = nullptr;
-        usize size = 0;
+        T*    buf;
+        usize count = 0;
         // -----------------------------------------------------------------------------
         // Constructors and initializers.
         // -----------------------------------------------------------------------------
@@ -51,23 +51,23 @@ namespace psh {
         Array() noexcept = default;
 
         /// Initialize the array with a given size.
-        void init(Arena* arena_, usize size_) noexcept {
-            this->size = size_;
-            if (psh_likely(this->size != 0)) {
+        void init(Arena* arena_, usize count_) noexcept {
+            this->count = count_;
+            if (psh_likely(this->count != 0)) {
                 psh_assert_msg(arena_ != nullptr, impl::array::ERROR_INIT_INCONSISTENT_ARENA);
 
-                this->buf = arena_->alloc<T>(this->size);
+                this->buf = arena_->alloc<T>(this->count);
                 psh_assert_msg(this->buf != nullptr, impl::array::ERROR_INIT_OUT_OF_MEMORY);
             }
         }
 
         /// Construct an array with a given size.
-        Array(Arena* arena_, usize size_) noexcept {
-            this->init(arena_, size_);
+        Array(Arena* arena_, usize count_) noexcept {
+            this->init(arena_, count_);
         }
 
         usize size_bytes() const noexcept {
-            return sizeof(T) * this->size;
+            return sizeof(T) * this->count;
         }
 
         // -----------------------------------------------------------------------------
@@ -83,11 +83,11 @@ namespace psh {
         }
 
         T* end() noexcept {
-            return psh_ptr_add(this->buf, this->size);
+            return psh_ptr_add(this->buf, this->count);
         }
 
         T const* end() const noexcept {
-            return psh_ptr_add(static_cast<T const*>(this->buf), this->size);
+            return psh_ptr_add(static_cast<T const*>(this->buf), this->count);
         }
 
         // -----------------------------------------------------------------------------
@@ -96,14 +96,14 @@ namespace psh {
 
         T& operator[](usize idx) noexcept {
 #if defined(PSH_CHECK_BOUNDS)
-            psh_assert_fmt(idx < this->size, "Index %zu out of bounds for Array of size %zu.", idx, this->size);
+            psh_assert_fmt(idx < this->count, "Index %zu out of bounds for Array of size %zu.", idx, this->count);
 #endif
             return this->buf[idx];
         }
 
         T const& operator[](usize idx) const noexcept {
 #if defined(PSH_CHECK_BOUNDS)
-            psh_assert_fmt(idx < this->size, "Index %zu out of bounds for Array of size %zu.", idx, this->size);
+            psh_assert_fmt(idx < this->count, "Index %zu out of bounds for Array of size %zu.", idx, this->count);
 #endif
             return this->buf[idx];
         }
@@ -114,12 +114,12 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     template <typename T>
-    FatPtr<T> fat_ptr(Array<T>& a) noexcept {
-        return FatPtr{a.buf, a.size};
+    FatPtr<T> make_fat_ptr(Array<T>& a) noexcept {
+        return FatPtr<T>{a.buf, a.count};
     }
 
     template <typename T>
-    FatPtr<T const> const_fat_ptr(Array<T> const& a) noexcept {
-        return FatPtr{reinterpret_cast<T const*>(a.buf), a.size};
+    FatPtr<T const> make_const_fat_ptr(Array<T> const& a) noexcept {
+        return FatPtr<T const>{reinterpret_cast<T const*>(a.buf), a.count};
     }
 }  // namespace psh

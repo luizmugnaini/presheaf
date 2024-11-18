@@ -33,10 +33,10 @@
             " The allocator has only %zu bytes remaining.",                              \
             requested_size,                                                              \
             requested_alignment,                                                         \
-            arena->size - arena->offset);                                                \
+            arena->capacity - arena->offset);                                            \
     } while (0)
 
-#define psh_impl_arena_is_empty(arena) (((arena)->size == 0) || ((arena)->buf == nullptr))
+#define psh_impl_arena_is_empty(arena) (((arena)->capacity == 0) || ((arena)->buf == nullptr))
 
 namespace psh {
     u8* Arena::alloc_align(usize size_bytes, u32 alignment) noexcept {
@@ -51,7 +51,7 @@ namespace psh {
         // Check if there is enough memory.
         uptr memory_addr    = reinterpret_cast<uptr>(this->buf);
         uptr new_block_addr = align_forward(memory_addr + this->offset, alignment);
-        if (psh_unlikely(new_block_addr + size_bytes > this->size + memory_addr)) {
+        if (psh_unlikely(new_block_addr + size_bytes > this->capacity + memory_addr)) {
             psh_impl_arena_report_out_of_memory(this, size_bytes, alignment);
             psh_impl_return_from_memory_error();
         }
@@ -86,11 +86,11 @@ namespace psh {
         }
 
         u8* block_bytes = reinterpret_cast<u8*>(block);
-        u8* mem_end     = this->buf + this->size;
+        u8* mem_end     = this->buf + this->capacity;
         u8* free_mem    = this->buf + this->offset;
 
         // Check if the block lies within the allocator's memory.
-        if (psh_unlikely((block_bytes < this->buf) || (block_bytes >= this->buf + this->size))) {
+        if (psh_unlikely((block_bytes < this->buf) || (block_bytes >= this->buf + this->capacity))) {
             psh_log_error("ArenaAlloc::realloc called with pointer outside of its domain.");
             psh_impl_return_from_memory_error();
         }

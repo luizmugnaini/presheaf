@@ -30,10 +30,6 @@
 #include <psh/option.hpp>
 
 namespace psh {
-    // -----------------------------------------------------------------------------
-    // String utilities implementation.
-    // -----------------------------------------------------------------------------
-
     usize str_length(strptr str) noexcept {
         usize res = 0;
         if (psh_likely(str != nullptr)) {
@@ -59,79 +55,69 @@ namespace psh {
         return (strcmp(lhs, rhs) == 0);
     }
 
-    // -----------------------------------------------------------------------------
-    // String implementation.
-    // -----------------------------------------------------------------------------
+    Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element) noexcept {
+        bool previously_empty = (target.count == 0);
 
-    void String::init(Arena* arena, StringView sv) noexcept {
-        usize sv_size = sv.data.size;
-        this->data.init(arena, sv_size + 1);
-
-        memory_copy(reinterpret_cast<u8*>(this->data.buf), reinterpret_cast<u8 const*>(sv.data.buf), sv_size);
-        this->data.buf[sv_size + 1] = 0;
-        this->data.size             = sv_size;
-    }
-
-    Status String::join(FatPtr<StringView const> join_strings, StringView join_element) noexcept {
-        bool previously_empty = (this->data.size == 0);
-
-        // Resize the string ahead of time if necessary.
+        // Resize the string ahead of time.
         {
             // Get the number of characters that will be added to the string.
-            usize additional_size = 1;
+            usize additional_length = 1;
             {
                 // Add the size accumulated by the join element.
-                if (join_element.data.size != 0) {
-                    additional_size += previously_empty ? ((join_strings.size - 1) * join_element.data.size)
-                                                        : (join_strings.size * join_element.data.size);
+                if (join_element.count != 0) {
+                    additional_length += previously_empty ? ((join_strings.count - 1) * join_element.count)
+                                                          : (join_strings.count * join_element.count);
                 }
 
                 // Account for the size of each of the joining strings.
                 for (StringView const& s : join_strings) {
-                    additional_size += s.data.size;
+                    additional_length += s.count;
                 }
             }
 
-            usize new_capacity = this->data.size + additional_size;
-            if (this->data.capacity < new_capacity) {
-                if (psh_unlikely(!this->data.resize(new_capacity))) {
+            usize new_capacity = target.count + additional_length;
+            if (target.capacity < new_capacity) {
+                if (psh_unlikely(!target.resize(new_capacity))) {
                     return STATUS_FAILED;
                 }
             }
         }
 
-        char* string_buf = this->data.buf;
-        if (join_element.data.size != 0) {
+        char* string_buf        = target.buf;
+        usize new_string_length = target.count;
+        if (join_element.count != 0) {
             usize first_idx = 0;
 
             // If the string was empty, join the first string without accounting for the joining element.
             if (previously_empty) {
                 StringView const& first_js = join_strings[0];
 
-                memory_copy(string_buf + this->data.size, first_js.data.buf, first_js.data.size);
-                this->data.size += first_js.data.size;
+                memory_copy(string_buf + new_string_length, first_js.buf, first_js.count);
+                new_string_length += first_js.count;
 
                 ++first_idx;
             }
 
             // Join remaining strings.
-            for (usize idx = first_idx; idx < join_strings.size; ++idx) {
+            for (usize idx = first_idx; idx < join_strings.count; ++idx) {
                 StringView const& js = join_strings[idx];
 
-                usize previous_size = this->data.size;
-                memory_copy(string_buf + previous_size, join_element.data.buf, join_element.data.size);
-                memory_copy(string_buf + previous_size + join_element.data.size, js.data.buf, js.data.size);
-                this->data.size += join_element.data.size + js.data.size;
+                usize previous_size = new_string_length;
+                memory_copy(string_buf + previous_size, join_element.buf, join_element.count);
+                memory_copy(string_buf + previous_size + join_element.count, js.buf, js.count);
+                new_string_length += join_element.count + js.count;
             }
+
+            target.count = new_string_length;
         } else {
             for (StringView const& js : join_strings) {
-                memory_copy(this->data.buf + this->data.size, js.data.buf, js.data.size);
-                this->data.size += js.data.size;
+                memory_copy(string_buf + new_string_length, js.buf, js.count);
+                new_string_length += js.count;
             }
         }
 
-        // Append a null terminator.
-        this->data.buf[this->data.size] = 0;
+        target.buf[new_string_length] = 0;
+        target.count                  = new_string_length;
 
         return STATUS_OK;
     }

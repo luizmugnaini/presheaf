@@ -416,6 +416,18 @@ namespace psh {
 #define psh_is_pow_of_two(n) (((n) > 0) && !((n) & (((n)) - 1)))
 
 // -----------------------------------------------------------------------------
+// Common operations.
+// -----------------------------------------------------------------------------
+
+/// Swap the values of two given variables.
+#define psh_swap_values(lhs_var, rhs_var)       \
+    do {                                        \
+        decltype(lhs_var) psh_tmp_ = (lhs_var); \
+        lhs_var                    = rhs_var;   \
+        rhs_var                    = psh_tmp_;  \
+    } while (0)
+
+// -----------------------------------------------------------------------------
 // Common memory sizes.
 // -----------------------------------------------------------------------------
 
@@ -596,6 +608,9 @@ namespace psh {
 #    endif
 #    ifndef is_pow_of_two
 #        define is_pow_of_two psh_is_pow_of_two
+#    endif
+#    ifndef swap_values
+#        define swap_values psh_swap_values
 #    endif
 #    ifndef kibibytes
 #        define kibibytes psh_kibibytes

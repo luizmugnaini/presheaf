@@ -37,13 +37,14 @@
 /// Note: Use this macro with care, you should only use it with literal strings. Otherwise the
 ///       length of the string won't be computed corrected by the compiler and you may obtain the
 ///       size of a pointer instead the length of the string.
-#define psh_str(cstr_literal)          \
-    psh::Str<sizeof((cstr_literal))> { \
-        (cstr_literal)                 \
+#define psh_comptime_make_str(cstr_literal) \
+    psh::Str<sizeof((cstr_literal))> {      \
+        (cstr_literal)                      \
     }
-#define psh_string_view(cstr_literal)             \
-    psh::StringView {                             \
-        (cstr_literal), sizeof(cstr_literal) - 1, \
+#define psh_comptime_make_string_view(cstr_literal) \
+    psh::StringView {                               \
+        .buf   = cstr_literal,                      \
+        .count = sizeof(cstr_literal) - 1,          \
     }
 
 namespace psh {
@@ -80,19 +81,19 @@ namespace psh {
 
     /// A string with guaranteed compile-time known size.
     ///
-    /// Note: It is way more ergonomic to use the macro `psh_str` than specifying the length of the
+    /// Note: It is way more ergonomic to use the macro `psh_make_str` than specifying the length of the
     ///       string, which is silly.
     ///
     /// Example:
     /// ```cpp
-    /// auto my_str = psh_str("hey this is a compile time array of constant characters");
+    /// auto my_str = psh_make_str("hey this is a compile time array of constant characters");
     /// ```
     template <usize size_>
     struct psh_api Str {
         char const buf[size_];
 
-        /// The size of the string, disregarding its null-terminator.
-        constexpr usize size() const noexcept {
+        /// The character count of the string, disregarding its null-terminator.
+        constexpr usize count() const noexcept {
             return size_ - 1;
         }
 
@@ -105,64 +106,52 @@ namespace psh {
     };
 
     /// Immutable view of a string.
-    struct psh_api StringView {
-        FatPtr<char const> data;
+    using StringView = FatPtr<char const>;
 
-        constexpr StringView() noexcept = default;
-
-        template <usize size_>
-        constexpr StringView(Str<size_> str) noexcept {
-            this->data = {str.buf, size_ - 1};
-        }
-
-        constexpr StringView(strptr str, usize size) noexcept {
-            this->data = {str, size};
-        }
-
-        StringView(strptr str) noexcept {
-            this->data = {str, str_length(str)};
-        }
-    };
-
-    /// Dynamically allocated string.
-    struct psh_api String {
-        DynArray<char> data;
-
-        constexpr String() = default;
-        String(Arena* arena, usize size) noexcept;
-        String(Arena* arena, StringView sv) noexcept;
-
-        void init(Arena* arena, StringView sv) noexcept;
-
-        /// Make a view from the string.
-        StringView view() const noexcept;
-
-        /// Join an array of string views to the current string data. You can also provide a string
-        /// to be attached to the end of each join.
-        ///
-        /// Example:
-        /// ```cpp
-        /// psh::Arena arena{...};
-        /// psh::String s{&arena, "Hello"};
-        /// psh::Buffer<StringView, 3> words = {"World", "Earth", "Terra"};
-        ///
-        /// assert(s.join(psh::const_fat_ptr(words), ", "));
-        /// assert(psh::str_cmp(s.data.buf, "Hello, World, Earth, Terra") == psh::StrCmpResult::EQUAL);
-        /// ```
-        /// Although this example uses initializer lists, you can also achieve the same using the
-        /// implementation based on `psh::FatPtr`.
-        Status join(FatPtr<StringView const> join_strings, StringView join = {}) noexcept;
-    };
-
-    psh_inline String::String(Arena* arena, usize size) noexcept {
-        this->data.init(arena, size);
+    template <usize size_>
+    constexpr StringView make_string_view(Str<size_> str) noexcept {
+        return {str.buf, size_ - 1};
     }
 
-    psh_inline String::String(Arena* arena, StringView sv) noexcept {
-        this->init(arena, sv);
+    psh_inline StringView make_string_view(strptr str) noexcept {
+        return {str, str_length(str)};
     }
 
-    psh_inline StringView String::view() const noexcept {
-        return StringView{this->data.buf, this->data.size};
+    using String = DynArray<char>;
+
+    psh_inline String make_string(Arena* arena, StringView sv) noexcept {
+        String string{arena, sv.count + 1};
+        memory_copy(string.buf, sv.buf, sizeof(char) * sv.count);
+        string.count = sv.count;
+        return string;
     }
+
+    psh_inline StringView make_string_view(String const& string) noexcept {
+        return make_const_fat_ptr(string);
+    }
+
+    /// Join an array of string views to a target string data. You can also provide a join element to be
+    /// attached to the end of each join.
+    ///
+    /// Example:
+    /// ```cpp
+    /// psh::Arena arena{...};
+    /// psh::String s = make_string(&arena, "Hello");
+    /// psh::Buffer<StringView, 3> words = {"World", "Earth", "Terra"};
+    ///
+    /// assert(s.join(psh::make_const_fat_ptr(words), ", "));
+    /// assert(psh::str_cmp(s.data.buf, "Hello, World, Earth, Terra") == psh::StrCmpResult::EQUAL);
+    /// ```
+    /// Although this example uses initializer lists, you can also achieve the same using the
+    /// implementation based on `psh::FatPtr`.
+    Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element = {}) noexcept;
 }  // namespace psh
+
+#if defined(PSH_DEFINE_SHORT_NAMES)
+#    ifndef comptime_make_str
+#        define comptime_make_str psh_comptime_make_str
+#    endif
+#    ifndef comptime_make_string_view
+#        define comptime_make_string_view psh_comptime_make_string_view
+#    endif
+#endif

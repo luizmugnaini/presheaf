@@ -33,16 +33,16 @@ namespace psh::test::repr {
         Arena arena{memory, 256};
         {
             String repr0 = binary_repr(&arena, 0b0);
-            psh_assert(str_equal(repr0.data.buf, "0b0"));
+            psh_assert(str_equal(repr0.buf, "0b0"));
 
             String repr1 = binary_repr(&arena, 0b010);
-            psh_assert(str_equal(repr1.data.buf, "0b10"));
+            psh_assert(str_equal(repr1.buf, "0b10"));
 
             String repr2 = binary_repr(&arena, 0b11010);
-            psh_assert(str_equal(repr2.data.buf, "0b11010"));
+            psh_assert(str_equal(repr2.buf, "0b11010"));
 
             String repr3 = binary_repr(&arena, 0b000111110101010101011);
-            psh_assert(str_equal(repr3.data.buf, "0b111110101010101011"));
+            psh_assert(str_equal(repr3.buf, "0b111110101010101011"));
         }
         free(memory);
 

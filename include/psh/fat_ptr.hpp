@@ -31,17 +31,16 @@ namespace psh {
     /// Fat pointer, holds a pointer to a buffer and its corresponding size.
     template <typename T>
     struct psh_api FatPtr {
-        T*    buf  = nullptr;
-        usize size = 0;
+        T*    buf;
+        usize count = 0;
 
-        FatPtr<T> slice(usize start, usize end) noexcept {
-            psh_assert_msg(start <= end, "Invalid bounds for slice.");
-            psh_assert_msg(end < this->size, "Slice bound surpasses the FatPtr region.");
-            return FatPtr<T>{psh_ptr_add(this->buf, start), 1 + end - start};
+        FatPtr<T> slice(usize start, usize slice_count) noexcept {
+            psh_assert_fmt(slice_count <= this->count, "Slice element count (%zu) surpasses the FatPtr count (%zu).", slice_count, this->count);
+            return FatPtr<T>{psh_ptr_add(this->buf, start), slice_count};
         }
 
         constexpr usize size_bytes() const noexcept {
-            return sizeof(T) * this->size;
+            return sizeof(T) * this->count;
         }
 
         // -----------------------------------------------------------------------------
@@ -57,11 +56,11 @@ namespace psh {
         }
 
         constexpr T* end() noexcept {
-            return (this->buf == nullptr) ? nullptr : (this->buf + this->size);
+            return psh_ptr_add(this->buf, this->count);
         }
 
         constexpr T const* end() const noexcept {
-            return (this->buf == nullptr) ? nullptr : static_cast<T const*>(this->buf + this->size);
+            return static_cast<T const*>(psh_ptr_add(this->buf, this->count));
         }
 
         // -----------------------------------------------------------------------------
@@ -70,14 +69,14 @@ namespace psh {
 
         constexpr T& operator[](usize idx) noexcept {
 #if defined(PSH_CHECK_BOUNDS)
-            psh_assert_fmt(idx < this->size, "Index %zu out of bounds for FatPtr with size %zu.", idx, this->size);
+            psh_assert_fmt(idx < this->count, "Index %zu out of bounds for FatPtr with size %zu.", idx, this->count);
 #endif
             return this->buf[idx];
         }
 
         constexpr T const& operator[](usize idx) const noexcept {
 #if defined(PSH_CHECK_BOUNDS)
-            psh_assert_fmt(idx < this->size, "Index %zu out of bounds for FatPtr with size %zu.", idx, this->size);
+            psh_assert_fmt(idx < this->count, "Index %zu out of bounds for FatPtr with size %zu.", idx, this->count);
 #endif
             return this->buf[idx];
         }
@@ -88,22 +87,22 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     template <typename T>
-    FatPtr<u8> fat_ptr_as_bytes(T* buf, usize count) noexcept {
+    FatPtr<u8> make_fat_ptr_as_bytes(T* buf, usize count) noexcept {
         return FatPtr<u8>{reinterpret_cast<u8*>(buf), sizeof(T) * count};
     }
 
     template <typename T>
-    FatPtr<u8 const> fat_ptr_as_bytes(T const* buf, usize count) noexcept {
+    FatPtr<u8 const> make_fat_ptr_as_bytes(T const* buf, usize count) noexcept {
         return FatPtr<u8 const>{reinterpret_cast<u8 const*>(buf), sizeof(T) * count};
     }
 
     template <typename T>
-    FatPtr<T> fat_ptr(T* ptr) noexcept {
+    FatPtr<T> make_fat_ptr(T* ptr) noexcept {
         return FatPtr<T>{ptr, 1};
     }
 
     template <typename T>
-    FatPtr<T const> const_fat_ptr(T const* ptr) noexcept {
+    FatPtr<T const> make_const_fat_ptr(T const* ptr) noexcept {
         return FatPtr<T const>{ptr, 1};
     }
 }  // namespace psh
