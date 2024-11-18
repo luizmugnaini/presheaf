@@ -50,7 +50,7 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         constexpr T* begin() noexcept {
-            return static_cast<T*>(this->buf);
+            return this->buf;
         }
 
         constexpr T const* begin() const noexcept {
@@ -58,7 +58,7 @@ namespace psh {
         }
 
         constexpr T* end() noexcept {
-            return static_cast<T*>(this->buf) + count_;
+            return this->buf + count_;
         }
 
         constexpr T const* end() const noexcept {
