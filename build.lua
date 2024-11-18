@@ -155,9 +155,10 @@ end
 local function exec(cmd_str, quiet)
     if quiet then
         cmd_str = cmd_str .. os_info.silence_cmd
+    else
+        log_info("Executing: " .. cmd_str)
     end
 
-    log_info("Executing: " .. cmd_str)
     os.execute(cmd_str)
 end
 

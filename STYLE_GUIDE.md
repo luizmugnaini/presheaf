@@ -17,6 +17,8 @@ exploit.
 
 # Good practices
 
+- Strive for POD structures.
+- Minimal use of destructors and operator overloads.
 - Pointers should **never** indicate ownership, only the possibility that a reference does not exist.
 - Don't be afraid of pointers, know how to use them and be careful, that's all.
 - Always provide useful documentation. Note however that some docs may not be really that relevant:
