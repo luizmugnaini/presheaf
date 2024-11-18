@@ -352,14 +352,16 @@ namespace psh {
 }  // namespace psh
 
 // -----------------------------------------------------------------------------
-// Stringification and tokenization utilities.
+// Common operations.
 // -----------------------------------------------------------------------------
 
-/// Generate a string containing the given expression.
-#define psh_stringify(x) #x
-
-#define psh_impl_token_concat(x, y)      x##y
-#define psh_token_concat(prefix, suffix) psh_impl_token_concat(prefix, suffix)
+/// Swap the values of two given variables.
+#define psh_swap_values(lhs_var, rhs_var)       \
+    do {                                        \
+        decltype(lhs_var) psh_tmp_ = (lhs_var); \
+        lhs_var                    = rhs_var;   \
+        rhs_var                    = psh_tmp_;  \
+    } while (0)
 
 // -----------------------------------------------------------------------------
 // Pointer operations.
@@ -416,16 +418,14 @@ namespace psh {
 #define psh_is_pow_of_two(n) (((n) > 0) && !((n) & (((n)) - 1)))
 
 // -----------------------------------------------------------------------------
-// Common operations.
+// Stringification and tokenization utilities.
 // -----------------------------------------------------------------------------
 
-/// Swap the values of two given variables.
-#define psh_swap_values(lhs_var, rhs_var)       \
-    do {                                        \
-        decltype(lhs_var) psh_tmp_ = (lhs_var); \
-        lhs_var                    = rhs_var;   \
-        rhs_var                    = psh_tmp_;  \
-    } while (0)
+/// Generate a string containing the given expression.
+#define psh_stringify(x) #x
+
+#define psh_impl_token_concat(x, y)      x##y
+#define psh_token_concat(prefix, suffix) psh_impl_token_concat(prefix, suffix)
 
 // -----------------------------------------------------------------------------
 // Common memory sizes.
