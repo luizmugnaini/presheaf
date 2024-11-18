@@ -30,12 +30,6 @@
 #include <psh/memory_utils.hpp>
 
 namespace psh {
-    namespace impl::array {
-        // Diagnostic messages.
-        static constexpr strptr ERROR_INIT_INCONSISTENT_ARENA = "Array initialization called with non-zero capacity but an empty arena.";
-        static constexpr strptr ERROR_INIT_OUT_OF_MEMORY      = "Array initialization unable to acquire enough bytes of memory.";
-    }  // namespace impl::array
-
     /// Array with run-time known constant capacity.
     ///
     /// The array lifetime is bound to the lifetime of the arena passed at initialization, being
@@ -45,20 +39,17 @@ namespace psh {
         T*    buf;
         usize count = 0;
 
-        // -----------------------------------------------------------------------------
-        // Constructors and initializers.
-        // -----------------------------------------------------------------------------
-
         Array() noexcept = default;
 
         /// Initialize the array with a given size.
         void init(Arena* arena_, usize count_) noexcept {
+            psh_assert_msg(this->count == 0, "Tried to re-initialize an initialized Array.");
             this->count = count_;
             if (psh_likely(this->count != 0)) {
-                psh_assert_msg(arena_ != nullptr, impl::array::ERROR_INIT_INCONSISTENT_ARENA);
+                psh_assert_msg(arena_ != nullptr, "Array initialization called with non-zero capacity but an empty arena.");
 
                 this->buf = arena_->alloc<T>(this->count);
-                psh_assert_msg(this->buf != nullptr, impl::array::ERROR_INIT_OUT_OF_MEMORY);
+                psh_assert_msg(this->buf != nullptr, "Array initialization unable to acquire enough bytes of memory.");
             }
         }
 
@@ -72,28 +63,22 @@ namespace psh {
         }
 
         // -----------------------------------------------------------------------------
-        // Iterator utilities.
+        // Read methods.
         // -----------------------------------------------------------------------------
 
         T* begin() noexcept {
             return this->buf;
         }
-
-        T const* begin() const noexcept {
-            return static_cast<T const*>(this->buf);
-        }
-
         T* end() noexcept {
             return psh_ptr_add(this->buf, this->count);
         }
 
-        T const* end() const noexcept {
-            return psh_ptr_add(static_cast<T const*>(this->buf), this->count);
+        T const* begin() const noexcept {
+            return static_cast<T const*>(this->buf);
         }
-
-        // -----------------------------------------------------------------------------
-        // Indexed reads.
-        // -----------------------------------------------------------------------------
+        T const* end() const noexcept {
+            return static_cast<T const*>(psh_ptr_add(this->buf, this->count));
+        }
 
         T& operator[](usize idx) noexcept {
 #if defined(PSH_CHECK_BOUNDS)

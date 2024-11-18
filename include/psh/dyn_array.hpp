@@ -31,10 +31,6 @@
 
 namespace psh {
     namespace impl::dyn_array {
-        static constexpr strptr ERROR_INIT_INCONSISTENT_ARENA             = "DynArray initialization called with non-zero capacity but an empty arena.";
-        static constexpr strptr ERROR_INIT_OUT_OF_MEMORY                  = "DynArray initialization unable to acquire enough bytes of memory.";
-        static constexpr strptr ERROR_INIT_INCONSISTENT_SIZE_AND_CAPACITY = "DynArray initialization called with inconsistent data: capacity less than the size.";
-        static constexpr strptr ERROR_RESIZE_OUT_OF_MEMORY                = "DynArray cannot be resized because its allocator is out of memory.";
 
         static constexpr usize DEFAULT_INITIAL_CAPACITY = 4;
         static constexpr usize RESIZE_CAPACITY_FACTOR   = 2;
@@ -62,10 +58,10 @@ namespace psh {
             this->capacity = capacity_;
 
             if (psh_likely(this->capacity != 0)) {
-                psh_assert_msg(this->arena != nullptr, impl::dyn_array::ERROR_INIT_INCONSISTENT_ARENA);
+                psh_assert_msg(this->arena != nullptr, "DynArray initialization called with non-zero capacity but an empty arena.");
 
                 this->buf = arena->alloc<T>(this->capacity);
-                psh_assert_msg(this->buf != nullptr, impl::dyn_array::ERROR_INIT_OUT_OF_MEMORY);
+                psh_assert_msg(this->buf != nullptr, "DynArray initialization unable to acquire enough bytes of memory.");
             }
         }
 
@@ -79,7 +75,7 @@ namespace psh {
         }
 
         // -----------------------------------------------------------------------------
-        // Iterator utilities.
+        // Read methods.
         // -----------------------------------------------------------------------------
 
         T* begin() noexcept {
@@ -98,15 +94,6 @@ namespace psh {
             return psh_ptr_add(static_cast<T const*>(this->buf), this->count);
         }
 
-        /// Get a pointer to the last element of the dynamic array.
-        T* peek() const noexcept {
-            return (this->count == 0) ? nullptr : &this->buf[this->count - 1];
-        }
-
-        // -----------------------------------------------------------------------------
-        // Indexed reads.
-        // -----------------------------------------------------------------------------
-
         T& operator[](usize idx) noexcept {
 #if defined(PSH_CHECK_BOUNDS)
             psh_assert_fmt(idx < this->count, "Index %zu out of bounds for DynArray of size %zu.", idx, this->count);
@@ -119,6 +106,11 @@ namespace psh {
             psh_assert_fmt(idx < this->count, "Index %zu out of bounds for DynArray of size %zu.", idx, this->count);
 #endif
             return this->buf[idx];
+        }
+
+        /// Get a pointer to the last element of the dynamic array.
+        T* peek() const noexcept {
+            return (this->count == 0) ? nullptr : &this->buf[this->count - 1];
         }
 
         // -----------------------------------------------------------------------------
@@ -139,7 +131,7 @@ namespace psh {
             }
 
             if (psh_likely(this->capacity != 0)) {
-                psh_assert_msg(this->buf != nullptr, impl::dyn_array::ERROR_RESIZE_OUT_OF_MEMORY);
+                psh_assert_msg(this->buf != nullptr, "DynArray failed to grow, allocator out of memory.");
             }
         }
 
@@ -151,7 +143,7 @@ namespace psh {
 
             if (psh_unlikely(new_buf == nullptr)) {
                 // @TODO: should this be a fatal error?
-                psh_log_error(impl::dyn_array::ERROR_RESIZE_OUT_OF_MEMORY);
+                psh_log_error("DynArray failed to resize, allocator out of memory");
                 return STATUS_FAILED;
             }
 
