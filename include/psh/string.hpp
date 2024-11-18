@@ -46,6 +46,11 @@
         .buf   = cstr_literal,                      \
         .count = sizeof(cstr_literal) - 1,          \
     }
+#define psh_comptime_make_string_view_from_str(str) \
+    psh::StringView {                               \
+        .buf   = str.buf,                           \
+        .count = str.count(),                       \
+    }
 
 namespace psh {
     // -----------------------------------------------------------------------------
