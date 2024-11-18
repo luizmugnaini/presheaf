@@ -1,6 +1,7 @@
 build/
 
 tags*
+.tags
 
 # remedybg session files
 *.rdbg
