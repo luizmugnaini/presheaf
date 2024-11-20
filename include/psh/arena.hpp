@@ -41,8 +41,7 @@ namespace psh {
     ///
     /// ```cpp
     /// f32 do_temp_work_and_restore_arena(ScratchArena&& s) {
-    ///    DynArray<f32> arr;
-    ///    arr.init(s.arena);
+    ///    DynArray<f32> arr{s.arena};
     ///
     ///    arr.push(4.0f);
     ///    arr.push(5.5f);

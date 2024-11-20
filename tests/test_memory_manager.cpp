@@ -29,8 +29,8 @@
 #include <psh/assert.hpp>
 #include <psh/core.hpp>
 #include <psh/dyn_array.hpp>
-#include <psh/memory_manager.hpp>
 #include <psh/memory.hpp>
+#include <psh/memory_manager.hpp>
 #include <psh/stack.hpp>
 #include "utils.hpp"
 
@@ -123,8 +123,7 @@ namespace psh::test::memory_manager {
         used         = memory_manager.allocator.offset;
         psh_assert(memory_manager.allocation_count == static_cast<usize>(2));
 
-        DynArray<usize> b;
-        b.init(&arena, 33);
+        DynArray<usize> b{&arena, 33};
         psh_discard_value(b);
         constexpr usize b_size = sizeof(usize) * 33;
         // The manager shouldn't have a bump in its usage.
@@ -139,8 +138,7 @@ namespace psh::test::memory_manager {
         used         = memory_manager.allocator.offset;
         psh_assert(memory_manager.allocation_count == static_cast<usize>(3));
 
-        DynArray<f32> d;
-        d.init(&arena, 45);
+        DynArray<f32> d{&arena, 45};
         psh_discard_value(d);
         constexpr usize d_size = sizeof(f32) * 45;
         // Expect no change in the manager.

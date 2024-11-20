@@ -251,8 +251,7 @@ namespace psh::test::allocators {
         usize stack_min_expected_size = 0;
         usize expected_alloc_size     = 512;
         u8*   buf                     = reinterpret_cast<u8*>(malloc(expected_alloc_size));
-        Stack stack;
-        stack.init({buf, expected_alloc_size});
+        Stack stack{{buf, expected_alloc_size}};
 
         u8    expected_u8_vec[5]   = {51, 102, 153, 204, 255};
         usize expected_u8_vec_size = 5 * sizeof(u8);  // 5 bytes
@@ -321,8 +320,7 @@ namespace psh::test::allocators {
     psh_internal void stack_offsets_reads_and_writes() {
         usize size = 1024;
         u8*   buf  = reinterpret_cast<u8*>(malloc(size));
-        Stack stack;
-        stack.init({buf, size});
+        Stack stack{{buf, size}};
 
         u8* buf_start = buf;
 
@@ -418,8 +416,7 @@ namespace psh::test::allocators {
     psh_internal void stack_memory_stress_and_free() {
         usize size = 2048;
         u8*   buf  = reinterpret_cast<u8*>(malloc(size));
-        Stack stack;
-        stack.init({buf, size});
+        Stack stack{{buf, size}};
 
         iptr  stack_buf_diff = reinterpret_cast<iptr>(stack.buf);
         usize zero           = 0ull;
@@ -495,8 +492,7 @@ namespace psh::test::allocators {
     psh_internal void stack_free_all() {
         usize     size = 512;
         u8* const buf  = reinterpret_cast<u8*>(malloc(size));
-        Stack     stack;
-        stack.init({buf, size});
+        Stack     stack{{buf, size}};
 
         usize expected_min_size = 0;
 

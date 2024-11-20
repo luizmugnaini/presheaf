@@ -54,14 +54,20 @@ namespace psh {
         if (psh_likely(memory.buf != nullptr)) {
             memory.count = size_bytes;
         } else {
-            psh_log_error_fmt("OS failed to allocate memory with error code: %lu", GetLastError());
+#    if defined(PSH_ABORT_AT_MEMORY_ERROR)
+            psh_log_fatal_fmt("OS failed to allocate memory with error code: %lu", GetLastError());
+            psh_abort_program();
+#    endif
         }
 #elif defined(PSH_OS_UNIX)
         memory.buf = reinterpret_cast<u8*>(mmap(nullptr, size_bytes, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
         if (psh_likely(reinterpret_cast<void*>(memory.buf) != MAP_FAILED)) {
             memory.count = size_bytes;
         } else {
+#    if defined(PSH_ABORT_AT_MEMORY_ERROR)
             psh_log_error_fmt("OS failed to allocate memory due to: %s", strerror(errno));
+            psh_abort_program();
+#    endif
         }
 #endif
 

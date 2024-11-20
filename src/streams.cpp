@@ -106,8 +106,7 @@ namespace psh {
         psh_assert_msg(arena != nullptr, "Invalid arena.");
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
 
-        Array<u8> content;
-        content.init(arena, size);
+        Array<u8> content{arena, size};
 
         usize read_count = fread(content.buf, sizeof(u8), content.count, fhandle);
         psh_discard_value(read_count);  // @TODO: Maybe we should check this.
@@ -133,8 +132,7 @@ namespace psh {
     String read_stdin(Arena* arena, u32 initial_buf_size, u32 read_chunk_size) noexcept {
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
 
-        String content;
-        content.init(arena, initial_buf_size);
+        String content{arena, initial_buf_size};
 
 #if defined(PSH_OS_WINDOWS)
         HANDLE handle_stdin = GetStdHandle(STD_INPUT_HANDLE);
@@ -199,8 +197,7 @@ namespace psh {
         psh_assert_msg(arena != nullptr, "Invalid arena.");
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
 
-        String abs_path;
-        abs_path.init(arena, PSH_IMPL_PATH_MAX_CHAR_COUNT);
+        String abs_path{arena, PSH_IMPL_PATH_MAX_CHAR_COUNT};
 
 #if defined(PSH_OS_WINDOWS)
         DWORD result = GetFullPathName(file_path, PSH_IMPL_PATH_MAX_CHAR_COUNT, abs_path.buf, nullptr);

@@ -25,8 +25,8 @@
 #include <psh/assert.hpp>
 #include <psh/core.hpp>
 #include <psh/dyn_array.hpp>
-#include <psh/memory_manager.hpp>
 #include <psh/memory.hpp>
+#include <psh/memory_manager.hpp>
 #include "utils.hpp"
 
 namespace psh::test::dynarray {
@@ -37,8 +37,7 @@ namespace psh::test::dynarray {
     psh_internal void push_elements(MemoryManager& memory_manager) {
         Arena arena = memory_manager.make_arena(sizeof(i32) * 1024).demand();
 
-        DynArray<i32> v;
-        v.init(&arena);
+        DynArray<i32> v{&arena};
 
         for (i32 i = 0; i < 100; ++i) {
             v.push(i);
@@ -55,8 +54,7 @@ namespace psh::test::dynarray {
     psh_internal void count_and_capacity(MemoryManager& memory_manager) {
         Arena arena = memory_manager.make_arena(sizeof(Foo) * 100).demand();
 
-        DynArray<Foo> v;
-        v.init(&arena);
+        DynArray<Foo> v{&arena};
         v.push(Foo{0});
 
         usize last_capacity = v.capacity;
@@ -83,8 +81,7 @@ namespace psh::test::dynarray {
     psh_internal void peek_and_pop(MemoryManager& memory_manager) {
         Arena arena = memory_manager.make_arena(sizeof(i32) * 3).demand();
 
-        DynArray<i32> v;
-        v.init(&arena, 3);
+        DynArray<i32> v{&arena, 3};
         v.push(4), v.push(5), v.push(6);
 
         // Peek then pop 6.
@@ -117,8 +114,7 @@ namespace psh::test::dynarray {
     psh_internal void remove(MemoryManager& memory_manager) {
         Arena arena = memory_manager.make_arena(sizeof(i32) * 5).demand();
 
-        DynArray<i32> v;
-        v.init(&arena, 5);
+        DynArray<i32> v{&arena, 5};
         v.push(4), v.push(7), v.push(8), v.push(9), v.push(55);
 
         // Do nothing.
@@ -188,8 +184,7 @@ namespace psh::test::dynarray {
     psh_internal void clear(MemoryManager& memory_manager) {
         Arena arena = memory_manager.make_arena(sizeof(f32) * 4).demand();
 
-        DynArray<f32> v;
-        v.init(&arena, 4);
+        DynArray<f32> v{&arena, 4};
 
         v.push(7.0f), v.push(4.8f), v.push(6.1f), v.push(3.14f);
         psh_assert(v.count == static_cast<usize>(4));

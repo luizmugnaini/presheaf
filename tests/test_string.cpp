@@ -106,8 +106,7 @@ namespace psh::test::string {
         {
             // Empty string.
             {
-                String estr;
-                estr.init(&arena, 20);
+                String estr{&arena, 20};
                 psh_assert(join_strings(estr, make_const_fat_ptr(views1), psh_comptime_make_string_view(", ")));
 
                 psh_assert(str_equal(estr.buf, check_str1.buf));
