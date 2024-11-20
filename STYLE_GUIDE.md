@@ -31,7 +31,7 @@ exploit.
   whenever possible.
 - In case there is no possible default value, don't be shy of asserts! If you **are** going to fail,
   fail as fast as possible. This makes debugging way easier for both the users and the library devs.
-- Always use the type aliases declared in `<psh/core.h>`. These provide uniformity for the codebase.
+- Always use the type aliases declared in `<psh/core.hpp>`. These provide uniformity for the codebase.
 
 # Formatting
 
