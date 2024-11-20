@@ -28,12 +28,14 @@
 #    include <Windows.h>
 #elif defined(PSH_OS_UNIX)
 #    include <errno.h>
+#    include <string.h>
 #    include <time.h>
 #endif
 
 namespace psh {
-    Option<f64> current_time_in_seconds() noexcept {
-        Option<f64> curr_time = {};
+    f64 current_time_in_seconds() noexcept {
+        f64 curr_time = -1.0;
+
 #if defined(PSH_OS_WINDOWS)
         LARGE_INTEGER frequency;
         LARGE_INTEGER counter;
@@ -46,25 +48,31 @@ namespace psh {
         }
 #elif defined(PSH_OS_UNIX)
         timespec time_spec;
-        if (psh_likely(clock_gettime(CLOCK_MONOTONIC, &time_spec) == 0)) {
-            curr_time = static_cast<f64>(time_spec.tv_sec) + (static_cast<f64>(time_spec.tv_nsec) / 1e9L);
+
+        bool success = (clock_gettime(CLOCK_MONOTONIC, &time_spec) == 0);
+
+        if (psh_likely(success)) {
+            curr_time = static_cast<f64>(time_spec.tv_sec) + (static_cast<f64>(time_spec.tv_nsec) / 1e9);
         }
 #endif
+
         return curr_time;
     }
 
     void sleep_milliseconds(f64 ms) noexcept {
 #if defined(PSH_OS_WINDOWS)
-        u32 ms_count = psh_value_within_range(ms, 0.0, 1.0) ? 1 : static_cast<u32>(ms);
+        u32 ms_count = ((0.0 < ms) && (ms < 1.0)) ? 1 : static_cast<u32>(ms);
         Sleep(ms_count);
 #elif defined(PSH_OS_UNIX)
         timespec request_sleep;
         request_sleep.tv_sec     = static_cast<time_t>(ms / 1000);
-        request_sleep.tv_nsec    = static_cast<i64>((ms - (request_sleep.tv_sec * 1000)) * 1'000'000);
+        request_sleep.tv_nsec    = (static_cast<long>(ms) - static_cast<long>(request_sleep.tv_sec) * 1000) * 1'000'000;
         timespec remaining_sleep = {};
 
         i32 status = nanosleep(&request_sleep, &remaining_sleep);
-        psh_assert(status != -1);  // @TODO: proper error handling.
+        if (status == -1) {
+            psh_log_error_fmt("Failed to sleep due to error: %s", strerror(errno));
+        }
 #endif
     }
 }  // namespace psh
