@@ -24,20 +24,16 @@
 
 #include <psh/memory_manager.hpp>
 
-#include <stdlib.h>
-#include <psh/memory_utils.hpp>
+#include <psh/memory.hpp>
 
 namespace psh {
-    void MemoryManager::init(usize capacity) noexcept {
-        u8* memory = reinterpret_cast<u8*>(psh_malloc(capacity));
-        memory_set(memory, capacity, 0);
-
+    void MemoryManager::init(usize capacity_bytes) noexcept {
         this->allocation_count = 0;
-        this->allocator.init(memory, capacity);
+        this->allocator.init(memory_virtual_alloc(capacity_bytes));
     }
 
     void MemoryManager::destroy() noexcept {
-        psh_free(this->allocator.buf);
+        memory_virtual_free({this->allocator.buf, this->allocator.capacity});
     }
 
     Option<Arena> MemoryManager::make_arena(usize size) noexcept {

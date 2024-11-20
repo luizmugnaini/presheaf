@@ -42,13 +42,26 @@ namespace psh {
     // Memory manipulation utilities.
     // -----------------------------------------------------------------------------
 
+    /// Reserve and commit a virtual block of memory.
+    ///
+    /// The memory allocated is always initialized to zero.
+    ///
+    /// Directly calls the respective system call for allocating memory. Should be
+    /// used for large allocations, if you want small allocations, malloc is the way to go.
+    FatPtr<u8> memory_virtual_alloc(usize size_bytes) noexcept;
+
+    /// Release and decommit all memory.
+    void memory_virtual_free(FatPtr<u8> memory) noexcept;
+
+    // TODO: add procedures for reserving/commiting memory separately.
+
     /// Simple wrapper around `memset` that automatically deals with null values.
     ///
     /// Does nothing if `ptr` is a null pointer.
-    psh_api void memory_set(void* buf, usize size_bytes, i32 fill) noexcept;
+    psh_api void memory_set(u8* memory, usize size_bytes, i32 fill) noexcept;
 
     template <typename T>
-    void zero_struct(T& s) noexcept {
+    psh_inline void zero_struct(T& s) noexcept {
         memory_set(reinterpret_cast<u8*>(&s), sizeof(T), 0);
     }
 
@@ -56,36 +69,12 @@ namespace psh {
     ///
     /// This function will assert that the blocks of memory don't overlap, avoiding undefined
     /// behaviour introduced by `memcpy` in this case.
-    psh_api void memory_copy(void* psh_no_alias dst, void const* psh_no_alias src, usize size_bytes) noexcept;
-
-    template <typename T>
-    void memory_copy(FatPtr<T> dst, FatPtr<T const> src, usize copy_count) noexcept {
-        psh_assert_fmt(
-            copy_count <= dst.size,
-            "Destination cannot hold %zu elements (max %zu).",
-            copy_count,
-            dst.size);
-        psh_assert_fmt(
-            copy_count <= src.size,
-            "Source doesn't have %zu elements (max %zu).",
-            copy_count,
-            src.size);
-
-        memory_copy(dst.buf, src.buf, sizeof(T) * copy_count);
-    }
+    psh_api void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) noexcept;
 
     /// Simple wrapper around `memmove`.
     ///
     /// Does nothing if either `dst` or `src` are null pointers.
-    psh_api void memory_move(void* psh_no_alias dst, void const* psh_no_alias src, usize size_bytes) noexcept;
-
-    template <typename T>
-    void memory_move(FatPtr<T> dst, FatPtr<T const> src, usize copy_count) noexcept {
-        psh_assert(copy_count <= dst.size);
-        psh_assert(copy_count <= src.size);
-
-        memory_move(dst.buf, src.buf, sizeof(T) * copy_count);
-    }
+    psh_api void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) noexcept;
 
     // -----------------------------------------------------------------------------
     // Alignment utilities.

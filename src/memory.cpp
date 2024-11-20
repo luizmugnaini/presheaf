@@ -22,12 +22,18 @@
 /// Description: Implementation of the utilities for memory-related operations.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/memory_utils.hpp>
+#include <psh/memory.hpp>
 
 #include <string.h>
 #include <psh/assert.hpp>
 #include <psh/core.hpp>
 #include <psh/math.hpp>
+
+#if defined(PSH_OS_WINDOWS)
+#    include <Windows.h>
+#elif defined(PSH_OS_UNIX)
+#    include <sys/mman.h>
+#endif
 
 namespace psh {
     bool arch_is_little_endian() noexcept {
@@ -40,17 +46,57 @@ namespace psh {
         return static_cast<bool>(!*(reinterpret_cast<u8*>(&integer)));
     }
 
-    void memory_set(void* buf, usize size_bytes, i32 fill) noexcept {
-        if (psh_unlikely((buf == nullptr) || (size_bytes == 0))) {
-            return;
+    FatPtr<u8> memory_virtual_alloc(usize size_bytes) noexcept {
+        FatPtr<u8> memory = {};
+
+#if defined(PSH_OS_WINDOWS)
+        memory.buf = reinterpret_cast<u8*>(VirtualAlloc(nullptr, size_bytes, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+        if (psh_likely(memory.buf != nullptr)) {
+            memory.count = size_bytes;
+        } else {
+            psh_log_error_fmt("OS failed to allocate memory with error code: %lu", GetLastError());
         }
-        psh_discard_value(memset(buf, fill, size_bytes));
+#elif defined(PSH_OS_UNIX)
+        memory.buf = reinterpret_cast<u8*>(mmap(nullptr, size_bytes, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
+        if (psh_likely(reinterpret_cast<void*>(memory.buf) != MAP_FAILED)) {
+            memory.count = size_bytes;
+        } else {
+            psh_log_error_fmt("OS failed to allocate memory due to: %s", strerror(errno));
+        }
+#endif
+
+        return memory;
     }
 
-    void memory_copy(void* psh_no_alias dst, void const* psh_no_alias src, usize size_bytes) noexcept {
-        if (psh_unlikely((dst == nullptr) || (src == nullptr) || (size_bytes == 0))) {
+    void memory_virtual_free(FatPtr<u8> memory) noexcept {
+#if defined(PSH_OS_WINDOWS)
+        BOOL result = VirtualFree(memory.buf, 0, MEM_RELEASE);
+        if (psh_unlikely(result == FALSE)) {
+            psh_log_error_fmt("Failed free memory with error code: %lu", GetLastError());
+        }
+#elif defined(PSH_OS_UNIX)
+        i32 result = munmap(memory.buf, memory.count);
+        if (psh_unlikely(result == -1)) {
+            psh_log_error_fmt("Failed to free memory due to: %s", strerror(errno));
+        }
+#endif
+    }
+
+    void memory_set(u8* memory, usize size_bytes, i32 fill) noexcept {
+        if (psh_unlikely(size_bytes == 0)) {
             return;
         }
+        psh_assert(memory != nullptr);
+
+        psh_discard_value(memset(memory, fill, size_bytes));
+    }
+
+    void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) noexcept {
+        if (psh_unlikely(size_bytes == 0)) {
+            return;
+        }
+        psh_assert(dst != nullptr);
+        psh_assert(src != nullptr);
 
 #if defined(PSH_CHECK_MEMCPY_OVERLAP)
         uptr dst_addr = reinterpret_cast<uptr>(dst);
@@ -63,10 +109,13 @@ namespace psh {
         psh_discard_value(memcpy(dst, src, size_bytes));
     }
 
-    void memory_move(void* psh_no_alias dst, void const* psh_no_alias src, usize size_bytes) noexcept {
-        if (psh_unlikely((dst == nullptr) || (src == nullptr) || (size_bytes == 0))) {
+    void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) noexcept {
+        if (psh_unlikely(size_bytes == 0)) {
             return;
         }
+        psh_assert(dst != nullptr);
+        psh_assert(src != nullptr);
+
         psh_discard_value(memmove(dst, src, size_bytes));
     }
 
