@@ -55,7 +55,7 @@ namespace psh {
         // Check if the block lies within the allocator's memory.
         if (psh_unlikely((block < memory_start) || (block > memory_start + this->allocator.previous_offset))) {
             strptr fail_reason =
-                (block > memory_start + this->allocator.size)
+                (block > memory_start + this->allocator.capacity)
                     ? "MemoryManager::clear_until called with a pointer outside of the stack "
                       "memory_start region."
                     : "MemoryManager::clear_until called with a pointer to an already free region "

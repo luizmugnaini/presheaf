@@ -27,7 +27,7 @@
 #include <psh/core.hpp>
 #include <psh/log.hpp>
 #include <psh/math.hpp>
-#include <psh/memory_utils.hpp>
+#include <psh/memory.hpp>
 #include <psh/option.hpp>
 
 namespace psh {
@@ -36,12 +36,12 @@ namespace psh {
     /// Memory layout:
     ///
     /// ```md
-    ///           `previous_offset`                     |-`size`-|
-    ///                  ^                              ^        ^
-    ///                  |                              |        |
-    ///  |previous header|previous memory|+++++++|header| memory |
-    ///                                  ^              ^
-    ///                                  |--`padding`---|
+    ///           `previous_offset`                      |-`capacity`-|
+    ///                  ^                               ^            ^
+    ///                  |                               |            |
+    ///  |previous header|previous memory|++++++++|header|   memory   |
+    ///                                  ^               ^
+    ///                                  |---`padding`---|
     /// ```
     ///
     /// where "header" represents this current header, and "memory" represents the memory block
@@ -51,8 +51,8 @@ namespace psh {
         /// header. The padding accounts for both the size of the header and the needed alignment.
         usize padding;
 
-        /// The size, in bytes, of the memory block associated with this header.
-        usize size;
+        /// The capacity, in bytes, of the memory block associated with this header.
+        usize capacity;
 
         /// Pointer offset, relative to the stack allocator memory  block, to the start of the
         /// memory address of the last allocated block (after its header).
@@ -93,11 +93,11 @@ namespace psh {
     /// the user should know how to correctly handle their memory reads and writes.
     struct psh_api Stack {
         u8*   buf;
-        usize size            = 0;
+        usize capacity        = 0;
         usize offset          = 0;
         usize previous_offset = 0;
 
-        void init(u8* buf, usize size) noexcept;
+        void init(FatPtr<u8> memory) noexcept;
 
         // -----------------------------------------------------------------------------
         // Allocated memory information.
