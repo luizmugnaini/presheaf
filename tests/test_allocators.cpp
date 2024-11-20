@@ -27,7 +27,7 @@
 #include <psh/arena.hpp>
 #include <psh/assert.hpp>
 #include <psh/core.hpp>
-#include <psh/memory_utils.hpp>
+#include <psh/memory.hpp>
 #include <psh/stack.hpp>
 #include "utils.hpp"
 
@@ -252,7 +252,7 @@ namespace psh::test::allocators {
         usize expected_alloc_size     = 512;
         u8*   buf                     = reinterpret_cast<u8*>(malloc(expected_alloc_size));
         Stack stack;
-        stack.init(buf, expected_alloc_size);
+        stack.init({buf, expected_alloc_size});
 
         u8    expected_u8_vec[5]   = {51, 102, 153, 204, 255};
         usize expected_u8_vec_size = 5 * sizeof(u8);  // 5 bytes
@@ -277,12 +277,12 @@ namespace psh::test::allocators {
 
         psh_assert(stack.used() >= stack_min_expected_size);
 
-        usize size = stack.size;
+        usize size = stack.capacity;
         psh_assert(size == expected_alloc_size);
 
         StackHeader const* th_u32 = stack.top_header();
         psh_assert(th_u32 != nullptr);
-        usize actual_u32_vec_size = th_u32->size;
+        usize actual_u32_vec_size = th_u32->capacity;
         psh_assert(actual_u32_vec_size == expected_u32_vec_size);
 
         u8* top_u32 = stack.top();
@@ -298,7 +298,7 @@ namespace psh::test::allocators {
 
         StackHeader const* th_u8 = stack.top_header();
         psh_assert(th_u8 != nullptr);
-        usize actual_u8_vec_size = th_u8->size;
+        usize actual_u8_vec_size = th_u8->capacity;
         psh_assert(actual_u8_vec_size == 5ull);
 
         u8* actual_u8_vec = stack.top();
@@ -322,7 +322,7 @@ namespace psh::test::allocators {
         usize size = 1024;
         u8*   buf  = reinterpret_cast<u8*>(malloc(size));
         Stack stack;
-        stack.init(buf, size);
+        stack.init({buf, size});
 
         u8* buf_start = buf;
 
@@ -419,7 +419,7 @@ namespace psh::test::allocators {
         usize size = 2048;
         u8*   buf  = reinterpret_cast<u8*>(malloc(size));
         Stack stack;
-        stack.init(buf, size);
+        stack.init({buf, size});
 
         iptr  stack_buf_diff = reinterpret_cast<iptr>(stack.buf);
         usize zero           = 0ull;
@@ -480,7 +480,7 @@ namespace psh::test::allocators {
         stack.clear();
         psh_assert(stack.previous_offset == zero);
         psh_assert(stack.offset == zero);
-        psh_assert(stack.buf && (stack.size != 0));  // The memory should still be available.
+        psh_assert(stack.buf && (stack.capacity != 0));  // The memory should still be available.
 
         // Ensure we can allocate after freeing all blocks.
         i32* b1 = stack.alloc<int>(80);
@@ -496,7 +496,7 @@ namespace psh::test::allocators {
         usize     size = 512;
         u8* const buf  = reinterpret_cast<u8*>(malloc(size));
         Stack     stack;
-        stack.init(buf, size);
+        stack.init({buf, size});
 
         usize expected_min_size = 0;
 

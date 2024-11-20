@@ -26,7 +26,7 @@
 #include <psh/core.hpp>
 #include <psh/dyn_array.hpp>
 #include <psh/memory_manager.hpp>
-#include <psh/memory_utils.hpp>
+#include <psh/memory.hpp>
 #include "utils.hpp"
 
 namespace psh::test::dynarray {

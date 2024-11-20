@@ -50,10 +50,18 @@
                 psh_abort_program();                                                      \
             }                                                                             \
         } while (0)
+#    define psh_assert_constexpr(expr)                                                   \
+        do {                                                                             \
+            if constexpr (!static_cast<bool>(expr)) {                                    \
+                psh_log_fatal_fmt("Assertion failed: %s, msg: %s", #expr, "no message"); \
+                psh_abort_program();                                                     \
+            }                                                                            \
+        } while (0)
 #else
-#    define psh_assert(expr)               (void)(expr)
-#    define psh_assert_msg(expr, msg)      (void)(expr)
-#    define psh_assert_fmt(expr, fmt, ...) (void)(expr)
+#    define psh_assert(expr)               psh_discard_value(expr)
+#    define psh_assert_msg(expr, msg)      psh_discard_value(expr)
+#    define psh_assert_fmt(expr, fmt, ...) psh_discard_value(expr)
+#    define psh_assert_constexpr(expr)     psh_discard_value(expr)
 #endif
 
 #define psh_todo()                                       \

@@ -27,7 +27,7 @@
 
 #include <psh/arena.hpp>
 #include <psh/core.hpp>
-#include <psh/memory_utils.hpp>
+#include <psh/memory.hpp>
 
 namespace psh {
     /// Array with run-time known constant capacity.
@@ -42,7 +42,7 @@ namespace psh {
         Array() noexcept = default;
 
         /// Initialize the array with a given size.
-        void init(Arena* arena_, usize count_) noexcept {
+        psh_inline void init(Arena* arena_, usize count_) noexcept {
             psh_assert_msg(this->count == 0, "Tried to re-initialize an initialized Array.");
             this->count = count_;
             if (psh_likely(this->count != 0)) {
@@ -54,40 +54,36 @@ namespace psh {
         }
 
         /// Construct an array with a given size.
-        Array(Arena* arena_, usize count_) noexcept {
+        psh_inline Array(Arena* arena_, usize count_) noexcept {
             this->init(arena_, count_);
         }
 
-        usize size_bytes() const noexcept {
+        psh_inline usize size_bytes() const noexcept {
             return sizeof(T) * this->count;
         }
 
-        // -----------------------------------------------------------------------------
-        // Read methods.
-        // -----------------------------------------------------------------------------
-
-        T* begin() noexcept {
+        psh_inline T* begin() noexcept {
             return this->buf;
         }
-        T* end() noexcept {
+        psh_inline T* end() noexcept {
             return psh_ptr_add(this->buf, this->count);
         }
 
-        T const* begin() const noexcept {
+        psh_inline T const* begin() const noexcept {
             return static_cast<T const*>(this->buf);
         }
-        T const* end() const noexcept {
+        psh_inline T const* end() const noexcept {
             return static_cast<T const*>(psh_ptr_add(this->buf, this->count));
         }
 
-        T& operator[](usize idx) noexcept {
+        psh_inline T& operator[](usize idx) noexcept {
 #if defined(PSH_CHECK_BOUNDS)
             psh_assert_fmt(idx < this->count, "Index %zu out of bounds for Array of size %zu.", idx, this->count);
 #endif
             return this->buf[idx];
         }
 
-        T const& operator[](usize idx) const noexcept {
+        psh_inline T const& operator[](usize idx) const noexcept {
 #if defined(PSH_CHECK_BOUNDS)
             psh_assert_fmt(idx < this->count, "Index %zu out of bounds for Array of size %zu.", idx, this->count);
 #endif
@@ -100,12 +96,12 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     template <typename T>
-    FatPtr<T> make_fat_ptr(Array<T>& a) noexcept {
+    psh_inline FatPtr<T> make_fat_ptr(Array<T>& a) noexcept {
         return FatPtr<T>{a.buf, a.count};
     }
 
     template <typename T>
-    FatPtr<T const> make_const_fat_ptr(Array<T> const& a) noexcept {
+    psh_inline FatPtr<T const> make_const_fat_ptr(Array<T> const& a) noexcept {
         return FatPtr<T const>{reinterpret_cast<T const*>(a.buf), a.count};
     }
 }  // namespace psh

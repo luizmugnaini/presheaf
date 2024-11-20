@@ -30,7 +30,7 @@
 #include "time.cpp"
 #include "vec.cpp"
 #include "log.cpp"
-#include "memory_utils.cpp"
+#include "memory.cpp"
 #include "arena.cpp"
 #include "stack.cpp"
 #include "memory_manager.cpp"

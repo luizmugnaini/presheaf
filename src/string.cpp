@@ -25,7 +25,7 @@
 #include <psh/string.hpp>
 
 #include <string.h>
-#include <psh/memory_utils.hpp>
+#include <psh/memory.hpp>
 #include <psh/option.hpp>
 
 namespace psh {
@@ -82,7 +82,7 @@ namespace psh {
             }
         }
 
-        char* string_buf        = target.buf;
+        u8*   string_buf        = reinterpret_cast<u8*>(target.buf);
         usize new_string_length = target.count;
         if (join_element.count != 0) {
             usize first_idx = 0;
@@ -91,7 +91,7 @@ namespace psh {
             if (previously_empty) {
                 StringView const& first_js = join_strings[0];
 
-                memory_copy(string_buf + new_string_length, first_js.buf, first_js.count);
+                memory_copy(string_buf + new_string_length, reinterpret_cast<u8 const*>(first_js.buf), first_js.count);
                 new_string_length += first_js.count;
 
                 ++first_idx;
@@ -102,15 +102,15 @@ namespace psh {
                 StringView const& js = join_strings[idx];
 
                 usize previous_size = new_string_length;
-                memory_copy(string_buf + previous_size, join_element.buf, join_element.count);
-                memory_copy(string_buf + previous_size + join_element.count, js.buf, js.count);
+                memory_copy(string_buf + previous_size, reinterpret_cast<u8 const*>(join_element.buf), join_element.count);
+                memory_copy(string_buf + previous_size + join_element.count, reinterpret_cast<u8 const*>(js.buf), js.count);
                 new_string_length += join_element.count + js.count;
             }
 
             target.count = new_string_length;
         } else {
             for (StringView const& js : join_strings) {
-                memory_copy(string_buf + new_string_length, js.buf, js.count);
+                memory_copy(string_buf + new_string_length, reinterpret_cast<u8 const*>(js.buf), js.count);
                 new_string_length += js.count;
             }
         }

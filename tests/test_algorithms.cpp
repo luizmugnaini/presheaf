@@ -119,27 +119,27 @@ namespace psh::test::algorithms {
     psh_internal void contains() {
         // Default matcher.
         {
-            Buffer<i64, 10>   buf  = {-192381LL, -281937123LL, 123LL, 0LL, 3LL, 90LL, 23198237LL, 127391723LL, 123769128LL, 5LL};
+            Buffer<i64, 10>   buf  = {-192381, -281937123, 123, 0, 3, 90, 23198237, 127391723, 123769128, 5};
             FatPtr<i64 const> fptr = make_const_fat_ptr(buf);
 
             // Check exact buffer elements.
-            psh_assert(psh::contains(fptr, -192381LL));
-            psh_assert(psh::contains(fptr, -281937123LL));
-            psh_assert(psh::contains(fptr, 123LL));
-            psh_assert(psh::contains(fptr, 0LL));
-            psh_assert(psh::contains(fptr, 3LL));
-            psh_assert(psh::contains(fptr, 90LL));
-            psh_assert(psh::contains(fptr, 23198237LL));
-            psh_assert(psh::contains(fptr, 127391723LL));
-            psh_assert(psh::contains(fptr, 123769128LL));
-            psh_assert(psh::contains(fptr, 5LL));
+            psh_assert(psh::contains(fptr, static_cast<i64>(-192381)));
+            psh_assert(psh::contains(fptr, static_cast<i64>(-281937123)));
+            psh_assert(psh::contains(fptr, static_cast<i64>(123)));
+            psh_assert(psh::contains(fptr, static_cast<i64>(0)));
+            psh_assert(psh::contains(fptr, static_cast<i64>(3)));
+            psh_assert(psh::contains(fptr, static_cast<i64>(90)));
+            psh_assert(psh::contains(fptr, static_cast<i64>(23198237)));
+            psh_assert(psh::contains(fptr, static_cast<i64>(127391723)));
+            psh_assert(psh::contains(fptr, static_cast<i64>(123769128)));
+            psh_assert(psh::contains(fptr, static_cast<i64>(5)));
 
             // Non-matching elements.
-            psh_assert(!psh::contains(fptr, 192381LL));
-            psh_assert(!psh::contains(fptr, -28193LL));
-            psh_assert(!psh::contains(fptr, 13LL));
-            psh_assert(!psh::contains(fptr, 1LL));
-            psh_assert(!psh::contains(fptr, 50850LL));
+            psh_assert(!psh::contains(fptr, static_cast<i64>(192381)));
+            psh_assert(!psh::contains(fptr, static_cast<i64>(-28193)));
+            psh_assert(!psh::contains(fptr, static_cast<i64>(13)));
+            psh_assert(!psh::contains(fptr, static_cast<i64>(1)));
+            psh_assert(!psh::contains(fptr, static_cast<i64>(50850)));
         }
 
         // Custom function.
@@ -174,26 +174,26 @@ namespace psh::test::algorithms {
     psh_internal void linear_search() {
         // Default matcher.
         {
-            Buffer<u64, 11>   buf  = {192381ull, 281937123ull, 123ull, 0ull, 0ull, 3ull, 90ull, 23198237ull, 127391723ull, 123769128ull, 5ull};
+            Buffer<u64, 11>   buf  = {192381, 281937123, 123, 0, 0, 3, 90, 23198237, 127391723, 123769128, 5};
             FatPtr<u64 const> fptr = make_const_fat_ptr(buf);
 
             // Exact elements.
-            psh_assert(psh::linear_search(fptr, 192381ull).demand() == 0);
-            psh_assert(psh::linear_search(fptr, 281937123ull).demand() == 1);
-            psh_assert(psh::linear_search(fptr, 123ull).demand() == 2);
-            psh_assert(psh::linear_search(fptr, 0ull).demand() == 3);
-            psh_assert(psh::linear_search(fptr, 3ull).demand() == 5);
-            psh_assert(psh::linear_search(fptr, 90ull).demand() == 6);
-            psh_assert(psh::linear_search(fptr, 23198237ull).demand() == 7);
-            psh_assert(psh::linear_search(fptr, 127391723ull).demand() == 8);
-            psh_assert(psh::linear_search(fptr, 123769128ull).demand() == 9);
-            psh_assert(psh::linear_search(fptr, 5ull).demand() == 10);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(192381)).demand() == 0);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(281937123)).demand() == 1);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(123)).demand() == 2);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(0)).demand() == 3);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(3)).demand() == 5);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(90)).demand() == 6);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(23198237)).demand() == 7);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(127391723)).demand() == 8);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(123769128)).demand() == 9);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(5)).demand() == 10);
 
             // Non-existent elements.
-            psh_assert(!psh::linear_search(fptr, 92381ull).has_value);
-            psh_assert(!psh::linear_search(fptr, 28197123ull).has_value);
-            psh_assert(!psh::linear_search(fptr, 12ull).has_value);
-            psh_assert(!psh::linear_search(fptr, 1ull).has_value);
+            psh_assert(!psh::linear_search(fptr, static_cast<u64>(92381)).has_value);
+            psh_assert(!psh::linear_search(fptr, static_cast<u64>(28197123)).has_value);
+            psh_assert(!psh::linear_search(fptr, static_cast<u64>(12)).has_value);
+            psh_assert(!psh::linear_search(fptr, static_cast<u64>(1)).has_value);
         }
 
         // Custom function.
@@ -227,25 +227,25 @@ namespace psh::test::algorithms {
     psh_internal void binary_search() {
         // Basic test.
         {
-            Buffer<i64, 10>   buf  = {-12837LL, -123LL, -72LL, -1LL, 0LL, 0LL, 19LL, 192381LL, 281937123LL, 55518237198LL};
+            Buffer<i64, 10>   buf  = {-12837, -123, -72, -1, 0, 0, 19, 192381, 281937123, 55518237198};
             FatPtr<i64 const> fptr = make_const_fat_ptr(buf);
 
             // Exact elements.
-            psh_assert(psh::binary_search(fptr, -12837LL).demand() == 0);
-            psh_assert(psh::binary_search(fptr, -123LL).demand() == 1);
-            psh_assert(psh::binary_search(fptr, -72LL).demand() == 2);
-            psh_assert(psh::binary_search(fptr, -1LL).demand() == 3);
-            psh_assert(psh::binary_search(fptr, 0LL).demand() == 4);
-            psh_assert(psh::binary_search(fptr, 19LL).demand() == 6);
-            psh_assert(psh::binary_search(fptr, 192381LL).demand() == 7);
-            psh_assert(psh::binary_search(fptr, 281937123LL).demand() == 8);
-            psh_assert(psh::binary_search(fptr, 55518237198LL).demand() == 9);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(-12837)).demand() == 0);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(-123)).demand() == 1);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(-72)).demand() == 2);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(-1)).demand() == 3);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(0)).demand() == 4);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(19)).demand() == 6);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(192381)).demand() == 7);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(281937123)).demand() == 8);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(55518237198)).demand() == 9);
 
             // Non-existent elements.
-            psh_assert(!psh::binary_search(fptr, 92381LL).has_value);
-            psh_assert(!psh::binary_search(fptr, 28197123LL).has_value);
-            psh_assert(!psh::binary_search(fptr, 12LL).has_value);
-            psh_assert(!psh::binary_search(fptr, 1LL).has_value);
+            psh_assert(!psh::binary_search(fptr, static_cast<i64>(92381)).has_value);
+            psh_assert(!psh::binary_search(fptr, static_cast<i64>(28197123)).has_value);
+            psh_assert(!psh::binary_search(fptr, static_cast<i64>(12)).has_value);
+            psh_assert(!psh::binary_search(fptr, static_cast<i64>(1)).has_value);
         }
 
         // Random test.

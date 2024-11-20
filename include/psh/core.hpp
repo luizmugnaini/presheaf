@@ -30,23 +30,6 @@
 // Presheaf library compile-time flags.
 // -----------------------------------------------------------------------------
 
-// Check integrity of the malloc/free overrides.
-#if defined(psh_malloc) && defined(psh_free)
-// Fine, all defined.
-#elif !defined(psh_malloc) && !defined(psh_free)
-// Fine, none defined.
-#else
-#    error "You must define all or none of the macros psh_malloc and psh_free."
-#endif
-
-// Define the default allocation procedures.
-#if !defined(psh_malloc)
-#    define psh_malloc malloc
-#endif
-#if !defined(psh_free)
-#    define psh_free free
-#endif
-
 // Activate default debug checks.
 #if defined(PSH_DEBUG)
 #    ifndef PSH_CHECK_BOUNDS
@@ -245,7 +228,11 @@
 // -----------------------------------------------------------------------------
 
 /// Hint for function inlining.
-#define psh_inline inline
+#if defined(PSH_COMPILER_MSVC)
+#    define psh_inline __forceinline
+#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#    define psh_inline inline __attribute__((always_inline))
+#endif
 
 /// Hints that the current switch branch should fallthrough the next.
 #if __cplusplus >= 202002L  // Technically Presheaf only supports C++20.
@@ -260,8 +247,8 @@
 #elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
 #    define psh_abort_program() __builtin_trap()
 #else
-#    include <signal.h>
-#    define psh_abort_program() raise(SIGTRAP)
+#    include <assert.h>
+#    define psh_abort_program() assert(false)
 #endif
 
 /// Code-path should be unreachable.
@@ -575,12 +562,6 @@ namespace psh {
 #    endif
 #    ifndef ptr_offset_bytes
 #        define ptr_offset_bytes psh_ptr_offset_bytes
-#    endif
-#    ifndef value_in_range
-#        define value_in_range psh_value_in_range
-#    endif
-#    ifndef value_within_range
-#        define value_within_range psh_value_within_range
 #    endif
 #    ifndef min_value
 #        define min_value psh_min_value

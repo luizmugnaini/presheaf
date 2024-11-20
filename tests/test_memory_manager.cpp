@@ -30,7 +30,7 @@
 #include <psh/core.hpp>
 #include <psh/dyn_array.hpp>
 #include <psh/memory_manager.hpp>
-#include <psh/memory_utils.hpp>
+#include <psh/memory.hpp>
 #include <psh/stack.hpp>
 #include "utils.hpp"
 
@@ -50,7 +50,7 @@ namespace psh::test::memory_manager {
         psh_assert(memory_manager.allocator.buf == reinterpret_cast<u8*>(mem_ptr));
         psh_assert(memory_manager.allocator.offset == 0ull);
         psh_assert(memory_manager.allocator.previous_offset == 0ull);
-        psh_assert(memory_manager.allocator.size == static_cast<usize>(1024));
+        psh_assert(memory_manager.allocator.capacity == static_cast<usize>(1024));
         report_test_successful();
     }
 

@@ -214,7 +214,7 @@ namespace psh {
             return {};
         }
 #else
-        char* result = realpath(file_path, abs_path.data.buf);
+        char* result = realpath(file_path, abs_path.buf);
         if (result == nullptr) {
             psh_log_error_fmt("Unable to obtain the full path of %s due to the error:", file_path);
             perror(nullptr);

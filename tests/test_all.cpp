@@ -46,6 +46,7 @@
 #include "test_dynarray.cpp"
 #include "test_string.cpp"
 #include "test_algorithms.cpp"
+#include "test_time.cpp"
 // clang-format on
 
 int main() {
@@ -58,5 +59,6 @@ int main() {
     psh::test::dynarray::run_all();
     psh::test::string::run_all();
     psh::test::algorithms::run_all();
+    psh::test::time::run_all();
     return 0;
 }

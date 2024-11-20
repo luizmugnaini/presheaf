@@ -113,6 +113,9 @@ namespace psh {
     /// Immutable view of a string.
     using StringView = FatPtr<char const>;
 
+    /// Dynamically sized string.
+    using String = DynArray<char>;
+
     template <usize size_>
     constexpr StringView make_string_view(Str<size_> str) noexcept {
         return {str.buf, size_ - 1};
@@ -122,13 +125,10 @@ namespace psh {
         return {str, str_length(str)};
     }
 
-    using String = DynArray<char>;
-
     psh_inline String make_string(Arena* arena, StringView sv) noexcept {
-        String string;
-        string.init(arena, sv.count + 1);
+        String string{arena, sv.count + 1};
 
-        memory_copy(string.buf, sv.buf, sizeof(char) * sv.count);
+        memory_copy(reinterpret_cast<u8*>(string.buf), reinterpret_cast<u8 const*>(sv.buf), sizeof(char) * sv.count);
         string.count = sv.count;
 
         return string;

@@ -36,20 +36,20 @@ namespace psh::test::bit {
     }
 
     psh_internal void create_with_bit() {
-        psh_assert(psh_bit(u32, 3) == 0b1000);
-        psh_assert(psh_bit(u32, 1) == 0b10);
-        psh_assert(psh_bit(u32, 0) == 0b1);
+        psh_assert_constexpr(psh_bit(u32, 3) == 0b1000);
+        psh_assert_constexpr(psh_bit(u32, 1) == 0b10);
+        psh_assert_constexpr(psh_bit(u32, 0) == 0b1);
 
-        psh_assert(psh_not_bit(u8, 2) == 0b11111011);
-        psh_assert(psh_not_bit(u8, 4) == 0b11101111);
-        psh_assert(psh_not_bit(u32, 0) == 0b11111111111111111111111111111110);
-        psh_assert(psh_not_bit(u32, 12) == 0b11111111111111111110111111111111);
+        psh_assert_constexpr(psh_not_bit(u8, 2) == 0b11111011);
+        psh_assert_constexpr(psh_not_bit(u8, 4) == 0b11101111);
+        psh_assert_constexpr(psh_not_bit(u32, 0) == 0b11111111111111111111111111111110);
+        psh_assert_constexpr(psh_not_bit(u32, 12) == 0b11111111111111111110111111111111);
 
-        psh_assert(psh_bit_ones(5) == 0b11111);
-        psh_assert(psh_bit_ones(1) == 0b1);
-        psh_assert(psh_bit_ones(0) == 0b0);
-        psh_assert(psh_bit_ones(7) == 0b1111111);
-        psh_assert(psh_bit_ones(8) == 0b11111111);
+        psh_assert_constexpr(psh_bit_ones(5) == 0b11111);
+        psh_assert_constexpr(psh_bit_ones(1) == 0b1);
+        psh_assert_constexpr(psh_bit_ones(0) == 0b0);
+        psh_assert_constexpr(psh_bit_ones(7) == 0b1111111);
+        psh_assert_constexpr(psh_bit_ones(8) == 0b11111111);
 
         report_test_successful();
     }
@@ -95,70 +95,70 @@ namespace psh::test::bit {
     }
 
     psh_internal void get_bit_at() {
-        u32 x = 0b1011101011;
+        constexpr u32 x = 0b1011101011;
 
-        psh_assert(psh_bit_at(x, 0) == 1);
-        psh_assert(psh_bit_at(x, 1) == 1);
-        psh_assert(psh_bit_at(x, 2) == 0);
-        psh_assert(psh_bit_at(x, 3) == 1);
-        psh_assert(psh_bit_at(x, 4) == 0);
-        psh_assert(psh_bit_at(x, 5) == 1);
-        psh_assert(psh_bit_at(x, 6) == 1);
-        psh_assert(psh_bit_at(x, 7) == 1);
-        psh_assert(psh_bit_at(x, 8) == 0);
-        psh_assert(psh_bit_at(x, 9) == 1);
+        psh_assert_constexpr(psh_bit_at(x, 0) == 1);
+        psh_assert_constexpr(psh_bit_at(x, 1) == 1);
+        psh_assert_constexpr(psh_bit_at(x, 2) == 0);
+        psh_assert_constexpr(psh_bit_at(x, 3) == 1);
+        psh_assert_constexpr(psh_bit_at(x, 4) == 0);
+        psh_assert_constexpr(psh_bit_at(x, 5) == 1);
+        psh_assert_constexpr(psh_bit_at(x, 6) == 1);
+        psh_assert_constexpr(psh_bit_at(x, 7) == 1);
+        psh_assert_constexpr(psh_bit_at(x, 8) == 0);
+        psh_assert_constexpr(psh_bit_at(x, 9) == 1);
 
-        psh_assert(psh_bits_at(x, 0, 1) == psh_bit_at(x, 0));
-        psh_assert(psh_bits_at(x, 1, 1) == psh_bit_at(x, 1));
-        psh_assert(psh_bits_at(x, 2, 1) == psh_bit_at(x, 2));
-        psh_assert(psh_bits_at(x, 4, 1) == psh_bit_at(x, 4));
-        psh_assert(psh_bits_at(x, 3, 1) == psh_bit_at(x, 3));
-        psh_assert(psh_bits_at(x, 5, 1) == psh_bit_at(x, 5));
-        psh_assert(psh_bits_at(x, 6, 1) == psh_bit_at(x, 6));
-        psh_assert(psh_bits_at(x, 7, 1) == psh_bit_at(x, 7));
-        psh_assert(psh_bits_at(x, 8, 1) == psh_bit_at(x, 8));
-        psh_assert(psh_bits_at(x, 9, 1) == psh_bit_at(x, 9));
+        psh_assert_constexpr(psh_bits_at(x, 0, 1) == psh_bit_at(x, 0));
+        psh_assert_constexpr(psh_bits_at(x, 1, 1) == psh_bit_at(x, 1));
+        psh_assert_constexpr(psh_bits_at(x, 2, 1) == psh_bit_at(x, 2));
+        psh_assert_constexpr(psh_bits_at(x, 4, 1) == psh_bit_at(x, 4));
+        psh_assert_constexpr(psh_bits_at(x, 3, 1) == psh_bit_at(x, 3));
+        psh_assert_constexpr(psh_bits_at(x, 5, 1) == psh_bit_at(x, 5));
+        psh_assert_constexpr(psh_bits_at(x, 6, 1) == psh_bit_at(x, 6));
+        psh_assert_constexpr(psh_bits_at(x, 7, 1) == psh_bit_at(x, 7));
+        psh_assert_constexpr(psh_bits_at(x, 8, 1) == psh_bit_at(x, 8));
+        psh_assert_constexpr(psh_bits_at(x, 9, 1) == psh_bit_at(x, 9));
 
-        psh_assert(psh_bits_at(x, 4, 6) == 0b101110);
-        psh_assert(psh_bits_at(x, 0, 4) == 0b1011);
-        psh_assert(psh_bits_at(x, 0, 2) == 0b11);
-        psh_assert(psh_bits_at(x, 0, 3) == 0b011);
+        psh_assert_constexpr(psh_bits_at(x, 4, 6) == 0b101110);
+        psh_assert_constexpr(psh_bits_at(x, 0, 4) == 0b1011);
+        psh_assert_constexpr(psh_bits_at(x, 0, 2) == 0b11);
+        psh_assert_constexpr(psh_bits_at(x, 0, 3) == 0b011);
 
         report_test_successful();
     }
 
     psh_internal void get_u8_nibbles() {
-        u16 x = 0xAB;
-        psh_assert(psh_u8_lo(x) == 0x0B);
-        psh_assert(psh_u8_hi(x) == 0x0A);
+        constexpr u16 x = 0xAB;
+        psh_assert_constexpr(psh_u8_lo(x) == 0x0B);
+        psh_assert_constexpr(psh_u8_hi(x) == 0x0A);
 
         report_test_successful();
     }
 
     psh_internal void make_u16_from_bytes() {
-        psh_assert(psh_u8_to_u16_hi(0xFC) == 0xFC00);
+        psh_assert_constexpr(psh_u8_to_u16_hi(0xFC) == 0xFC00);
 
-        psh_assert(psh_u16_from_bytes(0xFB, 0xA3) == 0xFBA3);
-        psh_assert(psh_u16_from_bytes(0x01, 0x01) == 0x0101);
-        psh_assert(psh_u16_from_bytes(0xAB, 0xBA) == 0xABBA);
-        psh_assert(psh_u16_from_bytes(0x00, 0x00) == 0x0000);
-        psh_assert(psh_u16_from_bytes(0xAA, 0xAA) == 0xAAAA);
+        psh_assert_constexpr(psh_u16_from_bytes(0xFB, 0xA3) == 0xFBA3);
+        psh_assert_constexpr(psh_u16_from_bytes(0x01, 0x01) == 0x0101);
+        psh_assert_constexpr(psh_u16_from_bytes(0xAB, 0xBA) == 0xABBA);
+        psh_assert_constexpr(psh_u16_from_bytes(0x00, 0x00) == 0x0000);
+        psh_assert_constexpr(psh_u16_from_bytes(0xAA, 0xAA) == 0xAAAA);
 
         report_test_successful();
     }
 
     psh_internal void get_u16_bytes() {
-        psh_assert(psh_u16_hi(0xFBA3) == 0xFB);
-        psh_assert(psh_u16_hi(0x1101) == 0x11);
-        psh_assert(psh_u16_hi(0xABBA) == 0xAB);
-        psh_assert(psh_u16_hi(0x0000) == 0x00);
-        psh_assert(psh_u16_hi(0xAAAA) == 0xAA);
+        psh_assert_constexpr(psh_u16_hi(0xFBA3) == 0xFB);
+        psh_assert_constexpr(psh_u16_hi(0x1101) == 0x11);
+        psh_assert_constexpr(psh_u16_hi(0xABBA) == 0xAB);
+        psh_assert_constexpr(psh_u16_hi(0x0000) == 0x00);
+        psh_assert_constexpr(psh_u16_hi(0xAAAA) == 0xAA);
 
-        psh_assert(psh_u16_lo(0xFBA3) == 0xA3);
-        psh_assert(psh_u16_lo(0x1101) == 0x01);
-        psh_assert(psh_u16_lo(0xABBA) == 0xBA);
-        psh_assert(psh_u16_lo(0x0000) == 0x00);
-        psh_assert(psh_u16_lo(0xAAAA) == 0xAA);
+        psh_assert_constexpr(psh_u16_lo(0xFBA3) == 0xA3);
+        psh_assert_constexpr(psh_u16_lo(0x1101) == 0x01);
+        psh_assert_constexpr(psh_u16_lo(0xABBA) == 0xBA);
+        psh_assert_constexpr(psh_u16_lo(0x0000) == 0x00);
+        psh_assert_constexpr(psh_u16_lo(0xAAAA) == 0xAA);
 
         report_test_successful();
     }
@@ -170,17 +170,17 @@ namespace psh::test::bit {
         psh_u16_set_lo(x, 0xAB);
         psh_assert(x == 0xFAAB);
 
-        psh_assert(psh_u16_from_bytes(0x00, 0x00) == 0x0000);
-        psh_assert(psh_u16_from_bytes(0xFF, 0xC3) == 0xFFC3);
-        psh_assert(psh_u16_from_bytes(0xAB, 0xCD) == 0xABCD);
+        psh_assert_constexpr(psh_u16_from_bytes(0x00, 0x00) == 0x0000);
+        psh_assert_constexpr(psh_u16_from_bytes(0xFF, 0xC3) == 0xFFC3);
+        psh_assert_constexpr(psh_u16_from_bytes(0xAB, 0xCD) == 0xABCD);
 
         report_test_successful();
     }
 
     psh_internal void integers_have_opposite_sign() {
-        psh_assert(!psh_int_opposite_sign(8127, 1209831));
-        psh_assert(psh_int_opposite_sign(-8127, 1209831));
-        psh_assert(psh_int_opposite_sign(8127, -1209831));
+        psh_assert_constexpr(!psh_int_opposite_sign(8127, 1209831));
+        psh_assert_constexpr(psh_int_opposite_sign(-8127, 1209831));
+        psh_assert_constexpr(psh_int_opposite_sign(8127, -1209831));
 
         report_test_successful();
     }

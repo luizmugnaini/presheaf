@@ -27,6 +27,8 @@
 #include <psh/repr.hpp>
 #include "utils.hpp"
 
+#include <stdlib.h>
+
 namespace psh::test::repr {
     psh_internal void binary_representation() {
         u8*   memory = reinterpret_cast<u8*>(malloc(256));

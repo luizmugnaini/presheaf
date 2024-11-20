@@ -30,6 +30,11 @@
 #include <psh/stack.hpp>
 
 namespace psh {
+    // @TODO: Add the following capabilities
+    // - Resizing.
+    // - Reserving memory without commiting.
+    // - Commiting memory manually.
+
     /// A stack allocator manager that can be used as the central memory resource of an application.
     struct psh_api MemoryManager {
         usize allocation_count = 0;
@@ -48,7 +53,7 @@ namespace psh {
         ///
         /// Parameters:
         ///     * count: Number of entities of type `T` that should fit in the requested memory
-        ///                 region.
+        ///              region.
         template <typename T>
         T* alloc(usize count) noexcept;
 

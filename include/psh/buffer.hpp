@@ -83,12 +83,12 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     template <typename T, usize count>
-    FatPtr<T> make_fat_ptr(Buffer<T, count>& b) noexcept {
+    constexpr FatPtr<T> make_fat_ptr(Buffer<T, count>& b) noexcept {
         return FatPtr<T>{b.buf, count};
     }
 
     template <typename T, usize count>
-    FatPtr<T const> make_const_fat_ptr(Buffer<T, count> const& b) noexcept {
+    constexpr FatPtr<T const> make_const_fat_ptr(Buffer<T, count> const& b) noexcept {
         return FatPtr<T const>{reinterpret_cast<T const*>(b.buf), count};
     }
 }  // namespace psh
