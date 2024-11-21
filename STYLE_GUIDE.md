@@ -89,7 +89,7 @@ We mostly follow the advice given by the [C++ Core Guidelines](https://isocpp.gi
 - Private variables should *not* be used, everything should be accessible. The user is responsible for their
   usage, not the library - if one wants to break some implicit contract, let it be.
 - Regarding **method argument names**, if you need to avoid name collisions with member variables, you can
-  put an underscore to the start of the argument: `arg_avoiding_collision_`.
+  put an underscore to the end of the argument: `arg_avoiding_collision_`.
 
 # Enumerations
 
