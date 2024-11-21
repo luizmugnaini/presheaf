@@ -25,19 +25,8 @@
 #include <psh/stack.hpp>
 
 namespace psh {
-    void Stack::init(FatPtr<u8> memory) noexcept {
-        this->buf             = memory.buf;
-        this->capacity        = memory.count;
-        this->offset          = 0;
-        this->previous_offset = 0;
-
-        if (psh_likely(this->capacity > 0)) {
-            psh_assert_msg(this->buf != nullptr, "Stack initialized with non-zero capacity but an empty buffer");
-        }
-    }
-
     u8* Stack::alloc_align(usize size_bytes, u32 alignment) noexcept {
-        if (psh_unlikely(size_bytes == 0)) {
+        if (psh_unlikely(this->capacity == 0 || size_bytes == 0)) {
             return nullptr;
         }
 
@@ -216,11 +205,5 @@ namespace psh {
         this->previous_offset = header->previous_offset;
 
         return STATUS_OK;
-    }
-
-    /// Reset the allocator's offset.
-    void Stack::clear() noexcept {
-        this->offset          = 0;
-        this->previous_offset = 0;
     }
 }  // namespace psh

@@ -24,11 +24,8 @@
 
 #pragma once
 
+#include <psh/assert.hpp>
 #include <psh/core.hpp>
-#include <psh/log.hpp>
-#include <psh/math.hpp>
-#include <psh/memory.hpp>
-#include <psh/option.hpp>
 
 namespace psh {
     /// Header associated with each memory block in the stack allocator.
@@ -98,9 +95,19 @@ namespace psh {
         usize previous_offset = 0;
 
         constexpr Stack() = default;
-        psh_inline Stack(FatPtr<u8> memory) noexcept;
 
-        void init(FatPtr<u8> memory) noexcept;
+        psh_inline void init(FatPtr<u8> memory) noexcept {
+            psh_assert_msg(this->capacity == 0, "Tried to re-initialize an initialized Stack.");
+
+            this->buf             = memory.buf;
+            this->capacity        = memory.count;
+            this->offset          = 0;
+            this->previous_offset = 0;
+        }
+
+        psh_inline Stack(FatPtr<u8> memory) noexcept {
+            this->init(memory);
+        }
 
         // -----------------------------------------------------------------------------
         // Allocated memory information.
@@ -137,6 +144,7 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         u8* alloc_align(usize size_bytes, u32 alignment) noexcept;
+
         u8* realloc_align(u8* block, usize new_size_bytes, u32 alignment) noexcept;
 
         /// Allocates a new block of memory.
@@ -144,7 +152,9 @@ namespace psh {
         /// Parameters:
         ///     * `count`: Number of entities of type `T` that should fit in the new block.
         template <typename T>
-        T* alloc(usize count) noexcept;
+        psh_inline T* alloc(usize count) noexcept {
+            return reinterpret_cast<T*>(this->alloc_align(sizeof(T) * count, alignof(T)));
+        }
 
         /// Reallocate a block of memory of a given type.
         ///
@@ -156,7 +166,9 @@ namespace psh {
         /// Note: If the new count is zero, we proceed to clean the whole stack up until the given
         ///       block.
         template <typename T>
-        T* realloc(T* block, usize new_count) noexcept;
+        psh_inline T* realloc(T* block, usize new_count) noexcept {
+            return reinterpret_cast<T*>(this->realloc_align(block, sizeof(T) * new_count));
+        }
 
         // -----------------------------------------------------------------------------
         // Memory manipulation utilities.
@@ -181,26 +193,9 @@ namespace psh {
         Status clear_at(u8 const* block) noexcept;
 
         /// Reset the allocator's offset.
-        void clear() noexcept;
+        psh_inline void clear() noexcept {
+            this->offset          = 0;
+            this->previous_offset = 0;
+        }
     };
-
-    // -----------------------------------------------------------------------------
-    // Implementation of the stack methods.
-    // -----------------------------------------------------------------------------
-
-    Stack::Stack(FatPtr<u8> memory) noexcept {
-        this->init(memory);
-    }
-
-    template <typename T>
-    T* Stack::alloc(usize count) noexcept {
-        u8* mem = this->alloc_align(sizeof(T) * count, alignof(T));
-        return reinterpret_cast<T*>(mem);
-    }
-
-    template <typename T>
-    T* Stack::realloc(T* block, usize new_count) noexcept {
-        u8* mem = this->realloc_align(block, sizeof(T) * new_count);
-        return reinterpret_cast<T*>(mem);
-    }
 }  // namespace psh
