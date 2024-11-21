@@ -7,9 +7,9 @@ This is a C++ library that I use across my projects as an alternative to the STL
 C++20 and its only dependency is libc and a few OS headers (see [here](#dependencies) for more info).
 Compilers that are ensured to work are: Clang, GCC, MSVC.
 
-The code is written with simplicity in mind and does **not** adhere to the principles of the so
-called "modern" C++. There is no use of exceptions, inheritance, and only a few standard headers are
-used. For more information, check the [style guide](./STYLE_GUIDE.md).
+The code is written with simplicity and performance in mind, hence it does **not** adhere to the
+principles of the so called "modern" C++. There is no use of exceptions, inheritance, smart
+pointers, etc. For more information, check the [style guide](./STYLE_GUIDE.md).
 
 # Building
 
@@ -44,19 +44,23 @@ llvm-ar rc libpresheaf.a presheaf.o
 
 # Integrating with another project
 
-Having no inherent build system, this library is extremely easy to integrate to any projects. Since unity
-build files such as `presheaf/src/all.cpp` are available, you can also embed the library directly inside
-of your project.
+Having no inherent build system, this library is extremely easy to integrate to any projects. Since
+unity build files such as `presheaf/src/all.cpp` are available, you can also embed the library
+directly inside of your project.
 
 You may either create a static or shared library binary or you can simply add the include directory
-`presheaf/include` and the source file `presheaf/src/all.cpp` to your compilation command. If you are
-using CMake (may your soul be forgiven), you can include the following lines to add Presheaf as a library:
+`presheaf/include` and the source file `presheaf/src/all.cpp` to your compilation command.
+
+If you are using CMake (may your soul be forgiven), you can include the following lines to add
+Presheaf as a library:
 
 ```cmake
-add_library(presheaf src/all.cpp)
-target_include_directories(presheaf PUBLIC include)
+add_library(presheaf "presheaf/src/all.cpp")
+target_include_directories(presheaf PUBLIC "presheaf/include")
 set_property(TARGET presheaf PROPERTY CXX_STANDARD 20)
 ```
+
+and of course, you should change the paths to the correct ones for your project structure.
 
 # Library compile-time options
 
