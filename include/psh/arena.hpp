@@ -24,6 +24,7 @@
 #pragma once
 
 #include <psh/core.hpp>
+#include <psh/memory.hpp>
 
 namespace psh {
     // Forward declaration.
@@ -34,15 +35,18 @@ namespace psh {
     /// This allocator is used to save the state of the parent arena at creation time and
     /// restore the parent arena offset state at destruction time.
     ///
-    /// You can nest many scratch arenas throughout different lifetimes by decoupling the
-    /// current scratch arena into a new one.
+    /// You can nest many scratch arenas throughout different lifetimes by creating scratch arenas
+    /// at distinct scopes.
+    ///
+    /// Scratch arenas shouldn't be passed to other functions, they should be used in a single scope.
     ///
     /// # Intended usage pattern
     ///
     /// ```cpp
-    /// f32 do_temp_work_and_restore_arena(ScratchArena&& s) {
-    ///    DynArray<f32> arr{s.arena};
+    /// f32 do_temp_work_and_restore_arena(Arena& arena) {
+    ///    ScratchArena s = arena.make_scratch(); // The arena will be restored at the end of the function.
     ///
+    ///    DynArray<f32> arr{arena};
     ///    arr.push(4.0f);
     ///    arr.push(5.5f);
     ///    arr.push(20.5f);
@@ -53,83 +57,39 @@ namespace psh {
     ///    return sum;
     /// }
     ///
-    /// i32* alloc_in_scratch_lifetime(ScratchArena& s, usize count) {
-    ///     return s.arena.alloc<i32>(count);
+    /// i32* alloc_in_scratch_lifetime(Arena& arena, usize count) {
+    ///     return arena.alloc<i32>(count);
     /// }
     ///
     /// int main() {
-    ///     Arena a{...};
+    ///     Arena arena{...};
     ///
-    ///     u8* x = a.alloc<u8>(1024);  // `a` has offset 1024.
+    ///     u8* x = arena.alloc<u8>(1024);  // `arena` has offset 1024.
     ///     {
-    ///         ScratchArena s = a.make_scratch();  // Record the offset 1024.
+    ///         ScratchArena sarena = arena.make_scratch();  // Record the offset 1024.
     ///
-    ///         i32 y = s.arena.alloc<u8>(32);  // `a` has an offset of 1024 + 4 * 32 = 1152.
+    ///         i32 y = arena.alloc<u8>(32);  // `arena` has an offset of 1024 + 4 * 32 = 1152.
     ///
-    ///         // Record the offset 1152 into a new scratch arena, pass it a function, which
-    ///         // will possibly allocate. When the function returns, `a` will go back to the
-    ///         // 1152 offset.
-    ///         f32 result = do_temp_work_and_restore_arena(s.decouple());
+    ///         // Record the offset 1152 into a new scratch arena, pass it to a function, which
+    ///         // will possibly allocate. When the function returns, `arena` will go back to the
+    ///         // 1152 offset (see `do_temp_work_and_restore_arena`).
+    ///         f32 result = do_temp_work_and_restore_arena(arena);
     ///
-    ///         // Pass `s` to a function that will allocate 100 * 4 = 400 bits, bumping the
-    ///         // offset of `a` to 1152 + 400 = 1552.
-    ///         i32* val = alloc_in_scratch_lifetime(s, 100);
+    ///         // Pass `sarena` to a function that will allocate 100 * 4 = 400 bits, bumping the
+    ///         // offset of `arena` to 1152 + 400 = 1552.
+    ///         i32* val = alloc_in_scratch_lifetime(arena, 100);
     ///     }
-    ///     // `a` goes back to having an offset of 1024.
+    ///     // `arena` goes back to having an offset of 1024.
     ///
     ///     return 0;
     /// }
     /// ```
-    ///
-    /// # Bad usage
-    ///
-    /// You should avoid the following usage pattern at all costs
-    /// ```cpp
-    /// f32* bad_alloc(ScratchArena const& s, usize count) {
-    ///     return s.arena.alloc<f32>(count);
-    /// }
-    ///
-    /// int main() {
-    ///     Arena a{...}; // `a` has 0 offset.
-    ///     {
-    ///         ScratchArena s = a.make_scratch(); // Record the 0 offset.
-    ///
-    ///         u32 foo = s.arena.alloc<u32>(10); // `a` has offset 4 * 10 = 40.
-    ///
-    ///         // - Records the offset `40`.
-    ///         // - Allocates 30 * 4 = 120 bits internally.
-    ///         // - Restore the arena offset to `40` when returning.
-    ///         // - The resulting `bad_ptr` can be overwritten by any subsequent allocation.
-    ///         f32* bad_ptr = bad_alloc(s.decouple(), 30);
-    ///
-    ///         // Will overwrite the memory region "pertaining" to `bad_ptr`
-    ///         i64* over_ptr s.arena.alloc<i64>(50);
-    ///     }
-    ///     // `a` is restored to offset 0.
-    ///     return 0;
-    /// }
-    /// ```
-    /// If you passed `s` directly to `bad_alloc` you wouldn't have this problem because
-    /// `bad_alloc` wouldn't restore the arena offset when returning and the arena would have an
-    /// offset of 40 + 120 = 160. In order to mitigate this usage pattern, you should never have
-    /// a function signature accepting `ScratchArena const&` as a parameter, since the callee
-    /// may pass the scratch as an rvalue. In order to truly solve the above code problem, you
-    /// should substitute `ScratchArena const&` of `bad_alloc` by `ScratchArena&` since this
-    /// prohibits passing the scratch arena by rvalue.
-    ///
-    /// In general, your options will then be to pass as `ScratchArena&` or `ScratchArena&&`.
     struct psh_api ScratchArena {
         Arena* arena;
         usize  saved_offset;
 
-        /// Create an automatic checkpoint for the arena.
-        ScratchArena(Arena* arena) noexcept;
-
-        /// Automatically restore the state of the parent arena.
-        ~ScratchArena() noexcept;
-
-        /// Create a new scratch arena with the current state of the parent.
-        ScratchArena decouple() const noexcept;
+        psh_inline ScratchArena(Arena* parent) noexcept;
+        psh_inline ~ScratchArena() noexcept;
 
         // @NOTE: Required when compiling as a DLL since the compiler will require all standard
         //        member functions to be defined.
@@ -137,6 +97,9 @@ namespace psh {
     };
 
     /// Manually managed checkpoint for arenas.
+    ///
+    /// You can create a checkpoint with `Arena::make_checkpoint` and restore the arena to
+    /// a given checkpoint via `Arena::restore_state`.
     struct psh_api ArenaCheckpoint {
         Arena* arena;
         usize  saved_offset;
@@ -147,14 +110,11 @@ namespace psh {
     /// The arena allocator is great for the management of temporary allocation of memory, since an
     /// allocation takes nothing more than incrementing an offset.
     ///
-    /// Note:
-    ///     * The arena does not own memory, thus it is not responsible for the freeing of it.
-    ///     * Any functions that return a raw pointer should be checked for nullity since allocation
-    ///       may fail.
+    /// The arena does not own memory, thus it is not responsible for the freeing of it.
     struct psh_api Arena {
-        /// Non-owned memory block managed by the arena allocator.
+        /// Not-owned block of memory.
         u8*   buf;
-        /// The capacity, in bytes, of the memory block.
+        /// Capacity in bytes of the arena block of memory.
         usize capacity = 0;
         /// The current offset to the free-space in the memory block.
         usize offset   = 0;
@@ -166,47 +126,91 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         u8* alloc_align(usize size_bytes, u32 alignment) noexcept;
+
         u8* realloc_align(u8* block, usize current_size_bytes, usize new_size_bytes, u32 alignment) noexcept;
 
         template <typename T>
-        T* alloc(usize count) noexcept;
+        T* alloc(usize count) noexcept {
+            return reinterpret_cast<T*>(this->alloc_align(sizeof(T) * count, alignof(T)));
+        }
 
         template <typename T>
-        T* realloc(T* block, usize current_count, usize new_count) noexcept;
+        T* realloc(T* block, usize current_count, usize new_count) noexcept {
+            return reinterpret_cast<T*>(this->realloc_align(
+                reinterpret_cast<u8*>(block),
+                sizeof(T) * current_count,
+                sizeof(T) * new_count,
+                alignof(T)));
+        }
 
         // -----------------------------------------------------------------------------
         // Temporary memory management.
         // -----------------------------------------------------------------------------
 
         /// Reset the offset of the allocator.
-        void clear() noexcept;
+        psh_inline void clear() noexcept {
+            this->offset = 0;
+        }
 
         /// Create a new scratch arena with the current offset state.
-        ScratchArena make_scratch() noexcept;
+        psh_inline ScratchArena make_scratch() noexcept {
+            return ScratchArena{this};
+        }
 
         /// Create a restorable checkpoint for the arena. This is a more flexible alternative to the
         /// `ScratchArena` construct since you can manually restore the arena, not relying in destructors.
-        ArenaCheckpoint make_checkpoint() noexcept;
+        psh_inline ArenaCheckpoint make_checkpoint() noexcept {
+            return ArenaCheckpoint{.arena = this, .saved_offset = this->offset};
+        }
 
         /// Restore the arena state to a given checkpoint.
-        void restore_state(ArenaCheckpoint& checkpoint) noexcept;
+        psh_inline void restore_state(ArenaCheckpoint& checkpoint) noexcept {
+            psh_assert_msg(checkpoint.arena == this, "Checkpoint originates from a distinct arena.");
+            psh_assert_fmt(
+                checkpoint.saved_offset <= this->offset,
+                "Invalid checkpoint. Cannot restore the arena to an offset (%zu) bigger than the current (%zu).",
+                checkpoint.saved_offset,
+                this->offset);
+
+            checkpoint.arena = nullptr;  // Invalidate the checkpoint for further uses.
+            this->offset     = checkpoint.saved_offset;
+        }
     };
 
-    // -----------------------------------------------------------------------------
-    // Implementation of the arena allocation methods.
-    // -----------------------------------------------------------------------------
+    /// Make an arena that owns its memory.
+    ///
+    /// Since the arena is not aware of the ownership, this function call has to be paired
+    /// with `free_owned_arena`.
+    psh_inline Arena make_owned_arena(usize capacity) noexcept {
+        FatPtr<u8> memory = psh::memory_virtual_alloc(capacity);
+        psh_assert_msg(memory.count != 0, "Failed to allocate memory.");
 
-    template <typename T>
-    T* Arena::alloc(usize count) noexcept {
-        return reinterpret_cast<T*>(this->alloc_align(sizeof(T) * count, alignof(T)));
+        return Arena{.buf = memory.buf, .capacity = memory.count};
     }
 
-    template <typename T>
-    T* Arena::realloc(T* block, usize current_count, usize new_count) noexcept {
-        return reinterpret_cast<T*>(this->realloc_align(
-            reinterpret_cast<u8*>(block),
-            sizeof(T) * current_count,
-            sizeof(T) * new_count,
-            alignof(T)));
+    /// Free the memory of an arena that owns its memory.
+    ///
+    /// This function should only be called for arenas that where created by `make_owned_arena`.
+    psh_inline void free_owned_arena(Arena& arena) noexcept {
+        psh::memory_virtual_free({arena.buf, arena.capacity});
+        arena.capacity = 0;
     }
+
+    // -----------------------------------------------------------------------------
+    // Implementation of the scratch arena methods.
+    // -----------------------------------------------------------------------------
+
+    ScratchArena::ScratchArena(Arena* parent) noexcept {
+        if (psh_likely(parent != nullptr)) {
+            this->arena        = parent;
+            this->saved_offset = parent->offset;
+        }
+    }
+
+    ScratchArena::~ScratchArena() noexcept {
+        if (psh_likely(this->arena != nullptr)) {
+            this->arena->offset = this->saved_offset;
+        }
+    }
+
 }  // namespace psh

@@ -97,6 +97,9 @@ namespace psh {
         usize offset          = 0;
         usize previous_offset = 0;
 
+        constexpr Stack() = default;
+        psh_inline Stack(FatPtr<u8> memory) noexcept;
+
         void init(FatPtr<u8> memory) noexcept;
 
         // -----------------------------------------------------------------------------
@@ -182,8 +185,12 @@ namespace psh {
     };
 
     // -----------------------------------------------------------------------------
-    // Implementation of the stack allocation templated methods.
+    // Implementation of the stack methods.
     // -----------------------------------------------------------------------------
+
+    Stack::Stack(FatPtr<u8> memory) noexcept {
+        this->init(memory);
+    }
 
     template <typename T>
     T* Stack::alloc(usize count) noexcept {

@@ -44,13 +44,10 @@ namespace psh {
         /// Initialize the array with a given size.
         psh_inline void init(Arena* arena_, usize count_) noexcept {
             psh_assert_msg(this->count == 0, "Tried to re-initialize an initialized Array.");
-            this->count = count_;
-            if (psh_likely(this->count != 0)) {
-                psh_assert_msg(arena_ != nullptr, "Array initialization called with non-zero capacity but an empty arena.");
+            psh_assert(arena_ != nullptr);
 
-                this->buf = arena_->alloc<T>(this->count);
-                psh_assert_msg(this->buf != nullptr, "Array initialization unable to acquire enough bytes of memory.");
-            }
+            this->buf   = arena_->alloc<T>(count_);
+            this->count = (this->buf != nullptr) ? count_ : 0;
         }
 
         /// Construct an array with a given size.
@@ -60,20 +57,6 @@ namespace psh {
 
         psh_inline usize size_bytes() const noexcept {
             return sizeof(T) * this->count;
-        }
-
-        psh_inline T* begin() noexcept {
-            return this->buf;
-        }
-        psh_inline T* end() noexcept {
-            return psh_ptr_add(this->buf, this->count);
-        }
-
-        psh_inline T const* begin() const noexcept {
-            return static_cast<T const*>(this->buf);
-        }
-        psh_inline T const* end() const noexcept {
-            return static_cast<T const*>(psh_ptr_add(this->buf, this->count));
         }
 
         psh_inline T& operator[](usize idx) noexcept {
@@ -89,6 +72,11 @@ namespace psh {
 #endif
             return this->buf[idx];
         }
+
+        psh_inline T*       begin() noexcept { return this->buf; }
+        psh_inline T*       end() noexcept { return psh_ptr_add(this->buf, this->count); }
+        psh_inline T const* begin() const noexcept { return static_cast<T const*>(this->buf); }
+        psh_inline T const* end() const noexcept { return static_cast<T const*>(psh_ptr_add(this->buf, this->count)); }
     };
 
     // -----------------------------------------------------------------------------

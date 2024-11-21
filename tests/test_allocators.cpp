@@ -93,7 +93,7 @@ namespace psh::test::allocators {
             // ---------------------------------------------------------------------------------
             usize s2_base_offset = last_offset;
             {
-                ScratchArena s2 = s1.decouple();
+                ScratchArena s2 = s1.arena->make_scratch();
 
                 // Check if this new scratch has a working allocation scheme.
                 psh_assert(s2.arena == &arena);
@@ -120,7 +120,7 @@ namespace psh::test::allocators {
                 // Create another scratch arena from `s1` within the same lifetime of `s2`.
                 // ---------------------------------------------------------------------------------
 
-                ScratchArena s3 = s1.decouple();
+                ScratchArena s3 = s1.arena->make_scratch();
 
                 // Check if this new scratch has a working allocation scheme.
                 psh_assert(s3.arena == &arena);
@@ -148,7 +148,7 @@ namespace psh::test::allocators {
                 // Create another scratch arena from `s2` within the same lifetime of `s2` and `s3`.
                 // ---------------------------------------------------------------------------------
 
-                ScratchArena s4 = s2.decouple();
+                ScratchArena s4 = s2.arena->make_scratch();
 
                 // Check if this new scratch has a working allocation scheme.
                 psh_assert(s4.arena == &arena);
@@ -178,7 +178,7 @@ namespace psh::test::allocators {
 
                 usize s5_base_offset = last_offset;
                 {
-                    ScratchArena s5 = s4.decouple();
+                    ScratchArena s5 = s4.arena->make_scratch();
 
                     // Check if this new scratch has a working allocation scheme.
                     psh_assert(s5.arena == &arena);

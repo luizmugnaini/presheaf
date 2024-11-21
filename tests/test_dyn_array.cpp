@@ -29,7 +29,7 @@
 #include <psh/memory_manager.hpp>
 #include "utils.hpp"
 
-namespace psh::test::dynarray {
+namespace psh::test::dyn_array {
     struct Foo {
         i32 bar;
     };
@@ -40,7 +40,7 @@ namespace psh::test::dynarray {
         DynArray<i32> v{&arena};
 
         for (i32 i = 0; i < 100; ++i) {
-            v.push(i);
+            psh_assert(v.push(i));
             for (i32 j = 0; j < i; ++j) {
                 usize uj = static_cast<usize>(j);
                 psh_assert(v[uj] == j);
@@ -55,11 +55,11 @@ namespace psh::test::dynarray {
         Arena arena = memory_manager.make_arena(sizeof(Foo) * 100).demand();
 
         DynArray<Foo> v{&arena};
-        v.push(Foo{0});
+        psh_assert(v.push(Foo{0}));
 
         usize last_capacity = v.capacity;
         for (i32 i = 2; i < 50; ++i) {
-            v.push(Foo{i});
+            psh_assert(v.push(Foo{i}));
 
             usize const count = v.count;
             psh_assert(count == static_cast<usize>(i));
@@ -82,7 +82,11 @@ namespace psh::test::dynarray {
         Arena arena = memory_manager.make_arena(sizeof(i32) * 3).demand();
 
         DynArray<i32> v{&arena, 3};
-        v.push(4), v.push(5), v.push(6);
+        {
+            Buffer<i32, 2> elements = {4, 5};
+            psh_assert(v.push(make_const_fat_ptr(elements)));
+        }
+        psh_assert(v.push(6));
 
         // Peek then pop 6.
         {
@@ -115,11 +119,18 @@ namespace psh::test::dynarray {
         Arena arena = memory_manager.make_arena(sizeof(i32) * 5).demand();
 
         DynArray<i32> v{&arena, 5};
-        v.push(4), v.push(7), v.push(8), v.push(9), v.push(55);
+
+        // Populate the array.
+        psh_assert(v.push(4));
+        psh_assert(v.push(7));
+        {
+            i32 last_two[3] = {8, 9, 55};
+            psh_assert(v.push({last_two, 3}));
+        }
 
         // Do nothing.
         {
-            psh_assert(v.count == 5ull);
+            psh_assert(v.count == 5);
             psh_assert(v[0] == 4);
             psh_assert(v[1] == 7);
             psh_assert(v[2] == 8);
@@ -132,7 +143,7 @@ namespace psh::test::dynarray {
         // Remove at index 1.
         {
             psh_assert(v.remove(1));
-            psh_assert(v.count == 4ull);
+            psh_assert(v.count == 4);
             psh_assert(v[0] == 4);
             psh_assert(v[1] == 8);
             psh_assert(v[2] == 9);
@@ -144,7 +155,7 @@ namespace psh::test::dynarray {
         // Remove at index 2.
         {
             psh_assert(v.remove(2));
-            psh_assert(v.count == 3ull);
+            psh_assert(v.count == 3);
             psh_assert(v[0] == 4);
             psh_assert(v[1] == 8);
             psh_assert(v[2] == 55);
@@ -155,7 +166,7 @@ namespace psh::test::dynarray {
         // Remove at index 0.
         {
             psh_assert(v.remove(0));
-            psh_assert(v.count == 2ull);
+            psh_assert(v.count == 2);
             psh_assert(v[0] == 8);
             psh_assert(v[1] == 55);
             i32* p = v.peek();
@@ -165,7 +176,7 @@ namespace psh::test::dynarray {
         // Remove at index 1.
         {
             psh_assert(v.remove(1));
-            psh_assert(v.count == 1ull);
+            psh_assert(v.count == 1);
             psh_assert(v[0] == 8);
             i32* p = v.peek();
             psh_assert((p != nullptr) && (*p == 8));
@@ -174,7 +185,7 @@ namespace psh::test::dynarray {
         // Remove at index 0.
         {
             psh_assert(v.remove(0));
-            psh_assert(v.count == 0ull);
+            psh_assert(v.count == 0);
         }
 
         memory_manager.pop();
@@ -185,12 +196,16 @@ namespace psh::test::dynarray {
         Arena arena = memory_manager.make_arena(sizeof(f32) * 4).demand();
 
         DynArray<f32> v{&arena, 4};
+        {
+            f32 elements[4] = {7.0f, 4.8f, 6.1f, 3.14f};
+            psh_assert(v.push({elements, 4}));
+        }
 
-        v.push(7.0f), v.push(4.8f), v.push(6.1f), v.push(3.14f);
         psh_assert(v.count == static_cast<usize>(4));
 
         v.clear();
-        psh_assert(v.count == 0ull);
+        psh_assert(v.count == 0);
+        psh_assert(v.capacity == 4);
 
         memory_manager.pop();
         report_test_successful();
@@ -206,11 +221,11 @@ namespace psh::test::dynarray {
         remove(memory_manager);
         clear(memory_manager);
     }
-}  // namespace psh::test::dynarray
+}  // namespace psh::test::dyn_array
 
 #if !defined(PSH_TEST_NOMAIN)
 int main() {
-    psh::test::dynarray::run_all();
+    psh::test::dyn_array::run_all();
     return 0;
 }
 #endif

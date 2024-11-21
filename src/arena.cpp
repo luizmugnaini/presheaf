@@ -69,54 +69,47 @@ namespace psh {
         usize current_size_bytes,
         usize new_size_bytes,
         u32   alignment) noexcept {
+        psh_assert_msg(new_size_bytes != 0, "Don't use realloc to free blocks of memory.");
+        psh_assert_msg((block != nullptr) && (current_size_bytes != 0), "Don't use realloc to allocate new memory.");
+
         if (psh_unlikely(psh_impl_arena_is_empty(this))) {
             psh_impl_arena_report_out_of_memory(this, new_size_bytes, alignment);
             psh_impl_return_from_memory_error();
         }
 
-        if (psh_unlikely(new_size_bytes == 0)) {
-            psh_log_error_fmt(
-                "Arena requested to reallocate block from %zu bytes to 0 bytes, which isn't possible.",
-                current_size_bytes);
-            psh_impl_return_from_memory_error();
-        }
+        // Avoid re-reading this-> multiple times.
+        uptr  memory_addr      = reinterpret_cast<uptr>(this->buf);
+        uptr  memory_end       = memory_addr + this->capacity;
+        usize memory_offset    = this->offset;
+        uptr  free_memory_addr = memory_addr + memory_offset;
 
-        if (psh_unlikely((block == nullptr) || (current_size_bytes == 0))) {
-            return this->alloc_align(new_size_bytes, alignment);
-        }
-
-        u8* block_bytes = reinterpret_cast<u8*>(block);
-        u8* mem_end     = this->buf + this->capacity;
-        u8* free_mem    = this->buf + this->offset;
+        uptr block_addr = reinterpret_cast<uptr>(block);
 
         // Check if the block lies within the allocator's memory.
-        if (psh_unlikely((block_bytes < this->buf) || (block_bytes >= this->buf + this->capacity))) {
+        if (psh_unlikely((block_addr < memory_addr) || (block_addr >= memory_end))) {
             psh_log_error("ArenaAlloc::realloc called with pointer outside of its domain.");
             psh_impl_return_from_memory_error();
         }
 
         // Check if the block is already free.
-        if (psh_unlikely(block_bytes >= free_mem)) {
+        if (psh_unlikely(block_addr >= free_memory_addr)) {
             psh_log_error("ArenaAlloc::realloc called with a pointer to a free address of the arena domain.");
             psh_impl_return_from_memory_error();
         }
 
-        usize current_block_size = sizeof(u8) * current_size_bytes;
-        usize new_block_size     = sizeof(u8) * new_size_bytes;
-
-        if (psh_unlikely(current_size_bytes > this->offset)) {
+        if (psh_unlikely(current_size_bytes > memory_offset)) {
             psh_log_error_fmt(
                 "Arena::realloc called with current_block_size (%zu) surpassing the current offset (%zu) of the "
                 "arena, which isn't possible",
                 current_size_bytes,
-                this->offset);
+                memory_offset);
             psh_impl_return_from_memory_error();
         }
 
         // If the block is the last allocated, just bump the offset.
-        if (block_bytes == free_mem - current_size_bytes) {
+        if (block_addr == free_memory_addr - current_size_bytes) {
             // Check if there is enough space.
-            if (psh_unlikely(block_bytes + new_size_bytes > mem_end)) {
+            if (psh_unlikely(block_addr + new_size_bytes > memory_end)) {
                 psh_log_error_fmt(
                     "Unable to reallocate block from %zu bytes to %zu bytes.",
                     current_size_bytes,
@@ -125,58 +118,15 @@ namespace psh {
             }
 
             this->offset = static_cast<usize>(
-                static_cast<isize>(this->offset) +
-                static_cast<isize>(new_block_size - current_block_size));
+                static_cast<isize>(memory_offset) +
+                static_cast<isize>(new_size_bytes - current_size_bytes));
             return block;
         }
 
+        // Allocate a new block and copy old memory.
         u8* new_block = this->alloc_align(new_size_bytes, alignment);
-
-        // Copy the existing data to the new block.
-        usize copy_size = psh_min_value(current_block_size, new_block_size);
-        memory_copy(new_block, block_bytes, copy_size);
+        memory_move(new_block, block, psh_min_value(current_size_bytes, new_size_bytes));
 
         return new_block;
-    }
-
-    void Arena::clear() noexcept {
-        this->offset = 0;
-    }
-
-    ArenaCheckpoint Arena::make_checkpoint() noexcept {
-        return ArenaCheckpoint{.arena = this, .saved_offset = this->offset};
-    }
-
-    void Arena::restore_state(ArenaCheckpoint& checkpoint) noexcept {
-        psh_assert_msg(checkpoint.arena == this, "Checkpoint originates from a distinct arena.");
-        psh_assert_fmt(
-            checkpoint.saved_offset <= this->offset,
-            "Invalid checkpoint. Cannot restore the arena to an offset (%zu) bigger than the current (%zu).",
-            checkpoint.saved_offset,
-            this->offset);
-
-        checkpoint.arena = nullptr;  // Invalidate the checkpoint for further uses.
-        this->offset     = checkpoint.saved_offset;
-    }
-
-    ScratchArena::ScratchArena(Arena* parent) noexcept {
-        if (psh_likely(parent != nullptr)) {
-            this->arena        = parent;
-            this->saved_offset = parent->offset;
-        }
-    }
-
-    ScratchArena::~ScratchArena() noexcept {
-        if (psh_likely(this->arena != nullptr)) {
-            this->arena->offset = this->saved_offset;
-        }
-    }
-
-    ScratchArena ScratchArena::decouple() const noexcept {
-        return ScratchArena{this->arena};
-    }
-
-    ScratchArena Arena::make_scratch() noexcept {
-        return ScratchArena{this};
     }
 }  // namespace psh
