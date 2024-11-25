@@ -105,10 +105,8 @@ namespace psh {
         psh_assert(src != nullptr);
 
 #if defined(PSH_CHECK_MEMCPY_OVERLAP)
-        uptr dst_addr = reinterpret_cast<uptr>(dst);
-        uptr src_addr = reinterpret_cast<uptr>(src);
         psh_assert_msg(
-            (dst_addr + size_bytes > src_addr) || (dst_addr < src_addr + size_bytes),
+            (dst + size_bytes > src) || (dst < src + size_bytes),
             "Source and destination overlap in copy region (UB).");
 #endif
 
@@ -126,7 +124,7 @@ namespace psh {
     }
 
     usize padding_with_header(
-        uptr  ptr,
+        uptr  ptr_addr,
         usize alignment,
         usize header_size,
         usize header_alignment) noexcept {
@@ -137,40 +135,33 @@ namespace psh {
             header_alignment);
 
         // Calculate the padding necessary for the alignment of the new block of memory.
-        uptr padding = 0;
-        uptr align   = static_cast<uptr>(alignment);
-        uptr mod_align =
-            ptr & (align - 1);  // Same as `ptr % align` since `align` is a power of two.
+        usize padding   = 0;
+        usize mod_align = ptr_addr & (alignment - 1);  // Same as `ptr_addr % alignment`.
         if (mod_align != 0) {
-            padding += align - mod_align;
+            padding += alignment - mod_align;
         }
-        ptr += padding;
+        ptr_addr += padding;
 
         // Padding necessary for the header alignment.
-        uptr align_header = static_cast<uptr>(header_alignment);
-        uptr mod_header   = ptr & (align_header - 1);  // Same as `ptr % align_header`.
+        usize mod_header = ptr_addr & (header_alignment - 1);  // Same as `ptr_addr % header_alignment`.
         if (mod_header != 0) {
-            padding += align_header - mod_header;
+            padding += header_alignment - mod_header;
         }
 
         // The padding should at least contain the header.
         padding += header_size;
 
-        return static_cast<usize>(padding);
+        return padding;
     }
 
-    usize align_forward(uptr ptr, usize alignment) noexcept {
-        psh_assert_fmt(
-            psh_is_pow_of_two(alignment),
-            "Expected alignment (%zu) to be a power of two.",
-            alignment);
+    usize align_forward(uptr ptr_addr, usize alignment) noexcept {
+        psh_assert_fmt(psh_is_pow_of_two(alignment), "Expected alignment (%zu) to be a power of two.", alignment);
 
-        uptr align     = static_cast<uptr>(alignment);
-        uptr mod_align = ptr & (align - 1);
+        usize mod_align = ptr_addr & (alignment - 1);
         if (mod_align != 0) {
-            ptr += align - mod_align;
+            ptr_addr += alignment - mod_align;
         }
 
-        return ptr;
+        return ptr_addr;
     }
 }  // namespace psh

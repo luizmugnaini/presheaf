@@ -26,30 +26,33 @@
 
 namespace psh {
     u8* Stack::alloc_align(usize size_bytes, u32 alignment) noexcept {
-        if (psh_unlikely(this->capacity == 0 || size_bytes == 0)) {
+        usize current_capacity = this->capacity;
+        usize current_offset   = this->offset;
+
+        if (psh_unlikely(current_capacity == 0 || size_bytes == 0)) {
             return nullptr;
         }
 
-        u8* const   free_mem = this->buf + this->offset;
-        usize const padding  = padding_with_header(
-            reinterpret_cast<uptr>(free_mem),
+        u8*   free_memory = this->buf + current_offset;
+        usize padding     = padding_with_header(
+            reinterpret_cast<uptr>(free_memory),
             alignment,
             sizeof(StackHeader),
             alignof(StackHeader));
-        usize const required = padding + size_bytes;
+        usize required_bytes = padding + size_bytes;
 
-        if (psh_unlikely(required > this->capacity - this->offset)) {
+        if (psh_unlikely(required_bytes > current_capacity - current_offset)) {
             psh_log_error_fmt(
                 "Unable to allocate %zu bytes of memory (%zu bytes required due to alignment and padding)."
                 " The stack allocator has only %zu bytes remaining.",
                 size_bytes,
-                required,
-                this->capacity - this->offset);
+                required_bytes,
+                current_capacity - current_offset);
             psh_impl_return_from_memory_error();
         }
 
         // Address to the start of the new block of memory.
-        u8* new_block = free_mem + padding;
+        u8* new_block = free_memory + padding;
 
         // Write to the header associated with the new block of memory.
         StackHeader* new_header     = reinterpret_cast<StackHeader*>(new_block - sizeof(StackHeader));
@@ -58,8 +61,8 @@ namespace psh {
         new_header->previous_offset = this->previous_offset;
 
         // Update the stack offsets.
-        this->previous_offset = this->offset + padding;
-        this->offset += padding + size_bytes;
+        this->previous_offset = current_offset + padding;
+        this->offset          = current_offset + padding + size_bytes;
 
         memory_set(new_block, size_bytes, 0);
         return new_block;
@@ -85,7 +88,7 @@ namespace psh {
 
         // Check if the address is already free.
         if (psh_unlikely(block >= this->buf + this->offset)) {
-            psh_log_error("StackAlloc::realloc called with a free block of memory (use-after-free error).");
+            psh_log_error("Called with a free block of memory (use-after-free error).");
             psh_impl_return_from_memory_error();
         }
 
@@ -94,8 +97,7 @@ namespace psh {
         // Check memory availability.
         if (psh_unlikely(new_size_bytes > this->capacity - this->offset)) {
             psh_log_error_fmt(
-                "StackAlloc::realloc cannot reallocate memory from size %zu to %zu. Only %zu "
-                "bytes of memory remaining.",
+                "Cannot reallocate memory from size %zu to %zu. Only %zu bytes of memory remaining.",
                 header->capacity,
                 new_size_bytes,
                 this->capacity - this->offset);
@@ -134,37 +136,27 @@ namespace psh {
     }
 
     StackHeader const* Stack::header_of(u8 const* block) const noexcept {
+        u8 const* memory_start = this->buf;
+
+        bool valid = true;
+        valid &= (block != nullptr);
+        valid &= (block >= memory_start);
+        valid &= (block <= memory_start + this->capacity;
+        valid &= (block <= memory_start + this->previous_offset);
+
         u8 const* block_header = block + sizeof(StackHeader);
-        bool      valid        = true;
+        valid &= (block_header >= memory_start);
 
-        if (psh_unlikely(block == nullptr)) {
-            valid = false;
-        }
-        if (psh_unlikely((block < this->buf) || (block >= this->buf + this->capacity))) {
-            psh_log_error("StackAlloc::header_of called with a pointer to a block of memory "
-                          "outside of the stack allocator scope.");
-            valid = false;
-        }
-        if (psh_unlikely(block > this->buf + this->previous_offset)) {
-            psh_log_error("StackAlloc::header_of called with a pointer to a freed block of memory.");
-            valid = false;
-        }
-        if (psh_unlikely(block_header < this->buf)) {
-            psh_log_error("StackAlloc::header_of expected the memory block header to be contained "
-                          "in the stack allocator scope.");
-            valid = false;
-        }
-
-        return (!valid) ? nullptr : reinterpret_cast<StackHeader const*>(block_header);
+        return valid ? reinterpret_cast<StackHeader const*>(block_header) : nullptr;
     }
 
-    usize Stack::size_of(u8 const* mem) const noexcept {
-        StackHeader const* header = this->header_of(mem);
+    usize Stack::size_of(u8 const* block) const noexcept {
+        StackHeader const* header = this->header_of(block);
         return (header == nullptr) ? 0 : header->capacity;
     }
 
-    usize Stack::previous_offset_of(u8 const* mem) const noexcept {
-        auto* const header = this->header_of(mem);
+    usize Stack::previous_offset_of(u8 const* block) const noexcept {
+        StackHeader* header = this->header_of(block);
         return (header == nullptr) ? 0 : header->previous_offset;
     }
 
@@ -190,8 +182,8 @@ namespace psh {
         if (psh_unlikely((block < this->buf) || (block > this->buf + this->previous_offset))) {
             strptr fail_reason =
                 (block > this->buf + this->capacity)
-                    ? "StackAlloc::free_at called with a pointer outside of the stack allocator memory region."
-                    : "StackAlloc::free_at called with a pointer to an already free region of the stack allocator memory.";
+                    ? "Pointer outside of the stack allocator memory region."
+                    : "Pointer to an already free region of the stack allocator memory.";
             psh_log_error(fail_reason);
 
             psh_impl_return_from_memory_error();
