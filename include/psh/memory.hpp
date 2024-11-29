@@ -36,7 +36,7 @@ namespace psh {
     ///
     /// Note: Unfortunately, these checks can only be reliably made at runtime.
     psh_api bool arch_is_little_endian() psh_noexcept;
-    psh_api bool arch_is_bit_endian() psh_noexcept;
+    psh_api bool arch_is_big_endian() psh_noexcept;
 
     // -----------------------------------------------------------------------------
     // Memory manipulation utilities.

@@ -41,7 +41,7 @@ namespace psh {
         return static_cast<bool>(*(reinterpret_cast<u8*>(&integer)));
     }
 
-    bool arch_is_bit_endian() psh_noexcept {
+    bool arch_is_big_endian() psh_noexcept {
         i32 integer = 1;
         return static_cast<bool>(!*(reinterpret_cast<u8*>(&integer)));
     }
