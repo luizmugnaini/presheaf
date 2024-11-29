@@ -43,7 +43,7 @@
 #include "test_vec.cpp"
 #include "test_allocators.cpp"
 #include "test_memory_manager.cpp"
-#include "test_dyn_array.cpp"
+#include "test_dynarray.cpp"
 #include "test_string.cpp"
 #include "test_algorithms.cpp"
 #include "test_time.cpp"
@@ -56,7 +56,7 @@ int main() {
     psh::test::vec::run_all();
     psh::test::allocators::run_all();
     psh::test::memory_manager::run_all();
-    psh::test::dyn_array::run_all();
+    psh::test::dynarray::run_all();
     psh::test::string::run_all();
     psh::test::algorithms::run_all();
     psh::test::time::run_all();

@@ -30,10 +30,10 @@
 #include <psh/option.hpp>
 
 namespace psh {
-    namespace impl::dyn_array {
+    namespace impl::dynarray {
         static constexpr usize DEFAULT_INITIAL_CAPACITY = 4;
         static constexpr usize RESIZE_CAPACITY_FACTOR   = 2;
-    }  // namespace impl::dyn_array
+    }  // namespace impl::dynarray
 
     /// Run-time variable length array.
     ///
@@ -52,7 +52,7 @@ namespace psh {
         DynArray() psh_noexcept = default;
 
         /// Initialize the dynamic array with a given capacity.
-        psh_inline void init(Arena* arena_, usize capacity_ = impl::dyn_array::DEFAULT_INITIAL_CAPACITY) psh_noexcept {
+        psh_inline void init(Arena* arena_, usize capacity_ = impl::dynarray::DEFAULT_INITIAL_CAPACITY) psh_noexcept {
             psh_assert_msg(this->count == 0, "Tried to re-initialize an initialized DynArray");
             psh_assert(arena_ != nullptr);
 
@@ -62,7 +62,7 @@ namespace psh {
         }
 
         /// Construct a dynamic array with a given capacity.
-        psh_inline DynArray(Arena* arena_, usize capacity_ = impl::dyn_array::DEFAULT_INITIAL_CAPACITY) psh_noexcept {
+        psh_inline DynArray(Arena* arena_, usize capacity_ = impl::dynarray::DEFAULT_INITIAL_CAPACITY) psh_noexcept {
             this->init(arena_, capacity_);
         }
 
@@ -103,7 +103,7 @@ namespace psh {
         }
 
         /// Resize the dynamic array underlying buffer.
-        Status grow(u32 factor = impl::dyn_array::RESIZE_CAPACITY_FACTOR) psh_noexcept {
+        Status grow(u32 factor = impl::dynarray::RESIZE_CAPACITY_FACTOR) psh_noexcept {
             usize previous_capacity = this->capacity;
 
             usize new_capacity;
@@ -112,7 +112,7 @@ namespace psh {
                 new_capacity = previous_capacity * factor;
                 new_buf      = arena->realloc<T>(this->buf, previous_capacity, new_capacity);
             } else {
-                new_capacity = impl::dyn_array::DEFAULT_INITIAL_CAPACITY;
+                new_capacity = impl::dynarray::DEFAULT_INITIAL_CAPACITY;
                 new_buf      = arena->alloc<T>(new_capacity);
             }
 

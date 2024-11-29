@@ -28,7 +28,7 @@
 #include <psh/arena.hpp>
 #include <psh/assert.hpp>
 #include <psh/core.hpp>
-#include <psh/dyn_array.hpp>
+#include <psh/dynarray.hpp>
 #include <psh/memory.hpp>
 #include <psh/memory_manager.hpp>
 #include <psh/stack.hpp>

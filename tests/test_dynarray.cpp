@@ -24,12 +24,12 @@
 
 #include <psh/assert.hpp>
 #include <psh/core.hpp>
-#include <psh/dyn_array.hpp>
+#include <psh/dynarray.hpp>
 #include <psh/memory.hpp>
 #include <psh/memory_manager.hpp>
 #include "utils.hpp"
 
-namespace psh::test::dyn_array {
+namespace psh::test::dynarray {
     struct Foo {
         i32 bar;
     };
@@ -221,11 +221,11 @@ namespace psh::test::dyn_array {
         remove(memory_manager);
         clear(memory_manager);
     }
-}  // namespace psh::test::dyn_array
+}  // namespace psh::test::dynarray
 
 #if !defined(PSH_TEST_NOMAIN)
 int main() {
-    psh::test::dyn_array::run_all();
+    psh::test::dynarray::run_all();
     return 0;
 }
 #endif

@@ -26,7 +26,7 @@
 
 #include <psh/arena.hpp>
 #include <psh/core.hpp>
-#include <psh/dyn_array.hpp>
+#include <psh/dynarray.hpp>
 
 // -----------------------------------------------------------------------------
 // Compile-time string type construction macros.

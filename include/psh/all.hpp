@@ -35,7 +35,7 @@
 #include <psh/fat_ptr.hpp>
 #include <psh/buffer.hpp>
 #include <psh/array.hpp>
-#include <psh/dyn_array.hpp>
+#include <psh/dynarray.hpp>
 #include <psh/arena.hpp>
 #include <psh/memory.hpp>
 #include <psh/arena.hpp>
