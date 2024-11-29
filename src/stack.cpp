@@ -141,7 +141,7 @@ namespace psh {
         bool valid = true;
         valid &= (block != nullptr);
         valid &= (block >= memory_start);
-        valid &= (block <= memory_start + this->capacity;
+        valid &= (block <= memory_start + this->capacity);
         valid &= (block <= memory_start + this->previous_offset);
 
         u8 const* block_header = block + sizeof(StackHeader);
@@ -156,7 +156,7 @@ namespace psh {
     }
 
     usize Stack::previous_offset_of(u8 const* block) const noexcept {
-        StackHeader* header = this->header_of(block);
+        StackHeader const* header = this->header_of(block);
         return (header == nullptr) ? 0 : header->previous_offset;
     }
 
