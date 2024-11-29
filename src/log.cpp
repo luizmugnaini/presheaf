@@ -49,7 +49,7 @@ namespace psh::impl::log {
 #endif
     };
 
-    void log_msg(LogInfo info, strptr msg) noexcept {
+    void log_msg(LogInfo info, strptr msg) psh_noexcept {
         psh_discard_value(fprintf(
             stderr,
             LOG_FMT,
@@ -60,7 +60,7 @@ namespace psh::impl::log {
             msg));
     }
 
-    void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept {
+    void log_fmt(LogInfo const& info, strptr fmt, ...) psh_noexcept {
         constexpr usize           MAX_MSG_LEN = 8192;
         Buffer<char, MAX_MSG_LEN> msg;
 

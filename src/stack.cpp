@@ -25,7 +25,7 @@
 #include <psh/stack.hpp>
 
 namespace psh {
-    u8* Stack::alloc_align(usize size_bytes, u32 alignment) noexcept {
+    u8* Stack::alloc_align(usize size_bytes, u32 alignment) psh_noexcept {
         usize current_capacity = this->capacity;
         usize current_offset   = this->offset;
 
@@ -68,7 +68,7 @@ namespace psh {
         return new_block;
     }
 
-    u8* Stack::realloc_align(u8* block, usize new_size_bytes, u32 alignment) noexcept {
+    u8* Stack::realloc_align(u8* block, usize new_size_bytes, u32 alignment) psh_noexcept {
         if (psh_unlikely(new_size_bytes == 0)) {
             this->clear_at(block);
             return nullptr;
@@ -112,30 +112,30 @@ namespace psh {
         return new_mem;
     }
 
-    usize Stack::used() const noexcept {
+    usize Stack::used() const psh_noexcept {
         return this->offset;
     }
 
-    u8* Stack::top() const noexcept {
+    u8* Stack::top() const psh_noexcept {
         return psh_ptr_add(this->buf, this->previous_offset);
     }
 
-    StackHeader const* Stack::top_header() const noexcept {
+    StackHeader const* Stack::top_header() const psh_noexcept {
         return reinterpret_cast<StackHeader const*>(
             psh_ptr_add(this->buf, this->previous_offset - sizeof(StackHeader)));
     }
 
-    usize Stack::top_size() const noexcept {
+    usize Stack::top_size() const psh_noexcept {
         StackHeader const* header = this->top_header();
         return (header == nullptr) ? 0 : header->capacity;
     }
 
-    usize Stack::top_previous_offset() const noexcept {
+    usize Stack::top_previous_offset() const psh_noexcept {
         StackHeader const* header = this->top_header();
         return (header == nullptr) ? 0 : header->previous_offset;
     }
 
-    StackHeader const* Stack::header_of(u8 const* block) const noexcept {
+    StackHeader const* Stack::header_of(u8 const* block) const psh_noexcept {
         u8 const* memory_start = this->buf;
 
         bool valid = true;
@@ -150,17 +150,17 @@ namespace psh {
         return valid ? reinterpret_cast<StackHeader const*>(block_header) : nullptr;
     }
 
-    usize Stack::size_of(u8 const* block) const noexcept {
+    usize Stack::size_of(u8 const* block) const psh_noexcept {
         StackHeader const* header = this->header_of(block);
         return (header == nullptr) ? 0 : header->capacity;
     }
 
-    usize Stack::previous_offset_of(u8 const* block) const noexcept {
+    usize Stack::previous_offset_of(u8 const* block) const psh_noexcept {
         StackHeader const* header = this->header_of(block);
         return (header == nullptr) ? 0 : header->previous_offset;
     }
 
-    Status Stack::pop() noexcept {
+    Status Stack::pop() psh_noexcept {
         if (psh_unlikely(this->previous_offset == 0)) {
             return STATUS_FAILED;
         }
@@ -173,7 +173,7 @@ namespace psh {
         return STATUS_OK;
     }
 
-    Status Stack::clear_at(u8 const* block) noexcept {
+    Status Stack::clear_at(u8 const* block) psh_noexcept {
         if (psh_unlikely(block == nullptr)) {
             return STATUS_FAILED;
         }

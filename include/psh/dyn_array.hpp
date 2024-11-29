@@ -49,10 +49,10 @@ namespace psh {
         // Constructors and initializers.
         // -----------------------------------------------------------------------------
 
-        DynArray() noexcept = default;
+        DynArray() psh_noexcept = default;
 
         /// Initialize the dynamic array with a given capacity.
-        psh_inline void init(Arena* arena_, usize capacity_ = impl::dyn_array::DEFAULT_INITIAL_CAPACITY) noexcept {
+        psh_inline void init(Arena* arena_, usize capacity_ = impl::dyn_array::DEFAULT_INITIAL_CAPACITY) psh_noexcept {
             psh_assert_msg(this->count == 0, "Tried to re-initialize an initialized DynArray");
             psh_assert(arena_ != nullptr);
 
@@ -62,7 +62,7 @@ namespace psh {
         }
 
         /// Construct a dynamic array with a given capacity.
-        psh_inline DynArray(Arena* arena_, usize capacity_ = impl::dyn_array::DEFAULT_INITIAL_CAPACITY) noexcept {
+        psh_inline DynArray(Arena* arena_, usize capacity_ = impl::dyn_array::DEFAULT_INITIAL_CAPACITY) psh_noexcept {
             this->init(arena_, capacity_);
         }
 
@@ -70,14 +70,14 @@ namespace psh {
         // Read methods.
         // -----------------------------------------------------------------------------
 
-        psh_inline T& operator[](usize idx) noexcept {
+        psh_inline T& operator[](usize idx) psh_noexcept {
 #if defined(PSH_CHECK_BOUNDS)
             psh_assert_fmt(idx < this->count, "Index %zu out of bounds for DynArray of size %zu.", idx, this->count);
 #endif
             return this->buf[idx];
         }
 
-        psh_inline T const& operator[](usize idx) const noexcept {
+        psh_inline T const& operator[](usize idx) const psh_noexcept {
 #if defined(PSH_CHECK_BOUNDS)
             psh_assert_fmt(idx < this->count, "Index %zu out of bounds for DynArray of size %zu.", idx, this->count);
 #endif
@@ -85,25 +85,25 @@ namespace psh {
         }
 
         /// Get a pointer to the last element of the dynamic array.
-        psh_inline T* peek() const noexcept {
+        psh_inline T* peek() const psh_noexcept {
             return (this->count == 0) ? nullptr : &this->buf[this->count - 1];
         }
 
-        psh_inline T*       begin() noexcept { return this->buf; }
-        psh_inline T*       end() noexcept { return psh_ptr_add(this->buf, this->count); }
-        psh_inline T const* begin() const noexcept { return static_cast<T const*>(this->buf); }
-        psh_inline T const* end() const noexcept { return psh_ptr_add(static_cast<T const*>(this->buf), this->count); }
+        psh_inline T*       begin() psh_noexcept { return this->buf; }
+        psh_inline T*       end() psh_noexcept { return psh_ptr_add(this->buf, this->count); }
+        psh_inline T const* begin() const psh_noexcept { return static_cast<T const*>(this->buf); }
+        psh_inline T const* end() const psh_noexcept { return psh_ptr_add(static_cast<T const*>(this->buf), this->count); }
 
         // -----------------------------------------------------------------------------
         // Memory resizing methods.
         // -----------------------------------------------------------------------------
 
-        psh_inline usize size_bytes() noexcept {
+        psh_inline usize size_bytes() psh_noexcept {
             return this->count * sizeof(T);
         }
 
         /// Resize the dynamic array underlying buffer.
-        Status grow(u32 factor = impl::dyn_array::RESIZE_CAPACITY_FACTOR) noexcept {
+        Status grow(u32 factor = impl::dyn_array::RESIZE_CAPACITY_FACTOR) psh_noexcept {
             usize previous_capacity = this->capacity;
 
             usize new_capacity;
@@ -127,7 +127,7 @@ namespace psh {
             return status;
         }
 
-        Status resize(usize new_capacity) noexcept {
+        Status resize(usize new_capacity) psh_noexcept {
             // @NOTE: If T is a struct with a pointer to itself, this method will fail hard and create
             //       a massive horrible memory bug. DO NOT use this array structure with types having
             //       this property.
@@ -154,7 +154,7 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         /// Inserts a new element to the end of the dynamic array.
-        Status push(T new_element) noexcept {
+        Status push(T new_element) psh_noexcept {
             usize previous_count = this->count;
 
             Status status = STATUS_OK;
@@ -170,7 +170,7 @@ namespace psh {
             return status;
         }
 
-        Status push(FatPtr<T const> new_elements) noexcept {
+        Status push(FatPtr<T const> new_elements) psh_noexcept {
             usize previous_count = this->count;
 
             Status status = STATUS_OK;
@@ -190,7 +190,7 @@ namespace psh {
         }
 
         /// Try to pop the last element of the dynamic array.
-        Status pop() noexcept {
+        Status pop() psh_noexcept {
             Status status = STATUS_FAILED;
 
             usize previous_count = this->count;
@@ -203,7 +203,7 @@ namespace psh {
         }
 
         /// Try to remove a dynamic array element at a given index.
-        Status remove(usize idx) noexcept {
+        Status remove(usize idx) psh_noexcept {
             usize previous_count = this->count;
 
 #if defined(PSH_CHECK_BOUNDS)
@@ -226,7 +226,7 @@ namespace psh {
         }
 
         /// Clear the dynamic array data, resetting its size.
-        psh_inline void clear() noexcept {
+        psh_inline void clear() psh_noexcept {
             this->count = 0;
         }
     };
@@ -236,12 +236,12 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     template <typename T>
-    psh_inline FatPtr<T> make_fat_ptr(DynArray<T>& d) noexcept {
+    psh_inline FatPtr<T> make_fat_ptr(DynArray<T>& d) psh_noexcept {
         return FatPtr{d.buf, d.count};
     }
 
     template <typename T>
-    psh_inline FatPtr<T const> make_const_fat_ptr(DynArray<T> const& d) noexcept {
+    psh_inline FatPtr<T const> make_const_fat_ptr(DynArray<T> const& d) psh_noexcept {
         return FatPtr{static_cast<T const*>(d.buf), d.count};
     }
 }  // namespace psh

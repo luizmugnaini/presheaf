@@ -36,17 +36,17 @@
 #endif
 
 namespace psh {
-    bool arch_is_little_endian() noexcept {
+    bool arch_is_little_endian() psh_noexcept {
         i32 integer = 1;
         return static_cast<bool>(*(reinterpret_cast<u8*>(&integer)));
     }
 
-    bool arch_is_bit_endian() noexcept {
+    bool arch_is_bit_endian() psh_noexcept {
         i32 integer = 1;
         return static_cast<bool>(!*(reinterpret_cast<u8*>(&integer)));
     }
 
-    FatPtr<u8> memory_virtual_alloc(usize size_bytes) noexcept {
+    FatPtr<u8> memory_virtual_alloc(usize size_bytes) psh_noexcept {
         FatPtr<u8> memory = {};
 
 #if defined(PSH_OS_WINDOWS)
@@ -74,7 +74,7 @@ namespace psh {
         return memory;
     }
 
-    void memory_virtual_free(FatPtr<u8> memory) noexcept {
+    void memory_virtual_free(FatPtr<u8> memory) psh_noexcept {
 #if defined(PSH_OS_WINDOWS)
         BOOL result = VirtualFree(memory.buf, 0, MEM_RELEASE);
         if (psh_unlikely(result == FALSE)) {
@@ -88,7 +88,7 @@ namespace psh {
 #endif
     }
 
-    void memory_set(u8* memory, usize size_bytes, i32 fill) noexcept {
+    void memory_set(u8* memory, usize size_bytes, i32 fill) psh_noexcept {
         if (psh_unlikely(size_bytes == 0)) {
             return;
         }
@@ -97,7 +97,7 @@ namespace psh {
         psh_discard_value(memset(memory, fill, size_bytes));
     }
 
-    void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) noexcept {
+    void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_noexcept {
         if (psh_unlikely(size_bytes == 0)) {
             return;
         }
@@ -113,7 +113,7 @@ namespace psh {
         psh_discard_value(memcpy(dst, src, size_bytes));
     }
 
-    void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) noexcept {
+    void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_noexcept {
         if (psh_unlikely(size_bytes == 0)) {
             return;
         }
@@ -127,7 +127,7 @@ namespace psh {
         uptr  ptr_addr,
         usize alignment,
         usize header_size,
-        usize header_alignment) noexcept {
+        usize header_alignment) psh_noexcept {
         psh_assert_fmt(
             psh_is_pow_of_two(alignment) && psh_is_pow_of_two(header_alignment),
             "Expected the alignments to be powers of two (alignment: %zu; header_alignment: %zu).",
@@ -154,7 +154,7 @@ namespace psh {
         return padding;
     }
 
-    usize align_forward(uptr ptr_addr, usize alignment) noexcept {
+    usize align_forward(uptr ptr_addr, usize alignment) psh_noexcept {
         psh_assert_fmt(psh_is_pow_of_two(alignment), "Expected alignment (%zu) to be a power of two.", alignment);
 
         usize mod_align = ptr_addr & (alignment - 1);

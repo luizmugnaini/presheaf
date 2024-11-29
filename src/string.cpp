@@ -29,7 +29,7 @@
 #include <psh/option.hpp>
 
 namespace psh {
-    usize str_length(strptr str) noexcept {
+    usize str_length(strptr str) psh_noexcept {
         usize res = 0;
         if (psh_likely(str != nullptr)) {
             res = strlen(str);
@@ -37,7 +37,7 @@ namespace psh {
         return res;
     }
 
-    StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept {
+    StrCmpResult str_cmp(strptr lhs, strptr rhs) psh_noexcept {
         i32          cmp = strcmp(lhs, rhs);
         StrCmpResult res;
         if (cmp == 0) {
@@ -50,11 +50,11 @@ namespace psh {
         return res;
     }
 
-    bool str_equal(strptr lhs, strptr rhs) noexcept {
+    bool str_equal(strptr lhs, strptr rhs) psh_noexcept {
         return (strcmp(lhs, rhs) == 0);
     }
 
-    Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element) noexcept {
+    Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element) psh_noexcept {
         bool previously_empty = (target.count == 0);
 
         // Resize the string ahead of time.

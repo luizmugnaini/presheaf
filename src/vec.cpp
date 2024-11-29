@@ -31,7 +31,7 @@ namespace psh {
     // Row-major 3-dimensional square matrix in floating-point space.
     // -----------------------------------------------------------------------------
 
-    Mat3 Mat3::rotation_tb(f32 rot_x, f32 rot_y, f32 rot_z) noexcept {
+    Mat3 Mat3::rotation_tb(f32 rot_x, f32 rot_y, f32 rot_z) psh_noexcept {
         f32 xsin = sinf(rot_x);
         f32 ysin = sinf(rot_y);
         f32 zsin = sinf(rot_z);
@@ -52,14 +52,14 @@ namespace psh {
     // Implementation of the matrix multiplication operations.
     // -----------------------------------------------------------------------------
 
-    Vec2 mat_mul(Mat2 m, Vec2 v) noexcept {
+    Vec2 mat_mul(Mat2 m, Vec2 v) psh_noexcept {
         return Vec2{
             (m.buf[0] * v.x) + (m.buf[1] * v.y),
             (m.buf[2] * v.x) + (m.buf[3] * v.y),
         };
     }
 
-    Vec3 mat_mul(Mat3 m, Vec3 v) noexcept {
+    Vec3 mat_mul(Mat3 m, Vec3 v) psh_noexcept {
         return Vec3{
             (m.buf[0] * v.x) + (m.buf[1] * v.y) + (m.buf[2] * v.z),
             (m.buf[3] * v.x) + (m.buf[4] * v.y) + (m.buf[5] * v.z),
@@ -67,7 +67,7 @@ namespace psh {
         };
     }
 
-    Mat3 mat_mul(Mat3 lhs, Mat3 rhs) noexcept {
+    Mat3 mat_mul(Mat3 lhs, Mat3 rhs) psh_noexcept {
         return Mat3{
             // Row 1.
             (lhs.buf[0] * rhs.buf[0]) + (lhs.buf[1] * rhs.buf[3]) + (lhs.buf[2] * rhs.buf[6]),
@@ -84,7 +84,7 @@ namespace psh {
         };
     }
 
-    Vec4 mat_mul(ColMat4 m, Vec4 v) noexcept {
+    Vec4 mat_mul(ColMat4 m, Vec4 v) psh_noexcept {
         return Vec4{
             (m.buf[0] * v.x) + (m.buf[4] * v.y) + (m.buf[8] * v.z) + (m.buf[12] * v.w),
             (m.buf[1] * v.x) + (m.buf[5] * v.y) + (m.buf[9] * v.z) + (m.buf[13] * v.w),
@@ -93,7 +93,7 @@ namespace psh {
         };
     }
 
-    ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) noexcept {
+    ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) psh_noexcept {
         // clang-format off
         return ColMat4{
             // Row 1.

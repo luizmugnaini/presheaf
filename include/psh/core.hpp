@@ -227,7 +227,10 @@
 // Compiler hints.
 // -----------------------------------------------------------------------------
 
-/// Hint for function inlining.
+/// Hint for disabling exception handling in the generated code for a given procedure.
+#define psh_noexcept noexcept
+
+/// Hint for forced function inlining.
 #if defined(PSH_COMPILER_MSVC)
 #    define psh_inline __forceinline
 #elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)

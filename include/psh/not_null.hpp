@@ -33,16 +33,16 @@ namespace psh {
     struct psh_api NotNull {
         T* const ptr;
 
-        NotNull(T* ptr_) noexcept {
+        NotNull(T* ptr_) psh_noexcept {
             psh_assert_msg(ptr_ != nullptr, "Invalid pointer, should be non-null.");
             this->ptr = ptr_;
         }
 
-        T& operator*() noexcept {
+        T& operator*() psh_noexcept {
             return *this->ptr;
         }
 
-        T* operator->() noexcept {
+        T* operator->() psh_noexcept {
             return this->ptr;
         }
 

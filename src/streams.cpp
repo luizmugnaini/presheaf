@@ -63,7 +63,7 @@ namespace psh {
             "a",    // WriteFileFlag::APPEND
         };
 
-        constexpr bool has_read_permission(OpenFileFlag flag) noexcept {
+        constexpr bool has_read_permission(OpenFileFlag flag) psh_noexcept {
             return (flag == OpenFileFlag::READ_TEXT) ||
                    (flag == OpenFileFlag::READ_TEXT_EXTENDED) ||
                    (flag == OpenFileFlag::READ_BIN) ||
@@ -72,7 +72,7 @@ namespace psh {
         }
     }  // namespace impl::streams
 
-    FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) noexcept {
+    FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) psh_noexcept {
         strptr mode = impl::streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<u32>(flag)];
         FILE*  fhandle;
 
@@ -129,7 +129,7 @@ namespace psh {
         };
     }
 
-    String read_stdin(Arena* arena, u32 initial_buf_size, u32 read_chunk_size) noexcept {
+    String read_stdin(Arena* arena, u32 initial_buf_size, u32 read_chunk_size) psh_noexcept {
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
 
         String content{arena, initial_buf_size};
@@ -193,7 +193,7 @@ namespace psh {
         return content;
     }
 
-    String absolute_path(Arena* arena, strptr file_path) noexcept {
+    String absolute_path(Arena* arena, strptr file_path) psh_noexcept {
         psh_assert_msg(arena != nullptr, "Invalid arena.");
         ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
 

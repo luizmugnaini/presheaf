@@ -42,14 +42,14 @@ namespace psh {
         f32 y = 0.0f;
 
         /// Check if the components of the vector are inside the floating point zero range.
-        psh_inline bool is_zero(f32 zero_range) const noexcept {
+        psh_inline bool is_zero(f32 zero_range) const psh_noexcept {
             return approx_equal(x, 0.0f, zero_range) && approx_equal(y, 0.0f, zero_range);
         }
 
         /// Get the normalized vector.
         ///
         /// Note: The vector is assumed to be non-zero, otherwise this will result in UB.
-        psh_inline Vec2 normalized() const noexcept {
+        psh_inline Vec2 normalized() const psh_noexcept {
             f32 len = sqrtf(x * x + y * y);
 
             if (psh_unlikely(len < F32_IS_ZERO_RANGE)) {
@@ -60,39 +60,39 @@ namespace psh {
         }
 
         /// Euclidean inner product.
-        psh_inline f32 dot(Vec2 other) const noexcept {
+        psh_inline f32 dot(Vec2 other) const psh_noexcept {
             return x * other.x + y * other.y;
         }
 
-        psh_inline bool is_to_the_left_of(Vec2 other) const noexcept {
+        psh_inline bool is_to_the_left_of(Vec2 other) const psh_noexcept {
             return ((other.x * y - other.y * x) >= 0.0f);
         }
 
-        psh_inline Vec2& operator+=(Vec2 other) noexcept {
+        psh_inline Vec2& operator+=(Vec2 other) psh_noexcept {
             x += other.x;
             y += other.y;
             return *this;
         }
-        psh_inline Vec2& operator-=(Vec2 other) noexcept {
+        psh_inline Vec2& operator-=(Vec2 other) psh_noexcept {
             x -= other.x;
             y -= other.y;
             return *this;
         }
-        psh_inline Vec2& operator*=(Vec2 other) noexcept {
+        psh_inline Vec2& operator*=(Vec2 other) psh_noexcept {
             x *= other.x;
             y *= other.y;
             return *this;
         }
-        psh_inline Vec2& operator*=(f32 scalar) noexcept {
+        psh_inline Vec2& operator*=(f32 scalar) psh_noexcept {
             x *= scalar;
             y *= scalar;
             return *this;
         }
-        psh_inline Vec2 operator+(Vec2 other) const noexcept { return Vec2{x + other.x, y + other.y}; }
-        psh_inline Vec2 operator-(Vec2 other) const noexcept { return Vec2{x - other.x, y - other.y}; }
-        psh_inline Vec2 operator*(Vec2 other) const noexcept { return Vec2{x * other.x, y * other.y}; }
-        psh_inline Vec2 operator*(f32 scalar) const noexcept { return Vec2{x * scalar, y * scalar}; }
-        psh_inline Vec2 operator-() const noexcept { return Vec2{-x, -y}; }
+        psh_inline Vec2 operator+(Vec2 other) const psh_noexcept { return Vec2{x + other.x, y + other.y}; }
+        psh_inline Vec2 operator-(Vec2 other) const psh_noexcept { return Vec2{x - other.x, y - other.y}; }
+        psh_inline Vec2 operator*(Vec2 other) const psh_noexcept { return Vec2{x * other.x, y * other.y}; }
+        psh_inline Vec2 operator*(f32 scalar) const psh_noexcept { return Vec2{x * scalar, y * scalar}; }
+        psh_inline Vec2 operator-() const psh_noexcept { return Vec2{-x, -y}; }
     };
 
     /// 3-dimensional vector in floating-point space.
@@ -102,14 +102,14 @@ namespace psh {
         f32 z = 0.0f;
 
         /// Check if the components of the vector are inside the floating point zero range.
-        psh_inline bool is_zero(f32 zero_range) const noexcept {
+        psh_inline bool is_zero(f32 zero_range) const psh_noexcept {
             return approx_equal(x, 0.0f, zero_range) &&
                    approx_equal(y, 0.0f, zero_range) &&
                    approx_equal(z, 0.0f, zero_range);
         }
 
         /// Get the normalized vector.
-        psh_inline Vec3 normalized() const noexcept {
+        psh_inline Vec3 normalized() const psh_noexcept {
             f32 len = sqrtf(x * x + y * y + z * z);
 
             if (psh_unlikely(approx_equal(len, 0.0f))) {
@@ -120,12 +120,12 @@ namespace psh {
         }
 
         /// Euclidean inner product.
-        psh_inline f32 dot(Vec3 other) const noexcept {
+        psh_inline f32 dot(Vec3 other) const psh_noexcept {
             return x * other.x + y * other.y + z * other.z;
         }
 
         /// Cross product.
-        psh_inline Vec3 cross(Vec3 other) const noexcept {
+        psh_inline Vec3 cross(Vec3 other) const psh_noexcept {
             return Vec3{
                 y * other.z - z * other.y,
                 z * other.x - x * other.z,
@@ -133,35 +133,35 @@ namespace psh {
             };
         }
 
-        psh_inline Vec3& operator+=(Vec3 other) noexcept {
+        psh_inline Vec3& operator+=(Vec3 other) psh_noexcept {
             x += other.x;
             y += other.y;
             z += other.z;
             return *this;
         }
-        psh_inline Vec3& operator-=(Vec3 other) noexcept {
+        psh_inline Vec3& operator-=(Vec3 other) psh_noexcept {
             x -= other.x;
             y -= other.y;
             z -= other.z;
             return *this;
         }
-        psh_inline Vec3& operator*=(Vec3 other) noexcept {
+        psh_inline Vec3& operator*=(Vec3 other) psh_noexcept {
             x *= other.x;
             y *= other.y;
             z *= other.z;
             return *this;
         }
-        psh_inline Vec3& operator*=(f32 scalar) noexcept {
+        psh_inline Vec3& operator*=(f32 scalar) psh_noexcept {
             x *= scalar;
             y *= scalar;
             z *= scalar;
             return *this;
         }
-        psh_inline Vec3 operator+(Vec3 other) const noexcept { return Vec3{x + other.x, y + other.y, z + other.z}; }
-        psh_inline Vec3 operator-(Vec3 other) const noexcept { return Vec3{x - other.x, y - other.y, z - other.z}; }
-        psh_inline Vec3 operator*(Vec3 other) const noexcept { return Vec3{x * other.x, y * other.y, z * other.z}; }
-        psh_inline Vec3 operator*(f32 scalar) const noexcept { return Vec3{x * scalar, y * scalar, z * scalar}; }
-        psh_inline Vec3 operator-() const noexcept { return Vec3{-x, -y, -z}; }
+        psh_inline Vec3 operator+(Vec3 other) const psh_noexcept { return Vec3{x + other.x, y + other.y, z + other.z}; }
+        psh_inline Vec3 operator-(Vec3 other) const psh_noexcept { return Vec3{x - other.x, y - other.y, z - other.z}; }
+        psh_inline Vec3 operator*(Vec3 other) const psh_noexcept { return Vec3{x * other.x, y * other.y, z * other.z}; }
+        psh_inline Vec3 operator*(f32 scalar) const psh_noexcept { return Vec3{x * scalar, y * scalar, z * scalar}; }
+        psh_inline Vec3 operator-() const psh_noexcept { return Vec3{-x, -y, -z}; }
     };
 
     /// 4-dimensional vector in floating-point space.
@@ -184,12 +184,12 @@ namespace psh {
         i32 y = 0;
 
         /// Check if all components of the vector are zero.
-        psh_inline bool is_zero() const noexcept {
+        psh_inline bool is_zero() const psh_noexcept {
             return (x == 0) && (y == 0);
         }
 
         /// Get the normalized vector in floating point coordinates.
-        psh_inline Vec2 normalized() const noexcept {
+        psh_inline Vec2 normalized() const psh_noexcept {
             f32 len = sqrtf(static_cast<f32>(x * x + y * y));
 
             if (psh_unlikely(len < F32_IS_ZERO_RANGE)) {
@@ -200,36 +200,36 @@ namespace psh {
         }
 
         /// Euclidean dot product.
-        psh_inline i32 dot(IVec2 other) const noexcept {
+        psh_inline i32 dot(IVec2 other) const psh_noexcept {
             return x * other.x + y * other.y;
         }
 
-        psh_inline IVec2& operator+=(IVec2 other) noexcept {
+        psh_inline IVec2& operator+=(IVec2 other) psh_noexcept {
             x += other.x;
             y += other.y;
             return *this;
         }
-        psh_inline IVec2& operator-=(IVec2 other) noexcept {
+        psh_inline IVec2& operator-=(IVec2 other) psh_noexcept {
             x -= other.x;
             y -= other.y;
             return *this;
         }
-        psh_inline IVec2& operator*=(IVec2 other) noexcept {
+        psh_inline IVec2& operator*=(IVec2 other) psh_noexcept {
             x *= other.x;
             y *= other.y;
             return *this;
         }
-        psh_inline IVec2& operator*=(i32 scalar) noexcept {
+        psh_inline IVec2& operator*=(i32 scalar) psh_noexcept {
             x *= scalar;
             y *= scalar;
             return *this;
         }
-        psh_inline IVec2 operator+(IVec2 other) const noexcept { return IVec2{x + other.x, y + other.y}; }
-        psh_inline IVec2 operator-(IVec2 other) const noexcept { return IVec2{x - other.x, y - other.y}; }
-        psh_inline IVec2 operator*(IVec2 other) const noexcept { return IVec2{x * other.x, y * other.y}; }
-        psh_inline IVec2 operator*(i32 scalar) const noexcept { return IVec2{x * scalar, y * scalar}; }
-        psh_inline IVec2 operator-() const noexcept { return IVec2{-x, -y}; }
-        psh_inline bool  operator==(IVec2 other) const noexcept { return (x == other.x) && (y == other.y); }
+        psh_inline IVec2 operator+(IVec2 other) const psh_noexcept { return IVec2{x + other.x, y + other.y}; }
+        psh_inline IVec2 operator-(IVec2 other) const psh_noexcept { return IVec2{x - other.x, y - other.y}; }
+        psh_inline IVec2 operator*(IVec2 other) const psh_noexcept { return IVec2{x * other.x, y * other.y}; }
+        psh_inline IVec2 operator*(i32 scalar) const psh_noexcept { return IVec2{x * scalar, y * scalar}; }
+        psh_inline IVec2 operator-() const psh_noexcept { return IVec2{-x, -y}; }
+        psh_inline bool  operator==(IVec2 other) const psh_noexcept { return (x == other.x) && (y == other.y); }
     };
 
     /// 3-dimensional vector in integer space.
@@ -239,12 +239,12 @@ namespace psh {
         i32 z = 0;
 
         /// Check if all components of the vector are zero.
-        psh_inline bool is_zero() const noexcept {
+        psh_inline bool is_zero() const psh_noexcept {
             return (x == 0) && (y == 0) && (z == 0);
         }
 
         /// Get the normalized vector in floating point coordinates.
-        psh_inline Vec3 normalized() const noexcept {
+        psh_inline Vec3 normalized() const psh_noexcept {
             f32 len = sqrtf(static_cast<f32>(x * x + y * y + z * z));
 
             if (psh_unlikely(len < F32_IS_ZERO_RANGE)) {
@@ -259,12 +259,12 @@ namespace psh {
         }
 
         /// Euclidean inner product.
-        psh_inline i32 dot(IVec3 const& other) const noexcept {
+        psh_inline i32 dot(IVec3 const& other) const psh_noexcept {
             return x * other.x + y * other.y + z * other.z;
         }
 
         /// Cross product.
-        psh_inline IVec3 cross(IVec3 const& other) const noexcept {
+        psh_inline IVec3 cross(IVec3 const& other) const psh_noexcept {
             return IVec3{
                 y * other.z - z * other.y,
                 z * other.x - x * other.z,
@@ -272,36 +272,36 @@ namespace psh {
             };
         }
 
-        psh_inline IVec3& operator+=(IVec3 const& other) noexcept {
+        psh_inline IVec3& operator+=(IVec3 const& other) psh_noexcept {
             x += other.x;
             y += other.y;
             z += other.z;
             return *this;
         }
-        psh_inline IVec3& operator-=(IVec3 const& other) noexcept {
+        psh_inline IVec3& operator-=(IVec3 const& other) psh_noexcept {
             x -= other.x;
             y -= other.y;
             z -= other.z;
             return *this;
         }
-        psh_inline IVec3& operator*=(IVec3 const& other) noexcept {
+        psh_inline IVec3& operator*=(IVec3 const& other) psh_noexcept {
             x *= other.x;
             y *= other.y;
             z *= other.z;
             return *this;
         }
-        psh_inline IVec3& operator*=(i32 scalar) noexcept {
+        psh_inline IVec3& operator*=(i32 scalar) psh_noexcept {
             x *= scalar;
             y *= scalar;
             z *= scalar;
             return *this;
         }
-        psh_inline IVec3 operator+(IVec3 other) const noexcept { return IVec3{x + other.x, y + other.y, z + other.z}; }
-        psh_inline IVec3 operator-(IVec3 other) const noexcept { return IVec3{x - other.x, y - other.y, z - other.z}; }
-        psh_inline IVec3 operator*(IVec3 other) const noexcept { return IVec3{x * other.x, y * other.y, z * other.z}; }
-        psh_inline IVec3 operator*(i32 scalar) const noexcept { return IVec3{x * scalar, y * scalar, z * scalar}; }
-        psh_inline IVec3 operator-() const noexcept { return IVec3{-x, -y, -z}; }
-        psh_inline bool  operator==(IVec3 other) const noexcept { return (x == other.x) && (y == other.y) && (z == other.z); }
+        psh_inline IVec3 operator+(IVec3 other) const psh_noexcept { return IVec3{x + other.x, y + other.y, z + other.z}; }
+        psh_inline IVec3 operator-(IVec3 other) const psh_noexcept { return IVec3{x - other.x, y - other.y, z - other.z}; }
+        psh_inline IVec3 operator*(IVec3 other) const psh_noexcept { return IVec3{x * other.x, y * other.y, z * other.z}; }
+        psh_inline IVec3 operator*(i32 scalar) const psh_noexcept { return IVec3{x * scalar, y * scalar, z * scalar}; }
+        psh_inline IVec3 operator-() const psh_noexcept { return IVec3{-x, -y, -z}; }
+        psh_inline bool  operator==(IVec3 other) const psh_noexcept { return (x == other.x) && (y == other.y) && (z == other.z); }
     };
 
     // -----------------------------------------------------------------------------
@@ -318,7 +318,7 @@ namespace psh {
         f32 buf[9] = {0.0f};
 
         /// Get a reference to the matrix component whose row is `r` and column is `c`.
-        psh_inline f32& at(u32 r, u32 c) noexcept {
+        psh_inline f32& at(u32 r, u32 c) psh_noexcept {
             psh_assert_msg(r <= 3, "Row outside range.");
             psh_assert_msg(c <= 3, "Column outside range.");
 
@@ -326,7 +326,7 @@ namespace psh {
         }
 
         /// Create an identity matrix.
-        static psh_inline Mat3 id() noexcept {
+        static psh_inline Mat3 id() psh_noexcept {
             // clang-format off
             return Mat3{
                 1.0f, 0.0f, 0.0f,
@@ -337,7 +337,7 @@ namespace psh {
         }
 
         /// Create the change of basis transformation for a given triple of basis vectors.
-        static psh_inline Mat3 change_of_basis(Vec3 v1, Vec3 v2, Vec3 v3) noexcept {
+        static psh_inline Mat3 change_of_basis(Vec3 v1, Vec3 v2, Vec3 v3) psh_noexcept {
             // @TODO: should we check if v1, v2, v3 form an orthogonal triple?
             // clang-format off
             return Mat3{
@@ -354,7 +354,7 @@ namespace psh {
         ///     * rot_x: The angle to rotate about the x axis (aka roll angle).
         ///     * rot_y: The angle to rotate about the y axis (aka pitch angle).
         ///     * rot_z: The angle to rotate about the z axis (aka yaw angle).
-        static Mat3 rotation_tb(f32 rot_x, f32 rot_y, f32 rot_z) noexcept;
+        static Mat3 rotation_tb(f32 rot_x, f32 rot_y, f32 rot_z) psh_noexcept;
 
         // @TODO: rotation with Euler angles.
     };
@@ -364,7 +364,7 @@ namespace psh {
         f32 buf[9] = {0.0f};
 
         /// Get a reference to the matrix component whose row is `r` and column is `c`.
-        psh_inline f32& at(u32 r, u32 c) noexcept {
+        psh_inline f32& at(u32 r, u32 c) psh_noexcept {
             psh_assert_msg(r <= 3, "Row outside range.");
             psh_assert_msg(c <= 3, "Column outside range.");
 
@@ -372,7 +372,7 @@ namespace psh {
         }
 
         /// Create an identity matrix.
-        static psh_inline ColMat3 id() noexcept {
+        static psh_inline ColMat3 id() psh_noexcept {
             // clang-format off
             return ColMat3{
                 1.0f, 0.0f, 0.0f,
@@ -388,7 +388,7 @@ namespace psh {
         f32 buf[16] = {0.0f};
 
         /// Get the matrix component whose row is `r` and column is `c`.
-        f32& at(u32 r, u32 c) noexcept {
+        f32& at(u32 r, u32 c) psh_noexcept {
             psh_assert_msg(r <= 4, "Row outside range.");
             psh_assert_msg(c <= 4, "Column outside range.");
 
@@ -396,7 +396,7 @@ namespace psh {
         }
 
         /// Create an identity matrix.
-        static psh_inline ColMat4 id() noexcept {
+        static psh_inline ColMat4 id() psh_noexcept {
             // clang-format off
             return ColMat4{
                 1.0f, 0.0f, 0.0f, 0.0f,
@@ -408,7 +408,7 @@ namespace psh {
         }
 
         /// Create a scaling matrix for 3D space.
-        static psh_inline ColMat4 scale(Vec3 scaling) noexcept {
+        static psh_inline ColMat4 scale(Vec3 scaling) psh_noexcept {
             // clang-format off
             return ColMat4{
                 scaling.x,    0.0f,      0.0f,   0.0f,
@@ -420,7 +420,7 @@ namespace psh {
         }
 
         /// Create the translation matrix for a given displacement in 3D space.
-        static psh_inline ColMat4 translation(Vec3 dx_dy_dz) noexcept {
+        static psh_inline ColMat4 translation(Vec3 dx_dy_dz) psh_noexcept {
             // clang-format off
             return ColMat4{
                    1.0f,       0.0f,       0.0f,    0.0f,
@@ -439,7 +439,7 @@ namespace psh {
         ///     * target: The direction to look at.
         ///     * view_up: Orientational vector with the up direction of the camera coordinate
         ///                system.
-        static psh_inline ColMat4 view_direction_rh(Vec3 eye, Vec3 view_direction, Vec3 view_up) noexcept {
+        static psh_inline ColMat4 view_direction_rh(Vec3 eye, Vec3 view_direction, Vec3 view_up) psh_noexcept {
             Vec3 forward = view_direction.normalized();
             Vec3 right   = forward.cross(view_up).normalized();
             Vec3 up      = right.cross(forward);
@@ -462,7 +462,7 @@ namespace psh {
         ///     * target: The target that the camera should look at.
         ///     * view_up: Orientational vector with the up direction of the camera coordinate
         ///                system.
-        static psh_inline ColMat4 look_at_rh(Vec3 eye, Vec3 target, Vec3 view_up) noexcept {
+        static psh_inline ColMat4 look_at_rh(Vec3 eye, Vec3 target, Vec3 view_up) psh_noexcept {
             return ColMat4::view_direction_rh(eye, target - eye, view_up);
         }
 
@@ -475,7 +475,7 @@ namespace psh {
         /// This transformation is suited for programs working with Vulkan, which assumes the exact
         /// constraints seen above.
         static psh_inline ColMat4
-        perspective_projection_rhzo(f32 fovy, f32 aspect, f32 near_plane, f32 far_plane) noexcept {
+        perspective_projection_rhzo(f32 fovy, f32 aspect, f32 near_plane, f32 far_plane) psh_noexcept {
             f32 tan_hfovy = tanf(fovy * 0.5f);
 
             // clang-format off
@@ -502,7 +502,7 @@ namespace psh {
             f32 bottom,
             f32 top,
             f32 near_plane,
-            f32 far_plane) noexcept {
+            f32 far_plane) psh_noexcept {
             // clang-format off
             return ColMat4{
                      2.0f / (right - left),                  0.0f,                            0.0f,                      0.0f,
@@ -519,17 +519,17 @@ namespace psh {
     };
 
     /// Left-multiply a 2D vector by a 2D square matrix.
-    psh_api Vec2 mat_mul(Mat2 m, Vec2 v) noexcept;
+    psh_api Vec2 mat_mul(Mat2 m, Vec2 v) psh_noexcept;
 
     /// Left-multiply a 3D vector by a 3D square matrix.
-    psh_api Vec3 mat_mul(Mat3 m, Vec3 v) noexcept;
+    psh_api Vec3 mat_mul(Mat3 m, Vec3 v) psh_noexcept;
 
     /// Multiply a pair of 3D square matrices.
-    psh_api Mat3 mat_mul(Mat3 lhs, Mat3 rhs) noexcept;
+    psh_api Mat3 mat_mul(Mat3 lhs, Mat3 rhs) psh_noexcept;
 
     /// Left-multiply a 4D vector by a 4D square column-major matrix.
-    psh_api Vec4 mat_mul(ColMat4 m, Vec4 v) noexcept;
+    psh_api Vec4 mat_mul(ColMat4 m, Vec4 v) psh_noexcept;
 
     /// Multiply a pair of 4D square column-major matrices.
-    psh_api ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) noexcept;
+    psh_api ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) psh_noexcept;
 }  // namespace psh

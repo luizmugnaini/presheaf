@@ -88,8 +88,8 @@ namespace psh {
         Arena* arena;
         usize  saved_offset;
 
-        psh_inline ScratchArena(Arena* parent) noexcept;
-        psh_inline ~ScratchArena() noexcept;
+        psh_inline ScratchArena(Arena* parent) psh_noexcept;
+        psh_inline ~ScratchArena() psh_noexcept;
 
         // @NOTE: Required when compiling as a DLL since the compiler will require all standard
         //        member functions to be defined.
@@ -125,17 +125,17 @@ namespace psh {
         // @NOTE: All allocation procedures will zero-out the whole allocated block.
         // -----------------------------------------------------------------------------
 
-        u8* alloc_align(usize size_bytes, u32 alignment) noexcept;
+        u8* alloc_align(usize size_bytes, u32 alignment) psh_noexcept;
 
-        u8* realloc_align(u8* block, usize current_size_bytes, usize new_size_bytes, u32 alignment) noexcept;
+        u8* realloc_align(u8* block, usize current_size_bytes, usize new_size_bytes, u32 alignment) psh_noexcept;
 
         template <typename T>
-        T* alloc(usize count) noexcept {
+        T* alloc(usize count) psh_noexcept {
             return reinterpret_cast<T*>(this->alloc_align(sizeof(T) * count, alignof(T)));
         }
 
         template <typename T>
-        T* realloc(T* block, usize current_count, usize new_count) noexcept {
+        T* realloc(T* block, usize current_count, usize new_count) psh_noexcept {
             return reinterpret_cast<T*>(this->realloc_align(
                 reinterpret_cast<u8*>(block),
                 sizeof(T) * current_count,
@@ -148,23 +148,23 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         /// Reset the offset of the allocator.
-        psh_inline void clear() noexcept {
+        psh_inline void clear() psh_noexcept {
             this->offset = 0;
         }
 
         /// Create a new scratch arena with the current offset state.
-        psh_inline ScratchArena make_scratch() noexcept {
+        psh_inline ScratchArena make_scratch() psh_noexcept {
             return ScratchArena{this};
         }
 
         /// Create a restorable checkpoint for the arena. This is a more flexible alternative to the
         /// `ScratchArena` construct since you can manually restore the arena, not relying in destructors.
-        psh_inline ArenaCheckpoint make_checkpoint() noexcept {
+        psh_inline ArenaCheckpoint make_checkpoint() psh_noexcept {
             return ArenaCheckpoint{.arena = this, .saved_offset = this->offset};
         }
 
         /// Restore the arena state to a given checkpoint.
-        psh_inline void restore_state(ArenaCheckpoint& checkpoint) noexcept {
+        psh_inline void restore_state(ArenaCheckpoint& checkpoint) psh_noexcept {
             psh_assert_msg(checkpoint.arena == this, "Checkpoint originates from a distinct arena.");
             psh_assert_fmt(
                 checkpoint.saved_offset <= this->offset,
@@ -181,7 +181,7 @@ namespace psh {
     ///
     /// Since the arena is not aware of the ownership, this function call has to be paired
     /// with `free_owned_arena`.
-    psh_inline Arena make_owned_arena(usize capacity) noexcept {
+    psh_inline Arena make_owned_arena(usize capacity) psh_noexcept {
         FatPtr<u8> memory = psh::memory_virtual_alloc(capacity);
         psh_assert_msg(memory.count != 0, "Failed to allocate memory.");
 
@@ -191,7 +191,7 @@ namespace psh {
     /// Free the memory of an arena that owns its memory.
     ///
     /// This function should only be called for arenas that where created by `make_owned_arena`.
-    psh_inline void free_owned_arena(Arena& arena) noexcept {
+    psh_inline void free_owned_arena(Arena& arena) psh_noexcept {
         psh::memory_virtual_free({arena.buf, arena.capacity});
         arena.capacity = 0;
     }
@@ -200,14 +200,14 @@ namespace psh {
     // Implementation of the scratch arena methods.
     // -----------------------------------------------------------------------------
 
-    ScratchArena::ScratchArena(Arena* parent) noexcept {
+    ScratchArena::ScratchArena(Arena* parent) psh_noexcept {
         if (psh_likely(parent != nullptr)) {
             this->arena        = parent;
             this->saved_offset = parent->offset;
         }
     }
 
-    ScratchArena::~ScratchArena() noexcept {
+    ScratchArena::~ScratchArena() psh_noexcept {
         if (psh_likely(this->arena != nullptr)) {
             this->arena->offset = this->saved_offset;
         }

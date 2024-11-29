@@ -63,11 +63,11 @@ namespace psh {
         GREATER_THAN,
     };
 
-    psh_api usize        str_length(strptr str) noexcept;
-    psh_api StrCmpResult str_cmp(strptr lhs, strptr rhs) noexcept;
-    psh_api bool         str_equal(strptr lhs, strptr rhs) noexcept;
+    psh_api usize        str_length(strptr str) psh_noexcept;
+    psh_api StrCmpResult str_cmp(strptr lhs, strptr rhs) psh_noexcept;
+    psh_api bool         str_equal(strptr lhs, strptr rhs) psh_noexcept;
 
-    psh_api constexpr bool is_utf8(char c) noexcept {
+    psh_api constexpr bool is_utf8(char c) psh_noexcept {
         return (0x1F < c && c < 0x7F);
     }
 
@@ -80,7 +80,7 @@ namespace psh {
         strptr str;
 
         template <usize N>
-        consteval StringLiteral(char const (&str_)[N]) noexcept
+        consteval StringLiteral(char const (&str_)[N]) psh_noexcept
             : str{str_} {}
     };
 
@@ -98,11 +98,11 @@ namespace psh {
         char const buf[size_];
 
         /// The character count of the string, disregarding its null-terminator.
-        constexpr usize count() const noexcept {
+        constexpr usize count() const psh_noexcept {
             return size_ - 1;
         }
 
-        char operator[](usize index) const noexcept {
+        char operator[](usize index) const psh_noexcept {
 #if defined(PSH_CHECK_BOUNDS)
             psh_assert_fmt(index < size_, "Access out of bounds (%zu) for string of size %zu", index, size_);
 #endif
@@ -117,15 +117,15 @@ namespace psh {
     using String = DynArray<char>;
 
     template <usize size_>
-    constexpr StringView make_string_view(Str<size_> str) noexcept {
+    constexpr StringView make_string_view(Str<size_> str) psh_noexcept {
         return {str.buf, size_ - 1};
     }
 
-    psh_inline StringView make_string_view(strptr str) noexcept {
+    psh_inline StringView make_string_view(strptr str) psh_noexcept {
         return {str, str_length(str)};
     }
 
-    psh_inline String make_string(Arena* arena, StringView sv) noexcept {
+    psh_inline String make_string(Arena* arena, StringView sv) psh_noexcept {
         String string{arena, sv.count + 1};
 
         memory_copy(reinterpret_cast<u8*>(string.buf), reinterpret_cast<u8 const*>(sv.buf), sizeof(char) * sv.count);
@@ -134,7 +134,7 @@ namespace psh {
         return string;
     }
 
-    psh_inline StringView make_string_view(String const& string) noexcept {
+    psh_inline StringView make_string_view(String const& string) psh_noexcept {
         return make_const_fat_ptr(string);
     }
 
@@ -152,7 +152,7 @@ namespace psh {
     /// ```
     /// Although this example uses initializer lists, you can also achieve the same using the
     /// implementation based on `psh::FatPtr`.
-    Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element = {}) noexcept;
+    Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element = {}) psh_noexcept;
 }  // namespace psh
 
 #if defined(PSH_DEFINE_SHORT_NAMES)

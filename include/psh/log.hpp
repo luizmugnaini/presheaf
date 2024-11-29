@@ -48,10 +48,10 @@ namespace psh::impl::log {
     };
 
     /// Log a message to the standard error stream.
-    psh_api void log_msg(LogInfo info, strptr msg) noexcept;
+    psh_api void log_msg(LogInfo info, strptr msg) psh_noexcept;
 
     /// Log a formatted message to the standard error stream.
-    psh_api psh_attr_fmt(2) void log_fmt(LogInfo const& info, strptr fmt, ...) noexcept;
+    psh_api psh_attr_fmt(2) void log_fmt(LogInfo const& info, strptr fmt, ...) psh_noexcept;
 }  // namespace psh::impl::log
 
 // -----------------------------------------------------------------------------

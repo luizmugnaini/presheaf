@@ -33,32 +33,32 @@ namespace psh {
     struct psh_api Buffer {
         T buf[count_] = {};
 
-        constexpr usize count() const noexcept {
+        constexpr usize count() const psh_noexcept {
             return count_;
         }
 
-        constexpr usize size_bytes() const noexcept {
+        constexpr usize size_bytes() const psh_noexcept {
             return sizeof(T) * count_;
         }
 
-        constexpr T& operator[](usize idx) noexcept {
+        constexpr T& operator[](usize idx) psh_noexcept {
 #if defined(PSH_CHECK_BOUNDS)
             psh_assert_fmt(idx < count_, "Index %zu out of bounds for Buffer of size %zu.", idx, count_);
 #endif
             return this->buf[idx];
         }
 
-        constexpr T const& operator[](usize idx) const noexcept {
+        constexpr T const& operator[](usize idx) const psh_noexcept {
 #if defined(PSH_CHECK_BOUNDS)
             psh_assert_fmt(idx < count_, "Index %zu out of bounds for Buffer of size %zu.", idx, count_);
 #endif
             return this->buf[idx];
         }
 
-        constexpr T*       begin() noexcept { return this->buf; }
-        constexpr T*       end() noexcept { return this->buf + count_; }
-        constexpr T const* begin() const noexcept { return static_cast<T const*>(this->buf); }
-        constexpr T const* end() const noexcept { return static_cast<T const*>(this->buf) + count_; }
+        constexpr T*       begin() psh_noexcept { return this->buf; }
+        constexpr T*       end() psh_noexcept { return this->buf + count_; }
+        constexpr T const* begin() const psh_noexcept { return static_cast<T const*>(this->buf); }
+        constexpr T const* end() const psh_noexcept { return static_cast<T const*>(this->buf) + count_; }
     };
 
     // -----------------------------------------------------------------------------
@@ -66,12 +66,12 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     template <typename T, usize count>
-    constexpr FatPtr<T> make_fat_ptr(Buffer<T, count>& b) noexcept {
+    constexpr FatPtr<T> make_fat_ptr(Buffer<T, count>& b) psh_noexcept {
         return FatPtr<T>{b.buf, count};
     }
 
     template <typename T, usize count>
-    constexpr FatPtr<T const> make_const_fat_ptr(Buffer<T, count> const& b) noexcept {
+    constexpr FatPtr<T const> make_const_fat_ptr(Buffer<T, count> const& b) psh_noexcept {
         return FatPtr<T const>{reinterpret_cast<T const*>(b.buf), count};
     }
 }  // namespace psh

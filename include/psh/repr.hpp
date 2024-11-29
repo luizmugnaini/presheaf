@@ -30,14 +30,14 @@
 #include <psh/string.hpp>
 
 namespace psh {
-    psh_api psh_inline char digit_to_char(u8 digit) noexcept {
+    psh_api psh_inline char digit_to_char(u8 digit) psh_noexcept {
         psh_assert_msg(digit < 10, "Expected digit to be between 0 and 9.");
         return '0' + static_cast<char>(digit);
     }
 
     /// Get the binary representation of a number
     template <typename T>
-    psh_api String binary_repr(Arena* arena, T val) noexcept {
+    psh_api String binary_repr(Arena* arena, T val) psh_noexcept {
         if (val == 0) {
             return make_string(arena, psh_comptime_make_string_view("0b0"));
         }

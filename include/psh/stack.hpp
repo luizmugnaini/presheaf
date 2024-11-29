@@ -96,7 +96,7 @@ namespace psh {
 
         constexpr Stack() = default;
 
-        psh_inline void init(FatPtr<u8> memory) noexcept {
+        psh_inline void init(FatPtr<u8> memory) psh_noexcept {
             psh_assert_msg(this->capacity == 0, "Tried to re-initialize an initialized Stack.");
 
             this->buf             = memory.buf;
@@ -105,7 +105,7 @@ namespace psh {
             this->previous_offset = 0;
         }
 
-        psh_inline Stack(FatPtr<u8> memory) noexcept {
+        psh_inline Stack(FatPtr<u8> memory) psh_noexcept {
             this->init(memory);
         }
 
@@ -114,28 +114,28 @@ namespace psh {
         // -----------------------------------------------------------------------------
 
         /// Gets the total size, in bytes, of the memory used by the allocator.
-        usize used() const noexcept;
+        usize used() const psh_noexcept;
 
         /// Gets a pointer to the memory of the last allocated memory block of the stack.
-        u8* top() const noexcept;
+        u8* top() const psh_noexcept;
 
         /// Gets a pointer to the header associated to the top memory block of the stack.
-        StackHeader const* top_header() const noexcept;
+        StackHeader const* top_header() const psh_noexcept;
 
         /// Get the size of the top memory block.
-        usize top_size() const noexcept;
+        usize top_size() const psh_noexcept;
 
         /// Get the previous offset of the top memory block.
-        usize top_previous_offset() const noexcept;
+        usize top_previous_offset() const psh_noexcept;
 
         /// Gets a pointer to the header associated to the given memory block.
-        StackHeader const* header_of(u8 const* block) const noexcept;
+        StackHeader const* header_of(u8 const* block) const psh_noexcept;
 
         /// Get the size of the given memory block.
-        usize size_of(u8 const* mem) const noexcept;
+        usize size_of(u8 const* mem) const psh_noexcept;
 
         /// Get the previous offset of the given memory block.
-        usize previous_offset_of(u8 const* mem) const noexcept;
+        usize previous_offset_of(u8 const* mem) const psh_noexcept;
 
         // -----------------------------------------------------------------------------
         // Allocation methods.
@@ -143,16 +143,16 @@ namespace psh {
         // @NOTE: All allocation procedures will zero-out the whole allocated block.
         // -----------------------------------------------------------------------------
 
-        u8* alloc_align(usize size_bytes, u32 alignment) noexcept;
+        u8* alloc_align(usize size_bytes, u32 alignment) psh_noexcept;
 
-        u8* realloc_align(u8* block, usize new_size_bytes, u32 alignment) noexcept;
+        u8* realloc_align(u8* block, usize new_size_bytes, u32 alignment) psh_noexcept;
 
         /// Allocates a new block of memory.
         ///
         /// Parameters:
         ///     * `count`: Number of entities of type `T` that should fit in the new block.
         template <typename T>
-        psh_inline T* alloc(usize count) noexcept {
+        psh_inline T* alloc(usize count) psh_noexcept {
             return reinterpret_cast<T*>(this->alloc_align(sizeof(T) * count, alignof(T)));
         }
 
@@ -166,7 +166,7 @@ namespace psh {
         /// Note: If the new count is zero, we proceed to clean the whole stack up until the given
         ///       block.
         template <typename T>
-        psh_inline T* realloc(T* block, usize new_count) noexcept {
+        psh_inline T* realloc(T* block, usize new_count) psh_noexcept {
             return reinterpret_cast<T*>(this->realloc_align(block, sizeof(T) * new_count));
         }
 
@@ -177,7 +177,7 @@ namespace psh {
         /// Tries to pop the last memory block allocated by the given stack.
         ///
         /// This function won't panic if the stack is empty, it will simply return false.
-        Status pop() noexcept;
+        Status pop() psh_noexcept;
 
         /// Tries to reset the office to the start of the header of the block pointed by `ptr`.
         ///
@@ -190,10 +190,10 @@ namespace psh {
         ///     * If `block` doesn't correspond to a correct memory block we'll never be able to
         ///       match its location and therefore we'll end up clearing the entirety of the stack.
         ///       If this is your goal, prefer using StackAlloc::clear() instead.
-        Status clear_at(u8 const* block) noexcept;
+        Status clear_at(u8 const* block) psh_noexcept;
 
         /// Reset the allocator's offset.
-        psh_inline void clear() noexcept {
+        psh_inline void clear() psh_noexcept {
             this->offset          = 0;
             this->previous_offset = 0;
         }

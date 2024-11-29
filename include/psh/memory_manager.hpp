@@ -41,13 +41,13 @@ namespace psh {
         Stack allocator        = {};
 
         /// Allocate memory and initialize the underlying memory allocator.
-        void init(usize capacity) noexcept;
+        void init(usize capacity) psh_noexcept;
 
         /// Free all acquired memory.
-        void destroy() noexcept;
+        void destroy() psh_noexcept;
 
         /// Make a new arena allocator with a given size.
-        Option<Arena> make_arena(usize size) noexcept;
+        Option<Arena> make_arena(usize size) psh_noexcept;
 
         /// Request a region of memory of a given type `T`.
         ///
@@ -55,7 +55,7 @@ namespace psh {
         ///     * count: Number of entities of type `T` that should fit in the requested memory
         ///              region.
         template <typename T>
-        T* alloc(usize count) noexcept;
+        T* alloc(usize count) psh_noexcept;
 
         /// Reallocate a region of memory created by the manager.
         ///
@@ -63,10 +63,10 @@ namespace psh {
         ///     * `block`: Pointer to the memory block that should be reallocated.
         ///     * `new_count`: The new length that the memory block should have.
         template <typename T>
-        T* realloc(T* block, usize new_length) noexcept;
+        T* realloc(T* block, usize new_length) psh_noexcept;
 
         /// Try to free the last allocated block of memory.
-        Status pop() noexcept;
+        Status pop() psh_noexcept;
 
         /// Try to reset the allocator offset until the specified memory block.
         ///
@@ -78,10 +78,10 @@ namespace psh {
         ///                the given one will also be freed). If this pointer is null, outside of
         ///                the stack allocator buffer, or already free, the program return false and
         ///                won't panic.
-        Status clear_until(u8 const* block) noexcept;
+        Status clear_until(u8 const* block) psh_noexcept;
 
         /// Resets the manager by zeroing the memory offset and statistics.
-        void clear() noexcept;
+        void clear() psh_noexcept;
 
         // @NOTE: Required when compiling as a DLL since the compiler will require all standard member
         //        functions to be defined.
@@ -89,7 +89,7 @@ namespace psh {
     };
 
     template <typename T>
-    T* MemoryManager::alloc(usize length) noexcept {
+    T* MemoryManager::alloc(usize length) psh_noexcept {
         T* const new_mem = this->allocator.alloc<T>(length);
         if (new_mem != nullptr) {
             ++this->allocation_count;
@@ -98,7 +98,7 @@ namespace psh {
     }
 
     template <typename T>
-    T* MemoryManager::realloc(T* block, usize new_length) noexcept {
+    T* MemoryManager::realloc(T* block, usize new_length) psh_noexcept {
         T* const new_mem = this->allocator.realloc<T>(block, new_length);
         if (new_mem != block) {
             this->allocation_count += 1;

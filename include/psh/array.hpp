@@ -39,10 +39,10 @@ namespace psh {
         T*    buf;
         usize count = 0;
 
-        Array() noexcept = default;
+        Array() psh_noexcept = default;
 
         /// Initialize the array with a given size.
-        psh_inline void init(Arena* arena_, usize count_) noexcept {
+        psh_inline void init(Arena* arena_, usize count_) psh_noexcept {
             psh_assert_msg(this->count == 0, "Tried to re-initialize an initialized Array.");
             psh_assert(arena_ != nullptr);
 
@@ -51,32 +51,32 @@ namespace psh {
         }
 
         /// Construct an array with a given size.
-        psh_inline Array(Arena* arena_, usize count_) noexcept {
+        psh_inline Array(Arena* arena_, usize count_) psh_noexcept {
             this->init(arena_, count_);
         }
 
-        psh_inline usize size_bytes() const noexcept {
+        psh_inline usize size_bytes() const psh_noexcept {
             return sizeof(T) * this->count;
         }
 
-        psh_inline T& operator[](usize idx) noexcept {
+        psh_inline T& operator[](usize idx) psh_noexcept {
 #if defined(PSH_CHECK_BOUNDS)
             psh_assert_fmt(idx < this->count, "Index %zu out of bounds for Array of size %zu.", idx, this->count);
 #endif
             return this->buf[idx];
         }
 
-        psh_inline T const& operator[](usize idx) const noexcept {
+        psh_inline T const& operator[](usize idx) const psh_noexcept {
 #if defined(PSH_CHECK_BOUNDS)
             psh_assert_fmt(idx < this->count, "Index %zu out of bounds for Array of size %zu.", idx, this->count);
 #endif
             return this->buf[idx];
         }
 
-        psh_inline T*       begin() noexcept { return this->buf; }
-        psh_inline T*       end() noexcept { return psh_ptr_add(this->buf, this->count); }
-        psh_inline T const* begin() const noexcept { return static_cast<T const*>(this->buf); }
-        psh_inline T const* end() const noexcept { return static_cast<T const*>(psh_ptr_add(this->buf, this->count)); }
+        psh_inline T*       begin() psh_noexcept { return this->buf; }
+        psh_inline T*       end() psh_noexcept { return psh_ptr_add(this->buf, this->count); }
+        psh_inline T const* begin() const psh_noexcept { return static_cast<T const*>(this->buf); }
+        psh_inline T const* end() const psh_noexcept { return static_cast<T const*>(psh_ptr_add(this->buf, this->count)); }
     };
 
     // -----------------------------------------------------------------------------
@@ -84,12 +84,12 @@ namespace psh {
     // -----------------------------------------------------------------------------
 
     template <typename T>
-    psh_inline FatPtr<T> make_fat_ptr(Array<T>& a) noexcept {
+    psh_inline FatPtr<T> make_fat_ptr(Array<T>& a) psh_noexcept {
         return FatPtr<T>{a.buf, a.count};
     }
 
     template <typename T>
-    psh_inline FatPtr<T const> make_const_fat_ptr(Array<T> const& a) noexcept {
+    psh_inline FatPtr<T const> make_const_fat_ptr(Array<T> const& a) psh_noexcept {
         return FatPtr<T const>{reinterpret_cast<T const*>(a.buf), a.count};
     }
 }  // namespace psh

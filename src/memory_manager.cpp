@@ -27,21 +27,21 @@
 #include <psh/memory.hpp>
 
 namespace psh {
-    void MemoryManager::init(usize capacity_bytes) noexcept {
+    void MemoryManager::init(usize capacity_bytes) psh_noexcept {
         this->allocation_count = 0;
         this->allocator.init(memory_virtual_alloc(capacity_bytes));
     }
 
-    void MemoryManager::destroy() noexcept {
+    void MemoryManager::destroy() psh_noexcept {
         memory_virtual_free({this->allocator.buf, this->allocator.capacity});
     }
 
-    Option<Arena> MemoryManager::make_arena(usize size) noexcept {
+    Option<Arena> MemoryManager::make_arena(usize size) psh_noexcept {
         u8* memory = this->alloc<u8>(size);
         return (memory == nullptr) ? Option<Arena>{} : Option<Arena>{Arena{memory, size}};
     }
 
-    Status MemoryManager::pop() noexcept {
+    Status MemoryManager::pop() psh_noexcept {
         Status st = this->allocator.pop();
         if (psh_likely(st == STATUS_OK)) {
             --this->allocation_count;
@@ -49,7 +49,7 @@ namespace psh {
         return st;
     }
 
-    Status MemoryManager::clear_until(u8 const* block) noexcept {
+    Status MemoryManager::clear_until(u8 const* block) psh_noexcept {
         u8 const* memory_start = this->allocator.buf;
 
         // Check if the block lies within the allocator's memory.
@@ -83,7 +83,7 @@ namespace psh {
         return STATUS_OK;
     }
 
-    void MemoryManager::clear() noexcept {
+    void MemoryManager::clear() psh_noexcept {
         this->allocation_count = 0;
         this->allocator.clear();
     }

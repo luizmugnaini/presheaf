@@ -39,7 +39,7 @@
 #define psh_impl_arena_is_empty(arena) (((arena)->capacity == 0) || ((arena)->buf == nullptr))
 
 namespace psh {
-    u8* Arena::alloc_align(usize size_bytes, u32 alignment) noexcept {
+    u8* Arena::alloc_align(usize size_bytes, u32 alignment) psh_noexcept {
         if (psh_unlikely(size_bytes == 0)) {
             return nullptr;
         }
@@ -68,7 +68,7 @@ namespace psh {
         u8*   block,
         usize current_size_bytes,
         usize new_size_bytes,
-        u32   alignment) noexcept {
+        u32   alignment) psh_noexcept {
         psh_assert_msg(new_size_bytes != 0, "Don't use realloc to free blocks of memory.");
         psh_assert_msg((block != nullptr) && (current_size_bytes != 0), "Don't use realloc to allocate new memory.");
 
