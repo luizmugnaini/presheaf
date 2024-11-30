@@ -64,7 +64,7 @@ namespace psh {
             {
                 // Add the size accumulated by the join element.
                 if (join_element.count != 0) {
-                    additional_length += previously_empty ? ((join_strings.count - 1) * join_element.count)
+                    additional_length += previously_empty ? ((join_strings.count - 1u) * join_element.count)
                                                           : (join_strings.count * join_element.count);
                 }
 

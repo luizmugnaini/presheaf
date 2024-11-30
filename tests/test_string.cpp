@@ -62,8 +62,8 @@ namespace psh::test::string {
             String s = make_string(&arena, psh_comptime_make_string_view("Seven for the Dwarf-lords in their halls of stone"));
             psh_assert(str_equal(s.buf, "Seven for the Dwarf-lords in their halls of stone"));
             psh_assert(s.count == strlen("Seven for the Dwarf-lords in their halls of stone"));
-            psh_assert(s.capacity == s.count + 1);
-            psh_assert(s.buf[s.capacity - 1] == 0);
+            psh_assert(s.capacity == s.count + 1u);
+            psh_assert(s.buf[s.capacity - 1u] == 0);
         }
         free(arena.buf);
         report_test_successful();
@@ -111,16 +111,16 @@ namespace psh::test::string {
 
                 psh_assert(str_equal(estr.buf, check_str1.buf));
                 psh_assert(estr.count == check_str1.count());
-                psh_assert(estr.capacity == estr.count + 1);
+                psh_assert(estr.capacity == estr.count + 1u);
                 psh_assert(estr.buf[estr.count] == 0);
             }
 
             // Non-empty string.
             {
                 String nestr = make_string(&arena, views2[0]);
-                psh_assert(join_strings(nestr, FatPtr{&views2[1], views2.count() - 1}));
+                psh_assert(join_strings(nestr, FatPtr{&views2[1u], views2.count() - 1u}));
                 psh_assert(str_equal(nestr.buf, check_str2.buf));
-                psh_assert(nestr.capacity == nestr.count + 1);
+                psh_assert(nestr.capacity == nestr.count + 1u);
                 psh_assert(nestr.buf[nestr.count] == 0);
             }
 

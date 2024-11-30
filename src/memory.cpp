@@ -136,14 +136,14 @@ namespace psh {
 
         // Calculate the padding necessary for the alignment of the new block of memory.
         usize padding   = 0;
-        usize mod_align = ptr_addr & (alignment - 1);  // Same as `ptr_addr % alignment`.
+        usize mod_align = ptr_addr & (alignment - 1u);  // Same as `ptr_addr % alignment`.
         if (mod_align != 0) {
             padding += alignment - mod_align;
         }
         ptr_addr += padding;
 
         // Padding necessary for the header alignment.
-        usize mod_header = ptr_addr & (header_alignment - 1);  // Same as `ptr_addr % header_alignment`.
+        usize mod_header = ptr_addr & (header_alignment - 1u);  // Same as `ptr_addr % header_alignment`.
         if (mod_header != 0) {
             padding += header_alignment - mod_header;
         }
@@ -157,7 +157,7 @@ namespace psh {
     usize align_forward(uptr ptr_addr, usize alignment) psh_noexcept {
         psh_assert_fmt(psh_is_pow_of_two(alignment), "Expected alignment (%zu) to be a power of two.", alignment);
 
-        usize mod_align = ptr_addr & (alignment - 1);
+        usize mod_align = ptr_addr & (alignment - 1u);
         if (mod_align != 0) {
             ptr_addr += alignment - mod_align;
         }

@@ -30,7 +30,7 @@
 
 /// Range size threshold for the quick sort algorithm to fallback to the insertion sort algorithm.
 #ifndef QUICK_SORT_CUTOFF_TO_INSERTION_SORT
-#    define QUICK_SORT_CUTOFF_TO_INSERTION_SORT 10
+#    define QUICK_SORT_CUTOFF_TO_INSERTION_SORT 10u
 #endif
 
 namespace psh {
@@ -99,7 +99,7 @@ namespace psh {
     /// Note: We assume that the buffer of data is ordered.
     template <typename T>
     Option<usize> binary_search(FatPtr<T const> fptr, T match) psh_noexcept {
-        return binary_search_range(fptr, match, 0, fptr.count - 1);
+        return binary_search_range(fptr, match, 0, fptr.count - 1u);
     }
 
     template <typename T>
@@ -118,11 +118,11 @@ namespace psh {
 
         // Search the left side.
         if (mid_elem < match) {
-            return binary_search_range(fptr, match, mid + 1, high);
+            return binary_search_range(fptr, match, mid + 1u, high);
         }
 
         // Search the right side.
-        return binary_search_range(fptr, match, low, mid - 1);
+        return binary_search_range(fptr, match, low, mid - 1u);
     }
 
     // -----------------------------------------------------------------------------
@@ -146,25 +146,25 @@ namespace psh {
     template <typename T>
     void insertion_sort(FatPtr<T> data) psh_noexcept {
         for (usize end = 1; end < data.count; ++end) {
-            for (usize idx = end; (idx > 0) && (data[idx - 1] > data[idx]); --idx) {
-                swap_elements(data.buf, idx, idx - 1);
+            for (usize idx = end; (idx > 0) && (data[idx - 1u] > data[idx]); --idx) {
+                swap_elements(data.buf, idx, idx - 1u);
             }
         }
     }
 
     template <typename T>
     void quick_sort(FatPtr<T> data) psh_noexcept {
-        quick_sort_range(data, 0, data.count - 1);
+        quick_sort_range(data, 0, data.count - 1u);
     }
 
     template <typename T>
     void quick_sort_range(FatPtr<T> data, usize low, usize high) psh_noexcept {
         if (high <= low + QUICK_SORT_CUTOFF_TO_INSERTION_SORT) {
-            insertion_sort(data.slice(low, (high + 1) - low));
+            insertion_sort(data.slice(low, (high + 1u) - low));
             return;
         }
 
-        usize left_scan  = low + 1;
+        usize left_scan  = low + 1u;
         usize right_scan = high;
         for (;;) {
             while (data[left_scan] <= data[low]) {
@@ -190,7 +190,7 @@ namespace psh {
         swap_elements(data.buf, low, right_scan);
 
         quick_sort_range(data, low, psh_nowrap_unsigned_dec(right_scan));
-        quick_sort_range(data, right_scan + 1, high);
+        quick_sort_range(data, right_scan + 1u, high);
     }
 
     // -----------------------------------------------------------------------------

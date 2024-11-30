@@ -419,7 +419,7 @@ namespace psh::test::allocators {
         Stack stack{{buf, size}};
 
         iptr  stack_buf_diff = reinterpret_cast<iptr>(stack.buf);
-        usize zero           = 0ull;
+        usize zero           = 0;
 
         usize  a1_alignment = sizeof(strptr);
         strptr a1           = stack.alloc<char>(50);
@@ -503,7 +503,7 @@ namespace psh::test::allocators {
         fibonacci[0] = 1;
         fibonacci[1] = 1;
         for (u64 idx = 2; idx < 30; ++idx) {
-            fibonacci[idx] = fibonacci[idx - 1] + fibonacci[idx - 2];
+            fibonacci[idx] = fibonacci[idx - 1u] + fibonacci[idx - 2u];
         }
 
         psh_assert(stack.used() >= expected_min_size);

@@ -44,7 +44,7 @@
 #define psh_comptime_make_string_view(cstr_literal) \
     psh::StringView {                               \
         .buf   = cstr_literal,                      \
-        .count = sizeof(cstr_literal) - 1,          \
+        .count = sizeof(cstr_literal) - 1u,         \
     }
 #define psh_comptime_make_string_view_from_str(str) \
     psh::StringView {                               \
@@ -99,7 +99,7 @@ namespace psh {
 
         /// The character count of the string, disregarding its null-terminator.
         constexpr usize count() const psh_noexcept {
-            return size_ - 1;
+            return size_ - 1u;
         }
 
         char operator[](usize index) const psh_noexcept {
@@ -118,7 +118,7 @@ namespace psh {
 
     template <usize size_>
     constexpr StringView make_string_view(Str<size_> str) psh_noexcept {
-        return {str.buf, size_ - 1};
+        return {str.buf, size_ - 1u};
     }
 
     psh_inline StringView make_string_view(strptr str) psh_noexcept {
@@ -126,7 +126,7 @@ namespace psh {
     }
 
     psh_inline String make_string(Arena* arena, StringView sv) psh_noexcept {
-        String string{arena, sv.count + 1};
+        String string{arena, sv.count + 1u};
 
         memory_copy(reinterpret_cast<u8*>(string.buf), reinterpret_cast<u8 const*>(sv.buf), sizeof(char) * sv.count);
         string.count = sv.count;

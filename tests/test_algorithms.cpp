@@ -40,8 +40,8 @@ namespace psh::test::algorithms {
     template <typename T>
     psh_internal bool test_sort(FatPtr<T> fptr) {
         bool sorted = true;
-        for (usize idx = 0; idx < fptr.count - 1; ++idx) {
-            sorted &= (fptr[idx] <= fptr[idx + 1]);
+        for (usize idx = 0; idx < fptr.count - 1u; ++idx) {
+            sorted &= (fptr[idx] <= fptr[idx + 1u]);
         }
         return sorted;
     }
@@ -69,7 +69,7 @@ namespace psh::test::algorithms {
         {
             Buffer<int32_t, 256> buf;
             FatPtr<i32>          fptr = psh::make_fat_ptr(buf);
-            for (u32 iter = 0; iter < 20; ++iter) {
+            for (u32 iter = 0; iter < 20u; ++iter) {
                 for (i32& v : buf) {
                     v = rand();
                 }
@@ -104,7 +104,7 @@ namespace psh::test::algorithms {
         {
             Buffer<int32_t, 256> buf;
             FatPtr<i32>          fptr = psh::make_fat_ptr(buf);
-            for (u32 iter = 0; iter < 20; ++iter) {
+            for (u32 iter = 0; iter < 20u; ++iter) {
                 for (i32& v : buf) {
                     v = rand();
                 }

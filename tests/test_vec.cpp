@@ -29,8 +29,8 @@
 namespace psh::test::vec {
     psh_internal void matrix_indexed_access() {
         Mat3 mat3 = Mat3::id();
-        for (u32 row = 0; row < 3; ++row) {
-            for (u32 column = 0; column < 3; ++column) {
+        for (u32 row = 0; row < 3u; ++row) {
+            for (u32 column = 0; column < 3u; ++column) {
                 if (row != column) {
                     psh_assert(approx_equal(mat3.at(row, column), 0.0f));
                 } else {
@@ -40,8 +40,8 @@ namespace psh::test::vec {
         }
 
         ColMat4 cmat4 = ColMat4::id();
-        for (u32 row = 0; row < 4; ++row) {
-            for (u32 column = 0; column < 4; ++column) {
+        for (u32 row = 0; row < 4u; ++row) {
+            for (u32 column = 0; column < 4u; ++column) {
                 if (row != column) {
                     psh_assert(approx_equal(cmat4.at(row, column), 0.0f));
                 } else {
