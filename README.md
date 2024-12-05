@@ -7,9 +7,8 @@ This is a C++ library that I use across my projects as an alternative to the STL
 C++20 and its only dependency is libc and a few OS headers (see [here](#dependencies) for more info).
 Compilers that are ensured to work are: Clang, GCC, MSVC.
 
-The code is written with simplicity and performance in mind, hence it does **not** adhere to the
-principles of the so called "modern" C++. There is no use of exceptions, inheritance, smart
-pointers, etc. For more information, check the [style guide](./STYLE_GUIDE.md).
+The code is written with simplicity and performance in mind. There is no use of exceptions,
+inheritance, smart pointers, etc. For more information, check the [style guide](./STYLE_GUIDE.md).
 
 # Building
 
