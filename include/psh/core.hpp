@@ -362,7 +362,7 @@ namespace psh {
 #define psh_ptr_sub(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) - static_cast<iptr>(offset)))
 
 /// Check if two pointers refer to the same address in memory.
-#define psh_ptr_same_addr(lhs_ptr, rhs_ptr) (reinterpret_cast<u8*>(lhs_ptr) == reinterpret_cast<u8*>(rhs_ptr))
+#define psh_ptr_same_addr(lhs_ptr, rhs_ptr) (reinterpret_cast<u8 const*>(lhs_ptr) == reinterpret_cast<u8 const*>(rhs_ptr))
 
 /// Compute the offset, in bytes, between two pointers.
 #define psh_ptr_offset_bytes(end_ptr, start_ptr)                                           \
