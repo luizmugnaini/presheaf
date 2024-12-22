@@ -30,28 +30,53 @@
 
 namespace psh {
     usize str_length(strptr str) psh_noexcept {
-        usize res = 0;
+        usize length = 0;
         if (psh_likely(str != nullptr)) {
-            res = strlen(str);
+            length = strlen(str);
         }
-        return res;
+        return length;
     }
 
     StrCmpResult str_cmp(strptr lhs, strptr rhs) psh_noexcept {
         i32          cmp = strcmp(lhs, rhs);
-        StrCmpResult res;
+        StrCmpResult result;
         if (cmp == 0) {
-            res = StrCmpResult::EQUAL;
+            result = StrCmpResult::EQUAL;
         } else if (cmp < 0) {
-            res = StrCmpResult::LESS_THAN;
+            result = StrCmpResult::LESS_THAN;
         } else {
-            res = StrCmpResult::GREATER_THAN;
+            result = StrCmpResult::GREATER_THAN;
         }
-        return res;
+        return result;
+    }
+
+    StrCmpResult str_cmp(StringView lhs, StringView rhs) psh_noexcept {
+        i32          cmp = memcmp(lhs.buf, rhs.buf, psh_min_value(lhs.count, rhs.count));
+        StrCmpResult result;
+        if (cmp == 0) {
+            result = StrCmpResult::EQUAL;
+        } else if (cmp < 0) {
+            result = StrCmpResult::LESS_THAN;
+        } else {
+            result = StrCmpResult::GREATER_THAN;
+        }
+        return result;
     }
 
     bool str_equal(strptr lhs, strptr rhs) psh_noexcept {
         return (strcmp(lhs, rhs) == 0);
+    }
+
+    bool str_equal(StringView lhs, StringView rhs) psh_noexcept {
+        bool  are_equal = true;
+        usize length    = lhs.count;
+
+        are_equal &= (rhs.count == length);
+        if (are_equal) {
+            are_equal &= (memcmp(lhs.buf, rhs.buf, length) == 0);
+        }
+
+        return are_equal;
     }
 
     Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element) psh_noexcept {

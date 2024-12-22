@@ -137,7 +137,34 @@ namespace psh {
     /// ```
     /// Although this example uses initializer lists, you can also achieve the same using the
     /// implementation based on `psh::FatPtr`.
-    Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element = {}) psh_noexcept;
+    psh_api Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element = {}) psh_noexcept;
+
+    // -----------------------------------------------------------------------------
+    // String comparison utilities.
+    // -----------------------------------------------------------------------------
+
+    enum struct StrCmpResult {
+        LESS_THAN,
+        EQUAL,
+        GREATER_THAN,
+    };
+
+    psh_api StrCmpResult            str_cmp(strptr lhs, strptr rhs) psh_noexcept;
+    psh_api StrCmpResult            str_cmp(StringView lhs, StringView rhs) psh_noexcept;
+    psh_api psh_inline StrCmpResult str_cmp(StringView lhs, strptr rhs) psh_noexcept {
+        return str_cmp(lhs, make_string_view(rhs));
+    }
+
+    psh_api bool            str_equal(strptr lhs, strptr rhs) psh_noexcept;
+    psh_api bool            str_equal(StringView lhs, StringView rhs) psh_noexcept;
+    psh_api psh_inline bool str_equal(StringView lhs, strptr rhs) psh_noexcept {
+        return str_equal(lhs, make_string_view(rhs));
+    }
+
+    psh_api constexpr bool is_utf8(char c) psh_noexcept {
+        return (0x1F < c && c < 0x7F);
+    }
+
 }  // namespace psh
 
 #if defined(PSH_DEFINE_SHORT_NAMES)
