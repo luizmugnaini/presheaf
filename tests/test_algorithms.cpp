@@ -248,6 +248,15 @@ namespace psh::test::algorithms {
             psh_assert(!psh::binary_search(fptr, static_cast<i64>(1)).has_value);
         }
 
+        // Basic test.
+        {
+            Buffer<i32, 6>    buf  = {3, 3, 3, 4, 5, 9};
+            FatPtr<i32 const> fptr = make_const_fat_ptr(buf);
+
+            // Exact elements.
+            psh_assert(psh::binary_search(fptr, static_cast<i32>(4)).demand() == 3);
+        }
+
         // Random test.
         {
             Buffer<i32, 256> buf;
