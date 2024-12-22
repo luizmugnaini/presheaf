@@ -172,8 +172,7 @@ namespace psh {
                 checkpoint.saved_offset,
                 this->offset);
 
-            checkpoint.arena = nullptr;  // Invalidate the checkpoint for further uses.
-            this->offset     = checkpoint.saved_offset;
+            this->offset = checkpoint.saved_offset;
         }
     };
 
