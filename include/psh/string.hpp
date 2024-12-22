@@ -54,26 +54,11 @@
 
 namespace psh {
     // -----------------------------------------------------------------------------
-    // String comparison utilities.
-    // -----------------------------------------------------------------------------
-
-    enum struct StrCmpResult {
-        LESS_THAN,
-        EQUAL,
-        GREATER_THAN,
-    };
-
-    psh_api usize        str_length(strptr str) psh_noexcept;
-    psh_api StrCmpResult str_cmp(strptr lhs, strptr rhs) psh_noexcept;
-    psh_api bool         str_equal(strptr lhs, strptr rhs) psh_noexcept;
-
-    psh_api constexpr bool is_utf8(char c) psh_noexcept {
-        return (0x1F < c && c < 0x7F);
-    }
-
-    // -----------------------------------------------------------------------------
     // String types.
     // -----------------------------------------------------------------------------
+
+    // Computes the length of a zero-terminated string.
+    psh_api usize str_length(strptr str) psh_noexcept;
 
     /// String literal type.
     struct psh_api StringLiteral {
@@ -117,15 +102,15 @@ namespace psh {
     using String = DynArray<char>;
 
     template <usize size_>
-    constexpr StringView make_string_view(Str<size_> str) psh_noexcept {
+    psh_api psh_inline constexpr StringView make_string_view(Str<size_> str) psh_noexcept {
         return {str.buf, size_ - 1u};
     }
 
-    psh_inline StringView make_string_view(strptr str) psh_noexcept {
+    psh_api psh_inline StringView make_string_view(strptr str) psh_noexcept {
         return {str, str_length(str)};
     }
 
-    psh_inline String make_string(Arena* arena, StringView sv) psh_noexcept {
+    psh_api psh_inline String make_string(Arena* arena, StringView sv) psh_noexcept {
         String string{arena, sv.count + 1u};
 
         memory_copy(reinterpret_cast<u8*>(string.buf), reinterpret_cast<u8 const*>(sv.buf), sizeof(char) * sv.count);
@@ -134,7 +119,7 @@ namespace psh {
         return string;
     }
 
-    psh_inline StringView make_string_view(String const& string) psh_noexcept {
+    psh_api psh_inline StringView make_string_view(String const& string) psh_noexcept {
         return make_const_fat_ptr(string);
     }
 
