@@ -22,6 +22,8 @@
 /// Description: Commonly used algorithms.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
+// TODO: Implement the cache-oblivious Funnelsort https://en.wikipedia.org/wiki/Funnelsort
+
 #pragma once
 
 #include <psh/core.hpp>

@@ -27,34 +27,51 @@
 #include <psh/core.hpp>
 #include <psh/log.hpp>
 
+using AbortFunction = void(void* arg);
+
+namespace psh::impl::assertion {
+    psh_inline void default_abort_function(void* arg) noexcept {
+        psh_discard_value(arg);
+        psh_abort_program();
+    };
+
+    psh_global AbortFunction* aborter = default_abort_function;
+};  // namespace psh::impl::assertion
+
+namespace psh {
+    psh_inline void set_abort_function(AbortFunction* func) noexcept {
+        impl::assertion::aborter = func;
+    }
+}  // namespace psh
+
 /// Assertion macros.
 #if !defined(PSH_DISABLE_ASSERTS)
 #    define psh_assert(expr)                                                             \
         do {                                                                             \
             if (!static_cast<bool>(expr)) {                                              \
                 psh_log_fatal_fmt("Assertion failed: %s, msg: %s", #expr, "no message"); \
-                psh_abort_program();                                                     \
+                psh::impl::assertion::aborter(nullptr);                                  \
             }                                                                            \
         } while (0)
 #    define psh_assert_msg(expr, msg)                                             \
         do {                                                                      \
             if (!static_cast<bool>(expr)) {                                       \
                 psh_log_fatal_fmt("Assertion failed: %s, msg: %s", #expr, (msg)); \
-                psh_abort_program();                                              \
+                psh::impl::assertion::aborter(nullptr);                           \
             }                                                                     \
         } while (0)
 #    define psh_assert_fmt(expr, fmt, ...)                                                \
         do {                                                                              \
             if (!static_cast<bool>(expr)) {                                               \
                 psh_log_fatal_fmt("Assertion failed: %s, msg: " fmt, #expr, __VA_ARGS__); \
-                psh_abort_program();                                                      \
+                psh::impl::assertion::aborter(nullptr);                                   \
             }                                                                             \
         } while (0)
 #    define psh_assert_constexpr(expr)                                                   \
         do {                                                                             \
             if constexpr (!static_cast<bool>(expr)) {                                    \
                 psh_log_fatal_fmt("Assertion failed: %s, msg: %s", #expr, "no message"); \
-                psh_abort_program();                                                     \
+                psh::impl::assertion::aborter(nullptr);                                  \
             }                                                                            \
         } while (0)
 #else
@@ -67,13 +84,13 @@
 #define psh_todo()                                       \
     do {                                                 \
         psh_log_fatal("TODO: code-path unimplemented!"); \
-        psh_abort_program();                             \
+        psh::impl::assertion::aborter(nullptr);          \
     } while (0)
 
 #define psh_todo_msg(msg)                                                 \
     do {                                                                  \
         psh_log_fatal_fmt("TODO: code-path unimplemented, msg: %s", msg); \
-        psh_abort_program();                                              \
+        psh::impl::assertion::aborter(nullptr);                           \
     } while (0)
 
 // -----------------------------------------------------------------------------

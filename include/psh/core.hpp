@@ -251,8 +251,7 @@
 #elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
 #    define psh_abort_program() __builtin_trap()
 #else
-#    include <assert.h>
-#    define psh_abort_program() assert(false)
+#    define psh_abort_program() while (1)
 #endif
 
 /// Code-path should be unreachable.
@@ -261,7 +260,7 @@
 #elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
 #    define psh_unreachable() __builtin_unreachable()
 #else
-#    define psh_unreachable() psh_abort()
+#    define psh_unreachable() psh_abort_program()
 #endif
 
 /// Linkage hits.
