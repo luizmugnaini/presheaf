@@ -24,11 +24,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <psh/arena.hpp>
 #include <psh/assert.hpp>
 #include <psh/core.hpp>
 #include <psh/memory.hpp>
-#include <psh/stack.hpp>
 #include "utils.hpp"
 
 namespace psh::test::allocators {
@@ -52,16 +50,16 @@ namespace psh::test::allocators {
         //          |  -> s3
         //
         // Lifetimes:
-        //     |-> arena creates `s1`
-        //     |-> `s1` creates `s2`
-        //         |-> `s1` creates `s3`
-        //         |-> `s2` creates `s4`
-        //            |-> `s4` creates `s5`
-        //            |-> `s5` is destroyed, arena goes back to `s5_base_offset`
-        //         |-> `s4` is destroyed, arena goes back to `s4_base_offset`
-        //         |-> `s3` is destroyed, arena goes back to `s3_base_offset`
-        //     |-> `s2` is destroyed, arena goes back to `s2_base_offset`
-        //     |-> `s1` is destroyed, arena goes back to `s1_base_offset`
+        //     |-> arena creates s1
+        //     |-> s1 creates s2
+        //         |-> s1 creates s3
+        //         |-> s2 creates s4
+        //            |-> s4 creates s5
+        //            |-> s5 is destroyed, arena goes back to s5_base_offset
+        //         |-> s4 is destroyed, arena goes back to s4_base_offset
+        //         |-> s3 is destroyed, arena goes back to s3_base_offset
+        //     |-> s2 is destroyed, arena goes back to s2_base_offset
+        //     |-> s1 is destroyed, arena goes back to s1_base_offset
         {
             ScratchArena s1          = arena.make_scratch();
             usize        last_offset = base_offset;
@@ -72,12 +70,12 @@ namespace psh::test::allocators {
             {
                 usize a1_size = 32;
                 u8*   a1      = s1.arena->alloc<u8>(a1_size);
-                psh_assert(a1 != nullptr);
+                psh_assert_not_null(a1);
                 last_offset += a1_size;
 
                 usize a2_size = 32;
                 u8*   a2      = s1.arena->alloc<u8>(a2_size);
-                psh_assert(a2 != nullptr);
+                psh_assert_not_null(a2);
                 last_offset += a2_size;
 
                 // Throw away.
@@ -88,9 +86,9 @@ namespace psh::test::allocators {
             psh_assert(s1.arena == &arena);
             psh_assert(arena.offset == last_offset);
 
-            // ---------------------------------------------------------------------------------
+            // -----------------------------------------------------------------------------------------------------
             // Create a new scratch arena from the previous one.
-            // ---------------------------------------------------------------------------------
+            // -----------------------------------------------------------------------------------------------------
             usize s2_base_offset = last_offset;
             {
                 ScratchArena s2 = s1.arena->make_scratch();
@@ -101,12 +99,12 @@ namespace psh::test::allocators {
                 {
                     usize b1_size = 32;
                     u8*   b1      = s2.arena->alloc<u8>(b1_size);
-                    psh_assert(b1 != nullptr);
+                    psh_assert_not_null(b1);
                     last_offset += b1_size;
 
                     usize b2_size = 64;
                     u8*   b2      = s2.arena->alloc<u8>(b2_size);
-                    psh_assert(b2 != nullptr);
+                    psh_assert_not_null(b2);
                     last_offset += b2_size;
 
                     // Throw away.
@@ -116,9 +114,9 @@ namespace psh::test::allocators {
                 psh_assert(s2.arena == &arena);
                 psh_assert(s2.saved_offset == s2_base_offset);
 
-                // ---------------------------------------------------------------------------------
-                // Create another scratch arena from `s1` within the same lifetime of `s2`.
-                // ---------------------------------------------------------------------------------
+                // -----------------------------------------------------------------------------------------------------
+                // Create another scratch arena from s1 within the same lifetime of s2.
+                // -----------------------------------------------------------------------------------------------------
 
                 ScratchArena s3 = s1.arena->make_scratch();
 
@@ -129,12 +127,12 @@ namespace psh::test::allocators {
                 {
                     usize c1_size = 16;
                     u8*   c1      = s3.arena->alloc<u8>(c1_size);
-                    psh_assert(c1 != nullptr);
+                    psh_assert_not_null(c1);
                     last_offset += c1_size;
 
                     usize c2_size = 128;
                     u8*   c2      = s3.arena->alloc<u8>(c2_size);
-                    psh_assert(c2 != nullptr);
+                    psh_assert_not_null(c2);
                     last_offset += c2_size;
 
                     // Throw away.
@@ -144,9 +142,9 @@ namespace psh::test::allocators {
                 psh_assert(s3.arena == &arena);
                 psh_assert(s3.saved_offset == s3_base_offset);
 
-                // ---------------------------------------------------------------------------------
-                // Create another scratch arena from `s2` within the same lifetime of `s2` and `s3`.
-                // ---------------------------------------------------------------------------------
+                // -----------------------------------------------------------------------------------------------------
+                // Create another scratch arena from s2 within the same lifetime of s2 and s3.
+                // -----------------------------------------------------------------------------------------------------
 
                 ScratchArena s4 = s2.arena->make_scratch();
 
@@ -157,12 +155,12 @@ namespace psh::test::allocators {
                 {
                     usize c1_size = 16;
                     u8*   c1      = s4.arena->alloc<u8>(c1_size);
-                    psh_assert(c1 != nullptr);
+                    psh_assert_not_null(c1);
                     last_offset += c1_size;
 
                     usize c2_size = 128;
                     u8*   c2      = s4.arena->alloc<u8>(c2_size);
-                    psh_assert(c2 != nullptr);
+                    psh_assert_not_null(c2);
                     last_offset += c2_size;
 
                     // Throw away.
@@ -172,9 +170,9 @@ namespace psh::test::allocators {
                 psh_assert(s4.arena == &arena);
                 psh_assert(s4.saved_offset == s4_base_offset);
 
-                // ---------------------------------------------------------------------------------
-                // Create a scratch arena from `s4`
-                // ---------------------------------------------------------------------------------
+                // -----------------------------------------------------------------------------------------------------
+                // Create a scratch arena from s4
+                // -----------------------------------------------------------------------------------------------------
 
                 usize s5_base_offset = last_offset;
                 {
@@ -186,13 +184,13 @@ namespace psh::test::allocators {
                     {
                         usize d1_size = 16;
                         u8*   d1      = s5.arena->alloc<u8>(d1_size);
-                        psh_assert(d1 != nullptr);
+                        psh_assert_not_null(d1);
                         last_offset += d1_size;
                         psh_assert(s1.arena->offset == last_offset);
 
                         usize c2_size = 128;
                         u8*   c2      = s5.arena->alloc<u8>(c2_size);
-                        psh_assert(c2 != nullptr);
+                        psh_assert_not_null(c2);
                         last_offset += c2_size;
                         psh_assert(s1.arena->offset == last_offset);
 
@@ -204,13 +202,13 @@ namespace psh::test::allocators {
                     psh_assert(s5.saved_offset == s5_base_offset);
                 }
 
-                // `s5` destroyed.
+                // s5 destroyed.
                 psh_assert(arena.offset == s5_base_offset);
             }
-            // `s4`, `s3`, `s2` destroyed.
+            // s4, s3, s2 destroyed.
             psh_assert(arena.offset == s2_base_offset);
 
-            // Check the state of `s1`.
+            // Check the state of s1.
             psh_assert(s1.saved_offset == base_offset);
             psh_assert(s1.arena == &arena);
         }
@@ -251,12 +249,12 @@ namespace psh::test::allocators {
         usize stack_min_expected_size = 0;
         usize expected_alloc_size     = 512;
         u8*   buf                     = reinterpret_cast<u8*>(malloc(expected_alloc_size));
-        Stack stack{{buf, expected_alloc_size}};
+        Stack stack{.buf = buf, .capacity = expected_alloc_size};
 
         u8    expected_u8_vec[5]   = {51, 102, 153, 204, 255};
         usize expected_u8_vec_size = 5 * sizeof(u8);  // 5 bytes
         u8*   test_vec_u8          = stack.alloc<u8>(expected_u8_vec_size);
-        psh_assert(test_vec_u8 != nullptr);
+        psh_assert_not_null(test_vec_u8);
         for (usize i = 0; i < 5; ++i) {
             test_vec_u8[i] = expected_u8_vec[i];
         }
@@ -268,7 +266,7 @@ namespace psh::test::allocators {
         u32   expected_u32_vec[3]   = {1, 1024, 1073741824};
         usize expected_u32_vec_size = 3 * sizeof(u32);  // 12 bytes
         u32*  test_vec_u32          = stack.alloc<u32>(3);
-        psh_assert(test_vec_u32 != nullptr);
+        psh_assert_not_null(test_vec_u32);
         for (usize i = 0; i < 3; ++i) {
             test_vec_u32[i] = expected_u32_vec[i];
         }
@@ -280,12 +278,12 @@ namespace psh::test::allocators {
         psh_assert(size == expected_alloc_size);
 
         StackHeader const* th_u32 = stack.top_header();
-        psh_assert(th_u32 != nullptr);
+        psh_assert_not_null(th_u32);
         usize actual_u32_vec_size = th_u32->capacity;
         psh_assert(actual_u32_vec_size == expected_u32_vec_size);
 
         u8* top_u32 = stack.top();
-        psh_assert(top_u32 != nullptr);
+        psh_assert_not_null(top_u32);
         u32* actual_u32_vec = reinterpret_cast<u32*>(top_u32);
         for (usize i = 0; i < 3; ++i) {
             u32 actual   = actual_u32_vec[i];
@@ -296,12 +294,12 @@ namespace psh::test::allocators {
         psh_assert(stack.pop());
 
         StackHeader const* th_u8 = stack.top_header();
-        psh_assert(th_u8 != nullptr);
+        psh_assert_not_null(th_u8);
         usize actual_u8_vec_size = th_u8->capacity;
         psh_assert(actual_u8_vec_size == 5ull);
 
         u8* actual_u8_vec = stack.top();
-        psh_assert(actual_u8_vec != nullptr);
+        psh_assert_not_null(actual_u8_vec);
         for (usize i = 0; i < 5; ++i) {
             u32 actual   = actual_u8_vec[i];
             u32 expected = expected_u8_vec[i];
@@ -320,30 +318,30 @@ namespace psh::test::allocators {
     psh_internal void stack_offsets_reads_and_writes() {
         usize size = 1024;
         u8*   buf  = reinterpret_cast<u8*>(malloc(size));
-        Stack stack{{buf, size}};
+        Stack stack{.buf = buf, .capacity = size};
 
         u8* buf_start = buf;
 
-        // Create an array of `uint64_t`.
+        // Create an array of uint64_t.
         usize array1_len       = 70;
         usize array1_size      = array1_len * sizeof(u64);
         usize array1_alignment = sizeof(u64);
         u64*  array1           = stack.alloc<u64>(array1_len);
-        psh_assert(array1 != nullptr);
+        psh_assert_not_null(array1);
 
-        // Write to `array1`.
+        // Write to array1.
         for (u32 idx = 0; idx < array1_len; ++idx) {
             array1[idx] = 64 * static_cast<u64>(idx);
         }
 
-        // Check correctness of the `array1` offset.
+        // Check correctness of the array1 offset.
         usize array1_expected_padding = sizeof(StackHeader);
         usize array1_expected_offset  = array1_expected_padding;
         psh_assert(stack.previous_offset == array1_expected_offset);
 
         u8* array1_addr = buf_start + array1_expected_offset;
 
-        // Check the correctness of the `array1` header.
+        // Check the correctness of the array1 header.
         StackHeader const* array1_header =
             reinterpret_cast<StackHeader const*>(array1_addr - sizeof(StackHeader));
         usize array1_actual_padding         = array1_header->padding;
@@ -351,11 +349,11 @@ namespace psh::test::allocators {
         psh_assert(array1_actual_padding == array1_expected_padding);
         psh_assert(array1_actual_previous_offset == 0ull);
 
-        // Manually read from `stack.buf` checking for the values of `array1`.
+        // Manually read from stack.buf checking for the values of array1.
         for (usize idx = 0; idx < array1_len; ++idx) {
             u64        expected = 64 * idx;
             u64 const* actual   = reinterpret_cast<u64*>(array1_addr + idx * array1_alignment);
-            psh_assert(actual != nullptr);
+            psh_assert_not_null(actual);
             psh_assert(*actual == expected);
         }
 
@@ -368,15 +366,15 @@ namespace psh::test::allocators {
         usize array2_size      = array2_len * sizeof(i32);
         usize array2_alignment = sizeof(i32);
         i32*  array2           = stack.alloc<i32>(array2_len);
-        psh_assert(array2 != nullptr);
+        psh_assert_not_null(array2);
 
-        // Write to `array2`.
+        // Write to array2.
         int array2_constant_value = 123456;
         for (usize idx = 0; idx < array2_len; ++idx) {
             array2[idx] = array2_constant_value;
         }
 
-        // Check correctness of the `array2` offset.
+        // Check correctness of the array2 offset.
         usize array2_alignment_modifier = after_array1_expected_offset % array2_alignment;
         usize array2_expected_padding =
             (array2_alignment_modifier == 0)
@@ -387,7 +385,7 @@ namespace psh::test::allocators {
 
         u8* array2_addr = buf_start + array2_expected_offset;
 
-        // Check the correctness of the `array2` header.
+        // Check the correctness of the array2 header.
         StackHeader const* array2_header =
             reinterpret_cast<StackHeader const*>(array2_addr - sizeof(StackHeader));
         usize array2_actual_padding = array2_header->padding;
@@ -396,10 +394,10 @@ namespace psh::test::allocators {
         usize array2_actual_previous_offset   = array2_header->previous_offset;
         psh_assert(array2_actual_previous_offset == array2_expected_previous_offset);
 
-        // Manually read from `stack.buf` checking for the values of `array2`.
+        // Manually read from stack.buf checking for the values of array2.
         for (usize idx = 0; idx < array2_len; ++idx) {
             int const* actual = reinterpret_cast<int const*>(array2_addr + idx * array2_alignment);
-            psh_assert(actual != nullptr);
+            psh_assert_not_null(actual);
             psh_assert(*actual == array2_constant_value);
         }
 
@@ -416,58 +414,56 @@ namespace psh::test::allocators {
     psh_internal void stack_memory_stress_and_free() {
         usize size = 2048;
         u8*   buf  = reinterpret_cast<u8*>(malloc(size));
-        Stack stack{{buf, size}};
+        Stack stack{.buf = buf, .capacity = size};
 
         iptr  stack_buf_diff = reinterpret_cast<iptr>(stack.buf);
         usize zero           = 0;
 
         usize  a1_alignment = sizeof(strptr);
         strptr a1           = stack.alloc<char>(50);
-        psh_assert(a1 != nullptr);
+        psh_assert_not_null(a1);
         psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
         psh_assert(stack.previous_offset % a1_alignment == zero);
         psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a1) - stack_buf_diff);
 
         usize a2_alignment = sizeof(i32);
         i32*  a2           = stack.alloc<i32>(100);
-        psh_assert(a2 != nullptr);
+        psh_assert_not_null(a2);
         psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
         psh_assert(stack.previous_offset % a2_alignment == zero);
         psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a2) - stack_buf_diff);
 
         usize a3_alignment = sizeof(u64);
         u64*  a3           = stack.alloc<u64>(33);
-        psh_assert(a3 != nullptr);
+        psh_assert_not_null(a3);
         psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
         psh_assert(stack.previous_offset % a3_alignment == zero);
         psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a3) - stack_buf_diff);
 
         usize a4_alignment = sizeof(u8);
         u8*   a4           = stack.alloc<u8>(49);
-        psh_assert(a4 != nullptr);
+        psh_assert_not_null(a4);
         psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
         psh_assert(stack.previous_offset % a4_alignment == zero);
         psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a4) - stack_buf_diff);
 
         usize a5_alignment = sizeof(u32);
         u32*  a5           = stack.alloc<u32>(8);
-        psh_assert(a5 != nullptr);
+        psh_assert_not_null(a5);
         psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
         psh_assert(stack.previous_offset % a5_alignment == zero);
         psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a5) - stack_buf_diff);
 
         usize  a6_alignment = sizeof(strptr);
         strptr a6           = stack.alloc<char>(14);
-        psh_assert(a6 != nullptr);
-        psh_assert(
-            (stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+        psh_assert_not_null(a6);
+        psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
         psh_assert(stack.previous_offset % a6_alignment == zero);
         psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a6) - stack_buf_diff);
 
         // Free a6.
         stack.pop();  // NOTE: a6 is now dangling.
-        psh_assert(
-            static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a5) - stack_buf_diff);
+        psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a5) - stack_buf_diff);
 
         // Free a3, a4, and a5 (they should all be dangling after the free).
         psh_assert(stack.clear_at(reinterpret_cast<u8*>(a3)));
@@ -482,8 +478,8 @@ namespace psh::test::allocators {
         // Ensure we can allocate after freeing all blocks.
         i32* b1 = stack.alloc<int>(80);
         f64* b2 = stack.alloc<double>(80);
-        psh_assert(b1 != nullptr);
-        psh_assert(b2 != nullptr);
+        psh_assert_not_null(b1);
+        psh_assert_not_null(b2);
 
         free(buf);
         report_test_successful();
@@ -492,13 +488,13 @@ namespace psh::test::allocators {
     psh_internal void stack_free_all() {
         usize     size = 512;
         u8* const buf  = reinterpret_cast<u8*>(malloc(size));
-        Stack     stack{{buf, size}};
+        Stack     stack{.buf = buf, .capacity = size};
 
         usize expected_min_size = 0;
 
         usize fib_size  = 30 * sizeof(u64);
         u64*  fibonacci = stack.alloc<u64>(30);
-        psh_assert(fibonacci != nullptr);
+        psh_assert_not_null(fibonacci);
         expected_min_size += fib_size;
         fibonacci[0] = 1;
         fibonacci[1] = 1;
@@ -510,7 +506,7 @@ namespace psh::test::allocators {
 
         usize   foos_size = 10 * sizeof(FooBar);
         FooBar* foos      = stack.alloc<FooBar>(10);
-        psh_assert(foos != nullptr);
+        psh_assert_not_null(foos);
         expected_min_size += foos_size;
         for (u32 idx = 0; idx < 10; ++idx) {
             foos[idx] = FooBar{static_cast<f64>(idx) / 2.0, idx};

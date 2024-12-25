@@ -1,0 +1,114 @@
+Presheaf Library
+================
+
+> WARNING: This library is currently in a very volatile state. Breaking changes will happen all the time
+> until I think the API is good enough.
+
+This is a C++ library that I use across my projects as an alternative to the STL. It's written in
+C++20 and its only dependency is libc and a few OS headers (see the corresponding section of this
+document for more info). Compilers that are ensured to work are: Clang, GCC, MSVC.
+
+The code is written with simplicity and performance in mind. There is no use of exceptions,
+inheritance, smart pointers, etc. The goal is for this library to stand the test of time. For more
+information about the design decisions, check the STYLE_GUIDE.
+
+
+Building
+========
+
+Ad-Hoc Approach
+---------------
+
+The library has a bundled compilation unit src/presheaf.cpp which may be used if you wish to
+compile as a unity build. This can be as simple as, e.g.:
+
+1. Build object files without linking:
+                 clang++ -c -std=c++20 -Iinclude src/all.cpp -o presheaf.o
+2. Archive object files into a library:
+                           llvm-ar rc libpresheaf.a presheaf.o
+
+Yet another ad-hoc solution would be to directly embed the library into your codebase using both of
+the bundle files src/presheaf.cpp and include/psh/presheaf.hpp, feel free to do as you wish.
+
+
+Custom Build System
+-------------------
+
+The library comes with its custom build system build.lua, which will manage the project with many
+custom options. An usage example would be:
+
+        lua build.lua -release -clang -dll -- -DPSH_CHECK_BOUNDS -fsanitize=undefined
+
+where you are building the release version of Presheaf as a DLL (or shared object if on Unix)
+using Clang. Additionally you are also activating the UB sanitizer for the build, and bounds checking
+assertions. The script will make sure to print out the final invoked command for the compilation, so
+no mysteries arise in the build process.
+
+For more information, please run the script with the -help flag or refer to the file itself.
+
+
+
+Who is this library for?
+========================
+
+This library is written mainly for myself and those who appreciate how computers work in the real
+world. It's meant to be the base layer of your application, providing a few key data-structures that
+are essential when working with low-level programming - providing a few features that C failed to
+provide. All of the internals of the library are accessible to the user for this exact reason. As
+you can see, this document is a simple txt file, which should reflect the simplicity and pragmatism
+of the code itself - nothing fancy, and nothing shiny, just programming in its purest style.
+
+
+
+Integrating with another project
+================================
+
+Integrating the Presheaf library to your project is trivial, as said above you have two main options:
+
+a. Using the files src/presheaf.cpp and include/psh/presheaf.hpp, embed the library directly into
+   your codebase.
+b. Compile the libary separately from your project, then link to it later.
+
+Both of the above options apply directly to any of the modern build systems. If you know how your
+tools work, it should be a piece of cake to make this work.
+
+
+Library compile-time options
+============================
+
+The following #define macros can be used to tweak the behaviour of the library as you want it:
+
+- PSH_ENABLE_ASSERTIONS: Enable assertion calls. Many debug checks depend on this option being enabled.
+- PSH_ENABLE_ASSERT_NOT_NULL: Assert that a function arguments isn't null when it shouldn't be.
+- PSH_ENABLE_ABORT_AT_MEMORY_ERROR: Aborts the program at any memory (re)allocation errors.
+- PSH_ENABLE_CHECKED_POINTER_ARITHMETIC: Check if pointers are null before applying offsets to it.
+- PSH_ENABLE_BOUNDS_CHECK: Enable bounds-checked index-based memory access.
+- PSH_ENABLE_MEMCPY_OVERLAP_CHECK: Check if the memory regions overlap before calling memcpy.
+- PSH_ENABLE_LOGGING: Enable logging calls for printing.
+- PSH_DEBUG: Enables all of the above debug checks if those aren't manually disabled. For instance,
+  if you want all debug checks but not memory error crashes, you can compile with
+                      -DPSH_DEBUG -DPSH_ENABLE_ABORT_AT_MEMORY_ERROR=0.
+  any of the above options can be enabled/disabled as explained.
+
+
+
+Documentation
+=============
+
+The code written in such a simple and understandable manner that the best source of information is
+the code itself. I've also provided many comments in the headers documenting the behaviour of a given
+function. Don't feel afraid to jump straight into code. This library is meant to be the stepping
+stones of your codebase - if you don't understand how it works, then you won't understand your program
+at all.
+
+
+
+Dependencies
+============
+
+The only dependencies of the Presheaf library are libc and OS headers. Explicitly, the only external
+headers included are:
+
+- libc headers:    stdio.h, stdint.h, stddef.h, stdarg.h, string.h, math.h
+- Windows headers: Windows.h
+- Unix headers:    unistd.h, errno.h, time.h, sys/mman.h

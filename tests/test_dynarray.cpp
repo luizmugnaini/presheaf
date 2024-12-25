@@ -26,7 +26,6 @@
 #include <psh/core.hpp>
 #include <psh/dynarray.hpp>
 #include <psh/memory.hpp>
-#include <psh/memory_manager.hpp>
 #include "utils.hpp"
 
 namespace psh::test::dynarray {
@@ -35,7 +34,7 @@ namespace psh::test::dynarray {
     };
 
     psh_internal void push_elements(MemoryManager& memory_manager) {
-        Arena arena = memory_manager.make_arena(sizeof(i32) * 1024).demand();
+        Arena arena = memory_manager.make_arena(sizeof(i32) * 1024);
 
         DynArray<i32> v{&arena};
 
@@ -52,7 +51,7 @@ namespace psh::test::dynarray {
     }
 
     psh_internal void count_and_capacity(MemoryManager& memory_manager) {
-        Arena arena = memory_manager.make_arena(sizeof(Foo) * 100).demand();
+        Arena arena = memory_manager.make_arena(sizeof(Foo) * 100);
 
         DynArray<Foo> v{&arena};
         psh_assert(v.push(Foo{0}));
@@ -79,7 +78,7 @@ namespace psh::test::dynarray {
     }
 
     psh_internal void peek_and_pop(MemoryManager& memory_manager) {
-        Arena arena = memory_manager.make_arena(sizeof(i32) * 3).demand();
+        Arena arena = memory_manager.make_arena(sizeof(i32) * 3);
 
         DynArray<i32> v{&arena, 3};
         {
@@ -90,33 +89,33 @@ namespace psh::test::dynarray {
 
         // Peek then pop 6.
         {
-            i32* p = v.peek();
-            psh_assert((p != nullptr) && (*p == 6));
+            psh_assert(v.count == 3);
+            psh_assert(v[2] == 6);
             psh_assert(v.pop());
         }
 
         // Peek then pop 5;
         {
-            i32* p = v.peek();
-            psh_assert((p != nullptr) && (*p == 5));
+            psh_assert(v.count == 2);
+            psh_assert(v[1] == 5);
             psh_assert(v.pop());
         }
 
         // Peek then pop 6.
         {
-            i32* p = v.peek();
-            psh_assert((p != nullptr) && (*p == 4));
+            psh_assert(v.count == 1);
+            psh_assert(v[0] == 4);
             psh_assert(v.pop());
         }
 
-        psh_assert(v.count == 0ull);
+        psh_assert(v.count == 0);
 
         memory_manager.pop();
         report_test_successful();
     }
 
     psh_internal void remove(MemoryManager& memory_manager) {
-        Arena arena = memory_manager.make_arena(sizeof(i32) * 5).demand();
+        Arena arena = memory_manager.make_arena(sizeof(i32) * 5);
 
         DynArray<i32> v{&arena, 5};
 
@@ -136,8 +135,6 @@ namespace psh::test::dynarray {
             psh_assert(v[2] == 8);
             psh_assert(v[3] == 9);
             psh_assert(v[4] == 55);
-            i32* p = v.peek();
-            psh_assert((p != nullptr) && (*p == 55));
         }
 
         // Remove at index 1.
@@ -148,8 +145,6 @@ namespace psh::test::dynarray {
             psh_assert(v[1] == 8);
             psh_assert(v[2] == 9);
             psh_assert(v[3] == 55);
-            i32* p = v.peek();
-            psh_assert((p != nullptr) && (*p == 55));
         }
 
         // Remove at index 2.
@@ -159,8 +154,6 @@ namespace psh::test::dynarray {
             psh_assert(v[0] == 4);
             psh_assert(v[1] == 8);
             psh_assert(v[2] == 55);
-            i32* p = v.peek();
-            psh_assert((p != nullptr) && (*p == 55));
         }
 
         // Remove at index 0.
@@ -169,8 +162,6 @@ namespace psh::test::dynarray {
             psh_assert(v.count == 2);
             psh_assert(v[0] == 8);
             psh_assert(v[1] == 55);
-            i32* p = v.peek();
-            psh_assert((p != nullptr) && (*p == 55));
         }
 
         // Remove at index 1.
@@ -178,8 +169,6 @@ namespace psh::test::dynarray {
             psh_assert(v.remove(1));
             psh_assert(v.count == 1);
             psh_assert(v[0] == 8);
-            i32* p = v.peek();
-            psh_assert((p != nullptr) && (*p == 8));
         }
 
         // Remove at index 0.
@@ -193,7 +182,7 @@ namespace psh::test::dynarray {
     }
 
     psh_internal void clear(MemoryManager& memory_manager) {
-        Arena arena = memory_manager.make_arena(sizeof(f32) * 4).demand();
+        Arena arena = memory_manager.make_arena(sizeof(f32) * 4);
 
         DynArray<f32> v{&arena, 4};
         {

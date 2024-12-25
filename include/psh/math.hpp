@@ -33,22 +33,22 @@ namespace psh {
     constexpr f32 PI                = 3.14159265359f;
     constexpr f32 F32_IS_ZERO_RANGE = 1e-6f;
 
-    psh_api constexpr bool approx_equal(f32 a, f32 b, f32 zero_range = F32_IS_ZERO_RANGE) psh_noexcept {
+    psh_api constexpr bool approx_equal(f32 a, f32 b, f32 zero_range = F32_IS_ZERO_RANGE) psh_no_except {
         psh_assert_msg(zero_range > 0.0f, "Expected the 'within zero range' value to be positive.");
         f32 sub = a - b;
         return (-zero_range < sub) && (sub < zero_range);
     }
 
-    psh_api constexpr f32 as_radians(f32 deg) psh_noexcept {
+    psh_api constexpr f32 as_radians(f32 deg) psh_no_except {
         return deg * PI / 180.0f;
     }
 
-    psh_api constexpr u32 no_wrap_sub(u32 a, u32 b) psh_noexcept {
+    psh_api constexpr u32 no_wrap_sub(u32 a, u32 b) psh_no_except {
         u32 c = a - b;
         return (c <= a) ? c : 0;
     }
 
-    psh_api constexpr u64 no_wrap_sub(u64 a, u64 b) psh_noexcept {
+    psh_api constexpr u64 no_wrap_sub(u64 a, u64 b) psh_no_except {
         u64 c = a - b;
         return (c <= a) ? c : 0;
     }

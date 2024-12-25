@@ -33,7 +33,7 @@
 #endif
 
 namespace psh {
-    f64 current_time_in_seconds() psh_noexcept {
+    f64 current_time_in_seconds() psh_no_except {
         f64 curr_time = -1.0;
 
 #if defined(PSH_OS_WINDOWS)
@@ -59,7 +59,7 @@ namespace psh {
         return curr_time;
     }
 
-    void sleep_milliseconds(f64 ms) psh_noexcept {
+    void sleep_milliseconds(f64 ms) psh_no_except {
 #if defined(PSH_OS_WINDOWS)
         u32 ms_count = ((0.0 < ms) && (ms < 1.0)) ? 1 : static_cast<u32>(ms);
         Sleep(ms_count);

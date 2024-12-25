@@ -24,13 +24,12 @@
 
 #pragma once
 
-#include <psh/arena.hpp>
 #include <psh/core.hpp>
 #include <psh/dynarray.hpp>
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Compile-time string type construction macros.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 /// Create a string literal and a string view at compile time from a given c-string literal.
 ///
@@ -53,44 +52,45 @@
     }
 
 namespace psh {
-    // -----------------------------------------------------------------------------
+    // Forward declaration.
+    struct Arena;
+
+    // -------------------------------------------------------------------------------------------------
     // String types.
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------------
 
     // Computes the length of a zero-terminated string.
-    psh_api usize str_length(strptr str) psh_noexcept;
+    psh_api usize str_length(strptr str) psh_no_except;
 
     /// String literal type.
     struct psh_api StringLiteral {
         strptr str;
 
         template <usize N>
-        consteval StringLiteral(char const (&str_)[N]) psh_noexcept
+        consteval StringLiteral(char const (&str_)[N]) psh_no_except
             : str{str_} {}
     };
 
     /// A string with guaranteed compile-time known size.
     ///
-    /// Note: It is way more ergonomic to use the macro `psh_make_str` than specifying the length of the
+    /// Note: It is way more ergonomic to use the macro psh_make_str than specifying the length of the
     ///       string, which is silly.
     ///
     /// Example:
-    /// ```cpp
+    ///
     /// auto my_str = psh_make_str("hey this is a compile time array of constant characters");
-    /// ```
+    ///
     template <usize size_>
     struct psh_api Str {
         char const buf[size_];
 
         /// The character count of the string, disregarding its null-terminator.
-        constexpr usize count() const psh_noexcept {
+        constexpr usize count() const psh_no_except {
             return size_ - 1u;
         }
 
-        char operator[](usize index) const psh_noexcept {
-#if defined(PSH_CHECK_BOUNDS)
-            psh_assert_fmt(index < size_, "Access out of bounds (%zu) for string of size %zu", index, size_);
-#endif
+        char operator[](usize index) const psh_no_except {
+            psh_assert_bounds_check(index, size_, "Access out of bounds (%zu) for string of size %zu", index, size_);
             return this->buf[index];
         }
     };
@@ -102,15 +102,15 @@ namespace psh {
     using String = DynArray<char>;
 
     template <usize size_>
-    psh_api psh_inline constexpr StringView make_string_view(Str<size_> str) psh_noexcept {
+    psh_api psh_inline constexpr StringView make_string_view(Str<size_> str) psh_no_except {
         return {str.buf, size_ - 1u};
     }
 
-    psh_api psh_inline StringView make_string_view(strptr str) psh_noexcept {
+    psh_api psh_inline StringView make_string_view(strptr str) psh_no_except {
         return {str, str_length(str)};
     }
 
-    psh_api psh_inline String make_string(Arena* arena, StringView sv) psh_noexcept {
+    psh_api psh_inline String make_string(Arena* arena, StringView sv) psh_no_except {
         String string{arena, sv.count + 1u};
 
         memory_copy(reinterpret_cast<u8*>(string.buf), reinterpret_cast<u8 const*>(sv.buf), sizeof(char) * sv.count);
@@ -119,7 +119,7 @@ namespace psh {
         return string;
     }
 
-    psh_api psh_inline StringView make_string_view(String const& string) psh_noexcept {
+    psh_api psh_inline StringView make_string_view(String const& string) psh_no_except {
         return make_const_fat_ptr(string);
     }
 
@@ -127,21 +127,21 @@ namespace psh {
     /// attached to the end of each join.
     ///
     /// Example:
-    /// ```cpp
+    ///
     /// psh::Arena arena{...};
     /// psh::String s = make_string(&arena, "Hello");
     /// psh::Buffer<StringView, 3> words = {"World", "Earth", "Terra"};
     ///
     /// assert(s.join(psh::make_const_fat_ptr(words), ", "));
     /// assert(psh::str_cmp(s.data.buf, "Hello, World, Earth, Terra") == psh::StrCmpResult::EQUAL);
-    /// ```
+    ///
     /// Although this example uses initializer lists, you can also achieve the same using the
-    /// implementation based on `psh::FatPtr`.
-    psh_api Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element = {}) psh_noexcept;
+    /// implementation based on psh::FatPtr.
+    psh_api Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element = {}) psh_no_except;
 
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------------
     // String comparison utilities.
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------------
 
     enum struct StrCmpResult {
         LESS_THAN,
@@ -149,29 +149,20 @@ namespace psh {
         GREATER_THAN,
     };
 
-    psh_api StrCmpResult            str_cmp(strptr lhs, strptr rhs) psh_noexcept;
-    psh_api StrCmpResult            str_cmp(StringView lhs, StringView rhs) psh_noexcept;
-    psh_api psh_inline StrCmpResult str_cmp(StringView lhs, strptr rhs) psh_noexcept {
+    psh_api StrCmpResult            str_cmp(strptr lhs, strptr rhs) psh_no_except;
+    psh_api StrCmpResult            str_cmp(StringView lhs, StringView rhs) psh_no_except;
+    psh_api psh_inline StrCmpResult str_cmp(StringView lhs, strptr rhs) psh_no_except {
         return str_cmp(lhs, make_string_view(rhs));
     }
 
-    psh_api bool            str_equal(strptr lhs, strptr rhs) psh_noexcept;
-    psh_api bool            str_equal(StringView lhs, StringView rhs) psh_noexcept;
-    psh_api psh_inline bool str_equal(StringView lhs, strptr rhs) psh_noexcept {
+    psh_api bool            str_equal(strptr lhs, strptr rhs) psh_no_except;
+    psh_api bool            str_equal(StringView lhs, StringView rhs) psh_no_except;
+    psh_api psh_inline bool str_equal(StringView lhs, strptr rhs) psh_no_except {
         return str_equal(lhs, make_string_view(rhs));
     }
 
-    psh_api constexpr bool is_utf8(char c) psh_noexcept {
+    psh_api constexpr bool is_utf8(char c) psh_no_except {
         return (0x1F < c && c < 0x7F);
     }
 
 }  // namespace psh
-
-#if defined(PSH_DEFINE_SHORT_NAMES)
-#    ifndef comptime_make_str
-#        define comptime_make_str psh_comptime_make_str
-#    endif
-#    ifndef comptime_make_string_view
-#        define comptime_make_string_view psh_comptime_make_string_view
-#    endif
-#endif

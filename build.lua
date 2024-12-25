@@ -273,7 +273,7 @@ local compilers = {
         opt_no_link          = "-c",
         opt_out_obj          = "-o",
         opt_out_exe          = "-o",
-        flags_common         = "/TP /INCREMENTAL:NO -EHa- -Wno-unsafe-buffer-usage -Wno-c++20-compat -Wno-c++98-compat-pedantic",
+        flags_common         = "/TP /INCREMENTAL:NO -EHa- -Wno-unsafe-buffer-usage -Wno-c++20-compat -Wno-c++98-compat-pedantic -Wno-documentation-unknown-command",
         flags_debug          = "-Ob1 /Od /Oy- /Z7 /RTC1 -g /MTd -Wall -Wextra -Werror -Wconversion -Wuninitialized -Wnull-pointer-arithmetic -Wnull-dereference -Wcast-align -Wformat=2",
         flags_release        = "-O2 /MT",
         ar                   = "llvm-lib",
@@ -283,12 +283,12 @@ local compilers = {
 }
 
 local presheaf = {
-    src              = make_path({ root_dir, "src", "all.cpp" }),
-    test_src         = make_path({ root_dir, "tests", "test_all.cpp" }),
+    src              = make_path({ root_dir, "src", "presheaf.cpp" }),
+    test_src         = make_path({ root_dir, "tests", "test_presheaf.cpp" }),
     include_dir      = make_path({ root_dir, "include" }),
     dll_build_define = "PSH_BUILD_DLL",
     debug_defines    = { "PSH_DEBUG" },
-    test_defines     = { "PSH_DEBUG", "PSH_ABORT_AT_MEMORY_ERROR" },
+    test_defines     = { "PSH_DEBUG", "PSH_ENABLE_ANSI_COLORS" },
     lib              = "presheaf",
     test_exe         = "presheaf_tests",
     std              = "c++20",

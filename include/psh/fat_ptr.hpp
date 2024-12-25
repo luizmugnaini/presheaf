@@ -34,75 +34,43 @@ namespace psh {
         T*    buf;
         usize count = 0;
 
-        psh_inline FatPtr<T> slice(usize start, usize slice_count) psh_noexcept {
-            psh_assert_fmt(slice_count <= this->count, "Slice element count (%zu) surpasses the FatPtr count (%zu).", slice_count, this->count);
+        psh_inline FatPtr<T> slice(usize start, usize slice_count) psh_no_except {
+            psh_assert_bounds_check(slice_count, this->count + 1, "Slice element count (%zu) surpasses the FatPtr count (%zu).", slice_count, this->count);
             return FatPtr<T>{psh_ptr_add(this->buf, start), slice_count};
         }
 
-        psh_inline usize size_bytes() const psh_noexcept {
-            return sizeof(T) * this->count;
+        psh_inline T& operator[](usize idx) psh_no_except {
+            psh_assert_bounds_check(idx, this->count, "Index %zu out of bounds for FatPtr with size %zu.", idx, this->count);
+            return this->buf[idx];
         }
-
-        // -----------------------------------------------------------------------------
-        // Iterator utilities.
-        // -----------------------------------------------------------------------------
-
-        psh_inline T* begin() psh_noexcept {
-            return this->buf;
-        }
-
-        psh_inline T const* begin() const psh_noexcept {
-            return static_cast<T const*>(this->buf);
-        }
-
-        psh_inline T* end() psh_noexcept {
-            return psh_ptr_add(this->buf, this->count);
-        }
-
-        psh_inline T const* end() const psh_noexcept {
-            return static_cast<T const*>(psh_ptr_add(this->buf, this->count));
-        }
-
-        // -----------------------------------------------------------------------------
-        // Indexed reads.
-        // -----------------------------------------------------------------------------
-
-        psh_inline T& operator[](usize idx) psh_noexcept {
-#if defined(PSH_CHECK_BOUNDS)
-            psh_assert_fmt(idx < this->count, "Index %zu out of bounds for FatPtr with size %zu.", idx, this->count);
-#endif
+        psh_inline T const& operator[](usize idx) const psh_no_except {
+            psh_assert_bounds_check(idx, this->count, "Index %zu out of bounds for FatPtr with size %zu.", idx, this->count);
             return this->buf[idx];
         }
 
-        psh_inline T const& operator[](usize idx) const psh_noexcept {
-#if defined(PSH_CHECK_BOUNDS)
-            psh_assert_fmt(idx < this->count, "Index %zu out of bounds for FatPtr with size %zu.", idx, this->count);
-#endif
-            return this->buf[idx];
-        }
+        psh_inline T*       begin() psh_no_except { return this->buf; }
+        psh_inline T const* begin() const psh_no_except { return static_cast<T const*>(this->buf); }
+        psh_inline T*       end() psh_no_except { return psh_ptr_add(this->buf, this->count); }
+        psh_inline T const* end() const psh_no_except { return static_cast<T const*>(psh_ptr_add(this->buf, this->count)); }
     };
 
-    // -----------------------------------------------------------------------------
-    // Fat pointer creation for common usage patterns.
-    // -----------------------------------------------------------------------------
-
     template <typename T>
-    psh_inline FatPtr<u8> make_fat_ptr_as_bytes(T* buf, usize count) psh_noexcept {
+    psh_inline FatPtr<u8> make_fat_ptr_as_bytes(T* buf, usize count) psh_no_except {
         return FatPtr<u8>{reinterpret_cast<u8*>(buf), sizeof(T) * count};
     }
 
     template <typename T>
-    psh_inline FatPtr<u8 const> make_const_fat_ptr_as_bytes(T const* buf, usize count) psh_noexcept {
+    psh_inline FatPtr<u8 const> make_const_fat_ptr_as_bytes(T const* buf, usize count) psh_no_except {
         return FatPtr<u8 const>{reinterpret_cast<u8 const*>(buf), sizeof(T) * count};
     }
 
     template <typename T>
-    psh_inline FatPtr<T> make_fat_ptr(T* ptr) psh_noexcept {
+    psh_inline FatPtr<T> make_fat_ptr(T* ptr) psh_no_except {
         return FatPtr<T>{ptr, 1};
     }
 
     template <typename T>
-    psh_inline FatPtr<T const> make_const_fat_ptr(T const* ptr) psh_noexcept {
+    psh_inline FatPtr<T const> make_const_fat_ptr(T const* ptr) psh_no_except {
         return FatPtr<T const>{ptr, 1};
     }
 }  // namespace psh

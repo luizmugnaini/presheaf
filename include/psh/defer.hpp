@@ -23,7 +23,7 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 ///
 /// Usage example:
-/// ```
+///
 /// ... do stuff ...
 /// {
 ///     VkShaderModule shaders[2]{
@@ -38,19 +38,17 @@
 ///     ... create my graphics pipeline ...
 /// }
 /// ... do some other stuff ...
-/// ```
+///
 /// Here the shader modules will be automatically destroyed at the end of the scope. Notice that the
-/// macro `psh_defer` can accept a block of code to be run, or a single function call like
-/// `psh_defer(bar_fn(x, y, z))`.
+/// macro psh_defer can accept a block of code to be run, or a single function call like
+/// psh_defer(bar_fn(x, y, z)).
 
 #pragma once
 
-#include <type_traits>
-
 namespace psh::impl::defer {
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------------
     // Implementation details, some type trickery.
-    // -----------------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------------
 
     template <typename T>
     struct RemoveRef {
@@ -66,7 +64,6 @@ namespace psh::impl::defer {
     };
 
     template <typename T>
-        requires(!std::is_lvalue_reference_v<T>)
     T&& cast_forward(typename RemoveRef<T>::Type x) {
         return static_cast<T&&>(x);
     }
@@ -89,9 +86,9 @@ namespace psh::impl::defer {
     }
 }  // namespace psh::impl::defer
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Defer interface.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 #define psh_defer(code)                                                               \
     [[maybe_unused]] auto psh_token_concat(psh_deferred_, psh_source_line_number()) = \

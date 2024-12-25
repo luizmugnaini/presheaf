@@ -28,8 +28,8 @@
 #include <psh/option.hpp>
 
 namespace psh {
-    psh_api f64 current_time_in_seconds() psh_noexcept;
+    psh_api f64 current_time_in_seconds() psh_no_except;
 
     /// Suspend the current thread by a certain number of milliseconds.
-    psh_api void sleep_milliseconds(f64 ms) psh_noexcept;
+    psh_api void sleep_milliseconds(f64 ms) psh_no_except;
 }  // namespace psh

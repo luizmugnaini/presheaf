@@ -27,52 +27,43 @@
 #include <psh/core.hpp>
 #include <psh/log.hpp>
 
-using AbortFunction = void(void* arg);
-
-namespace psh::impl::assertion {
-    psh_inline void default_abort_function(void* arg) noexcept {
-        psh_discard_value(arg);
-        psh_abort_program();
-    };
-
-    psh_global AbortFunction* aborter = default_abort_function;
-};  // namespace psh::impl::assertion
-
 namespace psh {
-    psh_inline void set_abort_function(AbortFunction* func) noexcept {
-        impl::assertion::aborter = func;
-    }
+    using AbortFunction = void(void* arg);
+
+    psh_api void set_abort_function(AbortFunction* func, void* abort_context = nullptr) psh_no_except;
+
+    psh_api void abort_program() psh_no_except;
 }  // namespace psh
 
 /// Assertion macros.
-#if !defined(PSH_DISABLE_ASSERTS)
-#    define psh_assert(expr)                                                             \
-        do {                                                                             \
-            if (!static_cast<bool>(expr)) {                                              \
-                psh_log_fatal_fmt("Assertion failed: %s, msg: %s", #expr, "no message"); \
-                psh::impl::assertion::aborter(nullptr);                                  \
-            }                                                                            \
+#if PSH_ENABLE_ASSERTIONS
+#    define psh_assert(expr)                                                              \
+        do {                                                                              \
+            if (!static_cast<bool>(expr)) {                                               \
+                psh_log_fatal_fmt("Assertion failed: %s, msg: %s", #expr, "no message."); \
+                psh::abort_program();                                                     \
+            }                                                                             \
         } while (0)
 #    define psh_assert_msg(expr, msg)                                             \
         do {                                                                      \
             if (!static_cast<bool>(expr)) {                                       \
                 psh_log_fatal_fmt("Assertion failed: %s, msg: %s", #expr, (msg)); \
-                psh::impl::assertion::aborter(nullptr);                           \
+                psh::abort_program();                                             \
             }                                                                     \
         } while (0)
 #    define psh_assert_fmt(expr, fmt, ...)                                                \
         do {                                                                              \
             if (!static_cast<bool>(expr)) {                                               \
                 psh_log_fatal_fmt("Assertion failed: %s, msg: " fmt, #expr, __VA_ARGS__); \
-                psh::impl::assertion::aborter(nullptr);                                   \
+                psh::abort_program();                                                     \
             }                                                                             \
         } while (0)
-#    define psh_assert_constexpr(expr)                                                   \
-        do {                                                                             \
-            if constexpr (!static_cast<bool>(expr)) {                                    \
-                psh_log_fatal_fmt("Assertion failed: %s, msg: %s", #expr, "no message"); \
-                psh::impl::assertion::aborter(nullptr);                                  \
-            }                                                                            \
+#    define psh_assert_constexpr(expr)                                                    \
+        do {                                                                              \
+            if constexpr (!static_cast<bool>(expr)) {                                     \
+                psh_log_fatal_fmt("Assertion failed: %s, msg: %s", #expr, "no message."); \
+                psh::abort_program();                                                     \
+            }                                                                             \
         } while (0)
 #else
 #    define psh_assert(expr)               psh_discard_value(expr)
@@ -81,33 +72,26 @@ namespace psh {
 #    define psh_assert_constexpr(expr)     psh_discard_value(expr)
 #endif
 
+#if PSH_ENABLE_ASSERT_NOT_NULL
+#    define psh_assert_not_null(ptr) psh_assert_msg((ptr) != nullptr, "Invalid pointer.")
+#else
+#    define psh_assert_not_null(ptr) psh_discard_value(ptr)
+#endif
+
+#if PSH_ENABLE_BOUNDS_CHECK
+#    define psh_assert_bounds_check(idx, element_count, fmt, ...) psh_assert_fmt((idx) < (element_count), fmt, __VA_ARGS__)
+#else
+#    define psh_assert_bounds_check(idx, element_count, fmt, ...) 0
+#endif
+
 #define psh_todo()                                       \
     do {                                                 \
         psh_log_fatal("TODO: code-path unimplemented!"); \
-        psh::impl::assertion::aborter(nullptr);          \
+        psh::abort_program();                            \
     } while (0)
 
 #define psh_todo_msg(msg)                                                 \
     do {                                                                  \
         psh_log_fatal_fmt("TODO: code-path unimplemented, msg: %s", msg); \
-        psh::impl::assertion::aborter(nullptr);                           \
+        psh::abort_program();                                             \
     } while (0)
-
-// -----------------------------------------------------------------------------
-// Short names.
-// -----------------------------------------------------------------------------
-
-#if defined(PSH_DEFINE_SHORT_NAMES)
-#    ifndef assert_msg
-#        define assert_msg psh_assert_msg
-#    endif
-#    ifndef assert_fmt
-#        define assert_fmt psh_assert_fmt
-#    endif
-#    ifndef todo
-#        define todo psh_todo
-#    endif
-#    ifndef todo_msg
-#        define todo_msg psh_todo_msg
-#    endif
-#endif  // PSH_DEFINE_SHORT_NAMES

@@ -19,21 +19,26 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Single compilation unit containing the entirety of the Presheaf library. This file
-///              exists for the single purpose of making it trivial to compile the whole library.
+/// Description: Single header containing all other library header files.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
-// clang-format off
-#include <psh/all.hpp>
-#include "impl_common.hpp"
+#pragma once
 
-#include "time.cpp"
-#include "vec.cpp"
-#include "log.cpp"
-#include "memory.cpp"
-#include "arena.cpp"
-#include "stack.cpp"
-#include "memory_manager.cpp"
-#include "string.cpp"
-#include "streams.cpp"
+// clang-format off
+#include <psh/core.hpp>
+#include <psh/math.hpp>
+#include <psh/time.hpp>
+#include <psh/vec.hpp>
+#include <psh/log.hpp>
+#include <psh/option.hpp>
+#include <psh/fat_ptr.hpp>
+#include <psh/buffer.hpp>
+#include <psh/array.hpp>
+#include <psh/dynarray.hpp>
+#include <psh/memory.hpp>
+#include <psh/string.hpp>
+#include <psh/streams.hpp>
+#include <psh/repr.hpp>
+#include <psh/bit.hpp>
+#include <psh/defer.hpp>
 // clang-format on

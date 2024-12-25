@@ -19,33 +19,37 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Simple wrapper around pointers that ensures that the internal pointer is non-null.
-/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
+/// Description: Implementation of utility functions for working with assertions.
+/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
-#pragma once
+#include <psh/assert.hpp>
+#include <psh/core.hpp>
 
 namespace psh {
-    /// Type holding an immutable pointer that can never be null.
-    ///
-    /// Note: If you use this struct with a pointer type, beware that the pointer may not be null but
-    ///       the pointer that it points to may be null as we don't check that.
-    template <typename T>
-    struct psh_api NotNull {
-        T* const ptr;
+    namespace impl::assertion {
+        psh_internal void default_abort_function(void* arg) psh_no_except {
+            psh_discard_value(arg);
 
-        NotNull(T* ptr_) psh_noexcept {
-            psh_assert_msg(ptr_ != nullptr, "Invalid pointer, should be non-null.");
-            this->ptr = ptr_;
-        }
+#if defined(PSH_COMPILER_MSVC)
+            __debugbreak();
+#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+            __builtin_trap();
+#else
+            // Stall the program if we don't have a sane default.
+            for (;;) {}
+#endif
+        };
 
-        T& operator*() psh_noexcept {
-            return *this->ptr;
-        }
+        psh_internal void*          abort_context  = nullptr;
+        psh_internal AbortFunction* abort_function = default_abort_function;
+    }  // namespace impl::assertion
 
-        T* operator->() psh_noexcept {
-            return this->ptr;
-        }
+    void set_abort_function(AbortFunction* abort_function, void* abort_context) psh_no_except {
+        impl::assertion::abort_context  = abort_context;
+        impl::assertion::abort_function = abort_function;
+    }
 
-        NotNull() = delete;
-    };
+    psh_api void abort_program() psh_no_except {
+        impl::assertion::abort_function(impl::assertion::abort_context);
+    }
 }  // namespace psh

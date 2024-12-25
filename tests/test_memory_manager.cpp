@@ -25,13 +25,10 @@
 /// This test should be ran with sanitizer flags on in order to detect possible memory leaks that
 /// may go unseen.
 
-#include <psh/arena.hpp>
 #include <psh/assert.hpp>
 #include <psh/core.hpp>
 #include <psh/dynarray.hpp>
 #include <psh/memory.hpp>
-#include <psh/memory_manager.hpp>
-#include <psh/stack.hpp>
 #include "utils.hpp"
 
 namespace psh::test::memory_manager {
@@ -41,7 +38,7 @@ namespace psh::test::memory_manager {
 
         // Check validity.
         void* mem_ptr = memory_manager.allocator.buf;
-        psh_assert(mem_ptr != nullptr);
+        psh_assert_not_null(mem_ptr);
 
         psh_assert(memory_manager.allocator.offset == static_cast<i64>(0));
         psh_assert(memory_manager.allocation_count == 0ull);
@@ -64,7 +61,7 @@ namespace psh::test::memory_manager {
         // Acquire a block of memory and write to it.
         usize block_length = 60;
         u64*  block        = memory_manager.alloc<u64>(block_length);
-        psh_assert(block != nullptr);
+        psh_assert_not_null(block);
 
         // Write to the block.
         u64 start_value = 1283;
@@ -110,7 +107,7 @@ namespace psh::test::memory_manager {
         // ^                   ^
         // |      arena        |
         //
-        // where "hdr" stands for the associated `StackAllocHeader` instance.
+        // where "hdr" stands for the associated StackAllocHeader instance.
 
         Arena arena{memory_manager.alloc<u8>(arena_data_size), arena_data_size};
         usize used = memory_manager.allocator.offset;
@@ -118,7 +115,7 @@ namespace psh::test::memory_manager {
         psh_assert(memory_manager.allocation_count == static_cast<usize>(1));
 
         strptr a = memory_manager.alloc<char>(40);
-        psh_assert(a != nullptr);
+        psh_assert_not_null(a);
         usize a_size = no_wrap_sub(memory_manager.allocator.offset, used);
         used         = memory_manager.allocator.offset;
         psh_assert(memory_manager.allocation_count == static_cast<usize>(2));
@@ -133,7 +130,7 @@ namespace psh::test::memory_manager {
         psh_assert(memory_manager.allocation_count == static_cast<usize>(2));
 
         strptr c = memory_manager.alloc<char>(34);
-        psh_assert(c != nullptr);
+        psh_assert_not_null(c);
         usize c_size = no_wrap_sub(memory_manager.allocator.offset, used);
         used         = memory_manager.allocator.offset;
         psh_assert(memory_manager.allocation_count == static_cast<usize>(3));
@@ -148,19 +145,19 @@ namespace psh::test::memory_manager {
         psh_assert(memory_manager.allocation_count == static_cast<usize>(3));
 
         strptr e = memory_manager.alloc<char>(90);
-        psh_assert(e != nullptr);
+        psh_assert_not_null(e);
         usize e_size = no_wrap_sub(memory_manager.allocator.offset, used);
         used         = memory_manager.allocator.offset;
         psh_assert(memory_manager.allocation_count == static_cast<usize>(4));
 
         strptr f = memory_manager.alloc<char>(55);
-        psh_assert(f != nullptr);
+        psh_assert_not_null(f);
         usize f_size = no_wrap_sub(memory_manager.allocator.offset, used);
         used         = memory_manager.allocator.offset;
         psh_assert(memory_manager.allocation_count == static_cast<usize>(5));
 
         u64* g = memory_manager.alloc<u64>(72);
-        psh_assert(g != nullptr);
+        psh_assert_not_null(g);
         usize g_size = no_wrap_sub(memory_manager.allocator.offset, used);
         psh_assert(memory_manager.allocation_count == static_cast<usize>(6));
 
@@ -172,22 +169,22 @@ namespace psh::test::memory_manager {
 
         usize actual_used_memory = memory_manager.allocator.offset;
 
-        // Free both `f` and `g`.
+        // Free both f and g.
         memory_manager.clear_until(reinterpret_cast<u8 const*>(f));
         psh_assert(memory_manager.allocation_count == expected_allocation_count - 2);
         psh_assert(memory_manager.allocator.offset == no_wrap_sub(actual_used_memory, f_size + g_size));
 
-        // Pop `e`.
+        // Pop e.
         memory_manager.pop();
         psh_assert(memory_manager.allocation_count == expected_allocation_count - 3);
         psh_assert(memory_manager.allocator.offset == no_wrap_sub(actual_used_memory, f_size + g_size + e_size));
 
-        // Pop `c`.
+        // Pop c.
         memory_manager.pop();
         psh_assert(memory_manager.allocation_count == expected_allocation_count - 4);
         psh_assert(memory_manager.allocator.offset == no_wrap_sub(actual_used_memory, f_size + g_size + e_size + c_size));
 
-        // Free `a`.
+        // Free a.
         memory_manager.clear_until(reinterpret_cast<u8 const*>(a));
         psh_assert(memory_manager.allocation_count == expected_allocation_count - 5);
         psh_assert(memory_manager.allocator.offset == no_wrap_sub(actual_used_memory, f_size + g_size + e_size + c_size + a_size));
@@ -195,7 +192,7 @@ namespace psh::test::memory_manager {
         // Assert that the only thing left is the arena.
         psh_assert(memory_manager.allocator.offset == expected_arena);
 
-        // Pop `arena`
+        // Pop arena
         memory_manager.pop();
         psh_assert(memory_manager.allocation_count == 0ull);
         psh_assert(memory_manager.allocator.offset == 0ull);

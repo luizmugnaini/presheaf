@@ -36,24 +36,24 @@ namespace psh {
         T    value     = {};
         bool has_value = false;
 
-        constexpr Option() psh_noexcept = default;
+        constexpr Option() psh_no_except = default;
 
-        constexpr Option(T value_) psh_noexcept {
+        constexpr Option(T value_) psh_no_except {
             this->value     = value_;
             this->has_value = true;
         }
 
-        constexpr Option& operator=(T value_) psh_noexcept {
+        constexpr Option& operator=(T value_) psh_no_except {
             this->value     = value_;
             this->has_value = true;
             return *this;
         }
 
-        T const& value_or(T const& default_value = {}) const psh_noexcept {
+        T const& value_or(T const& default_value = {}) const psh_no_except {
             return this->has_value ? this->value : default_value;
         }
 
-        T const& demand(strptr msg = "") const psh_noexcept {
+        T const& demand(strptr msg = "") const psh_no_except {
             psh_assert_msg(this->has_value, msg);
             return this->value;
         }

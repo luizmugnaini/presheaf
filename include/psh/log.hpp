@@ -29,8 +29,8 @@
 namespace psh::impl::log {
     /// Log level.
     ///
-    /// The levels are set in an increasing level of vebosity, where `LogLevel::Fatal` is the lowest
-    /// and `LogLevel::Debug` is the highest.
+    /// The levels are set in an increasing level of vebosity, where LogLevel::Fatal is the lowest
+    /// and LogLevel::Debug is the highest.
     enum LogLevel : u32 {
         LOG_LEVEL_FATAL = 0,
         LOG_LEVEL_ERROR,
@@ -48,15 +48,15 @@ namespace psh::impl::log {
     };
 
     /// Log a message to the standard error stream.
-    psh_api void log_msg(LogInfo info, strptr msg) psh_noexcept;
+    psh_api void log_msg(LogInfo info, strptr msg) psh_no_except;
 
     /// Log a formatted message to the standard error stream.
-    psh_api psh_attr_fmt(2) void log_fmt(LogInfo const& info, strptr fmt, ...) psh_noexcept;
+    psh_api psh_attr_fmt(2) void log_fmt(LogInfo const& info, strptr fmt, ...) psh_no_except;
 }  // namespace psh::impl::log
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Logging macro utilities intended for easier usage pattern.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 #define psh_impl_make_log_info(log_level)            \
     psh::impl::log::LogInfo {                        \
@@ -93,41 +93,4 @@ namespace psh::impl::log {
 #    define psh_log_warning_fmt(fmt, ...) 0
 #    define psh_log_info_fmt(fmt, ...)    0
 #    define psh_log_debug_fmt(fmt, ...)   0
-#endif
-
-// -----------------------------------------------------------------------------
-// Short names.
-// -----------------------------------------------------------------------------
-
-#if defined(PSH_DEFINE_SHORT_NAMES)
-#    ifndef log_fatal
-#        define log_fatal psh_log_fatal
-#    endif
-#    ifndef log_error
-#        define log_error psh_log_error
-#    endif
-#    ifndef log_warning
-#        define log_warning psh_log_warning
-#    endif
-#    ifndef log_info
-#        define log_info psh_log_info
-#    endif
-#    ifndef log_debug
-#        define log_debug psh_log_debug
-#    endif
-#    ifndef log_fatal_fmt
-#        define log_fatal_fmt psh_log_fatal_fmt
-#    endif
-#    ifndef log_error_fmt
-#        define log_error_fmt psh_log_error_fmt
-#    endif
-#    ifndef log_warning_fmt
-#        define log_warning_fmt psh_log_warning_fmt
-#    endif
-#    ifndef log_info_fmt
-#        define log_info_fmt psh_log_info_fmt
-#    endif
-#    ifndef log_debug_fmt
-#        define log_debug_fmt psh_log_debug_fmt
-#    endif
 #endif

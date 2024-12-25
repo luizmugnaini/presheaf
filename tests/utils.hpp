@@ -27,4 +27,8 @@
 #include <stdio.h>
 #include <psh/core.hpp>
 
-#define report_test_successful() printf("\x1b[1;32m[PASSED]\x1b[0m: %s.\n", psh_source_function_signature())
+#if PSH_ENABLE_ANSI_COLORS
+#    define report_test_successful() printf("\x1b[1;32m[PASSED]\x1b[0m: %s.\n", psh_source_function_signature())
+#else
+#    define report_test_successful() printf("[PASSED]: %s.\n", psh_source_function_signature())
+#endif

@@ -26,9 +26,9 @@
 
 #include <limits.h>
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Bit Manipulations.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Note: The bit indexing count starts at zero for all macros.
 
 /// Get the number of bits that compose a given type.
@@ -43,7 +43,7 @@
     static_cast<T>(       \
         ~(static_cast<T>(1u << (n))) & static_cast<T>((1ULL << psh_type_bit_count(T)) - 1u))
 
-/// Get the number whose first `count` bits are 1's.
+/// Get the number whose first count bits are 1's.
 #define psh_bit_ones(count) ((1ULL << (count)) - 1u)
 
 /// Set the n-th bit of a variable to 1.
@@ -68,15 +68,15 @@
 /// Get the value of the n-th bit of given value.
 #define psh_bit_at(val, n) (((val) >> (n)) & 0b1)
 
-/// Get `count` bits from a number, starting at position `pos`.
+/// Get count bits from a number, starting at position pos.
 #define psh_bits_at(val, pos, count) (((val) >> pos) & ((1ULL << (count)) - 1u))
 
 /// Test a bit: true if the bit at the given position is set, false otherwise.
 #define psh_test_bit_at(val, n) static_cast<bool>(psh_bit_at((val), (n)))
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // 16-bit manipulations.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 /// Construct a word with the pair (high byte, low byte).
 #define psh_u16_from_bytes(hi_u8, lo_u8) \
@@ -102,9 +102,9 @@
         var_u16                    = psh_var_hi_ | static_cast<unsigned short>(lo_u8); \
     } while (0)
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Byte manipulations.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 /// Low nibble of a byte.
 #define psh_u8_lo(val_u8) (0x0F & (val_u8))
@@ -118,9 +118,9 @@
 /// Transform a byte into the high byte of a word.
 #define psh_u8_to_u16_hi(val_u8) (static_cast<unsigned short>((val_u8) << 8u))
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Integer manipulations.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 /// Check if a given pair of integers has the same sign.
 #define psh_int_opposite_sign(a, b) (((a) ^ (b)) < 0)
@@ -131,10 +131,10 @@
         (void)(((a) == (b)) || ((((a) ^ (b)) && ((b) ^= (a) ^= (b), (a) ^= (b))))); \
     } while (0)
 
-/// Rotate right by `n` digits.
+/// Rotate right by n digits.
 #define psh_int_rotr(val, n) \
     (static_cast<decltype(val)>((val >> (n)) | (val << (psh_value_bit_count(val) - (n)))))
 
-/// Rotate left by `n` digits.
+/// Rotate left by n digits.
 #define psh_int_rotl(val, n) \
     (static_cast<decltype(val)>((val << (n)) | (val >> (psh_value_bit_count(val) - (n)))))

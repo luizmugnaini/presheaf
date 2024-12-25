@@ -29,7 +29,7 @@
 #include <psh/option.hpp>
 
 namespace psh {
-    usize str_length(strptr str) psh_noexcept {
+    usize str_length(strptr str) psh_no_except {
         usize length = 0;
         if (psh_likely(str != nullptr)) {
             length = strlen(str);
@@ -37,7 +37,7 @@ namespace psh {
         return length;
     }
 
-    StrCmpResult str_cmp(strptr lhs, strptr rhs) psh_noexcept {
+    StrCmpResult str_cmp(strptr lhs, strptr rhs) psh_no_except {
         i32          cmp = strcmp(lhs, rhs);
         StrCmpResult result;
         if (cmp == 0) {
@@ -50,7 +50,7 @@ namespace psh {
         return result;
     }
 
-    StrCmpResult str_cmp(StringView lhs, StringView rhs) psh_noexcept {
+    StrCmpResult str_cmp(StringView lhs, StringView rhs) psh_no_except {
         i32          cmp = memcmp(lhs.buf, rhs.buf, psh_min_value(lhs.count, rhs.count));
         StrCmpResult result;
         if (cmp == 0) {
@@ -63,11 +63,11 @@ namespace psh {
         return result;
     }
 
-    bool str_equal(strptr lhs, strptr rhs) psh_noexcept {
+    bool str_equal(strptr lhs, strptr rhs) psh_no_except {
         return (strcmp(lhs, rhs) == 0);
     }
 
-    bool str_equal(StringView lhs, StringView rhs) psh_noexcept {
+    bool str_equal(StringView lhs, StringView rhs) psh_no_except {
         bool  are_equal = true;
         usize length    = lhs.count;
 
@@ -79,7 +79,7 @@ namespace psh {
         return are_equal;
     }
 
-    Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element) psh_noexcept {
+    Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element) psh_no_except {
         bool previously_empty = (target.count == 0);
 
         // Resize the string ahead of time.

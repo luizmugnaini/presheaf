@@ -27,23 +27,79 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Presheaf library compile-time flags.
-// -----------------------------------------------------------------------------
+//
+// Disabled by default:
+//
+// - PSH_ENABLE_SAFE_POINTER_ARITHMETIC: Consider if a pointer is null before applying an offset.
+// - PSH_ENABLE_ASSERTIONS: Enable the use of asserts.
+// - PSH_ENABLE_BOUNDS_CHECK: For every container-like struct, check if the accessing index stays
+//   within the container memory region bounds.
+// - PSH_ENABLE_MEMCPY_OVERLAP_CHECK: Before calling memcpy, assert that the memory regions being
+//   copied don't overlap.
+// - PSH_ENABLE_ABORT_AT_MEMORY_ERROR: When a memory acquisition function fails, abort the program.
+// - PSH_ENABLE_LOGGING: Enable logging calls to execute.
+// - PSH_DEBUG: Enables all of the above debug checks.
+// - PSH_ENABLE_ANSI_COLORS: When logging, use ANSI color codes for pretty printing. This may not
+//   be desired if you're printing to a log file, hence the option is disabled by default.
+// -------------------------------------------------------------------------------------------------
 
-// Activate default debug checks.
-#if defined(PSH_DEBUG)
-#    ifndef PSH_CHECK_BOUNDS
-#        define PSH_CHECK_BOUNDS
+// Enable all debug checks when compiled in debug mode. Otherwise, disable all.
+#if defined(PSH_DEBUG) && PSH_DEBUG
+#    if !defined(PSH_ENABLE_ASSERTIONS)
+#        define PSH_ENABLE_ASSERTIONS 1
 #    endif
-#    ifndef PSH_CHECK_MEMCPY_OVERLAP
-#        define PSH_CHECK_MEMCPY_OVERLAP
+#    if !defined(PSH_ENABLE_ASSERT_NOT_NULL)
+#        define PSH_ENABLE_ASSERT_NOT_NULL 1
+#    endif
+#    if !defined(PSH_ENABLE_ABORT_AT_MEMORY_ERROR)
+#        define PSH_ENABLE_ABORT_AT_MEMORY_ERROR 1
+#    endif
+#    if !defined(PSH_ENABLE_CHECKED_POINTER_ARITHMETIC)
+#        define PSH_ENABLE_CHECKED_POINTER_ARITHMETIC 1
+#    endif
+#    if !defined(PSH_ENABLE_BOUNDS_CHECK)
+#        define PSH_ENABLE_BOUNDS_CHECK 1
+#    endif
+#    if !defined(PSH_ENABLE_MEMCPY_OVERLAP_CHECK)
+#        define PSH_ENABLE_MEMCPY_OVERLAP_CHECK 1
+#    endif
+#    if !defined(PSH_ENABLE_LOGGING)
+#        define PSH_ENABLE_LOGGING 1
+#    endif
+#else
+#    if !defined(PSH_ENABLE_ASSERTIONS)
+#        define PSH_ENABLE_ASSERTIONS 0
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_NOT_NULL)
+#        define PSH_ENABLE_ASSERT_NOT_NULL 0
+#    endif
+#    if !defined(PSH_ENABLE_ABORT_AT_MEMORY_ERROR)
+#        define PSH_ENABLE_ABORT_AT_MEMORY_ERROR 0
+#    endif
+#    if !defined(PSH_ENABLE_CHECKED_POINTER_ARITHMETIC)
+#        define PSH_ENABLE_CHECKED_POINTER_ARITHMETIC 0
+#    endif
+#    if !defined(PSH_ENABLE_BOUNDS_CHECK)
+#        define PSH_ENABLE_BOUNDS_CHECK 0
+#    endif
+#    if !defined(PSH_ENABLE_MEMCPY_OVERLAP_CHECK)
+#        define PSH_ENABLE_MEMCPY_OVERLAP_CHECK 0
+#    endif
+#    if !defined(PSH_ENABLE_LOGGING)
+#        define PSH_ENABLE_LOGGING 0
 #    endif
 #endif
 
-// -----------------------------------------------------------------------------
+// By default, disable the use of ANSI colors for logging.
+#if !defined(PSH_ENABLE_ANSI_COLORS) || !PSH_ENABLE_ANSI_COLORS
+#    define PSH_ENABLE_ANSI_COLORS 0
+#endif
+
+// -------------------------------------------------------------------------------------------------
 // Macros for operating system and compiler detection.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 #if defined(_WIN32)
 #    define PSH_OS_WINDOWS_32
@@ -67,6 +123,8 @@
 #endif
 
 /// Windows-specific tweaks.
+///
+/// Disable most of the useless stuff that comes bundled with the Windows header files.
 #if defined(PSH_OS_WINDOWS_32) || defined(PSH_OS_WINDOWS_64)
 #    ifndef WIN32_LEAN_AND_MEAN
 #        define WIN32_LEAN_AND_MEAN
@@ -122,7 +180,7 @@
 #    ifndef NOIME
 #        define NOIME
 #    endif
-#endif  // PSH_OS_WINDOWS_32 || PSH_OS_WINDOWS_64
+#endif  // PSH_OS_WINDOWS
 
 /// Macros for compiler detection.
 #if defined(_MSC_VER)
@@ -154,15 +212,17 @@
 #    define PSH_COMPILER_CLANG
 #elif defined(__GNUC__)
 #    define PSH_COMPILER_GCC
+#else
+#    error "Compiler not supported. Please use MSVC, Clang or GCC."
 #endif
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // DLL support - importing/exporting function declarations
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 #if defined(PSH_DLL) && defined(PSH_BUILD_DLL)
 #    error "The user of the DLL version of the library should only define PSH_DLL." \
-           "The macro PSH_BUILD_DLL should only be defined in the internal compilation stage of the library as a DLL."
+           "The macro PSH_BUILD_DLL has only internal usage and should not be defined by the user."
 #endif
 
 #if defined(PSH_DLL)
@@ -179,9 +239,9 @@
 #    define psh_api
 #endif
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Architecture information.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 /// Processor architecture.
 #if defined(__x86_64__) || defined(_M_X64) || defined(__amd64__)
@@ -217,19 +277,19 @@
 #            define PSH_ARCH_SIMD_AVX2
 #        endif
 #    endif
-#endif  // PSH_ARCH_X64
+#endif
 
 /// SIMD availability in ARM processors.
 #if defined(PSH_ARCH_ARM) && defined(__ARM_NEON)
 #    define PSH_ARCH_SIMD_NEON
-#endif  // PSH_ARCH_ARM
+#endif
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Compiler hints.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 /// Hint for disabling exception handling in the generated code for a given procedure.
-#define psh_noexcept noexcept
+#define psh_no_except noexcept
 
 /// Hint for forced function inlining.
 #if defined(PSH_COMPILER_MSVC)
@@ -245,14 +305,7 @@
 #    define PSH_FALLTHROUGH
 #endif
 
-/// Macro for aborting a program at runtime.
-#if defined(PSH_COMPILER_MSVC)
-#    define psh_abort_program() __debugbreak()
-#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-#    define psh_abort_program() __builtin_trap()
-#else
-#    define psh_abort_program() while (1)
-#endif
+#define psh_no_return [[noreturn]]
 
 /// Code-path should be unreachable.
 #if defined(PSH_COMPILER_MSVC)
@@ -260,7 +313,7 @@
 #elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
 #    define psh_unreachable() __builtin_unreachable()
 #else
-#    define psh_unreachable() psh_abort_program()
+#    define psh_unreachable() 0
 #endif
 
 /// Linkage hits.
@@ -296,12 +349,12 @@
 #    define psh_attr_fmt(fmt_pos)
 #endif
 
-/// Discard the value of a given expression.
+/// Evaluate then discard the value of a given expression.
 #define psh_discard_value(x) (void)(x)
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Fundamental types.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 /// Unsigned integer type.
 using u8  = uint8_t;
@@ -341,9 +394,9 @@ namespace psh {
     };
 }  // namespace psh
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Common operations.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 /// Swap the values of two given variables.
 #define psh_swap_values(lhs_var, rhs_var)       \
@@ -353,28 +406,34 @@ namespace psh {
         rhs_var                    = psh_tmp_;  \
     } while (0)
 
-// -----------------------------------------------------------------------------
+/// Calculate, at compile-time, the element count of a literal array.
+#define psh_count_of(literal_array) (sizeof(literal_array) / sizeof(literal_array[0]))
+
+// -------------------------------------------------------------------------------------------------
 // Pointer operations.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 /// Add or subtract an offset from a pointer if and only if the pointer is not null.
-#define psh_ptr_add(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) + static_cast<uptr>(offset)))
-#define psh_ptr_sub(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) - static_cast<iptr>(offset)))
+#if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
+#    define psh_ptr_add(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) + static_cast<uptr>(offset)))
+#    define psh_ptr_sub(ptr, offset) (((ptr) == nullptr) ? nullptr : ((ptr) - static_cast<iptr>(offset)))
+#else
+#    define psh_ptr_add(ptr, offset) ((ptr) + static_cast<uptr>(offset))
+#    define psh_ptr_sub(ptr, offset) ((ptr) - static_cast<iptr>(offset))
+#endif
 
 /// Check if two pointers refer to the same address in memory.
 #define psh_ptr_same_addr(lhs_ptr, rhs_ptr) (reinterpret_cast<u8 const*>(lhs_ptr) == reinterpret_cast<u8 const*>(rhs_ptr))
 
 /// Compute the offset, in bytes, between two pointers.
-#define psh_ptr_offset_bytes(end_ptr, start_ptr)                                           \
-    (psh_ptr_same_addr(end_ptr, start_ptr) ? 0                                             \
-                                           : reinterpret_cast<iptr>(                       \
-                                                 psh_ptr_sub(                              \
-                                                     reinterpret_cast<u8 const*>(end_ptr), \
-                                                     reinterpret_cast<iptr>(start_ptr))))
+#define psh_ptr_offset_bytes(end_ptr, start_ptr) \
+    (psh_ptr_same_addr(end_ptr, start_ptr)       \
+         ? 0                                     \
+         : reinterpret_cast<iptr>(psh_ptr_sub(reinterpret_cast<u8 const*>(end_ptr), start_ptr)))
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Mathematical operations.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 /// Checks if a value is in the closed interval [min, max].
 #define psh_value_in_range(value, min, max) (((min) <= (value)) && ((value) <= (max)))
@@ -407,9 +466,9 @@ namespace psh {
 /// Check if a value is a power of two.
 #define psh_is_pow_of_two(n) (((n) > 0) && !((n) & (((n)) - 1)))
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Stringification and tokenization utilities.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 /// Generate a string containing the given expression.
 #define psh_stringify(x) #x
@@ -417,17 +476,17 @@ namespace psh {
 #define psh_impl_token_concat(x, y)      x##y
 #define psh_token_concat(prefix, suffix) psh_impl_token_concat(prefix, suffix)
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Common memory sizes.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 #define psh_kibibytes(n) ((n) * (1 << 10))
 #define psh_mebibytes(n) ((n) * (1 << 20))
 #define psh_gibibytes(n) ((n) * (1 << 30))
 
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 // Source introspection information.
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 
 /// Query the string representing the signature of the current function.
 #if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
@@ -452,169 +511,5 @@ namespace psh {
 #    define psh_source_line_number() __builtin_LINE()
 #else
 #    define psh_source_file_name()   "<unknown file>"
-#    define psh_source_line_number() (0)
+#    define psh_source_line_number() 0
 #endif
-
-// -----------------------------------------------------------------------------
-// Short names.
-// -----------------------------------------------------------------------------
-
-#if defined(PSH_DEFINE_SHORT_NAMES)
-// OS detection macros.
-#    if defined(PSH_OS_WINDOWS_32) && !defined(OS_WINDOWS_32)
-#        define OS_WINDOWS_32 PSH_OS_WINDOWS_32
-#    endif
-#    if defined(PSH_OS_WINDOWS_64) && !defined(OS_WINDOWS_64)
-#        define OS_WINDOWS_64 PSH_OS_WINDOWS_64
-#    endif
-#    if defined(PSH_OS_WINDOWS) && !defined(OS_WINDOWS)
-#        define OS_WINDOWS PSH_OS_WINDOWS
-#    endif
-#    if defined(PSH_OS_APPLE) && !defined(OS_APPLE)
-#        define OS_APPLE PSH_OS_APPLE
-#    endif
-#    if defined(PSH_OS_LINUX) && !defined(OS_LINUX)
-#        define OS_LINUX PSH_OS_LINUX
-#    endif
-#    if defined(PSH_OS_UNIX) && !defined(OS_UNIX)
-#        define OS_UNIX PSH_OS_UNIX
-#    endif
-#    if defined(PSH_OS_POSIX) && !defined(OS_POSIX)
-#        define OS_POSIX PSH_OS_POSIX
-#    endif
-// Compiler detection macros.
-#    if defined(PSH_COMPILER_MSVC) && !defined(COMPILER_MSVC)
-#        define COMPILER_MSVC PSH_COMPILER_MSVC
-#    endif
-#    if defined(PSH_COMPILER_MSVC_YEAR) && !defined(COMPILER_MSVC_YEAR)
-#        define COMPILER_MSVC_YEAR PSH_COMPILER_MSVC_YEAR
-#    endif
-#    if defined(PSH_COMPILER_CLANG_CL) && !defined(COMPILER_CLANG_CL)
-#        define COMPILER_CLANG_CL PSH_COMPILER_CLANG_CL
-#    endif
-#    if defined(PSH_COMPILER_CLANG) && !defined(COMPILER_CLANG)
-#        define COMPILER_CLANG PSH_COMPILER_CLANG
-#    endif
-#    if defined(PSH_COMPILER_GCC) && !defined(COMPILER_GCC)
-#        define COMPILER_GCC PSH_COMPILER_GCC
-#    endif
-// Architecture detection
-#    if defined(PSH_ARCH_X64) && !defined(ARCH_X64)
-#        define ARCH_X64 PSH_ARCH_X64
-#    endif
-#    if defined(PSH_ARCH_ARM) && !defined(ARCH_ARM)
-#        define ARCH_ARM PSH_ARCH_ARM
-#    endif
-#    if defined(PSH_ARCH_SIMD_SSE) && !defined(ARCH_SIMD_SSE)
-#        define ARCH_SIMD_SSE PSH_ARCH_SIMD_SSE
-#    endif
-#    if defined(PSH_ARCH_SIMD_SSE2) && !defined(ARCH_SIMD_SSE2)
-#        define ARCH_SIMD_SSE2 PSH_ARCH_SIMD_SSE2
-#    endif
-#    if defined(PSH_ARCH_SIMD_AVX) && !defined(ARCH_SIMD_AVX)
-#        define ARCH_SIMD_AVX PSH_ARCH_SIMD_AVX
-#    endif
-#    if defined(PSH_ARCH_SIMD_AVX2) && !defined(ARCH_SIMD_AVX2)
-#        define ARCH_SIMD_AVX2 PSH_ARCH_SIMD_AVX2
-#    endif
-#    if defined(PSH_ARCH_SIMD_NEON) && !defined(ARCH_SIMD_NEON)
-#        define ARCH_SIMD_NEON PSH_ARCH_SIMD_NEON
-#    endif
-// Miscelaneous macros.
-#    ifndef FALLTHROUGH
-#        define FALLTHROUGH PSH_FALLTHROUGH
-#    endif
-#    ifndef abort_program
-#        define abort_program psh_abort_program
-#    endif
-#    ifndef unreachable
-#        define unreachable psh_unreachable
-#    endif
-#    ifndef internal
-#        define internal psh_internal
-#    endif
-#    ifndef global
-#        define global psh_global
-#    endif
-#    ifndef no_alias
-#        define no_alias psh_no_alias
-#    endif
-#    ifndef likely
-#        define likely psh_likely
-#    endif
-#    ifndef unlikely
-#        define unlikely psh_unlikely
-#    endif
-#    ifndef attr_fmt
-#        define attr_fmt psh_attr_fmt
-#    endif
-#    ifndef discard_value
-#        define discard_value psh_discard_value
-#    endif
-#    ifndef stringify
-#        define stringify psh_stringify
-#    endif
-#    ifndef token_concat
-#        define token_concat psh_token_concat
-#    endif
-#    ifndef ptr_add
-#        define ptr_add psh_ptr_add
-#    endif
-#    ifndef ptr_sub
-#        define ptr_sub psh_ptr_sub
-#    endif
-#    ifndef ptr_offset_bytes
-#        define ptr_offset_bytes psh_ptr_offset_bytes
-#    endif
-#    ifndef min_value
-#        define min_value psh_min_value
-#    endif
-#    ifndef max_value
-#        define max_value psh_max_value
-#    endif
-#    ifndef clamp_value
-#        define clamp_value psh_clamp_value
-#    endif
-#    ifndef sign_value
-#        define sign_value psh_sign_value
-#    endif
-#    ifndef abs_value
-#        define abs_value psh_abs_value
-#    endif
-#    ifndef lower_bound_add
-#        define lower_bound_add psh_lower_bound_add
-#    endif
-#    ifndef upper_bound_add
-#        define upper_bound_add psh_upper_bound_add
-#    endif
-#    ifndef nowrap_unsigned_dec
-#        define nowrap_unsigned_dec psh_nowrap_unsigned_dec
-#    endif
-#    ifndef is_pow_of_two
-#        define is_pow_of_two psh_is_pow_of_two
-#    endif
-#    ifndef swap_values
-#        define swap_values psh_swap_values
-#    endif
-#    ifndef kibibytes
-#        define kibibytes psh_kibibytes
-#    endif
-#    ifndef mebibytes
-#        define mebibytes psh_mebibytes
-#    endif
-#    ifndef gibibytes
-#        define gibibytes psh_gibibytes
-#    endif
-#    ifndef source_function_signature
-#        define source_function_signature psh_source_function_signature
-#    endif
-#    ifndef source_function_name
-#        define source_function_name psh_source_function_name
-#    endif
-#    ifndef source_file_name
-#        define source_file_name psh_source_file_name
-#    endif
-#    ifndef source_line_number
-#        define source_line_number psh_source_line_number
-#    endif
-#endif  // PSH_DEFINE_SHORT_NAMES

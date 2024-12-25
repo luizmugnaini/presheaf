@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include <psh/arena.hpp>
 #include <psh/core.hpp>
 #include <psh/memory.hpp>
 #include <psh/option.hpp>
@@ -45,16 +44,12 @@ namespace psh {
         usize  capacity = 0;
         usize  count    = 0;
 
-        // -----------------------------------------------------------------------------
-        // Constructors and initializers.
-        // -----------------------------------------------------------------------------
-
-        DynArray() psh_noexcept = default;
+        DynArray() psh_no_except = default;
 
         /// Initialize the dynamic array with a given capacity.
-        psh_inline void init(Arena* arena_, usize capacity_ = impl::dynarray::DEFAULT_INITIAL_CAPACITY) psh_noexcept {
+        psh_inline void init(Arena* arena_, usize capacity_ = impl::dynarray::DEFAULT_INITIAL_CAPACITY) psh_no_except {
             psh_assert_msg(this->count == 0, "Tried to re-initialize an initialized DynArray");
-            psh_assert(arena_ != nullptr);
+            psh_assert_not_null(arena_);
 
             this->buf      = arena_->alloc<T>(capacity_);
             this->arena    = arena_;
@@ -62,48 +57,12 @@ namespace psh {
         }
 
         /// Construct a dynamic array with a given capacity.
-        psh_inline DynArray(Arena* arena_, usize capacity_ = impl::dynarray::DEFAULT_INITIAL_CAPACITY) psh_noexcept {
+        psh_inline DynArray(Arena* arena_, usize capacity_ = impl::dynarray::DEFAULT_INITIAL_CAPACITY) psh_no_except {
             this->init(arena_, capacity_);
         }
 
-        // -----------------------------------------------------------------------------
-        // Read methods.
-        // -----------------------------------------------------------------------------
-
-        psh_inline T& operator[](usize idx) psh_noexcept {
-#if defined(PSH_CHECK_BOUNDS)
-            psh_assert_fmt(idx < this->count, "Index %zu out of bounds for DynArray of size %zu.", idx, this->count);
-#endif
-            return this->buf[idx];
-        }
-
-        psh_inline T const& operator[](usize idx) const psh_noexcept {
-#if defined(PSH_CHECK_BOUNDS)
-            psh_assert_fmt(idx < this->count, "Index %zu out of bounds for DynArray of size %zu.", idx, this->count);
-#endif
-            return this->buf[idx];
-        }
-
-        /// Get a pointer to the last element of the dynamic array.
-        psh_inline T* peek() const psh_noexcept {
-            return (this->count == 0) ? nullptr : &this->buf[this->count - 1];
-        }
-
-        psh_inline T*       begin() psh_noexcept { return this->buf; }
-        psh_inline T*       end() psh_noexcept { return psh_ptr_add(this->buf, this->count); }
-        psh_inline T const* begin() const psh_noexcept { return static_cast<T const*>(this->buf); }
-        psh_inline T const* end() const psh_noexcept { return psh_ptr_add(static_cast<T const*>(this->buf), this->count); }
-
-        // -----------------------------------------------------------------------------
-        // Memory resizing methods.
-        // -----------------------------------------------------------------------------
-
-        psh_inline usize size_bytes() psh_noexcept {
-            return this->count * sizeof(T);
-        }
-
         /// Resize the dynamic array underlying buffer.
-        Status grow(u32 factor = impl::dynarray::RESIZE_CAPACITY_FACTOR) psh_noexcept {
+        Status grow(u32 factor = impl::dynarray::RESIZE_CAPACITY_FACTOR) psh_no_except {
             usize previous_capacity = this->capacity;
 
             usize new_capacity;
@@ -127,7 +86,8 @@ namespace psh {
             return status;
         }
 
-        Status resize(usize new_capacity) psh_noexcept {
+        // @TODO: Resize should change size = new_size
+        Status resize(usize new_capacity) psh_no_except {
             // @NOTE: If T is a struct with a pointer to itself, this method will fail hard and create
             //       a massive horrible memory bug. DO NOT use this array structure with types having
             //       this property.
@@ -149,12 +109,8 @@ namespace psh {
             return status;
         }
 
-        // -----------------------------------------------------------------------------
-        // Memory manipulation.
-        // -----------------------------------------------------------------------------
-
         /// Inserts a new element to the end of the dynamic array.
-        Status push(T new_element) psh_noexcept {
+        Status push(T new_element) psh_no_except {
             usize previous_count = this->count;
 
             Status status = STATUS_OK;
@@ -170,7 +126,7 @@ namespace psh {
             return status;
         }
 
-        Status push(FatPtr<T const> new_elements) psh_noexcept {
+        Status push(FatPtr<T const> new_elements) psh_no_except {
             usize previous_count = this->count;
 
             Status status = STATUS_OK;
@@ -190,7 +146,7 @@ namespace psh {
         }
 
         /// Try to pop the last element of the dynamic array.
-        Status pop() psh_noexcept {
+        Status pop() psh_no_except {
             Status status = STATUS_FAILED;
 
             usize previous_count = this->count;
@@ -203,15 +159,12 @@ namespace psh {
         }
 
         /// Try to remove a dynamic array element at a given index.
-        Status remove(usize idx) psh_noexcept {
+        Status remove(usize idx) psh_no_except {
             usize previous_count = this->count;
 
-#if defined(PSH_CHECK_BOUNDS)
             if (psh_unlikely(idx >= previous_count)) {
-                psh_log_error_fmt("Index %zu out of bounds for DynArray of count %zu.", idx, previous_count);
                 return STATUS_FAILED;
             }
-#endif
 
             // If the element isn't the last we have to copy the array content with overlap.
             if (idx != this->count - 1) {
@@ -226,22 +179,32 @@ namespace psh {
         }
 
         /// Clear the dynamic array data, resetting its size.
-        psh_inline void clear() psh_noexcept {
+        psh_inline void clear() psh_no_except {
             this->count = 0;
         }
+
+        psh_inline T& operator[](usize idx) psh_no_except {
+            psh_assert_bounds_check(idx, this->count, "Index %zu out of bounds for DynArray of size %zu.", idx, this->count);
+            return this->buf[idx];
+        }
+        psh_inline T const& operator[](usize idx) const psh_no_except {
+            psh_assert_bounds_check(idx, this->count, "Index %zu out of bounds for DynArray of size %zu.", idx, this->count);
+            return this->buf[idx];
+        }
+
+        psh_inline T*       begin() psh_no_except { return this->buf; }
+        psh_inline T*       end() psh_no_except { return psh_ptr_add(this->buf, this->count); }
+        psh_inline T const* begin() const psh_no_except { return static_cast<T const*>(this->buf); }
+        psh_inline T const* end() const psh_no_except { return psh_ptr_add(static_cast<T const*>(this->buf), this->count); }
     };
 
-    // -----------------------------------------------------------------------------
-    // Generating fat pointers.
-    // -----------------------------------------------------------------------------
-
     template <typename T>
-    psh_inline FatPtr<T> make_fat_ptr(DynArray<T>& d) psh_noexcept {
+    psh_inline FatPtr<T> make_fat_ptr(DynArray<T>& d) psh_no_except {
         return FatPtr{d.buf, d.count};
     }
 
     template <typename T>
-    psh_inline FatPtr<T const> make_const_fat_ptr(DynArray<T> const& d) psh_noexcept {
+    psh_inline FatPtr<T const> make_const_fat_ptr(DynArray<T> const& d) psh_no_except {
         return FatPtr{static_cast<T const*>(d.buf), d.count};
     }
 }  // namespace psh
