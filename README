@@ -56,7 +56,7 @@ world. It's meant to be the base layer of your application, providing a few key 
 are essential when working with low-level programming - providing a few features that C failed to
 provide. All of the internals of the library are accessible to the user for this exact reason. As
 you can see, this document is a simple txt file, which should reflect the simplicity and pragmatism
-of the code itself - nothing fancy, and nothing shiny, just programming in its purest style.
+of the code itself - nothing fancy, and nothing shiny, just programming in its purest way.
 
 
 
@@ -70,7 +70,7 @@ a. Using the files src/presheaf.cpp and include/psh/presheaf.hpp, embed the libr
 b. Compile the libary separately from your project, then link to it later.
 
 Both of the above options apply directly to any of the modern build systems. If you know how your
-tools work, it should be a piece of cake to make this work.
+tools work, it should be a piece of cake to integrate the library to your own project.
 
 
 Library compile-time options
