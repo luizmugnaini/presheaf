@@ -23,7 +23,7 @@ The library has a bundled compilation unit src/presheaf.cpp which may be used if
 compile as a unity build. This can be as simple as, e.g.:
 
 1. Build object files without linking:
-                 clang++ -c -std=c++20 -Iinclude src/all.cpp -o presheaf.o
+                 clang++ -c -std=c++20 -Iinclude src/presheaf.cpp -o presheaf.o
 2. Archive object files into a library:
                            llvm-ar rc libpresheaf.a presheaf.o
 
