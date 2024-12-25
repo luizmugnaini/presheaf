@@ -1,11 +1,8 @@
 TODO
 
-- #if defined(PSH_DEBUG) && PSH_DEBUG.
 - Unordered/ordered container element removal.
-- Drop support for short names.
 - Implement a hash map.
 - Threading abstraction for Windows/pthreads.
-- Shouldn't allocation procedures return FatPtr? I think this would be safer.
 - Tests for `psh/stream.h`.
 - Make arenas thread safe (opt-in overhead).
 - Thread safe asynchronous stream functions.

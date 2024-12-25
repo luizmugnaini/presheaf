@@ -61,7 +61,7 @@ namespace psh {
             this->init(arena_, capacity_);
         }
 
-        /// Resize the dynamic array underlying buffer.
+        /// Grow the capacity of the dynamic array underlying buffer.
         Status grow(u32 factor = impl::dynarray::RESIZE_CAPACITY_FACTOR) psh_no_except {
             usize previous_capacity = this->capacity;
 
@@ -86,8 +86,7 @@ namespace psh {
             return status;
         }
 
-        // @TODO: Resize should change size = new_size
-        Status resize(usize new_capacity) psh_no_except {
+        Status reserve(usize new_capacity) psh_no_except {
             // @NOTE: If T is a struct with a pointer to itself, this method will fail hard and create
             //       a massive horrible memory bug. DO NOT use this array structure with types having
             //       this property.
@@ -126,12 +125,13 @@ namespace psh {
             return status;
         }
 
+        /// Insert a collection of new elements to the end of the dynamic array.
         Status push(FatPtr<T const> new_elements) psh_no_except {
             usize previous_count = this->count;
 
             Status status = STATUS_OK;
             if (this->capacity < new_elements.count + previous_count) {
-                status = this->resize(previous_count + new_elements.count);
+                status = this->reserve(previous_count + new_elements.count);
             }
 
             if (psh_likely(status)) {

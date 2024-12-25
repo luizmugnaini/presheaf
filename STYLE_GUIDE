@@ -19,14 +19,14 @@ exploit.
 Why C++20?
 ==========
 
-I'll be honest, I just wanted designated initializers.
+I'll be honest, I just wanted designated initialisers.
 
 Good practices
 ==============
 
 - Strive for POD structures.
 - Minimal use of destructors and operator overloads.
-- Pointers should **never** indicate ownership, only the possibility that a reference does not exist.
+- Pointers should never indicate ownership, only the possibility that a reference does not exist.
 - Don't be afraid of pointers, know how to use them and be careful, that's all.
 - Always provide useful documentation.
 - Don't write in a comment what can be clearly stated in code.
@@ -126,5 +126,5 @@ Error Handling
 
 # Recommended reads
 
-- [Orthodox C++ principles](https://gist.github.com/bkaradzic/2e39896bc7d8c34e042b) has some good insights,
+- Orthodox C++ principles (https://gist.github.com/bkaradzic/2e39896bc7d8c34e042b) has some good insights,
   although we don't follow all of them in this codebase.

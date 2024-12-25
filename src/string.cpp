@@ -101,7 +101,7 @@ namespace psh {
 
             usize new_capacity = target.count + additional_length;
             if (target.capacity < new_capacity) {
-                if (psh_unlikely(!target.resize(new_capacity))) {
+                if (psh_unlikely(!target.reserve(new_capacity))) {
                     return STATUS_FAILED;
                 }
             }

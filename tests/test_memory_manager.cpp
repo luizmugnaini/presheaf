@@ -32,7 +32,7 @@
 #include "utils.hpp"
 
 namespace psh::test::memory_manager {
-    psh_internal void zeroed_at_initialization() {
+    psh_internal void zeroed_at_initialisation() {
         MemoryManager memory_manager;
         memory_manager.init(1024);
 
@@ -51,7 +51,7 @@ namespace psh::test::memory_manager {
         report_test_successful();
     }
 
-    psh_internal void initialization_and_shutdown() {
+    psh_internal void initialisation_and_shutdown() {
         usize         memory_manager_capacity = 2048;
         MemoryManager memory_manager;
         memory_manager.init(memory_manager_capacity);
@@ -201,8 +201,8 @@ namespace psh::test::memory_manager {
     }
 
     psh_internal void run_all() {
-        zeroed_at_initialization();
-        initialization_and_shutdown();
+        zeroed_at_initialisation();
+        initialisation_and_shutdown();
         memory_statistics();
     }
 }  // namespace psh::test::memory_manager

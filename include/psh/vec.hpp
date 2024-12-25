@@ -46,10 +46,10 @@ namespace psh {
             return approx_equal(x, 0.0f, zero_range) && approx_equal(y, 0.0f, zero_range);
         }
 
-        /// Get the normalized vector.
+        /// Get the normalised vector.
         ///
         /// Note: The vector is assumed to be non-zero, otherwise this will result in UB.
-        psh_inline Vec2 normalized() const psh_no_except {
+        psh_inline Vec2 normalised() const psh_no_except {
             f32 len = sqrtf(x * x + y * y);
 
             if (psh_unlikely(len < F32_IS_ZERO_RANGE)) {
@@ -108,8 +108,8 @@ namespace psh {
                    approx_equal(z, 0.0f, zero_range);
         }
 
-        /// Get the normalized vector.
-        psh_inline Vec3 normalized() const psh_no_except {
+        /// Get the normalised vector.
+        psh_inline Vec3 normalised() const psh_no_except {
             f32 len = sqrtf(x * x + y * y + z * z);
 
             if (psh_unlikely(approx_equal(len, 0.0f))) {
@@ -188,8 +188,8 @@ namespace psh {
             return (x == 0) && (y == 0);
         }
 
-        /// Get the normalized vector in floating point coordinates.
-        psh_inline Vec2 normalized() const psh_no_except {
+        /// Get the normalised vector in floating point coordinates.
+        psh_inline Vec2 normalised() const psh_no_except {
             f32 len = sqrtf(static_cast<f32>(x * x + y * y));
 
             if (psh_unlikely(len < F32_IS_ZERO_RANGE)) {
@@ -243,8 +243,8 @@ namespace psh {
             return (x == 0) && (y == 0) && (z == 0);
         }
 
-        /// Get the normalized vector in floating point coordinates.
-        psh_inline Vec3 normalized() const psh_no_except {
+        /// Get the normalised vector in floating point coordinates.
+        psh_inline Vec3 normalised() const psh_no_except {
             f32 len = sqrtf(static_cast<f32>(x * x + y * y + z * z));
 
             if (psh_unlikely(len < F32_IS_ZERO_RANGE)) {
@@ -440,8 +440,8 @@ namespace psh {
         ///     * view_up: Orientational vector with the up direction of the camera coordinate
         ///                system.
         static psh_inline ColMat4 view_direction_rh(Vec3 eye, Vec3 view_direction, Vec3 view_up) psh_no_except {
-            Vec3 forward = view_direction.normalized();
-            Vec3 right   = forward.cross(view_up).normalized();
+            Vec3 forward = view_direction.normalised();
+            Vec3 right   = forward.cross(view_up).normalised();
             Vec3 up      = right.cross(forward);
 
             // clang-format off

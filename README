@@ -79,7 +79,7 @@ Library compile-time options
 The following #define macros can be used to tweak the behaviour of the library as you want it:
 
 - PSH_ENABLE_ASSERTIONS: Enable assertion calls. Many debug checks depend on this option being enabled.
-- PSH_ENABLE_ASSERT_NOT_NULL: Assert that a function arguments isn't null when it shouldn't be.
+- PSH_ENABLE_ASSERT_NOT_NULL: Assert that a function argument isn't null when it shouldn't be.
 - PSH_ENABLE_ABORT_AT_MEMORY_ERROR: Aborts the program at any memory (re)allocation errors.
 - PSH_ENABLE_CHECKED_POINTER_ARITHMETIC: Check if pointers are null before applying offsets to it.
 - PSH_ENABLE_BOUNDS_CHECK: Enable bounds-checked index-based memory access.
@@ -88,7 +88,8 @@ The following #define macros can be used to tweak the behaviour of the library a
 - PSH_DEBUG: Enables all of the above debug checks if those aren't manually disabled. For instance,
   if you want all debug checks but not memory error crashes, you can compile with
                       -DPSH_DEBUG -DPSH_ENABLE_ABORT_AT_MEMORY_ERROR=0.
-  any of the above options can be enabled/disabled as explained.
+  any of the above options can be enabled/disabled as just explained.
+- PSH_ENABLE_ANSI_COLOURS: When logging, enable the use of ANSI color codes.
 
 
 

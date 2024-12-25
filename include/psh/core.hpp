@@ -41,7 +41,7 @@
 // - PSH_ENABLE_ABORT_AT_MEMORY_ERROR: When a memory acquisition function fails, abort the program.
 // - PSH_ENABLE_LOGGING: Enable logging calls to execute.
 // - PSH_DEBUG: Enables all of the above debug checks.
-// - PSH_ENABLE_ANSI_COLORS: When logging, use ANSI color codes for pretty printing. This may not
+// - PSH_ENABLE_ANSI_COLOURS: When logging, use ANSI colour codes for pretty printing. This may not
 //   be desired if you're printing to a log file, hence the option is disabled by default.
 // -------------------------------------------------------------------------------------------------
 
@@ -92,9 +92,9 @@
 #    endif
 #endif
 
-// By default, disable the use of ANSI colors for logging.
-#if !defined(PSH_ENABLE_ANSI_COLORS) || !PSH_ENABLE_ANSI_COLORS
-#    define PSH_ENABLE_ANSI_COLORS 0
+// By default, disable the use of ANSI colours for logging.
+#if !defined(PSH_ENABLE_ANSI_COLOURS) || !PSH_ENABLE_ANSI_COLOURS
+#    define PSH_ENABLE_ANSI_COLOURS 0
 #endif
 
 // -------------------------------------------------------------------------------------------------
