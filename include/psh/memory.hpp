@@ -29,7 +29,7 @@
 
 namespace psh {
     // -------------------------------------------------------------------------------------------------
-    // CPU architecture query utilities.
+    // CPU architecture.
     // -------------------------------------------------------------------------------------------------
 
     psh_api psh_inline bool arch_is_little_endian() psh_no_except {
@@ -43,7 +43,7 @@ namespace psh {
     }
 
     // -------------------------------------------------------------------------------------------------
-    // Memory manipulation utilities.
+    // Virtual memory handling.
     //
     // TODO: add procedures for reserving/commiting memory separately.
     // -------------------------------------------------------------------------------------------------
@@ -59,27 +59,6 @@ namespace psh {
     /// Release and decommit all memory.
     psh_api void memory_virtual_free(u8* memory, usize size_bytes) psh_no_except;
 
-    /// Simple wrapper around memset that automatically deals with null values.
-    ///
-    /// Does nothing if ptr is a null pointer.
-    psh_api void memory_set(u8* memory, usize size_bytes, i32 fill) psh_no_except;
-
-    template <typename T>
-    psh_api psh_inline void zero_struct(T& s) psh_no_except {
-        memory_set(reinterpret_cast<u8*>(&s), sizeof(T), 0);
-    }
-
-    /// Simple wrapper around memcpy.
-    ///
-    /// This function will assert that the blocks of memory don't overlap, avoiding undefined
-    /// behaviour introduced by memcpy in this case.
-    psh_api void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except;
-
-    /// Simple wrapper around memmove.
-    ///
-    /// Does nothing if either dst or src are null pointers.
-    psh_api void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except;
-
     // -------------------------------------------------------------------------------------------------
     // Alignment utilities.
     // -------------------------------------------------------------------------------------------------
@@ -91,10 +70,10 @@ namespace psh {
     /// will be accounted when calculating the padding.
     ///
     /// Parameters:
-    ///     * ptr: The current memory address.
-    ///     * alignment: The alignment requirement for the new memory block.
-    ///     * header_size: The total size of the header associated to the new memory block.
-    ///     * header_alignment: The alignment required by the header.
+    ///     - ptr: The current memory address.
+    ///     - alignment: The alignment requirement for the new memory block.
+    ///     - header_size: The total size of the header associated to the new memory block.
+    ///     - header_alignment: The alignment required by the header.
     ///
     /// Return: The resulting padding with respect to ptr that should satisfy the alignment
     ///         requirements, as well as accommodating the associated header.
@@ -109,8 +88,8 @@ namespace psh {
     /// The alignment should always be a power of two.
     ///
     /// Parameters:
-    ///     * ptr: The starting address.
-    ///     * alignment: The alignment requirement.
+    ///     - ptr: The starting address.
+    ///     - alignment: The alignment requirement.
     ///
     /// Return: The next address, relative to ptr that satisfies the alignment requirement imposed
     ///         by alignment.
@@ -123,77 +102,13 @@ namespace psh {
     // Forward declaration.
     struct Arena;
 
-    /// Scratch arena, an automatic checkpoint manager for arena offsets.
-    ///
-    /// This allocator is used to save the state of the parent arena at creation time and
-    /// restore the parent arena offset state at destruction time.
-    ///
-    /// You can nest many scratch arenas throughout different lifetimes by creating scratch arenas
-    /// at distinct scopes.
-    ///
-    /// Scratch arenas shouldn't be passed to other functions, they should be used in a single scope.
-    ///
-    /// # Intended usage pattern
-    ///
-    /// f32 do_temp_work_and_restore_arena(Arena& arena) {
-    ///    ScratchArena s = arena.make_scratch(); // The arena will be restored at the end of the function.
-    ///
-    ///    DynArray<f32> arr{arena};
-    ///    arr.push(4.0f);
-    ///    arr.push(5.5f);
-    ///    arr.push(20.5f);
-    ///
-    ///    f32 sum = 0;
-    ///    for (f32 x : arr) sum += x;
-    ///
-    ///    return sum;
-    /// }
-    ///
-    /// i32* alloc_in_scratch_lifetime(Arena& arena, usize count) {
-    ///     return arena.alloc<i32>(count);
-    /// }
-    ///
-    /// int main() {
-    ///     Arena arena{...};
-    ///
-    ///     u8* x = arena.alloc<u8>(1024);  // arena has offset 1024.
-    ///     {
-    ///         ScratchArena sarena = arena.make_scratch();  // Record the offset 1024.
-    ///
-    ///         i32 y = arena.alloc<u8>(32);  // arena has an offset of 1024 + 4 * 32 = 1152.
-    ///
-    ///         // Record the offset 1152 into a new scratch arena, pass it to a function, which
-    ///         // will possibly allocate. When the function returns, arena will go back to the
-    ///         // 1152 offset (see do_temp_work_and_restore_arena).
-    ///         f32 result = do_temp_work_and_restore_arena(arena);
-    ///
-    ///         // Pass sarena to a function that will allocate 100 * 4 = 400 bits, bumping the
-    ///         // offset of arena to 1152 + 400 = 1552.
-    ///         i32* val = alloc_in_scratch_lifetime(arena, 100);
-    ///     }
-    ///     // arena goes back to having an offset of 1024.
-    ///
-    ///     return 0;
-    /// }
-    ///
-    struct psh_api ScratchArena {
-        Arena* arena;
-        usize  saved_offset;
-
-        psh_inline ScratchArena(Arena* parent) psh_no_except;
-        psh_inline ~ScratchArena() psh_no_except;
-
-        // @NOTE: Required when compiling as a DLL since the compiler will require all standard
-        //        member functions to be defined.
-        ScratchArena& operator=(ScratchArena&) = delete;
-    };
-
     /// Manually managed checkpoint for arenas.
     ///
     /// You can create a checkpoint with Arena::make_checkpoint and restore the arena to
     /// a given checkpoint via Arena::restore_checkpoint.
     struct psh_api ArenaCheckpoint {
-        usize saved_offset;
+        Arena* arena;
+        usize  saved_offset;
     };
 
     /// Arena allocator
@@ -204,76 +119,48 @@ namespace psh {
     /// @NOTE: - The arena does not own memory, thus it is not responsible for the freeing of it.
     ///        - All allocation procedures will zero-out the whole allocated block.
     struct psh_api Arena {
-        /// Not-owned block of memory.
         u8*   buf;
-        /// Capacity in bytes of the arena block of memory.
         usize capacity = 0;
-        /// The current offset to the free-space in the memory block.
         usize offset   = 0;
-
-        /// Initialize the arena with a given memory buffer and a capacity.
-        psh_inline void init(u8* buf_, usize capacity_) psh_no_except {
-            this->buf      = buf_;
-            this->capacity = (buf_ != nullptr) ? capacity_ : 0;
-        }
-
-        /// Allocate a new block of memory with a given alignment.
-        u8* alloc_align(usize size_bytes, u32 alignment) psh_no_except;
-
-        /// Reallocate an existing block of memory with a given alignment.
-        u8* realloc_align(u8* block, usize current_size_bytes, usize new_size_bytes, u32 alignment) psh_no_except;
-
-        /// Allocates a new block of memory.
-        ///
-        /// Parameters:
-        ///     * count: Number of entities of type T that should fit in the new block.
-        template <typename T>
-        psh_inline T* alloc(usize count) psh_no_except {
-            return reinterpret_cast<T*>(this->alloc_align(sizeof(T) * count, alignof(T)));
-        }
-
-        /// Reallocate a block of memory of a given type.
-        ///
-        /// Parameters:
-        ///     * block: Pointer to the start of the memory block to be resized.
-        ///     * new_count: Number of entities of type T that the new memory block should be
-        ///                  able to contain.
-        template <typename T>
-        psh_inline T* realloc(T* block, usize current_count, usize new_count) psh_no_except {
-            return reinterpret_cast<T*>(this->realloc_align(
-                reinterpret_cast<u8*>(block),
-                sizeof(T) * current_count,
-                sizeof(T) * new_count,
-                alignof(T)));
-        }
-
-        /// Reset the offset of the allocator.
-        psh_inline void clear() psh_no_except {
-            this->offset = 0;
-        }
-
-        /// Create a new scratch arena with the current offset state.
-        psh_inline ScratchArena make_scratch() psh_no_except {
-            return ScratchArena{this};
-        }
-
-        /// Create a restorable checkpoint for the arena. This is a more flexible alternative to the
-        /// ScratchArena construct since you can manually restore the arena, not relying in destructors.
-        psh_inline ArenaCheckpoint make_checkpoint() psh_no_except {
-            return ArenaCheckpoint{.saved_offset = this->offset};
-        }
-
-        /// Restore the arena state to a given checkpoint.
-        psh_inline void restore_checkpoint(ArenaCheckpoint& checkpoint) psh_no_except {
-            psh_assert_fmt(
-                checkpoint.saved_offset <= this->offset,
-                "Invalid checkpoint. Cannot restore the arena to an offset (%zu) bigger than the current (%zu).",
-                checkpoint.saved_offset,
-                this->offset);
-
-            this->offset = checkpoint.saved_offset;
-        }
     };
+
+    // @TODO: Should we do assertions for null arenas or simply do nothing and not crash?
+
+    /// Initialize the arena with a given memory buffer and a capacity.
+    psh_inline void arena_init(Arena* arena, u8* buf, usize capacity) psh_no_except {
+        psh_assert_not_null(arena);
+        arena->buf      = buf;
+        arena->capacity = (buf != nullptr) ? capacity : 0;
+    }
+
+    /// Reset the offset of the allocator.
+    psh_inline void arena_clear(Arena* arena) psh_no_except {
+        psh_assert_not_null(arena);
+        arena->offset = 0;
+    }
+
+    /// Create a restorable checkpoint for the arena. This is a more flexible alternative to the
+    /// ScratchArena construct since you can manually restore the arena, not relying in destructors.
+    psh_inline ArenaCheckpoint make_arena_checkpoint(Arena* arena) psh_no_except {
+        ArenaCheckpoint checkpoint = {};
+        if (arena != nullptr) {
+            checkpoint.arena        = arena;
+            checkpoint.saved_offset = arena->offset;
+        }
+        return checkpoint;
+    }
+
+    /// Restore the arena state to a given checkpoint.
+    psh_inline void arena_checkpoint_restore(ArenaCheckpoint checkpoint) psh_no_except {
+        psh_assert_not_null(checkpoint.arena);
+        psh_assert_fmt(
+            checkpoint.saved_offset <= checkpoint.arena->offset,
+            "Invalid checkpoint. Cannot restore the arena to an offset (%zu) bigger than the current (%zu).",
+            checkpoint.saved_offset,
+            checkpoint.arena->offset);
+
+        checkpoint.arena->offset = checkpoint.saved_offset;
+    }
 
     /// Make an arena that owns its memory.
     ///
@@ -281,7 +168,7 @@ namespace psh {
     /// with free_owned_arena.
     psh_inline Arena make_owned_arena(usize capacity) psh_no_except {
         Arena arena;
-        arena.init(psh::memory_virtual_alloc(capacity), capacity);
+        arena_init(&arena, memory_virtual_alloc(capacity), capacity);
         return arena;
     }
 
@@ -289,22 +176,40 @@ namespace psh {
     ///
     /// This function should only be called for arenas that where created by make_owned_arena.
     psh_inline void free_owned_arena(Arena& arena) psh_no_except {
-        psh::memory_virtual_free(arena.buf, arena.capacity);
+        memory_virtual_free(arena.buf, arena.capacity);
         arena.capacity = 0;
     }
 
-    ScratchArena::ScratchArena(Arena* parent) psh_no_except {
-        if (psh_likely(parent != nullptr)) {
-            this->arena        = parent;
-            this->saved_offset = parent->offset;
-        }
-    }
+    /// Scratch arena, an automatic checkpoint manager for arena offsets.
+    ///
+    /// This allocator is used to save the state of the parent arena at creation time and
+    /// restore the parent arena offset state at destruction time.
+    ///
+    /// You can nest many scratch arenas throughout different lifetimes by creating scratch arenas
+    /// at distinct scopes.
+    ///
+    /// Scratch arenas shouldn't be passed to other functions, they should be used in a single scope.
+    struct psh_api ScratchArena {
+        Arena* arena = nullptr;
+        usize  saved_offset;
 
-    ScratchArena::~ScratchArena() psh_no_except {
-        if (psh_likely(this->arena != nullptr)) {
-            this->arena->offset = this->saved_offset;
+        psh_inline ScratchArena(Arena* arena_) psh_no_except {
+            if (psh_likely(arena_ != nullptr)) {
+                this->arena        = arena_;
+                this->saved_offset = arena_->offset;
+            }
         }
-    }
+
+        psh_inline ~ScratchArena() psh_no_except {
+            if (psh_likely(this->arena != nullptr)) {
+                this->arena->offset = this->saved_offset;
+            }
+        }
+
+        // @NOTE: Required when compiling as a DLL since the compiler will require all standard
+        //        member functions to be defined.
+        ScratchArena& operator=(ScratchArena&) = delete;
+    };
 
     // -------------------------------------------------------------------------------------------------
     // Stack memory allocator.
@@ -322,17 +227,15 @@ namespace psh {
     ///                                  |----padding----|
     ///
     /// where "header" represents this current header, and "memory" represents the memory block
-    /// associated to this header.
+    /// associated to this header. The composition of the structure is given by:
+    /// - Padding, in bytes, needed for the alignment of the memory block associated with the
+    ///   header. The padding accounts for both the size of the header and the needed alignment.
+    /// - The capacity, in bytes, of the memory block associated with this header.
+    /// - Pointer offset, relative to the stack allocator memory  block, to the start of the
+    ///   memory address of the last allocated block (after its header).
     struct psh_api StackHeader {
-        /// Padding, in bytes, needed for the alignment of the memory block associated with the
-        /// header. The padding accounts for both the size of the header and the needed alignment.
         usize padding;
-
-        /// The capacity, in bytes, of the memory block associated with this header.
         usize capacity;
-
-        /// Pointer offset, relative to the stack allocator memory  block, to the start of the
-        /// memory address of the last allocated block (after its header).
         usize previous_offset;
     };
 
@@ -377,40 +280,8 @@ namespace psh {
             this->capacity = (buf_ != nullptr) ? capacity_ : 0;
         }
 
-        /// Allocate a new block of memory with a given alignment.
-        u8* alloc_align(usize size_bytes, u32 alignment) psh_no_except;
-
-        /// Reallocate an existing block of memory with a given alignment.
-        u8* realloc_align(u8* block, usize new_size_bytes, u32 alignment) psh_no_except;
-
-        /// Allocates a new block of memory.
-        ///
-        /// Parameters:
-        ///     * count: Number of entities of type T that should fit in the new block.
-        template <typename T>
-        psh_inline T* alloc(usize count) psh_no_except {
-            return reinterpret_cast<T*>(this->alloc_align(sizeof(T) * count, alignof(T)));
-        }
-
-        /// Reallocate a block of memory of a given type.
-        ///
-        /// Parameters:
-        ///     * block: Pointer to the start of the memory block to be resized.
-        ///     * new_count: Number of entities of type T that the new memory block should be
-        ///                  able to contain.
-        ///
-        /// Note: If the new count is zero, we proceed to clean the whole stack up until the given
-        ///       block.
-        template <typename T>
-        psh_inline T* realloc(T* block, usize new_count) psh_no_except {
-            return reinterpret_cast<T*>(this->realloc_align(block, sizeof(T) * new_count));
-        }
-
-        /// Gets the total size, in bytes, of the memory used by the allocator.
-        usize used() const psh_no_except;
-
         /// Gets a pointer to the memory of the last allocated memory block of the stack.
-        u8* top() const psh_no_except;
+        u8* top() psh_no_except;
 
         /// Gets a pointer to the header associated to the top memory block of the stack.
         StackHeader const* top_header() const psh_no_except;
@@ -438,12 +309,12 @@ namespace psh {
         /// Tries to reset the office to the start of the header of the block pointed by ptr.
         ///
         /// Parameters:
-        ///     * block: Pointer to the memory block that should be freed (all blocks above ptr
+        ///     - block: Pointer to the memory block that should be freed (all blocks above ptr
         ///              will also be freed).
         ///
         /// Note:
-        ///     * If block is null, we simply return false.
-        ///     * If block doesn't correspond to a correct memory block we'll never be able to
+        ///     - If block is null, we simply return false.
+        ///     - If block doesn't correspond to a correct memory block we'll never be able to
         ///       match its location and therefore we'll end up clearing the entirety of the stack.
         ///       If this is your goal, prefer using StackAlloc::clear() instead.
         Status clear_at(u8 const* block) psh_no_except;
@@ -463,6 +334,7 @@ namespace psh {
     // - Resizing.
     // - Reserving memory without commiting.
     // - Commiting memory manually.
+    // - More memory statistics for debugging purposes.
 
     /// A stack allocator manager that can be used as the central memory resource of an application.
     struct psh_api MemoryManager {
@@ -475,25 +347,6 @@ namespace psh {
         /// Free all acquired memory.
         void destroy() psh_no_except;
 
-        /// Make a new arena allocator with a given size.
-        Arena make_arena(usize capacity) psh_no_except;
-
-        /// Request a region of memory of a given type T.
-        ///
-        /// Parameters:
-        ///     * count: Number of entities of type T that should fit in the requested memory
-        ///              region.
-        template <typename T>
-        T* alloc(usize count) psh_no_except;
-
-        /// Reallocate a region of memory created by the manager.
-        ///
-        /// Parameters:
-        ///     * block: Pointer to the memory block that should be reallocated.
-        ///     * new_count: The new length that the memory block should have.
-        template <typename T>
-        T* realloc(T* block, usize new_length) psh_no_except;
-
         /// Try to free the last allocated block of memory.
         Status pop() psh_no_except;
 
@@ -503,7 +356,7 @@ namespace psh {
         ///       the stack will be *completely cleaned*, beware!
         ///
         /// Parameters:
-        ///     * block: Pointer to the memory block that should be freed (all blocks above
+        ///     - block: Pointer to the memory block that should be freed (all blocks above
         ///              the given one will also be freed). If this pointer is null, outside of
         ///              the stack allocator buffer, or already free, the program return false and
         ///              won't panic.
@@ -517,21 +370,107 @@ namespace psh {
         MemoryManager& operator=(MemoryManager&) = delete;
     };
 
-    template <typename T>
-    T* MemoryManager::alloc(usize length) psh_no_except {
-        T* const new_mem = this->allocator.alloc<T>(length);
-        if (new_mem != nullptr) {
-            ++this->allocation_count;
-        }
-        return new_mem;
+    // -------------------------------------------------------------------------------------------------
+    // Memory manipulation.
+    // -------------------------------------------------------------------------------------------------
+
+    /// Query the current size in bytes of a given container.
+    template <typename Container, typename T = Container::ValueType>
+    psh_api usize size_bytes(Container const& c) psh_no_except {
+        psh_static_assert_valid_const_container_type(Container, c);
+        return sizeof(T) * c.count;
     }
 
+    /// Simple wrapper around memset that automatically deals with null values.
+    ///
+    /// Does nothing if ptr is a null pointer.
+    psh_api void memory_set(u8* memory, usize size_bytes, i32 fill) psh_no_except;
+
+    /// Zero-out all of the members of a given structure.
     template <typename T>
-    T* MemoryManager::realloc(T* block, usize new_length) psh_no_except {
-        T* const new_mem = this->allocator.realloc<T>(block, new_length);
-        if (new_mem != block) {
-            this->allocation_count += 1;
+    psh_api psh_inline void zero_struct(T& s) psh_no_except {
+        memory_set(reinterpret_cast<u8*>(&s), sizeof(T), 0);
+    }
+
+    /// Simple wrapper around memcpy.
+    ///
+    /// This function will assert that the blocks of memory don't overlap, avoiding undefined
+    /// behaviour introduced by memcpy in this case.
+    psh_api void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except;
+
+    /// Simple wrapper around memmove.
+    ///
+    /// Does nothing if either dst or src are null pointers.
+    psh_api void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except;
+
+    /// Allocate a new block of memory with a given alignment.
+    u8* memory_alloc_align(Arena* arena, usize size_bytes, u32 alignment) psh_no_except;
+    u8* memory_alloc_align(Stack* stack, usize size_bytes, u32 alignment) psh_no_except;
+
+    /// Allocates a new block of memory.
+    ///
+    /// Parameters:
+    ///     - count: Number of entities of type T that should fit in the new block.
+    template <typename T>
+    psh_inline T* memory_alloc(Arena* arena, usize count) psh_no_except {
+        return reinterpret_cast<T*>(memory_alloc_align(arena, sizeof(T) * count, alignof(T)));
+    }
+    template <typename T>
+    psh_inline T* memory_alloc(Stack* stack, usize count) psh_no_except {
+        return reinterpret_cast<T*>(memory_alloc_align(stack, sizeof(T) * count, alignof(T)));
+    }
+    template <typename T>
+    psh_inline T* memory_alloc(MemoryManager* memory_manager, usize count) psh_no_except {
+        if (memory_manager == nullptr) {
+            return nullptr;
         }
-        return new_mem;
+
+        T* const new_block = memory_alloc<T>(&memory_manager->allocator, count);
+        memory_manager->allocation_count += static_cast<usize>(new_block != nullptr);
+        return new_block;
+    }
+
+    /// Reallocate an existing block of memory with a given alignment.
+    u8* memory_realloc_align(
+        Arena* arena,
+        u8*    block,
+        usize  current_size_bytes,
+        usize  new_size_bytes,
+        u32    alignment) psh_no_except;
+    u8* memory_realloc_align(
+        Stack* stack,
+        u8*    block,
+        usize  new_size_bytes,
+        u32    alignment) psh_no_except;
+
+    /// Reallocate a block of memory of a given type.
+    ///
+    /// Parameters:
+    ///     - block: Pointer to the start of the memory block to be resized.
+    ///     - current_count: The current number of entities of type T that fits in the block.
+    ///     - new_count: Number of entities of type T that the new memory block should be
+    ///                  able to contain.
+    template <typename T>
+    psh_inline T* memory_realloc(Arena* arena, T* block, usize current_count, usize new_count) psh_no_except {
+        return reinterpret_cast<T*>(memory_realloc_align(
+            arena,
+            reinterpret_cast<u8*>(block),
+            sizeof(T) * current_count,
+            sizeof(T) * new_count,
+            alignof(T)));
+    }
+    template <typename T>
+    psh_inline T* memory_realloc(Stack* stack, T* block, usize new_count) psh_no_except {
+        return reinterpret_cast<T*>(memory_realloc_align(stack, block, sizeof(T) * new_count));
+    }
+    template <typename T>
+    psh_inline T* memory_realloc(MemoryManager* memory_manager, T* block, usize new_count) psh_no_except {
+        if (memory_manager == nullptr) {
+            return nullptr;
+        }
+
+        T* const new_block = memory_realloc<T>(&memory_manager->allocator, block, new_count);
+        memory_manager->allocation_count += static_cast<usize>(new_block != block);
+        return new_block;
     }
 }  // namespace psh

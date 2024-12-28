@@ -53,7 +53,7 @@ namespace psh {
             return this->has_value ? this->value : default_value;
         }
 
-        T const& demand(strptr msg = "") const psh_no_except {
+        T const& demand(cstring msg = "") const psh_no_except {
             psh_assert_msg(this->has_value, msg);
             return this->value;
         }

@@ -24,46 +24,16 @@
 
 #pragma once
 
+#include <psh/assert.hpp>
 #include <psh/core.hpp>
-#include <psh/fat_ptr.hpp>
 
 namespace psh {
     /// Buffer with a compile-time known size.
     template <typename T, usize count_>
     struct psh_api Buffer {
-        T buf[count_] = {};
+        T                      buf[count_] = {};
+        static constexpr usize count       = count_;
 
-        constexpr usize count() const psh_no_except {
-            return count_;
-        }
-
-        constexpr usize size_bytes() const psh_no_except {
-            return sizeof(T) * count_;
-        }
-
-        constexpr T& operator[](usize idx) psh_no_except {
-            psh_assert_bounds_check(idx, count_, "Index %zu out of bounds for Buffer of size %zu.", idx, count_);
-            return this->buf[idx];
-        }
-
-        constexpr T const& operator[](usize idx) const psh_no_except {
-            psh_assert_bounds_check(idx, count_, "Index %zu out of bounds for Buffer of size %zu.", idx, count_);
-            return this->buf[idx];
-        }
-
-        constexpr T*       begin() psh_no_except { return this->buf; }
-        constexpr T*       end() psh_no_except { return this->buf + count_; }
-        constexpr T const* begin() const psh_no_except { return static_cast<T const*>(this->buf); }
-        constexpr T const* end() const psh_no_except { return static_cast<T const*>(this->buf) + count_; }
+        psh_impl_generate_constexpr_container_boilerplate(T, this->buf, count_)
     };
-
-    template <typename T, usize count>
-    constexpr FatPtr<T> make_fat_ptr(Buffer<T, count>& b) psh_no_except {
-        return FatPtr<T>{b.buf, count};
-    }
-
-    template <typename T, usize count>
-    constexpr FatPtr<T const> make_const_fat_ptr(Buffer<T, count> const& b) psh_no_except {
-        return FatPtr<T const>{reinterpret_cast<T const*>(b.buf), count};
-    }
 }  // namespace psh

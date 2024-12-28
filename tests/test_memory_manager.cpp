@@ -60,7 +60,7 @@ namespace psh::test::memory_manager {
 
         // Acquire a block of memory and write to it.
         usize block_length = 60;
-        u64*  block        = memory_manager.alloc<u64>(block_length);
+        u64*  block        = memory_alloc<u64>(&memory_manager, block_length);
         psh_assert_not_null(block);
 
         // Write to the block.
@@ -109,16 +109,17 @@ namespace psh::test::memory_manager {
         //
         // where "hdr" stands for the associated StackAllocHeader instance.
 
-        Arena arena{memory_manager.alloc<u8>(arena_data_size), arena_data_size};
+        Arena arena;
+        arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_data_size), arena_data_size);
         usize used = memory_manager.allocator.offset;
         psh_assert(used == expected_arena);
-        psh_assert(memory_manager.allocation_count == static_cast<usize>(1));
+        psh_assert(memory_manager.allocation_count == 1);
 
-        strptr a = memory_manager.alloc<char>(40);
+        cstring a = memory_alloc<char>(&memory_manager, 40);
         psh_assert_not_null(a);
         usize a_size = no_wrap_sub(memory_manager.allocator.offset, used);
         used         = memory_manager.allocator.offset;
-        psh_assert(memory_manager.allocation_count == static_cast<usize>(2));
+        psh_assert(memory_manager.allocation_count == 2);
 
         DynArray<usize> b{&arena, 33};
         psh_discard_value(b);
@@ -127,13 +128,13 @@ namespace psh::test::memory_manager {
         psh_assert(memory_manager.allocator.offset == used);
         // Expect no alignment from first allocation
         psh_assert(arena.offset == b_size);
-        psh_assert(memory_manager.allocation_count == static_cast<usize>(2));
+        psh_assert(memory_manager.allocation_count == 2);
 
-        strptr c = memory_manager.alloc<char>(34);
+        cstring c = memory_alloc<char>(&memory_manager, 34);
         psh_assert_not_null(c);
         usize c_size = no_wrap_sub(memory_manager.allocator.offset, used);
         used         = memory_manager.allocator.offset;
-        psh_assert(memory_manager.allocation_count == static_cast<usize>(3));
+        psh_assert(memory_manager.allocation_count == 3);
 
         DynArray<f32> d{&arena, 45};
         psh_discard_value(d);
@@ -142,24 +143,24 @@ namespace psh::test::memory_manager {
         psh_assert(memory_manager.allocator.offset == used);
         // Alignment may have happened
         psh_assert(arena.offset >= b_size + d_size);
-        psh_assert(memory_manager.allocation_count == static_cast<usize>(3));
+        psh_assert(memory_manager.allocation_count == 3);
 
-        strptr e = memory_manager.alloc<char>(90);
+        cstring e = memory_alloc<char>(&memory_manager, 90);
         psh_assert_not_null(e);
         usize e_size = no_wrap_sub(memory_manager.allocator.offset, used);
         used         = memory_manager.allocator.offset;
-        psh_assert(memory_manager.allocation_count == static_cast<usize>(4));
+        psh_assert(memory_manager.allocation_count == 4);
 
-        strptr f = memory_manager.alloc<char>(55);
+        cstring f = memory_alloc<char>(&memory_manager, 55);
         psh_assert_not_null(f);
         usize f_size = no_wrap_sub(memory_manager.allocator.offset, used);
         used         = memory_manager.allocator.offset;
-        psh_assert(memory_manager.allocation_count == static_cast<usize>(5));
+        psh_assert(memory_manager.allocation_count == 5);
 
-        u64* g = memory_manager.alloc<u64>(72);
+        u64* g = memory_alloc<u64>(&memory_manager, 72);
         psh_assert_not_null(g);
         usize g_size = no_wrap_sub(memory_manager.allocator.offset, used);
-        psh_assert(memory_manager.allocation_count == static_cast<usize>(6));
+        psh_assert(memory_manager.allocation_count == 6);
 
         psh_assert(memory_manager.allocator.offset >= static_cast<i64>(expected_total_at_least));
 

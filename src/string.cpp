@@ -29,7 +29,7 @@
 #include <psh/option.hpp>
 
 namespace psh {
-    usize str_length(strptr str) psh_no_except {
+    usize cstring_length(cstring str) psh_no_except {
         usize length = 0;
         if (psh_likely(str != nullptr)) {
             length = strlen(str);
@@ -37,37 +37,37 @@ namespace psh {
         return length;
     }
 
-    StrCmpResult str_cmp(strptr lhs, strptr rhs) psh_no_except {
-        i32          cmp = strcmp(lhs, rhs);
-        StrCmpResult result;
+    StringCompareResult string_compare(cstring lhs, cstring rhs) psh_no_except {
+        i32                 cmp = strcmp(lhs, rhs);
+        StringCompareResult result;
         if (cmp == 0) {
-            result = StrCmpResult::EQUAL;
+            result = StringCompareResult::EQUAL;
         } else if (cmp < 0) {
-            result = StrCmpResult::LESS_THAN;
+            result = StringCompareResult::LESS_THAN;
         } else {
-            result = StrCmpResult::GREATER_THAN;
+            result = StringCompareResult::GREATER_THAN;
         }
         return result;
     }
 
-    StrCmpResult str_cmp(StringView lhs, StringView rhs) psh_no_except {
-        i32          cmp = memcmp(lhs.buf, rhs.buf, psh_min_value(lhs.count, rhs.count));
-        StrCmpResult result;
+    StringCompareResult string_compare(StringView lhs, StringView rhs) psh_no_except {
+        i32                 cmp = memcmp(lhs.buf, rhs.buf, psh_min_value(lhs.count, rhs.count));
+        StringCompareResult result;
         if (cmp == 0) {
-            result = StrCmpResult::EQUAL;
+            result = StringCompareResult::EQUAL;
         } else if (cmp < 0) {
-            result = StrCmpResult::LESS_THAN;
+            result = StringCompareResult::LESS_THAN;
         } else {
-            result = StrCmpResult::GREATER_THAN;
+            result = StringCompareResult::GREATER_THAN;
         }
         return result;
     }
 
-    bool str_equal(strptr lhs, strptr rhs) psh_no_except {
+    bool string_equal(cstring lhs, cstring rhs) psh_no_except {
         return (strcmp(lhs, rhs) == 0);
     }
 
-    bool str_equal(StringView lhs, StringView rhs) psh_no_except {
+    bool string_equal(StringView lhs, StringView rhs) psh_no_except {
         bool  are_equal = true;
         usize length    = lhs.count;
 

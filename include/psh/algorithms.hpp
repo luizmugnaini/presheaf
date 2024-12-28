@@ -45,10 +45,10 @@ namespace psh {
 
     /// Check if a range given by a fat pointer contains a given match element.
     template <typename T>
-    bool contains(FatPtr<T const> container, T match) psh_no_except {
+    bool contains(FatPtr<T const> fptr, T match) psh_no_except {
         bool found = false;
-        for (auto const& m : container) {
-            if (match == m) {
+        for (usize idx = 0; idx < fptr.count; ++idx) {
+            if (match == fptr[idx]) {
                 found = true;
                 break;
             }
@@ -58,12 +58,12 @@ namespace psh {
 
     /// Check if a range given by a fat pointer contains a given match element.
     template <typename T>
-    bool contains(FatPtr<T const> container, T match, MatchFn<T>* match_fn) psh_no_except {
+    bool contains(FatPtr<T const> fptr, T match, MatchFn<T>* match_fn) psh_no_except {
         psh_assert_not_null(match_fn);
 
         bool found = false;
-        for (auto const& m : container) {
-            if (match_fn(m, match)) {
+        for (usize idx = 0; idx < fptr.count; ++idx) {
+            if (match_fn(fptr[idx], match)) {
                 found = true;
                 break;
             }
@@ -163,7 +163,7 @@ namespace psh {
     template <typename T>
     void quick_sort_range(FatPtr<T> data, usize low, usize high) psh_no_except {
         if (high <= low + QUICK_SORT_CUTOFF_TO_INSERTION_SORT) {
-            insertion_sort(data.slice(low, (high + 1u) - low));
+            insertion_sort(make_slice(data, low, (high + 1u) - low));
             return;
         }
 
@@ -206,8 +206,8 @@ namespace psh {
     /// will be slower.
     template <typename T>
     void fill(FatPtr<T> fptr, T value) psh_no_except {
-        for (T& elem : fptr) {
-            elem = value;
+        for (usize idx = 0; idx < fptr.count; ++idx) {
+            fptr[idx] = value;
         }
     }
 }  // namespace psh

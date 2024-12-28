@@ -1,6 +1,5 @@
 TODO
 
-- Unordered/ordered container element removal.
 - Implement a hash map.
 - Threading abstraction for Windows/pthreads.
 - Tests for `psh/stream.h`.

@@ -103,9 +103,7 @@ namespace psh {
 
         /// Check if the components of the vector are inside the floating point zero range.
         psh_inline bool is_zero(f32 zero_range) const psh_no_except {
-            return approx_equal(x, 0.0f, zero_range) &&
-                   approx_equal(y, 0.0f, zero_range) &&
-                   approx_equal(z, 0.0f, zero_range);
+            return approx_equal(x, 0.0f, zero_range) && approx_equal(y, 0.0f, zero_range) && approx_equal(z, 0.0f, zero_range);
         }
 
         /// Get the normalised vector.
@@ -351,9 +349,9 @@ namespace psh {
         /// Create the general Tait-Bryan intrinsic rotation matrix.
         ///
         /// Parameters: All angle parameters are assumed to be in radians.
-        ///     * rot_x: The angle to rotate about the x axis (aka roll angle).
-        ///     * rot_y: The angle to rotate about the y axis (aka pitch angle).
-        ///     * rot_z: The angle to rotate about the z axis (aka yaw angle).
+        ///     - rot_x: The angle to rotate about the x axis (aka roll angle).
+        ///     - rot_y: The angle to rotate about the y axis (aka pitch angle).
+        ///     - rot_z: The angle to rotate about the z axis (aka yaw angle).
         static Mat3 rotation_tb(f32 rot_x, f32 rot_y, f32 rot_z) psh_no_except;
 
         // @TODO: rotation with Euler angles.

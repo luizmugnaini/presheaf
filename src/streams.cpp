@@ -53,7 +53,7 @@ namespace psh {
             APPEND,
             FLAG_COUNT,
         };
-        constexpr strptr OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(OpenFileFlag::FLAG_COUNT)] = {
+        constexpr cstring OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(OpenFileFlag::FLAG_COUNT)] = {
             "r",    // ReadFileFlag::READ_TEXT
             "r+",   // ReadFileFlag::READ_TEXT_EXTENDED
             "rb",   // ReadFileFlag::READ_BIN
@@ -64,17 +64,13 @@ namespace psh {
         };
 
         constexpr bool has_read_permission(OpenFileFlag flag) psh_no_except {
-            return (flag == OpenFileFlag::READ_TEXT) ||
-                   (flag == OpenFileFlag::READ_TEXT_EXTENDED) ||
-                   (flag == OpenFileFlag::READ_BIN) ||
-                   (flag == OpenFileFlag::READ_BIN_EXTENDED) ||
-                   (flag == OpenFileFlag::WRITE_EXTENDED);
+            return (flag == OpenFileFlag::READ_TEXT) || (flag == OpenFileFlag::READ_TEXT_EXTENDED) || (flag == OpenFileFlag::READ_BIN) || (flag == OpenFileFlag::READ_BIN_EXTENDED) || (flag == OpenFileFlag::WRITE_EXTENDED);
         }
     }  // namespace impl::streams
 
-    FileReadResult read_file(Arena* arena, strptr path, ReadFileFlag flag) psh_no_except {
-        strptr mode = impl::streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<u32>(flag)];
-        FILE*  fhandle;
+    FileReadResult read_file(Arena* arena, cstring path, ReadFileFlag flag) psh_no_except {
+        cstring mode = impl::streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<u32>(flag)];
+        FILE*   fhandle;
 
 #if defined(PSH_OS_WINDOWS)
         fopen_s(&fhandle, path, mode);
@@ -104,9 +100,10 @@ namespace psh {
         }
 
         psh_assert_not_null(arena);
-        ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
+        ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
 
-        Array<u8> content{arena, size};
+        Array<u8> content;
+        psh::array_init(&content, arena, size);
 
         usize read_count = fread(content.buf, sizeof(u8), content.count, fhandle);
         psh_discard_value(read_count);  // @TODO: Maybe we should check this.
@@ -114,7 +111,7 @@ namespace psh {
         if (psh_unlikely(ferror(fhandle) != 0)) {
             perror("Couldn't read file.\n");
 
-            arena->restore_checkpoint(arena_checkpoint);
+            arena_checkpoint_restore(arena_checkpoint);
             return FileReadResult{.status = FileStatus::FAILED_TO_READ};
         }
 
@@ -130,7 +127,7 @@ namespace psh {
     }
 
     String read_stdin(Arena* arena, u32 initial_buf_size, u32 read_chunk_size) psh_no_except {
-        ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
+        ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
 
         String content{arena, initial_buf_size};
 
@@ -139,7 +136,7 @@ namespace psh {
         if (handle_stdin == INVALID_HANDLE_VALUE) {
             psh_log_error("Unable to acquire the handle to the stdin stream.");
 
-            arena->restore_checkpoint(arena_checkpoint);
+            arena_checkpoint_restore(arena_checkpoint);
             return {};
         }
 
@@ -154,7 +151,7 @@ namespace psh {
             if (psh_unlikely(!success)) {
                 psh_log_error("Unable to read from the stdin stream.");
 
-                arena->restore_checkpoint(arena_checkpoint);
+                arena_checkpoint_restore(arena_checkpoint);
                 return {};
             }
 
@@ -173,7 +170,7 @@ namespace psh {
             if (psh_unlikely(bytes_read == -1)) {
                 psh_log_error("Unable to read from the stdin stream.");
 
-                arena->restore_checkpoint(arena_checkpoint);
+                arena_checkpoint_restore(arena_checkpoint);
                 return {};
             }
 
@@ -193,9 +190,9 @@ namespace psh {
         return content;
     }
 
-    String absolute_path(Arena* arena, strptr file_path) psh_no_except {
+    String absolute_path(Arena* arena, cstring file_path) psh_no_except {
         psh_assert_not_null(arena);
-        ArenaCheckpoint arena_checkpoint = arena->make_checkpoint();
+        ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
 
         String abs_path{arena, PSH_IMPL_PATH_MAX_CHAR_COUNT};
 
@@ -207,7 +204,7 @@ namespace psh {
                 file_path,
                 GetLastError());
 
-            arena->restore_checkpoint(arena_checkpoint);
+            arena_checkpoint_restore(arena_checkpoint);
             return {};
         }
 #else
@@ -216,7 +213,7 @@ namespace psh {
             psh_log_error_fmt("Unable to obtain the full path of %s due to the error:", file_path);
             perror(nullptr);
 
-            arena->restore_checkpoint(arena_checkpoint);
+            arena_checkpoint_restore(arena_checkpoint);
             return {};
         }
 #endif

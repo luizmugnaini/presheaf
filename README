@@ -80,6 +80,8 @@ The following #define macros can be used to tweak the behaviour of the library a
 
 - PSH_ENABLE_ASSERTIONS: Enable assertion calls. Many debug checks depend on this option being enabled.
 - PSH_ENABLE_ASSERT_NOT_NULL: Assert that a function argument isn't null when it shouldn't be.
+- PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE: Check at compile time if template based functions have
+  arguments satisfying the procedure assumptions.
 - PSH_ENABLE_ABORT_AT_MEMORY_ERROR: Aborts the program at any memory (re)allocation errors.
 - PSH_ENABLE_CHECKED_POINTER_ARITHMETIC: Check if pointers are null before applying offsets to it.
 - PSH_ENABLE_BOUNDS_CHECK: Enable bounds-checked index-based memory access.

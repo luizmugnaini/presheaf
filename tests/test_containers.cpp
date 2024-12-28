@@ -28,13 +28,17 @@
 #include <psh/memory.hpp>
 #include "utils.hpp"
 
-namespace psh::test::dynarray {
+namespace psh::test::containers {
     struct Foo {
         i32 bar;
     };
 
-    psh_internal void push_elements(MemoryManager& memory_manager) {
-        Arena arena = memory_manager.make_arena(sizeof(i32) * 1024);
+    psh_internal void dynarray_push_elements(MemoryManager& memory_manager) {
+        Arena arena;
+        {
+            usize arena_capacity = sizeof(i32) * 1024;
+            arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
+        }
 
         DynArray<i32> v{&arena};
 
@@ -50,8 +54,12 @@ namespace psh::test::dynarray {
         report_test_successful();
     }
 
-    psh_internal void count_and_capacity(MemoryManager& memory_manager) {
-        Arena arena = memory_manager.make_arena(sizeof(Foo) * 100);
+    psh_internal void dynarray_count_and_capacity(MemoryManager& memory_manager) {
+        Arena arena;
+        {
+            usize arena_capacity = sizeof(Foo) * 100;
+            arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
+        }
 
         DynArray<Foo> v{&arena};
         psh_assert(v.push(Foo{0}));
@@ -77,8 +85,12 @@ namespace psh::test::dynarray {
         report_test_successful();
     }
 
-    psh_internal void peek_and_pop(MemoryManager& memory_manager) {
-        Arena arena = memory_manager.make_arena(sizeof(i32) * 3);
+    psh_internal void dynarray_peek_and_pop(MemoryManager& memory_manager) {
+        Arena arena;
+        {
+            usize arena_capacity = sizeof(i32) * 3;
+            arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
+        }
 
         DynArray<i32> v{&arena, 3};
         {
@@ -114,8 +126,12 @@ namespace psh::test::dynarray {
         report_test_successful();
     }
 
-    psh_internal void remove(MemoryManager& memory_manager) {
-        Arena arena = memory_manager.make_arena(sizeof(i32) * 5);
+    psh_internal void dynarray_remove(MemoryManager& memory_manager) {
+        Arena arena;
+        {
+            usize arena_capacity = sizeof(i32) * 5;
+            arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
+        }
 
         DynArray<i32> v{&arena, 5};
 
@@ -139,7 +155,7 @@ namespace psh::test::dynarray {
 
         // Remove at index 1.
         {
-            psh_assert(v.remove(1));
+            psh_assert(v.ordered_remove(1));
             psh_assert(v.count == 4);
             psh_assert(v[0] == 4);
             psh_assert(v[1] == 8);
@@ -149,7 +165,7 @@ namespace psh::test::dynarray {
 
         // Remove at index 2.
         {
-            psh_assert(v.remove(2));
+            psh_assert(v.ordered_remove(2));
             psh_assert(v.count == 3);
             psh_assert(v[0] == 4);
             psh_assert(v[1] == 8);
@@ -158,7 +174,7 @@ namespace psh::test::dynarray {
 
         // Remove at index 0.
         {
-            psh_assert(v.remove(0));
+            psh_assert(v.ordered_remove(0));
             psh_assert(v.count == 2);
             psh_assert(v[0] == 8);
             psh_assert(v[1] == 55);
@@ -166,14 +182,14 @@ namespace psh::test::dynarray {
 
         // Remove at index 1.
         {
-            psh_assert(v.remove(1));
+            psh_assert(v.ordered_remove(1));
             psh_assert(v.count == 1);
             psh_assert(v[0] == 8);
         }
 
         // Remove at index 0.
         {
-            psh_assert(v.remove(0));
+            psh_assert(v.ordered_remove(0));
             psh_assert(v.count == 0);
         }
 
@@ -181,8 +197,12 @@ namespace psh::test::dynarray {
         report_test_successful();
     }
 
-    psh_internal void clear(MemoryManager& memory_manager) {
-        Arena arena = memory_manager.make_arena(sizeof(f32) * 4);
+    psh_internal void dynarray_clear(MemoryManager& memory_manager) {
+        Arena arena;
+        {
+            usize arena_capacity = sizeof(f32) * 4;
+            arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
+        }
 
         DynArray<f32> v{&arena, 4};
         {
@@ -204,17 +224,17 @@ namespace psh::test::dynarray {
         MemoryManager memory_manager;
         memory_manager.init(10240);
 
-        push_elements(memory_manager);
-        count_and_capacity(memory_manager);
-        peek_and_pop(memory_manager);
-        remove(memory_manager);
-        clear(memory_manager);
+        dynarray_push_elements(memory_manager);
+        dynarray_count_and_capacity(memory_manager);
+        dynarray_peek_and_pop(memory_manager);
+        dynarray_remove(memory_manager);
+        dynarray_clear(memory_manager);
     }
-}  // namespace psh::test::dynarray
+}  // namespace psh::test::containers
 
 #if !defined(PSH_TEST_NOMAIN)
 int main() {
-    psh::test::dynarray::run_all();
+    psh::test::containers::run_all();
     return 0;
 }
 #endif

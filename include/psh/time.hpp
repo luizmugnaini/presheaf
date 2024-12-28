@@ -25,7 +25,6 @@
 #pragma once
 
 #include <psh/core.hpp>
-#include <psh/option.hpp>
 
 namespace psh {
     psh_api f64 current_time_in_seconds() psh_no_except;

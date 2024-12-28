@@ -48,7 +48,7 @@
 #define psh_comptime_make_string_view_from_str(str) \
     psh::StringView {                               \
         .buf   = str.buf,                           \
-        .count = str.count(),                       \
+        .count = str.count,                         \
     }
 
 namespace psh {
@@ -60,16 +60,7 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     // Computes the length of a zero-terminated string.
-    psh_api usize str_length(strptr str) psh_no_except;
-
-    /// String literal type.
-    struct psh_api StringLiteral {
-        strptr str;
-
-        template <usize N>
-        consteval StringLiteral(char const (&str_)[N]) psh_no_except
-            : str{str_} {}
-    };
+    psh_api usize cstring_length(cstring str) psh_no_except;
 
     /// A string with guaranteed compile-time known size.
     ///
@@ -80,17 +71,16 @@ namespace psh {
     ///
     /// auto my_str = psh_make_str("hey this is a compile time array of constant characters");
     ///
-    template <usize size_>
+    template <usize count_>
     struct psh_api Str {
-        char const buf[size_];
+        using ValueType = char const;
 
-        /// The character count of the string, disregarding its null-terminator.
-        constexpr usize count() const psh_no_except {
-            return size_ - 1u;
-        }
+        char const buf[count_];
+
+        static constexpr usize count = count_ - 1;
 
         char operator[](usize index) const psh_no_except {
-            psh_assert_bounds_check(index, size_, "Access out of bounds (%zu) for string of size %zu", index, size_);
+            psh_assert_bounds_check(index, count_);
             return this->buf[index];
         }
     };
@@ -101,13 +91,13 @@ namespace psh {
     /// Dynamically sized string.
     using String = DynArray<char>;
 
-    template <usize size_>
-    psh_api psh_inline constexpr StringView make_string_view(Str<size_> str) psh_no_except {
-        return {str.buf, size_ - 1u};
+    template <usize count>
+    psh_api psh_inline constexpr StringView make_string_view(Str<count> str) psh_no_except {
+        return {str.buf, str.count};
     }
 
-    psh_api psh_inline StringView make_string_view(strptr str) psh_no_except {
-        return {str, str_length(str)};
+    psh_api psh_inline StringView make_string_view(cstring str) psh_no_except {
+        return {str, cstring_length(str)};
     }
 
     psh_api psh_inline String make_string(Arena* arena, StringView sv) psh_no_except {
@@ -133,7 +123,7 @@ namespace psh {
     /// psh::Buffer<StringView, 3> words = {"World", "Earth", "Terra"};
     ///
     /// assert(s.join(psh::make_const_fat_ptr(words), ", "));
-    /// assert(psh::str_cmp(s.data.buf, "Hello, World, Earth, Terra") == psh::StrCmpResult::EQUAL);
+    /// assert(psh::string_compare(s.data.buf, "Hello, World, Earth, Terra") == psh::StringCompareResult::EQUAL);
     ///
     /// Although this example uses initializer lists, you can also achieve the same using the
     /// implementation based on psh::FatPtr.
@@ -143,22 +133,22 @@ namespace psh {
     // String comparison utilities.
     // -------------------------------------------------------------------------------------------------
 
-    enum struct StrCmpResult {
+    enum struct StringCompareResult {
         LESS_THAN,
         EQUAL,
         GREATER_THAN,
     };
 
-    psh_api StrCmpResult            str_cmp(strptr lhs, strptr rhs) psh_no_except;
-    psh_api StrCmpResult            str_cmp(StringView lhs, StringView rhs) psh_no_except;
-    psh_api psh_inline StrCmpResult str_cmp(StringView lhs, strptr rhs) psh_no_except {
-        return str_cmp(lhs, make_string_view(rhs));
+    psh_api StringCompareResult            string_compare(cstring lhs, cstring rhs) psh_no_except;
+    psh_api StringCompareResult            string_compare(StringView lhs, StringView rhs) psh_no_except;
+    psh_api psh_inline StringCompareResult string_compare(StringView lhs, cstring rhs) psh_no_except {
+        return string_compare(lhs, make_string_view(rhs));
     }
 
-    psh_api bool            str_equal(strptr lhs, strptr rhs) psh_no_except;
-    psh_api bool            str_equal(StringView lhs, StringView rhs) psh_no_except;
-    psh_api psh_inline bool str_equal(StringView lhs, strptr rhs) psh_no_except {
-        return str_equal(lhs, make_string_view(rhs));
+    psh_api bool            string_equal(cstring lhs, cstring rhs) psh_no_except;
+    psh_api bool            string_equal(StringView lhs, StringView rhs) psh_no_except;
+    psh_api psh_inline bool string_equal(StringView lhs, cstring rhs) psh_no_except {
+        return string_equal(lhs, make_string_view(rhs));
     }
 
     psh_api constexpr bool is_utf8(char c) psh_no_except {

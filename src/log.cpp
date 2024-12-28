@@ -31,9 +31,9 @@
 
 // @TODO: enable the user to set a different output stream for the logs.
 namespace psh::impl::log {
-    constexpr strptr LOG_FMT = "%s [%s:%u:%s] %s\n";
+    constexpr cstring LOG_FMT = "%s [%s:%u:%s] %s\n";
 
-    constexpr Buffer<strptr, LOG_LEVEL_COUNT> LOG_LEVEL_STR = {
+    constexpr Buffer<cstring, LOG_LEVEL_COUNT> LOG_LEVEL_STR = {
 #if PSH_ENABLE_ANSI_COLOURS
         "\x1b[1;41m[FATAL]\x1b[0m",
         "\x1b[1;31m[ERROR]\x1b[0m",
@@ -49,7 +49,7 @@ namespace psh::impl::log {
 #endif
     };
 
-    void log_msg(LogInfo info, strptr msg) psh_no_except {
+    void log_msg(LogInfo info, cstring msg) psh_no_except {
         psh_discard_value(fprintf(
             stderr,
             LOG_FMT,
@@ -60,7 +60,7 @@ namespace psh::impl::log {
             msg));
     }
 
-    void log_fmt(LogInfo const& info, strptr fmt, ...) psh_no_except {
+    void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
         constexpr usize           MAX_MSG_LEN = 8192;
         Buffer<char, MAX_MSG_LEN> msg;
 

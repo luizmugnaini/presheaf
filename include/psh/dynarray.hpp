@@ -24,9 +24,9 @@
 
 #pragma once
 
+#include <psh/assert.hpp>
 #include <psh/core.hpp>
 #include <psh/memory.hpp>
-#include <psh/option.hpp>
 
 namespace psh {
     namespace impl::dynarray {
@@ -49,9 +49,8 @@ namespace psh {
         /// Initialize the dynamic array with a given capacity.
         psh_inline void init(Arena* arena_, usize capacity_ = impl::dynarray::DEFAULT_INITIAL_CAPACITY) psh_no_except {
             psh_assert_msg(this->count == 0, "Tried to re-initialize an initialized DynArray");
-            psh_assert_not_null(arena_);
 
-            this->buf      = arena_->alloc<T>(capacity_);
+            this->buf      = memory_alloc<T>(arena_, capacity_);
             this->arena    = arena_;
             this->capacity = (this->buf != nullptr) ? capacity_ : 0;
         }
@@ -65,14 +64,15 @@ namespace psh {
         Status grow(u32 factor = impl::dynarray::RESIZE_CAPACITY_FACTOR) psh_no_except {
             usize previous_capacity = this->capacity;
 
-            usize new_capacity;
-            T*    new_buf;
+            usize  new_capacity;
+            T*     new_buf;
+            Arena* this_arena = this->arena;
             if (psh_likely(previous_capacity != 0)) {
                 new_capacity = previous_capacity * factor;
-                new_buf      = arena->realloc<T>(this->buf, previous_capacity, new_capacity);
+                new_buf      = memory_realloc<T>(this_arena, this->buf, previous_capacity, new_capacity);
             } else {
                 new_capacity = impl::dynarray::DEFAULT_INITIAL_CAPACITY;
-                new_buf      = arena->alloc<T>(new_capacity);
+                new_buf      = memory_alloc<T>(this_arena, new_capacity);
             }
 
             Status status = STATUS_FAILED;
@@ -90,11 +90,12 @@ namespace psh {
             // @NOTE: If T is a struct with a pointer to itself, this method will fail hard and create
             //       a massive horrible memory bug. DO NOT use this array structure with types having
             //       this property.
-            T* new_buf;
+            T*     new_buf;
+            Arena* this_arena = this->arena;
             if (this->capacity == 0) {
-                new_buf = arena->alloc<T>(new_capacity);
+                new_buf = memory_alloc<T>(this_arena, new_capacity);
             } else {
-                new_buf = arena->realloc<T>(this->buf, this->capacity, new_capacity);
+                new_buf = memory_realloc<T>(this_arena, this->buf, this->capacity, new_capacity);
             }
 
             Status status = STATUS_FAILED;
@@ -151,15 +152,17 @@ namespace psh {
 
             usize previous_count = this->count;
             if (psh_likely(previous_count > 0)) {
-                this->count = previous_count - 1;
+                this->count = previous_count - 1u;
                 status      = STATUS_OK;
             }
 
             return status;
         }
 
-        /// Try to remove a dynamic array element at a given index.
-        Status remove(usize idx) psh_no_except {
+        /// Try to remove a buffer element at a given index.
+        ///
+        /// This will move all of the buffer contents above the removed element index down one.
+        Status ordered_remove(usize idx) psh_no_except {
             usize previous_count = this->count;
 
             if (psh_unlikely(idx >= previous_count)) {
@@ -167,13 +170,29 @@ namespace psh {
             }
 
             // If the element isn't the last we have to copy the array content with overlap.
-            if (idx != this->count - 1) {
+            if (idx != previous_count - 1u) {
                 u8*       dst = reinterpret_cast<u8*>(this->buf + idx);
                 u8 const* src = reinterpret_cast<u8 const*>(this->buf + (idx + 1));
-                memory_move(dst, src, sizeof(T) * (previous_count - idx - 1));
+                memory_move(dst, src, sizeof(T) * (previous_count - idx - 1u));
             }
 
-            this->count = previous_count - 1;
+            this->count = previous_count - 1u;
+
+            return STATUS_OK;
+        }
+
+        /// Try to remove a buffer element at a given index.
+        ///
+        /// This won't preserve the current ordering of the buffer.
+        Status unordered_remove(usize idx) psh_no_except {
+            usize previous_count = this->count;
+
+            if (psh_unlikely(idx >= previous_count)) {
+                return STATUS_FAILED;
+            }
+
+            this->buf[idx] = this->buf[previous_count - 1u];
+            this->count    = previous_count - 1u;
 
             return STATUS_OK;
         }
@@ -183,28 +202,6 @@ namespace psh {
             this->count = 0;
         }
 
-        psh_inline T& operator[](usize idx) psh_no_except {
-            psh_assert_bounds_check(idx, this->count, "Index %zu out of bounds for DynArray of size %zu.", idx, this->count);
-            return this->buf[idx];
-        }
-        psh_inline T const& operator[](usize idx) const psh_no_except {
-            psh_assert_bounds_check(idx, this->count, "Index %zu out of bounds for DynArray of size %zu.", idx, this->count);
-            return this->buf[idx];
-        }
-
-        psh_inline T*       begin() psh_no_except { return this->buf; }
-        psh_inline T*       end() psh_no_except { return psh_ptr_add(this->buf, this->count); }
-        psh_inline T const* begin() const psh_no_except { return static_cast<T const*>(this->buf); }
-        psh_inline T const* end() const psh_no_except { return psh_ptr_add(static_cast<T const*>(this->buf), this->count); }
+        psh_impl_generate_container_boilerplate(T, this->buf, this->count)
     };
-
-    template <typename T>
-    psh_inline FatPtr<T> make_fat_ptr(DynArray<T>& d) psh_no_except {
-        return FatPtr{d.buf, d.count};
-    }
-
-    template <typename T>
-    psh_inline FatPtr<T const> make_const_fat_ptr(DynArray<T> const& d) psh_no_except {
-        return FatPtr{static_cast<T const*>(d.buf), d.count};
-    }
 }  // namespace psh

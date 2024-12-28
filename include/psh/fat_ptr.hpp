@@ -34,43 +34,74 @@ namespace psh {
         T*    buf;
         usize count = 0;
 
-        psh_inline FatPtr<T> slice(usize start, usize slice_count) psh_no_except {
-            psh_assert_bounds_check(slice_count, this->count + 1, "Slice element count (%zu) surpasses the FatPtr count (%zu).", slice_count, this->count);
-            return FatPtr<T>{psh_ptr_add(this->buf, start), slice_count};
-        }
-
-        psh_inline T& operator[](usize idx) psh_no_except {
-            psh_assert_bounds_check(idx, this->count, "Index %zu out of bounds for FatPtr with size %zu.", idx, this->count);
-            return this->buf[idx];
-        }
-        psh_inline T const& operator[](usize idx) const psh_no_except {
-            psh_assert_bounds_check(idx, this->count, "Index %zu out of bounds for FatPtr with size %zu.", idx, this->count);
-            return this->buf[idx];
-        }
-
-        psh_inline T*       begin() psh_no_except { return this->buf; }
-        psh_inline T const* begin() const psh_no_except { return static_cast<T const*>(this->buf); }
-        psh_inline T*       end() psh_no_except { return psh_ptr_add(this->buf, this->count); }
-        psh_inline T const* end() const psh_no_except { return static_cast<T const*>(psh_ptr_add(this->buf, this->count)); }
+        psh_impl_generate_container_boilerplate(T, this->buf, this->count)
     };
 
+    /// Try to remove a buffer element at a given index.
+    ///
+    /// This will move all of the buffer contents above the removed element index down one.
     template <typename T>
-    psh_inline FatPtr<u8> make_fat_ptr_as_bytes(T* buf, usize count) psh_no_except {
-        return FatPtr<u8>{reinterpret_cast<u8*>(buf), sizeof(T) * count};
+    Status ordered_remove(FatPtr<T>& fptr, usize idx) psh_no_except {
+        usize  previous_count = fptr.count;
+        Status status         = (idx < previous_count);
+
+        if (psh_likely(status)) {
+            if (idx != previous_count - 1u) {
+                // If the element isn't the last we have to copy the array content with overlap.
+                u8*       dst = reinterpret_cast<u8*>(fptr.buf + idx);
+                u8 const* src = reinterpret_cast<u8 const*>(fptr.buf + (idx + 1));
+                memory_move(dst, src, sizeof(T) * (previous_count - idx - 1u));
+            }
+
+            fptr->count = previous_count - 1u;
+        }
+
+        return status;
     }
 
+    /// Try to remove a buffer element at a given index.
+    ///
+    /// This won't preserve the current ordering of the buffer.
     template <typename T>
-    psh_inline FatPtr<u8 const> make_const_fat_ptr_as_bytes(T const* buf, usize count) psh_no_except {
-        return FatPtr<u8 const>{reinterpret_cast<u8 const*>(buf), sizeof(T) * count};
+    psh_inline Status unordered_remove(FatPtr<T>& fptr, usize idx) psh_no_except {
+        usize  previous_count = fptr.count;
+        Status status         = (idx < previous_count);
+
+        if (psh_likely(status)) {
+            fptr.buf[idx] = fptr.buf[previous_count - 1u];
+            fptr.count    = previous_count - 1u;
+        }
+
+        return status;
     }
 
-    template <typename T>
-    psh_inline FatPtr<T> make_fat_ptr(T* ptr) psh_no_except {
-        return FatPtr<T>{ptr, 1};
+    template <typename Container, typename T = Container::ValueType>
+    psh_inline FatPtr<T> make_slice(Container& c, usize start, usize slice_count) psh_no_except {
+        psh_static_assert_valid_mutable_container_type(Container, c);
+        psh_assert_bounds_check(slice_count, c.count + 1);
+
+        return FatPtr<T>{c.buf + start, slice_count};
     }
 
-    template <typename T>
-    psh_inline FatPtr<T const> make_const_fat_ptr(T const* ptr) psh_no_except {
-        return FatPtr<T const>{ptr, 1};
+    template <typename Container, typename T = Container::ValueType>
+    psh_inline FatPtr<T const> make_const_slice(Container const& c, usize start, usize slice_count) psh_no_except {
+        psh_static_assert_valid_const_container_type(Container, c);
+        psh_assert_bounds_check(slice_count, c.count + 1);
+
+        return FatPtr<T const>{c.buf + start, slice_count};
+    }
+
+    template <typename Container, typename T = Container::ValueType>
+    psh_inline FatPtr<T> make_fat_ptr(Container& c) psh_no_except {
+        psh_static_assert_valid_mutable_container_type(Container, c);
+
+        return FatPtr<T>{c.buf, c.count};
+    }
+
+    template <typename Container, typename T = Container::ValueType>
+    psh_inline FatPtr<T const> make_const_fat_ptr(Container const& c) psh_no_except {
+        psh_static_assert_valid_const_container_type(Container, c);
+
+        return FatPtr<T const>{reinterpret_cast<T const*>(c.buf), c.count};
     }
 }  // namespace psh

@@ -79,9 +79,9 @@ namespace psh {
 #endif
 
 #if PSH_ENABLE_BOUNDS_CHECK
-#    define psh_assert_bounds_check(idx, element_count, fmt, ...) psh_assert_fmt((idx) < (element_count), fmt, __VA_ARGS__)
+#    define psh_assert_bounds_check(idx, element_count) psh_assert_fmt((idx) < (element_count), "Index %zu out of bounds for container with element count %zu.", static_cast<usize>(idx), static_cast<usize>(element_count))
 #else
-#    define psh_assert_bounds_check(idx, element_count, fmt, ...) 0
+#    define psh_assert_bounds_check(idx, element_count) 0
 #endif
 
 #define psh_todo()                                       \

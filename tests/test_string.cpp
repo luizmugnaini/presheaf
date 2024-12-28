@@ -32,26 +32,26 @@
 namespace psh::test::string {
     psh_internal void str_type() {
         constexpr auto s = psh_comptime_make_str("Frodo Baggins");
-        psh_assert(str_equal(s.buf, "Frodo Baggins"));
-        psh_assert(s.count() == str_length("Frodo Baggins"));
-        psh_assert(s.buf[s.count()] == 0);
+        psh_assert(string_equal(s.buf, "Frodo Baggins"));
+        psh_assert(s.count == cstring_length("Frodo Baggins"));
+        psh_assert(s.buf[s.count] == 0);
         report_test_successful();
     }
 
     psh_internal void string_view_type() {
         StringView v1 = make_string_view("Nine for the Elven-kings under moon and star");
-        psh_assert(str_equal(v1.buf, "Nine for the Elven-kings under moon and star"));
-        psh_assert(v1.count == str_length("Nine for the Elven-kings under moon and star"));
+        psh_assert(string_equal(v1.buf, "Nine for the Elven-kings under moon and star"));
+        psh_assert(v1.count == cstring_length("Nine for the Elven-kings under moon and star"));
         psh_assert(v1.buf[v1.count] == 0);
 
         constexpr StringView v2 = psh_comptime_make_string_view("Nine for the Elven-kings under moon and star");
-        psh_assert(str_equal(v2.buf, "Nine for the Elven-kings under moon and star"));
-        psh_assert(v2.count == str_length("Nine for the Elven-kings under moon and star"));
+        psh_assert(string_equal(v2.buf, "Nine for the Elven-kings under moon and star"));
+        psh_assert(v2.count == cstring_length("Nine for the Elven-kings under moon and star"));
         psh_assert(v2.buf[v1.count] == 0);
 
         StringView v3 = psh::make_string_view("Nine for the Elven-kings under moon and star");
-        psh_assert(str_equal(v3.buf, "Nine for the Elven-kings under moon and star"));
-        psh_assert(v3.count == str_length("Nine for the Elven-kings under moon and star"));
+        psh_assert(string_equal(v3.buf, "Nine for the Elven-kings under moon and star"));
+        psh_assert(v3.count == cstring_length("Nine for the Elven-kings under moon and star"));
         psh_assert(v3.buf[v1.count] == 0);
         report_test_successful();
     }
@@ -60,7 +60,7 @@ namespace psh::test::string {
         Arena arena{reinterpret_cast<u8*>(malloc(512)), 512};
         {
             String s = make_string(&arena, psh_comptime_make_string_view("Seven for the Dwarf-lords in their halls of stone"));
-            psh_assert(str_equal(s.buf, "Seven for the Dwarf-lords in their halls of stone"));
+            psh_assert(string_equal(s.buf, "Seven for the Dwarf-lords in their halls of stone"));
             psh_assert(s.count == strlen("Seven for the Dwarf-lords in their halls of stone"));
             psh_assert(s.capacity == s.count + 1u);
             psh_assert(s.buf[s.capacity - 1u] == 0);
@@ -109,8 +109,8 @@ namespace psh::test::string {
                 String estr{&arena, 20};
                 psh_assert(join_strings(estr, make_const_fat_ptr(views1), psh_comptime_make_string_view(", ")));
 
-                psh_assert(str_equal(estr.buf, check_str1.buf));
-                psh_assert(estr.count == check_str1.count());
+                psh_assert(string_equal(estr.buf, check_str1.buf));
+                psh_assert(estr.count == check_str1.count);
                 psh_assert(estr.capacity == estr.count + 1u);
                 psh_assert(estr.buf[estr.count] == 0);
             }
@@ -118,8 +118,8 @@ namespace psh::test::string {
             // Non-empty string.
             {
                 String nestr = make_string(&arena, views2[0]);
-                psh_assert(join_strings(nestr, FatPtr{&views2[1u], views2.count() - 1u}));
-                psh_assert(str_equal(nestr.buf, check_str2.buf));
+                psh_assert(join_strings(nestr, FatPtr{&views2[1u], views2.count - 1u}));
+                psh_assert(string_equal(nestr.buf, check_str2.buf));
                 psh_assert(nestr.capacity == nestr.count + 1u);
                 psh_assert(nestr.buf[nestr.count] == 0);
             }
@@ -133,7 +133,7 @@ namespace psh::test::string {
                 String s = make_string(&arena, make_string_view("One"));
 
                 psh_assert(join_strings(s, make_const_fat_ptr(words), psh_comptime_make_string_view(", ")));
-                psh_assert(str_equal(s.buf, "One, Ring, to, rule"));
+                psh_assert(string_equal(s.buf, "One, Ring, to, rule"));
             }
         }
         free(arena.buf);
