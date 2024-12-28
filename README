@@ -54,7 +54,7 @@ Who is this library for?
 This library is written mainly for myself and those who appreciate how computers work in the real
 world. It's meant to be the base layer of your application, providing a few key data-structures that
 are essential when working with low-level programming - providing a few features that C failed to
-provide. All of the internals of the library are accessible to the user for this exact reason. As
+address. All of the internals of the library are accessible to the user for this exact reason. As
 you can see, this document is a simple txt file, which should reflect the simplicity and pragmatism
 of the code itself - nothing fancy, and nothing shiny, just programming in its purest way.
 
