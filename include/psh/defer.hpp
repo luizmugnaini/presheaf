@@ -45,11 +45,11 @@
 
 #pragma once
 
-namespace psh::impl::defer {
-    // -------------------------------------------------------------------------------------------------
-    // Implementation details, some type trickery.
-    // -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
+// Implementation details, some type trickery.
+// -------------------------------------------------------------------------------------------------
 
+namespace psh::impl::defer {
     template <typename T>
     struct RemoveRef {
         using Type = T;
@@ -64,34 +64,30 @@ namespace psh::impl::defer {
     };
 
     template <typename T>
-    T&& cast_forward(typename RemoveRef<T>::Type x) {
-        return static_cast<T&&>(x);
-    }
+    psh_inline T&& cast_forward(typename RemoveRef<T>::Type& x) psh_no_except { return static_cast<T&&>(x); }
+    template <typename T>
+    psh_inline T&& cast_forward(typename RemoveRef<T>::Type&& x) psh_no_except { return static_cast<T&&>(x); }
 
     template <typename Func>
     struct psh_api Deferrer {
-        Func fn;
-
-        Deferrer(Func&& fn_) {
-            this->fn = fn_;
-        }
-        ~Deferrer() {
-            fn();
-        }
+        Func       deferred_function;
+        psh_inline Deferrer(Func&& fn) psh_no_except : deferred_function{cast_forward<Func>(fn)} {}
+        psh_inline ~Deferrer() psh_no_except { deferred_function(); }
     };
 
     template <typename Func>
-    Deferrer<Func> make_defer_fn(Func&& fn) {
-        return Deferrer{cast_forward<Func>(fn)};
-    }
+    psh_api psh_inline Deferrer<Func> make_defer_fn(Func&& fn) psh_no_except { return Deferrer<Func>{cast_forward<Func>(fn)}; }
 }  // namespace psh::impl::defer
+
+#define psh_impl_defer_lambda_name_2(prefix, suffix) prefix##suffix
+#define psh_impl_defer_lambda_name_1(prefix, suffix) psh_impl_defer_lambda_name_2(prefix, suffix)
+#define psh_impl_defer_lambda_name_0(prefix)         psh_impl_defer_lambda_name_1(prefix, __COUNTER__)
 
 // -------------------------------------------------------------------------------------------------
 // Defer interface.
 // -------------------------------------------------------------------------------------------------
 
-#define psh_defer(code)                                                               \
-    [[maybe_unused]] auto psh_token_concat(psh_deferred_, psh_source_line_number()) = \
-        psh::impl::defer::make_defer_fn([&]() {                                       \
-            code;                                                                     \
-        })
+#define psh_defer(code)                                                                                                 \
+    [[maybe_unused]] auto psh_impl_defer_lambda_name_0(psh_deferred_) = psh::impl::defer::make_defer_fn([&]() -> void { \
+        code;                                                                                                           \
+    })
