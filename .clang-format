@@ -25,6 +25,7 @@ AlignAfterOpenBracket: AlwaysBreak
 
 # Lengthy math operation
 AlignOperands: Align
+BreakBeforeBinaryOperators: All
 
 # Pointer should go with the type
 DerivePointerAlignment: false
@@ -32,9 +33,6 @@ PointerAlignment: Left
 
 # Alignment insider preprocessor directives like #if
 IndentPPDirectives: AfterHash
-
-# Initializers
-BreakConstructorInitializers: BeforeColon
 
 # Arguments
 BinPackArguments: false
