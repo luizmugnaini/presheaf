@@ -23,8 +23,11 @@ The library has a bundled compilation unit src/presheaf.cpp which may be used if
 compile as a unity build. This can be as simple as, e.g.:
 
 1. Build object files without linking:
+
                  clang++ -c -std=c++20 -Iinclude src/presheaf.cpp -o presheaf.o
+
 2. Archive object files into a library:
+
                            llvm-ar rc libpresheaf.a presheaf.o
 
 Yet another ad-hoc solution would be to directly embed the library into your codebase using both of
@@ -52,11 +55,12 @@ Who is this library for?
 ========================
 
 This library is written mainly for myself and those who appreciate how computers work in the real
-world. It's meant to be the base layer of your application, providing a few key data-structures that
-are essential when working with low-level programming - providing a few features that C failed to
-address. All of the internals of the library are accessible to the user for this exact reason. As
-you can see, this document is a simple txt file, which should reflect the simplicity and pragmatism
-of the code itself - nothing fancy, and nothing shiny, just programming in its purest way.
+world. It's meant to be the base layer of your application, having key data-structures that are
+essential when working with low-level programming. In essence, the library provides a few features
+that C failed to address - and unfortunately can't be fixed writing pure C. All of the internals of
+the library are accessible to the user for this exact reason. As you can see, this document is a
+simple txt file, which should reflect the simplicity and pragmatism of the code itself - nothing
+fancy, and nothing shiny, just programming in its purest way.
 
 
 
@@ -80,11 +84,6 @@ Library compile-time options
 The following #define macros can be used to tweak the behaviour of the library as you want it:
 
 - PSH_ENABLE_ASSERTIONS: Enable assertion calls. Many debug checks depend on this option being enabled.
-- PSH_ENABLE_USAGE_VALIDATION: Insert checks to ensure that any given Presheaf function is given
-  valid arguments. In other words, this will assert that the implicit contract between caller
-  and callee is followed. Parts of the validation process can be enabled/disabled by using their
-  corresponding flags. For instance:
-                      -DPSH_ENABLE_USAGE_VALIDATION -DPSH_ENABLE_ASSERT_BOUNDS_CHECK=0
 - PSH_ENABLE_ASSERT_NOT_NULL: Assert that arguments that shouldn't be null, aren't.
 - PSH_ENABLE_ASSERT_NO_ALIAS: Assert that the no-aliasing rule is followed.
 - PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE: Check at compile time if template based functions have
@@ -96,6 +95,11 @@ The following #define macros can be used to tweak the behaviour of the library a
 - PSH_ENABLE_CHECKED_POINTER_ARITHMETIC: Consider if a pointer is null before applying an offset.
 - PSH_ENABLE_ASSERT_NO_MEMORY_ERROR: When a memory acquisition function fails, abort the program.
 - PSH_ENABLE_LOGGING: Enable logging calls to execute.
+- PSH_ENABLE_USAGE_VALIDATION: Insert checks to ensure that any given Presheaf function is given
+  valid arguments. In other words, this will assert that the implicit contract between caller
+  and callee is followed. Parts of the validation process can be enabled/disabled by using their
+  corresponding flags. For instance:
+                      -DPSH_ENABLE_USAGE_VALIDATION -DPSH_ENABLE_ASSERT_BOUNDS_CHECK=0
 - PSH_ENABLE_DEBUG: Enables all of the above debug checks if those aren't manually disabled. For instance,
   if you want all debug checks but not memory error crashes, you can compile with
                       -DPSH_ENABLE_DEBUG -DPSH_ENABLE_ASSERT_NO_MEMORY_ERROR=0

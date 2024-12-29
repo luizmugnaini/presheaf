@@ -124,7 +124,8 @@ Error Handling
 - Always document if a function or method may return an error, and which errors might be returned.
 - Don't ignore possible errors.
 
-# Recommended reads
+Recommended reads
+=================
 
 - Orthodox C++ principles (https://gist.github.com/bkaradzic/2e39896bc7d8c34e042b) has some good insights,
   although we don't follow all of them in this codebase.
