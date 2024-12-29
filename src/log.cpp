@@ -22,31 +22,33 @@
 /// Description: Implementation of the IO stream utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/log.hpp>
+#if PSH_ENABLE_LOGGING
 
-#include <assert.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <psh/core.hpp>
+#    include <psh/log.hpp>
+
+#    include <assert.h>
+#    include <stdarg.h>
+#    include <stdio.h>
+#    include <psh/core.hpp>
 
 // @TODO: enable the user to set a different output stream for the logs.
 namespace psh::impl::log {
     constexpr cstring LOG_FMT = "%s [%s:%u:%s] %s\n";
 
     constexpr Buffer<cstring, LOG_LEVEL_COUNT> LOG_LEVEL_STR = {
-#if PSH_ENABLE_ANSI_COLOURS
+#    if PSH_ENABLE_ANSI_COLOURS
         "\x1b[1;41m[FATAL]\x1b[0m",
         "\x1b[1;31m[ERROR]\x1b[0m",
         "\x1b[1;33m[WARNING]\x1b[0m",
         "\x1b[1;32m[INFO]\x1b[0m",
         "\x1b[1;34m[DEBUG]\x1b[0m",
-#else
+#    else
         "[FATAL]",
         "[ERROR]",
         "[WARNING]",
         "[INFO]",
         "[DEBUG]",
-#endif
+#    endif
     };
 
     void log_msg(LogInfo info, cstring msg) psh_no_except {
@@ -88,3 +90,5 @@ namespace psh::impl::log {
             msg.buf));
     }
 }  // namespace psh::impl::log
+
+#endif  // PSH_ENABLE_LOGGING

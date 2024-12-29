@@ -32,7 +32,6 @@
 //
 // All of the below flags are disabled by default.
 //
-// - PSH_ENABLE_CHECKED_POINTER_ARITHMETIC: Consider if a pointer is null before applying an offset.
 // - PSH_ENABLE_ASSERTIONS: Enable the use of asserts.
 // - PSH_ENABLE_USAGE_VALIDATION: Insert checks to ensure that any given Presheaf function is given
 //   valid arguments. In other words, this will assert that the implicit contract between caller
@@ -43,11 +42,12 @@
 //   arguments satisfying the procedure assumptions.
 // - PSH_ENABLE_ASSERT_BOUNDS_CHECK: For every container-like struct, check if the accessing index stays
 //   within the container memory region bounds.
-// - PSH_ENABLE_MEMCPY_OVERLAP_CHECK: Before calling memcpy, assert that the memory regions being
+// - PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP: Before calling memcpy, assert that the memory regions being
 //   copied don't overlap.
-// - PSH_ENABLE_ABORT_AT_MEMORY_ERROR: When a memory acquisition function fails, abort the program.
+// - PSH_ENABLE_CHECKED_POINTER_ARITHMETIC: Consider if a pointer is null before applying an offset.
+// - PSH_ENABLE_ASSERT_NO_MEMORY_ERROR: When a memory acquisition function fails, abort the program.
 // - PSH_ENABLE_LOGGING: Enable logging calls to execute.
-// - PSH_DEBUG: Enables all of the above debug checks.
+// - PSH_ENABLE_DEBUG: Enables all of the above debug checks.
 // - PSH_ENABLE_ANSI_COLOURS: When logging, use ANSI colour codes for pretty printing. This may not
 //   be desired if you're printing to a log file, hence the option is disabled by default.
 // - PSH_DISABLE_FORCED_INLINING: Disable the use of forced inlining hints via psh_inline.
@@ -56,7 +56,7 @@
 // -------------------------------------------------------------------------------------------------
 
 // Enable all debug checks when compiled in debug mode. Otherwise, disable all.
-#if defined(PSH_DEBUG) && PSH_DEBUG
+#if defined(PSH_ENABLE_DEBUG) && PSH_ENABLE_DEBUG
 #    if !defined(PSH_ENABLE_ASSERTIONS)
 #        define PSH_ENABLE_ASSERTIONS 1
 #    endif
@@ -75,14 +75,14 @@
 #    if !defined(PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE)
 #        define PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE 1
 #    endif
-#    if !defined(PSH_ENABLE_ABORT_AT_MEMORY_ERROR)
-#        define PSH_ENABLE_ABORT_AT_MEMORY_ERROR 1
+#    if !defined(PSH_ENABLE_ASSERT_NO_MEMORY_ERROR)
+#        define PSH_ENABLE_ASSERT_NO_MEMORY_ERROR 1
 #    endif
 #    if !defined(PSH_ENABLE_CHECKED_POINTER_ARITHMETIC)
 #        define PSH_ENABLE_CHECKED_POINTER_ARITHMETIC 1
 #    endif
-#    if !defined(PSH_ENABLE_MEMCPY_OVERLAP_CHECK)
-#        define PSH_ENABLE_MEMCPY_OVERLAP_CHECK 1
+#    if !defined(PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP)
+#        define PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP 1
 #    endif
 #    if !defined(PSH_ENABLE_LOGGING)
 #        define PSH_ENABLE_LOGGING 1
@@ -112,14 +112,14 @@
 #    if !defined(PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE)
 #        define PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE 0
 #    endif
-#    if !defined(PSH_ENABLE_ABORT_AT_MEMORY_ERROR)
-#        define PSH_ENABLE_ABORT_AT_MEMORY_ERROR 0
+#    if !defined(PSH_ENABLE_ASSERT_NO_MEMORY_ERROR)
+#        define PSH_ENABLE_ASSERT_NO_MEMORY_ERROR 0
 #    endif
 #    if !defined(PSH_ENABLE_CHECKED_POINTER_ARITHMETIC)
 #        define PSH_ENABLE_CHECKED_POINTER_ARITHMETIC 0
 #    endif
-#    if !defined(PSH_ENABLE_MEMCPY_OVERLAP_CHECK)
-#        define PSH_ENABLE_MEMCPY_OVERLAP_CHECK 0
+#    if !defined(PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP)
+#        define PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP 0
 #    endif
 #    if !defined(PSH_ENABLE_LOGGING)
 #        define PSH_ENABLE_LOGGING 0

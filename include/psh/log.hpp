@@ -66,7 +66,7 @@ namespace psh::impl::log {
         .level         = log_level,                  \
     }
 
-#if !defined(PSH_DISABLE_LOGGING)
+#if PSH_ENABLE_LOGGING
 #    define psh_log_fatal(msg)            psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_FATAL), msg)
 #    define psh_log_error(msg)            psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_ERROR), msg)
 #    define psh_log_warning(msg)          psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_WARNING), msg)

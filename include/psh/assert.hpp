@@ -28,21 +28,23 @@
 #include <psh/log.hpp>
 
 namespace psh {
+    namespace impl::assertion {
+        /// Detect if two types are the same.
+        template <typename T, typename U>
+        struct IsSameType {
+            static constexpr bool value = false;
+        };
+        template <typename T>
+        struct IsSameType<T, T> {
+            static constexpr bool value = true;
+        };
+    }  // namespace impl::assertion
+
     using AbortFunction = void(void* arg);
 
     psh_api void set_abort_function(AbortFunction* func, void* abort_context = nullptr) psh_no_except;
 
     psh_api void abort_program() psh_no_except;
-
-    /// Detect if two types are the same.
-    template <typename T, typename U>
-    struct IsSameType {
-        static constexpr bool value = false;
-    };
-    template <typename T>
-    struct IsSameType<T, T> {
-        static constexpr bool value = true;
-    };
 }  // namespace psh
 
 #if PSH_ENABLE_USAGE_VALIDATION
@@ -115,23 +117,23 @@ namespace psh {
 #    define psh_static_assert_valid_mutable_container_type(ContainerType, container)                                        \
         do {                                                                                                                \
             static_assert(                                                                                                  \
-                psh::IsSameType<decltype(&container.buf[0]), typename ContainerType::ValueType*>::value,                    \
+                psh::impl::assertion::IsSameType<decltype(&container.buf[0]), typename ContainerType::ValueType*>::value,   \
                 "A valid mutable container must have a 'buf' member variable of type 'ValueType*' or 'ValueType const*'."); \
             static_assert(                                                                                                  \
-                psh::IsSameType<decltype(container.count), usize const>::value                                              \
-                    || psh::IsSameType<decltype(container.count), usize>::value,                                            \
+                psh::impl::assertion::IsSameType<decltype(container.count), usize const>::value                             \
+                    || psh::impl::assertion::IsSameType<decltype(container.count), usize>::value,                           \
                 "A valid mutable container must have a 'count' member variable of type 'usize' or 'usize const'.");         \
         } while (0)
-#    define psh_static_assert_valid_const_container_type(ContainerType, container)                                           \
-        do {                                                                                                                 \
-            static_assert(                                                                                                   \
-                psh::IsSameType<decltype(&container.buf[0]), typename ContainerType::ValueType*>::value                      \
-                    || psh::IsSameType<decltype(&container.buf[0]), typename ContainerType::ValueType const*>::value,        \
-                "A valid constant container must have a 'buf' member variable of type 'ValueType*' or 'ValueType const*'."); \
-            static_assert(                                                                                                   \
-                psh::IsSameType<decltype(container.count), usize>::value                                                     \
-                    || psh::IsSameType<decltype(container.count), usize const>::value,                                       \
-                "A valid constant container must have a 'count' member variable of type 'usize' or 'usize const'.");         \
+#    define psh_static_assert_valid_const_container_type(ContainerType, container)                                                     \
+        do {                                                                                                                           \
+            static_assert(                                                                                                             \
+                psh::impl::assertion::IsSameType<decltype(&container.buf[0]), typename ContainerType::ValueType*>::value               \
+                    || psh::impl::assertion::IsSameType<decltype(&container.buf[0]), typename ContainerType::ValueType const*>::value, \
+                "A valid constant container must have a 'buf' member variable of type 'ValueType*' or 'ValueType const*'.");           \
+            static_assert(                                                                                                             \
+                psh::impl::assertion::IsSameType<decltype(container.count), usize>::value                                              \
+                    || psh::impl::assertion::IsSameType<decltype(container.count), usize const>::value,                                \
+                "A valid constant container must have a 'count' member variable of type 'usize' or 'usize const'.");                   \
         } while (0)
 #else
 #    define psh_static_assert_valid_mutable_container_type(ContainerType, container) 0

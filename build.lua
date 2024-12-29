@@ -28,7 +28,7 @@
 -- You can also pass ad-hoc flags directly to the compiler command. Any argument passed
 -- after `--` will be directed to the compilation command. For instance:
 --
--- lua build.lua clang -- -fsanitize=address -DPSH_ABORT_AT_MEMORY_ERROR
+-- lua build.lua -clang -- -fsanitize=address -DPSH_DEBUG
 --
 
 local start_time = os.time()
@@ -89,7 +89,7 @@ if options.help.on then
     end
     print(
         "\nExample: Build the library with Clang, run all tests, and directly specify compiler flags:\n"
-        .. "    lua build.lua -clang -test -- -fsanitize=address -DPSH_ABORT_AT_MEMORY_ERROR"
+        .. "    lua build.lua -clang -test -- -fsanitize=address -DPSH_ENABLE_ASSERT_BOUNDS_CHECK"
     )
     return
 end
@@ -287,8 +287,8 @@ local presheaf = {
     test_src         = make_path({ root_dir, "tests", "test_presheaf.cpp" }),
     include_dir      = make_path({ root_dir, "include" }),
     dll_build_define = "PSH_BUILD_DLL",
-    debug_defines    = { "PSH_DEBUG" },
-    test_defines     = { "PSH_DEBUG", "PSH_ENABLE_ANSI_COLOURS" },
+    debug_defines    = { "PSH_ENABLE_DEBUG" },
+    test_defines     = { "PSH_ENABLE_DEBUG", "PSH_ENABLE_ANSI_COLOURS" },
     lib              = "presheaf",
     test_exe         = "presheaf_tests",
     std              = "c++20",

@@ -36,11 +36,11 @@
 #    include <sys/mman.h>
 #endif
 
-#if defined(PSH_ABORT_AT_MEMORY_ERROR)
-#    define psh_impl_return_from_memory_error()                                         \
-        do {                                                                            \
-            psh_log_fatal("PSH_ABORT_AT_MEMORY_ERROR active, aborting the program..."); \
-            psh::abort_program();                                                       \
+#if defined(PSH_ENABLE_ASSERT_NO_MEMORY_ERROR)
+#    define psh_impl_return_from_memory_error()                                                 \
+        do {                                                                                    \
+            psh_log_fatal("PSH_ENABLE_ASSERT_NO_MEMORY_ERROR active, aborting the program..."); \
+            psh::abort_program();                                                               \
         } while (0)
 #else
 #    define psh_impl_return_from_memory_error() \
@@ -298,7 +298,7 @@ namespace psh {
             return;
         }
 
-#if PSH_ENABLE_MEMCPY_OVERLAP_CHECK
+#if PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP
         psh_assert_msg(
             (dst + size_bytes > src) || (dst < src + size_bytes),
             "Source and destination overlap in copy region (UB).");
@@ -326,13 +326,13 @@ namespace psh {
 #if defined(PSH_OS_WINDOWS)
         buf = reinterpret_cast<u8*>(VirtualAlloc(nullptr, size_bytes, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
 
-#    if PSH_ENABLE_ABORT_AT_MEMORY_ERROR
+#    if PSH_ENABLE_ASSERT_NO_MEMORY_ERROR
         psh_assert_fmt(buf != nullptr, "OS failed to allocate memory with error code: %lu", GetLastError());
 #    endif
 #elif defined(PSH_OS_UNIX)
         buf = reinterpret_cast<u8*>(mmap(nullptr, size_bytes, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
 
-#    if PSH_ENABLE_ABORT_AT_MEMORY_ERROR
+#    if PSH_ENABLE_ASSERT_NO_MEMORY_ERROR
         psh_assert_fmt(reinterpret_cast<void*>(buf) != MAP_FAILED, "OS failed to allocate memory due to: %s", strerror(errno));
 #    endif
 #endif
