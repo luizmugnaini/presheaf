@@ -104,7 +104,7 @@
 #        define PSH_ENABLE_ASSERT_NOT_NULL 0
 #    endif
 #    if !defined(PSH_ENABLE_ASSERT_BOUNDS_CHECK)
-#        define PSH_ENABLE_BOUNDS_CHECK 0
+#        define PSH_ENABLE_ASSERT_BOUNDS_CHECK 0
 #    endif
 #    if !defined(PSH_ENABLE_ASSERT_NO_ALIAS)
 #        define PSH_ENABLE_ASSERT_NO_ALIAS 0
