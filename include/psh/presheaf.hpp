@@ -33,8 +33,6 @@
 #include <psh/option.hpp>
 #include <psh/fat_ptr.hpp>
 #include <psh/buffer.hpp>
-#include <psh/array.hpp>
-#include <psh/dynarray.hpp>
 #include <psh/memory.hpp>
 #include <psh/string.hpp>
 #include <psh/streams.hpp>

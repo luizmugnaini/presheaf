@@ -32,11 +32,16 @@
 //
 // All of the below flags are disabled by default.
 //
-// - PSH_ENABLE_SAFE_POINTER_ARITHMETIC: Consider if a pointer is null before applying an offset.
+// - PSH_ENABLE_CHECKED_POINTER_ARITHMETIC: Consider if a pointer is null before applying an offset.
 // - PSH_ENABLE_ASSERTIONS: Enable the use of asserts.
+// - PSH_ENABLE_USAGE_VALIDATION: Insert checks to ensure that any given Presheaf function is given
+//   valid arguments. In other words, this will assert that the implicit contract between caller
+//   and callee is followed.
+// - PSH_ENABLE_ASSERT_NOT_NULL: Assert that arguments that shouldn't be null, aren't.
+// - PSH_ENABLE_ASSERT_NO_ALIAS: Assert that the no-aliasing rule is followed.
 // - PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE: Check at compile time if template based functions have
 //   arguments satisfying the procedure assumptions.
-// - PSH_ENABLE_BOUNDS_CHECK: For every container-like struct, check if the accessing index stays
+// - PSH_ENABLE_ASSERT_BOUNDS_CHECK: For every container-like struct, check if the accessing index stays
 //   within the container memory region bounds.
 // - PSH_ENABLE_MEMCPY_OVERLAP_CHECK: Before calling memcpy, assert that the memory regions being
 //   copied don't overlap.
@@ -45,6 +50,9 @@
 // - PSH_DEBUG: Enables all of the above debug checks.
 // - PSH_ENABLE_ANSI_COLOURS: When logging, use ANSI colour codes for pretty printing. This may not
 //   be desired if you're printing to a log file, hence the option is disabled by default.
+// - PSH_DISABLE_FORCED_INLINING: Disable the use of forced inlining hints via psh_inline.
+// - PSH_DISABLE_NO_ALIAS: Disable the use of the no aliasing restriction hints in function
+//   arguments that use psh_no_alias.
 // -------------------------------------------------------------------------------------------------
 
 // Enable all debug checks when compiled in debug mode. Otherwise, disable all.
@@ -52,8 +60,17 @@
 #    if !defined(PSH_ENABLE_ASSERTIONS)
 #        define PSH_ENABLE_ASSERTIONS 1
 #    endif
+#    if !defined(PSH_ENABLE_USAGE_VALIDATION)
+#        define PSH_ENABLE_USAGE_VALIDATION 1
+#    endif
 #    if !defined(PSH_ENABLE_ASSERT_NOT_NULL)
 #        define PSH_ENABLE_ASSERT_NOT_NULL 1
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_BOUNDS_CHECK)
+#        define PSH_ENABLE_ASSERT_BOUNDS_CHECK 1
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_NO_ALIAS)
+#        define PSH_ENABLE_ASSERT_NO_ALIAS 1
 #    endif
 #    if !defined(PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE)
 #        define PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE 1
@@ -64,24 +81,36 @@
 #    if !defined(PSH_ENABLE_CHECKED_POINTER_ARITHMETIC)
 #        define PSH_ENABLE_CHECKED_POINTER_ARITHMETIC 1
 #    endif
-#    if !defined(PSH_ENABLE_BOUNDS_CHECK)
-#        define PSH_ENABLE_BOUNDS_CHECK 1
-#    endif
 #    if !defined(PSH_ENABLE_MEMCPY_OVERLAP_CHECK)
 #        define PSH_ENABLE_MEMCPY_OVERLAP_CHECK 1
 #    endif
 #    if !defined(PSH_ENABLE_LOGGING)
 #        define PSH_ENABLE_LOGGING 1
 #    endif
+#    if !defined(PSH_DISABLE_FORCED_INLINING)
+#        define PSH_DISABLE_FORCED_INLINING 1
+#    endif
+#    if !defined(PSH_DISABLE_NO_ALIAS)
+#        define PSH_DISABLE_NO_ALIAS 1
+#    endif
 #else
 #    if !defined(PSH_ENABLE_ASSERTIONS)
 #        define PSH_ENABLE_ASSERTIONS 0
 #    endif
-#    if !defined(PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE)
-#        define PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE 0
+#    if !defined(PSH_ENABLE_USAGE_VALIDATION)
+#        define PSH_ENABLE_USAGE_VALIDATION 0
 #    endif
 #    if !defined(PSH_ENABLE_ASSERT_NOT_NULL)
 #        define PSH_ENABLE_ASSERT_NOT_NULL 0
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_BOUNDS_CHECK)
+#        define PSH_ENABLE_BOUNDS_CHECK 0
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_NO_ALIAS)
+#        define PSH_ENABLE_ASSERT_NO_ALIAS 0
+#    endif
+#    if !defined(PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE)
+#        define PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE 0
 #    endif
 #    if !defined(PSH_ENABLE_ABORT_AT_MEMORY_ERROR)
 #        define PSH_ENABLE_ABORT_AT_MEMORY_ERROR 0
@@ -89,14 +118,17 @@
 #    if !defined(PSH_ENABLE_CHECKED_POINTER_ARITHMETIC)
 #        define PSH_ENABLE_CHECKED_POINTER_ARITHMETIC 0
 #    endif
-#    if !defined(PSH_ENABLE_BOUNDS_CHECK)
-#        define PSH_ENABLE_BOUNDS_CHECK 0
-#    endif
 #    if !defined(PSH_ENABLE_MEMCPY_OVERLAP_CHECK)
 #        define PSH_ENABLE_MEMCPY_OVERLAP_CHECK 0
 #    endif
 #    if !defined(PSH_ENABLE_LOGGING)
 #        define PSH_ENABLE_LOGGING 0
+#    endif
+#    if !defined(PSH_DISABLE_FORCED_INLINING)
+#        define PSH_DISABLE_FORCED_INLINING 0
+#    endif
+#    if !defined(PSH_DISABLE_NO_ALIAS)
+#        define PSH_DISABLE_NO_ALIAS 0
 #    endif
 #endif
 
@@ -300,14 +332,20 @@
 #define psh_no_except noexcept
 
 /// Hint for forced function inlining.
-#if defined(PSH_COMPILER_MSVC)
-#    define psh_inline __forceinline
-#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-#    define psh_inline inline __attribute__((always_inline))
+#if !PSH_DISABLE_FORCED_INLINING
+#    if defined(PSH_COMPILER_MSVC)
+#        define psh_inline __forceinline
+#    elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#        define psh_inline inline __attribute__((always_inline))
+#    else
+#        define psh_inline inline
+#    endif
+#else
+#    define psh_inline inline
 #endif
 
 /// Hints that the current switch branch should fallthrough the next.
-#if __cplusplus >= 202002L  // Technically Presheaf only supports C++20.
+#if __cplusplus >= 202002L
 #    define PSH_FALLTHROUGH [[fallthrough]]
 #else
 #    define PSH_FALLTHROUGH
@@ -329,10 +367,14 @@
 #define psh_global   static
 
 /// Hints for pointer aliasing rules.
-#if defined(PSH_COMPILER_MSVC)
-#    define psh_no_alias __restrict
-#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-#    define psh_no_alias __restrict__
+#if !PSH_DISABLE_NO_ALIAS
+#    if defined(PSH_COMPILER_MSVC)
+#        define psh_no_alias __restrict
+#    elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#        define psh_no_alias __restrict__
+#    else
+#        define psh_no_alias
+#    endif
 #else
 #    define psh_no_alias
 #endif
@@ -397,20 +439,9 @@ namespace psh {
     ///
     /// This gives a better semantic meaning of the return of a failable function, while still
     /// preserving the use of booleans for simple use.
-    enum Status : bool {
-        STATUS_FAILED = false,
-        STATUS_OK     = true,
-    };
-
-    /// Detect if two types are the same.
-    template <typename T, typename U>
-    struct IsSameType {
-        static constexpr bool value = false;
-    };
-    template <typename T>
-    struct IsSameType<T, T> {
-        static constexpr bool value = true;
-    };
+    using Status                   = bool;
+    constexpr Status STATUS_FAILED = false;
+    constexpr Status STATUS_OK     = true;
 
     // -------------------------------------------------------------------------------------------------
     // Pointer operations.
@@ -420,14 +451,18 @@ namespace psh {
     template <typename T>
     psh_inline T* pointer_add(T* ptr, usize offset_bytes) psh_no_except {
 #if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
-        if (ptr == nullptr) return nullptr;
+        if (ptr == nullptr) {
+            return nullptr;
+        }
 #endif
         return reinterpret_cast<T*>(reinterpret_cast<u8*>(ptr) + offset_bytes);
     }
     template <typename T>
     psh_inline T const* pointer_const_add(T const* ptr, usize offset_bytes) psh_no_except {
 #if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
-        if (ptr == nullptr) return nullptr;
+        if (ptr == nullptr) {
+            return nullptr;
+        }
 #endif
         return reinterpret_cast<T const*>(reinterpret_cast<u8 const*>(ptr) + offset_bytes);
     }
@@ -436,20 +471,24 @@ namespace psh {
     template <typename T>
     psh_inline void* pointer_sub(void* ptr, isize offset_bytes) psh_no_except {
 #if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
-        if (ptr == nullptr) return nullptr;
+        if (ptr == nullptr) {
+            return nullptr;
+        }
 #endif
         return reinterpret_cast<T*>(reinterpret_cast<u8*>(ptr) - offset_bytes);
     }
     template <typename T>
     psh_inline void const* pointer_const_sub(void const* ptr, isize offset_bytes) psh_no_except {
 #if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
-        if (ptr == nullptr) return nullptr;
+        if (ptr == nullptr) {
+            return nullptr;
+        }
 #endif
         return reinterpret_cast<T const*>(reinterpret_cast<u8 const*>(ptr) - offset_bytes);
     }
 
     /// Check if two pointers refer to the same address in memory.
-    psh_inline bool pointer_has_same_address(void const* lhs, void const* rhs) psh_no_except {
+    psh_inline bool pointers_have_same_address(void const* lhs, void const* rhs) psh_no_except {
         return (reinterpret_cast<u8 const*>(lhs) == reinterpret_cast<u8 const*>(rhs));
     }
 
@@ -457,11 +496,28 @@ namespace psh {
     psh_inline isize pointer_offset(void const* start, void const* end) psh_no_except {
         return static_cast<isize>(reinterpret_cast<u8 const*>(end) - reinterpret_cast<u8 const*>(start));
     }
+
+    /// Calculate, at compile-time, the element count of a literal array.
+    template <typename T, usize COUNT>
+    psh_inline constexpr usize count_of(T (&)[COUNT]) psh_no_except {
+        return COUNT;
+    }
+    template <typename T, usize COUNT>
+    psh_inline constexpr usize count_of(T[COUNT]) psh_no_except {
+        return COUNT;
+    }
 }  // namespace psh
 
 // -------------------------------------------------------------------------------------------------
 // Common operations.
 // -------------------------------------------------------------------------------------------------
+
+/// Compute, at compile time, the size of a given type, signed or unsigned for convenience.
+#define psh_isize_of(T) static_cast<isize>(sizeof(T))
+#define psh_usize_of(T) static_cast<usize>(sizeof(T))
+
+/// Evaluate then discard the value of a given expression.
+#define psh_discard_value(x) (void)(x)
 
 /// Swap the values of two given variables.
 #define psh_swap_values(lhs_var, rhs_var)       \
@@ -470,12 +526,6 @@ namespace psh {
         lhs_var                    = rhs_var;   \
         rhs_var                    = psh_tmp_;  \
     } while (0)
-
-/// Calculate, at compile-time, the element count of a literal array.
-#define psh_count_of(literal_array) (sizeof(literal_array) / sizeof(literal_array[0]))
-
-/// Evaluate then discard the value of a given expression.
-#define psh_discard_value(x) (void)(x)
 
 // -------------------------------------------------------------------------------------------------
 // Mathematical operations.
@@ -596,32 +646,3 @@ namespace psh {
     psh_inline constexpr InnerType*       end() psh_no_except { return this_buf + this_count; } \
     psh_inline constexpr InnerType const* cbegin() const psh_no_except { return this_buf; }     \
     psh_inline constexpr InnerType const* cend() const psh_no_except { return this_buf + this_count; }
-
-/// Ensure that a certain container function argument satisfies all of the properties expected from
-/// a proper Presheaf container.
-#if PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE
-#    define psh_static_assert_valid_mutable_container_type(ContainerType, container)                                        \
-        do {                                                                                                                \
-            static_assert(                                                                                                  \
-                psh::IsSameType<decltype(&container.buf[0]), typename ContainerType::ValueType*>::value,                    \
-                "A valid mutable container must have a 'buf' member variable of type 'ValueType*' or 'ValueType const*'."); \
-            static_assert(                                                                                                  \
-                psh::IsSameType<decltype(container.count), usize const>::value                                              \
-                    || psh::IsSameType<decltype(container.count), usize>::value,                                            \
-                "A valid mutable container must have a 'count' member variable of type 'usize' or 'usize const'.");         \
-        } while (0)
-#    define psh_static_assert_valid_const_container_type(ContainerType, container)                                           \
-        do {                                                                                                                 \
-            static_assert(                                                                                                   \
-                psh::IsSameType<decltype(&container.buf[0]), typename ContainerType::ValueType*>::value                      \
-                    || psh::IsSameType<decltype(&container.buf[0]), typename ContainerType::ValueType const*>::value,        \
-                "A valid constant container must have a 'buf' member variable of type 'ValueType*' or 'ValueType const*'."); \
-            static_assert(                                                                                                   \
-                psh::IsSameType<decltype(container.count), usize>::value                                                     \
-                    || psh::IsSameType<decltype(container.count), usize const>::value,                                       \
-                "A valid constant container must have a 'count' member variable of type 'usize' or 'usize const'.");         \
-        } while (0)
-#else
-#    define psh_static_assert_valid_mutable_container_type(ContainerType, container) 0
-#    define psh_static_assert_valid_const_container_type(ContainerType, container)   0
-#endif

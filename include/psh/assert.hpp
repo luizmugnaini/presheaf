@@ -33,7 +33,26 @@ namespace psh {
     psh_api void set_abort_function(AbortFunction* func, void* abort_context = nullptr) psh_no_except;
 
     psh_api void abort_program() psh_no_except;
+
+    /// Detect if two types are the same.
+    template <typename T, typename U>
+    struct IsSameType {
+        static constexpr bool value = false;
+    };
+    template <typename T>
+    struct IsSameType<T, T> {
+        static constexpr bool value = true;
+    };
 }  // namespace psh
+
+#if PSH_ENABLE_USAGE_VALIDATION
+#    define psh_validate_usage(validation_code) \
+        do {                                    \
+            validation_code;                    \
+        } while (0)
+#else
+#    define psh_validate_usage(validation_code) 0
+#endif
 
 /// Assertion macros.
 #if PSH_ENABLE_ASSERTIONS
@@ -78,10 +97,45 @@ namespace psh {
 #    define psh_assert_not_null(ptr) psh_discard_value(ptr)
 #endif
 
-#if PSH_ENABLE_BOUNDS_CHECK
+#if PSH_ENABLE_ASSERT_NO_ALIAS
+#    define psh_assert_no_alias(rhs_ptr, lhs_ptr) psh_assert_msg(!pointers_have_same_address(rhs_ptr, lhs_ptr), "Pointers are expected not to alias, but assumption does not hold.")
+#else
+#    define psh_assert_no_alias(rhs_ptr, lhs_ptr) 0
+#endif
+
+#if PSH_ENABLE_ASSERT_BOUNDS_CHECK
 #    define psh_assert_bounds_check(idx, element_count) psh_assert_fmt((idx) < (element_count), "Index %zu out of bounds for container with element count %zu.", static_cast<usize>(idx), static_cast<usize>(element_count))
 #else
 #    define psh_assert_bounds_check(idx, element_count) 0
+#endif
+
+/// Ensure that a certain container function argument satisfies all of the properties expected from
+/// a proper Presheaf container.
+#if PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE
+#    define psh_static_assert_valid_mutable_container_type(ContainerType, container)                                        \
+        do {                                                                                                                \
+            static_assert(                                                                                                  \
+                psh::IsSameType<decltype(&container.buf[0]), typename ContainerType::ValueType*>::value,                    \
+                "A valid mutable container must have a 'buf' member variable of type 'ValueType*' or 'ValueType const*'."); \
+            static_assert(                                                                                                  \
+                psh::IsSameType<decltype(container.count), usize const>::value                                              \
+                    || psh::IsSameType<decltype(container.count), usize>::value,                                            \
+                "A valid mutable container must have a 'count' member variable of type 'usize' or 'usize const'.");         \
+        } while (0)
+#    define psh_static_assert_valid_const_container_type(ContainerType, container)                                           \
+        do {                                                                                                                 \
+            static_assert(                                                                                                   \
+                psh::IsSameType<decltype(&container.buf[0]), typename ContainerType::ValueType*>::value                      \
+                    || psh::IsSameType<decltype(&container.buf[0]), typename ContainerType::ValueType const*>::value,        \
+                "A valid constant container must have a 'buf' member variable of type 'ValueType*' or 'ValueType const*'."); \
+            static_assert(                                                                                                   \
+                psh::IsSameType<decltype(container.count), usize>::value                                                     \
+                    || psh::IsSameType<decltype(container.count), usize const>::value,                                       \
+                "A valid constant container must have a 'count' member variable of type 'usize' or 'usize const'.");         \
+        } while (0)
+#else
+#    define psh_static_assert_valid_mutable_container_type(ContainerType, container) 0
+#    define psh_static_assert_valid_const_container_type(ContainerType, container)   0
 #endif
 
 #define psh_todo()                                       \

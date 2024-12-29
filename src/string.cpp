@@ -37,19 +37,6 @@ namespace psh {
         return length;
     }
 
-    StringCompareResult string_compare(cstring lhs, cstring rhs) psh_no_except {
-        i32                 cmp = strcmp(lhs, rhs);
-        StringCompareResult result;
-        if (cmp == 0) {
-            result = StringCompareResult::EQUAL;
-        } else if (cmp < 0) {
-            result = StringCompareResult::LESS_THAN;
-        } else {
-            result = StringCompareResult::GREATER_THAN;
-        }
-        return result;
-    }
-
     StringCompareResult string_compare(StringView lhs, StringView rhs) psh_no_except {
         i32                 cmp = memcmp(lhs.buf, rhs.buf, psh_min_value(lhs.count, rhs.count));
         StringCompareResult result;
@@ -63,13 +50,9 @@ namespace psh {
         return result;
     }
 
-    bool string_equal(cstring lhs, cstring rhs) psh_no_except {
-        return (strcmp(lhs, rhs) == 0);
-    }
-
     bool string_equal(StringView lhs, StringView rhs) psh_no_except {
-        bool  are_equal = true;
         usize length    = lhs.count;
+        bool  are_equal = true;
 
         are_equal &= (rhs.count == length);
         if (are_equal) {
@@ -101,7 +84,7 @@ namespace psh {
 
             usize new_capacity = target.count + additional_length;
             if (target.capacity < new_capacity) {
-                if (psh_unlikely(!target.reserve(new_capacity))) {
+                if (psh_unlikely(!dynarray_reserve(&target, new_capacity))) {
                     return STATUS_FAILED;
                 }
             }

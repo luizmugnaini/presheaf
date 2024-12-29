@@ -25,7 +25,8 @@
 #pragma once
 
 #include <psh/core.hpp>
-#include <psh/dynarray.hpp>
+#include <psh/fat_ptr.hpp>
+#include <psh/memory.hpp>
 
 // -------------------------------------------------------------------------------------------------
 // Compile-time string type construction macros.
@@ -85,32 +86,42 @@ namespace psh {
         }
     };
 
-    /// Immutable view of a string.
-    using StringView = FatPtr<char const>;
-
     /// Dynamically sized string.
     using String = DynArray<char>;
 
+    /// Immutable view of a string.
+    using StringView = FatPtr<char const>;
+
     template <usize count>
     psh_api psh_inline constexpr StringView make_string_view(Str<count> str) psh_no_except {
-        return {str.buf, str.count};
+        return StringView{str.buf, str.count};
     }
 
     psh_api psh_inline StringView make_string_view(cstring str) psh_no_except {
-        return {str, cstring_length(str)};
+        return StringView{str, cstring_length(str)};
+    }
+
+    template <usize STR_LENGTH>
+    psh_api psh_inline StringView make_string_view(char (&str)[STR_LENGTH]) psh_no_except {
+        return StringView{str, STR_LENGTH - 1};
+    }
+
+    psh_api psh_inline String make_string(Arena* arena, usize initial_capacity) psh_no_except {
+        return make_dynarray<char>(arena, initial_capacity);
     }
 
     psh_api psh_inline String make_string(Arena* arena, StringView sv) psh_no_except {
-        String string{arena, sv.count + 1u};
+        String string;
+        dynarray_init(&string, arena, sv.count + 1u);
+        string.count = sv.count;
 
         memory_copy(reinterpret_cast<u8*>(string.buf), reinterpret_cast<u8 const*>(sv.buf), sizeof(char) * sv.count);
-        string.count = sv.count;
 
         return string;
     }
 
     psh_api psh_inline StringView make_string_view(String const& string) psh_no_except {
-        return make_const_fat_ptr(string);
+        return StringView{reinterpret_cast<char const*>(string.buf), string.count};
     }
 
     /// Join an array of string views to a target string data. You can also provide a join element to be
@@ -130,7 +141,7 @@ namespace psh {
     psh_api Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element = {}) psh_no_except;
 
     // -------------------------------------------------------------------------------------------------
-    // String comparison utilities.
+    // String comparison.
     // -------------------------------------------------------------------------------------------------
 
     enum struct StringCompareResult {
@@ -139,17 +150,29 @@ namespace psh {
         GREATER_THAN,
     };
 
-    psh_api StringCompareResult            string_compare(cstring lhs, cstring rhs) psh_no_except;
-    psh_api StringCompareResult            string_compare(StringView lhs, StringView rhs) psh_no_except;
-    psh_api psh_inline StringCompareResult string_compare(StringView lhs, cstring rhs) psh_no_except {
-        return string_compare(lhs, make_string_view(rhs));
+    psh_api StringCompareResult string_compare(StringView lhs, StringView rhs) psh_no_except;
+    template <usize RHS_LENGTH>
+    psh_api psh_inline StringCompareResult string_compare(StringView lhs, char (&rhs)[RHS_LENGTH]) psh_no_except {
+        return string_compare(lhs, StringView{rhs, RHS_LENGTH - 1});
+    }
+    template <usize RHS_LENGTH>
+    psh_api psh_inline StringCompareResult string_compare(StringView lhs, char rhs[RHS_LENGTH]) psh_no_except {
+        return string_compare(lhs, StringView{rhs, RHS_LENGTH - 1});
     }
 
-    psh_api bool            string_equal(cstring lhs, cstring rhs) psh_no_except;
-    psh_api bool            string_equal(StringView lhs, StringView rhs) psh_no_except;
-    psh_api psh_inline bool string_equal(StringView lhs, cstring rhs) psh_no_except {
-        return string_equal(lhs, make_string_view(rhs));
+    psh_api bool string_equal(StringView lhs, StringView rhs) psh_no_except;
+    template <usize RHS_LENGTH>
+    psh_api psh_inline bool string_equal(StringView lhs, char const (&rhs)[RHS_LENGTH]) psh_no_except {
+        return string_equal(lhs, StringView{rhs, RHS_LENGTH - 1});
     }
+    template <usize RHS_LENGTH>
+    psh_api psh_inline bool string_equal(StringView lhs, char const rhs[RHS_LENGTH]) psh_no_except {
+        return string_equal(lhs, StringView{rhs, RHS_LENGTH - 1});
+    }
+
+    // -------------------------------------------------------------------------------------------------
+    // Character properties.
+    // -------------------------------------------------------------------------------------------------
 
     psh_api constexpr bool is_utf8(char c) psh_no_except {
         return (0x1F < c && c < 0x7F);

@@ -24,58 +24,57 @@
 
 #pragma once
 
-#include <psh/array.hpp>
 #include <psh/core.hpp>
+#include <psh/memory.hpp>
 #include <psh/string.hpp>
 
 namespace psh {
-    enum struct ReadFileFlag : u32 {
+    enum OpenFileFlag : u32 {
         /// Open a text file for reading operations.
         ///
         /// The file stream is positioned at the start of the file.
-        READ_TEXT = 0,
+        OPEN_FILE_FLAG_READ_TEXT = 0,
 
         /// Open a text file for reading and writing.
         ///
         /// The file stream will be placed at the start of the file and the existing contents of the
         /// file, if any, will remain intact.
-        READ_TEXT_EXTENDED = 1,
+        OPEN_FILE_FLAG_READ_TEXT_EXTENDED,
 
         /// Open a non-text file for reading operations.
         ///
         /// The file stream is positioned at the start of the file.
-        READ_BIN = 2,
+        OPEN_FILE_FLAG_READ_BIN,
 
         /// Open a non-text file for reading and writing.
         ///
         /// The file stream will be placed at the start of the file and the existing contents of the
         /// file, if any, will remain intact.
-        READ_BIN_EXTENDED = 3,
-    };
+        OPEN_FILE_FLAG_READ_BIN_EXTENDED,
 
-    enum struct WriteFileFlag : u32 {
         /// Open a file for writing.
         ///
         /// If the file exists, all file contents are overwritten and the stream is placed at
         /// the start of the file. Otherwise, the file will be created and the file stream will be
         /// placed at the start of the file.
-        WRITE = 4,
+        OPEN_FILE_FLAG_WRITE,
 
         /// Open a file for reading and writing.
         ///
         /// If the file exists, all existing file contents are overwritten and the file stream is
         /// positioned at the start of the file. Otherwise, the file will be created and the file
         /// stream will be placed at the start of the file.
-        WRITE_EXTENDED = 5,
+        OPEN_FILE_FLAG_WRITE_EXTENDED,
 
         /// Open file for writing to the end of the file stream.
         ///
         /// The file stream is placed at the end of the file and all output is written to the
         /// current end of the file. If the file doesn't exist, it is created.
-        APPEND = 6,
+        OPEN_FILE_FLAG_APPEND,
 
         // @NOTE: the append extended flag won't be supported due to its non-portable behaviour. The
         //       user may use the WRITE_EXTENDED instead.
+        OPEN_FILE_FLAG_COUNT,
     };
 
     enum struct FileStatus {
@@ -97,7 +96,7 @@ namespace psh {
     ///     - arena: The arena allocator that will carry the contents of the resulting string.
     ///     - path: A zero-terminated string containing the path to the file to be read.
     ///     - flag: Can be any flag with read permission.
-    psh_api FileReadResult read_file(Arena* arena, cstring path, ReadFileFlag flag = ReadFileFlag::READ_BIN) psh_no_except;
+    psh_api FileReadResult read_file(Arena* arena, cstring path, OpenFileFlag flag = OPEN_FILE_FLAG_READ_BIN) psh_no_except;
 
     /// Read the standard input stream bytes to a string.
     psh_api String read_stdin(Arena* arena, u32 initial_buf_size = 128, u32 read_chunk_size = 64) psh_no_except;

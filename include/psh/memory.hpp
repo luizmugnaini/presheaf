@@ -124,42 +124,25 @@ namespace psh {
         usize offset   = 0;
     };
 
-    // @TODO: Should we do assertions for null arenas or simply do nothing and not crash?
+    psh_inline Arena make_arena(u8* buf, usize capacity) psh_no_except {
+        return Arena{
+            .buf      = buf,
+            .capacity = (buf != nullptr) ? capacity : 0,
+            .offset   = 0,
+        };
+    }
 
     /// Initialize the arena with a given memory buffer and a capacity.
     psh_inline void arena_init(Arena* arena, u8* buf, usize capacity) psh_no_except {
-        psh_assert_not_null(arena);
+        psh_validate_usage(psh_assert_not_null(arena));
         arena->buf      = buf;
         arena->capacity = (buf != nullptr) ? capacity : 0;
     }
 
     /// Reset the offset of the allocator.
     psh_inline void arena_clear(Arena* arena) psh_no_except {
-        psh_assert_not_null(arena);
+        psh_validate_usage(psh_assert_not_null(arena));
         arena->offset = 0;
-    }
-
-    /// Create a restorable checkpoint for the arena. This is a more flexible alternative to the
-    /// ScratchArena construct since you can manually restore the arena, not relying in destructors.
-    psh_inline ArenaCheckpoint make_arena_checkpoint(Arena* arena) psh_no_except {
-        ArenaCheckpoint checkpoint = {};
-        if (arena != nullptr) {
-            checkpoint.arena        = arena;
-            checkpoint.saved_offset = arena->offset;
-        }
-        return checkpoint;
-    }
-
-    /// Restore the arena state to a given checkpoint.
-    psh_inline void arena_checkpoint_restore(ArenaCheckpoint checkpoint) psh_no_except {
-        psh_assert_not_null(checkpoint.arena);
-        psh_assert_fmt(
-            checkpoint.saved_offset <= checkpoint.arena->offset,
-            "Invalid checkpoint. Cannot restore the arena to an offset (%zu) bigger than the current (%zu).",
-            checkpoint.saved_offset,
-            checkpoint.arena->offset);
-
-        checkpoint.arena->offset = checkpoint.saved_offset;
     }
 
     /// Make an arena that owns its memory.
@@ -167,17 +150,47 @@ namespace psh {
     /// Since the arena is not aware of the ownership, this function call has to be paired
     /// with free_owned_arena.
     psh_inline Arena make_owned_arena(usize capacity) psh_no_except {
-        Arena arena;
-        arena_init(&arena, memory_virtual_alloc(capacity), capacity);
-        return arena;
+        u8* buf = memory_virtual_alloc(capacity);
+        return Arena{
+            .buf      = buf,
+            .capacity = (buf != nullptr) ? capacity : 0,
+            .offset   = 0,
+        };
     }
 
     /// Free the memory of an arena that owns its memory.
     ///
     /// This function should only be called for arenas that where created by make_owned_arena.
-    psh_inline void free_owned_arena(Arena& arena) psh_no_except {
-        memory_virtual_free(arena.buf, arena.capacity);
-        arena.capacity = 0;
+    psh_inline void free_owned_arena(Arena* arena) psh_no_except {
+        psh_validate_usage(psh_assert_not_null(arena));
+
+        usize capacity  = arena->capacity;
+        arena->capacity = 0;
+        memory_virtual_free(arena->buf, capacity);
+    }
+
+    /// Create a restorable checkpoint for the arena. This is a more flexible alternative to the
+    /// ScratchArena construct since you can manually restore the arena, not relying on destructors.
+    psh_inline ArenaCheckpoint make_arena_checkpoint(Arena* arena) psh_no_except {
+        psh_validate_usage(psh_assert_not_null(arena));
+        return ArenaCheckpoint{
+            .arena        = arena,
+            .saved_offset = arena->offset,
+        };
+    }
+
+    /// Restore the arena state to a given checkpoint.
+    psh_inline void arena_checkpoint_restore(ArenaCheckpoint checkpoint) psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(checkpoint.arena);
+            psh_assert_fmt(
+                checkpoint.saved_offset <= checkpoint.arena->offset,
+                "Invalid checkpoint. Cannot restore the arena to an offset (%zu) bigger than the current (%zu).",
+                checkpoint.saved_offset,
+                checkpoint.arena->offset);
+        });
+
+        checkpoint.arena->offset = checkpoint.saved_offset;
     }
 
     /// Scratch arena, an automatic checkpoint manager for arena offsets.
@@ -194,16 +207,13 @@ namespace psh {
         usize  saved_offset;
 
         psh_inline ScratchArena(Arena* arena_) psh_no_except {
-            if (psh_likely(arena_ != nullptr)) {
-                this->arena        = arena_;
-                this->saved_offset = arena_->offset;
-            }
+            psh_validate_usage(psh_assert_not_null(arena_));
+            this->arena        = arena_;
+            this->saved_offset = arena_->offset;
         }
 
         psh_inline ~ScratchArena() psh_no_except {
-            if (psh_likely(this->arena != nullptr)) {
-                this->arena->offset = this->saved_offset;
-            }
+            this->arena->offset = this->saved_offset;
         }
 
         // @NOTE: Required when compiling as a DLL since the compiler will require all standard
@@ -276,6 +286,7 @@ namespace psh {
         usize previous_offset = 0;
 
         psh_inline void init(u8* buf_, usize capacity_) psh_no_except {
+            psh_validate_usage(psh_assert_msg(this->capacity == 0, "Stack already initialized."));
             this->buf      = buf_;
             this->capacity = (buf_ != nullptr) ? capacity_ : 0;
         }
@@ -371,14 +382,301 @@ namespace psh {
     };
 
     // -------------------------------------------------------------------------------------------------
+    // Run-time known fixed length array.
+    // -------------------------------------------------------------------------------------------------
+
+    /// Array with run-time known constant capacity.
+    ///
+    /// The array lifetime is bound to the lifetime of the arena passed at initialization, being
+    /// responsible to allocate the memory referenced by the array.
+    template <typename T>
+    struct psh_api Array {
+        T*    buf;
+        usize count = 0;
+
+        psh_impl_generate_container_boilerplate(T, this->buf, this->count)
+    };
+
+    template <typename T>
+    psh_inline Array<T> make_array(Arena* arena, usize count) psh_no_except {
+        T* buf = memory_alloc<T>(arena, count);
+        return Array<T>{
+            .buf   = buf,
+            .count = (buf != nullptr) ? count : 0,
+        };
+    }
+
+    template <typename T>
+    psh_inline void array_init(Array<T>* array, Arena* arena, usize count) psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(array);
+            psh_assert_msg(array->count == 0, "Tried to re-initialize an Array.");
+        });
+
+        T* buf       = memory_alloc<T>(arena, count);
+        array->buf   = buf;
+        array->count = (buf != nullptr) ? count : 0;
+    }
+
+    // -------------------------------------------------------------------------------------------------
+    // Dynamically sized array.
+    // -------------------------------------------------------------------------------------------------
+
+    static constexpr usize DYNARRAY_DEFAULT_INITIAL_CAPACITY      = 4;
+    static constexpr usize DYNARRAY_RESIZE_CAPACITY_GROWTH_FACTOR = 2;
+
+    /// Run-time variable length array.
+    ///
+    /// A dynamic array has its lifetime bound to its associated arena.
+    template <typename T>
+    struct psh_api DynArray {
+        T*     buf;
+        Arena* arena;
+        usize  capacity = 0;
+        usize  count    = 0;
+
+        psh_impl_generate_container_boilerplate(T, this->buf, this->count)
+    };
+
+    template <typename T>
+    psh_api psh_inline DynArray<T> make_dynarray(
+        Arena* arena,
+        usize  capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) psh_no_except {
+        T* buf = memory_alloc<T>(arena, capacity);
+        return DynArray<T>{
+            .buf      = buf,
+            .arena    = arena,
+            .capacity = (buf != nullptr) ? capacity : 0,
+            .count    = 0,
+        };
+    }
+
+    /// Initialize the dynamic array with a given capacity.
+    template <typename T>
+    psh_api psh_inline void dynarray_init(
+        DynArray<T>* darray,
+        Arena*       arena,
+        usize        capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(darray);
+            psh_assert_msg(darray->count == 0, "Tried to re-initialize an initialized DynArray");
+        });
+
+        darray->buf      = memory_alloc<T>(arena, capacity);
+        darray->arena    = arena;
+        darray->capacity = (darray->buf != nullptr) ? capacity : 0;
+    }
+
+    /// Grow the capacity of the dynamic array underlying buffer.
+    template <typename T>
+    psh_api Status dynarray_grow(
+        DynArray<T>* darray,
+        u32          growth_factor = DYNARRAY_RESIZE_CAPACITY_GROWTH_FACTOR) psh_no_except {
+        psh_validate_usage(psh_assert_not_null(darray));
+
+        usize  new_capacity      = 0;
+        T*     new_buf           = nullptr;
+        Arena* arena             = darray->arena;
+        usize  previous_capacity = darray->capacity;
+
+        if (psh_likely(previous_capacity != 0)) {
+            new_capacity = previous_capacity * growth_factor;
+            new_buf      = memory_realloc<T>(arena, darray->buf, previous_capacity, new_capacity);
+        } else {
+            new_capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY;
+            new_buf      = memory_alloc<T>(arena, new_capacity);
+        }
+
+        Status status = (new_buf != nullptr);
+        if (psh_likely(status)) {
+            darray->buf      = new_buf;
+            darray->capacity = new_capacity;
+        }
+
+        return status;
+    }
+
+    /// @NOTE: If T is a struct with a pointer to itself, the pointer address will be invalidated
+    ///        by this procedure. DO NOT use this array structure with types having this property.
+    template <typename T>
+    psh_api Status dynarray_reserve(DynArray<T>* darray, usize new_capacity) psh_no_except {
+        // @TODO: reserve should change the count
+        psh_validate_usage({
+            psh_assert_not_null(darray);
+            psh_assert_msg(darray->capacity < new_capacity, "DynArray doesn't shrink.");
+        });
+
+        T*     new_buf          = nullptr;
+        Arena* arena            = darray->arena;
+        usize  current_capacity = darray->capacity;
+        if (current_capacity == 0) {
+            new_buf = memory_alloc<T>(arena, new_capacity);
+        } else {
+            new_buf = memory_realloc<T>(arena, darray->buf, current_capacity, new_capacity);
+        }
+
+        Status status = (new_buf != nullptr);
+        if (psh_likely(status)) {
+            darray->buf      = new_buf;
+            darray->capacity = new_capacity;
+        }
+
+        return status;
+    }
+
+    /// Inserts a new element to the end of the dynamic array.
+    template <typename T>
+    psh_api Status dynarray_push(DynArray<T>* darray, T new_element) psh_no_except {
+        psh_validate_usage(psh_assert_not_null(darray));
+
+        usize previous_count = darray->count;
+
+        Status status = STATUS_OK;
+        if (darray->capacity == previous_count) {
+            status = dynarray_grow(darray);
+        }
+
+        if (psh_likely(status)) {
+            darray->buf[previous_count] = new_element;
+            darray->count               = previous_count + 1;
+        }
+
+        return status;
+    }
+
+    /// Insert a collection of new elements to the end of the dynamic array.
+    template <typename T>
+    psh_api Status dynarray_push(DynArray<T>* darray, FatPtr<T const> new_elements) psh_no_except {
+        psh_validate_usage(psh_assert_not_null(darray));
+
+        usize previous_count = darray->count;
+
+        Status status = STATUS_OK;
+        if (darray->capacity < new_elements.count + previous_count) {
+            status = dynarray_reserve(darray, previous_count + new_elements.count);
+        }
+
+        if (psh_likely(status)) {
+            memory_copy(
+                reinterpret_cast<u8*>(darray->buf + previous_count),
+                reinterpret_cast<u8 const*>(new_elements.buf),
+                sizeof(T) * new_elements.count);
+            darray->count = previous_count + new_elements.count;
+        }
+
+        return status;
+    }
+
+    /// Try to pop the last element of the dynamic array.
+    template <typename T>
+    psh_api Status dynarray_pop(DynArray<T>* darray) psh_no_except {
+        psh_validate_usage(psh_assert_not_null(darray));
+
+        usize previous_count = darray->count;
+
+        Status status = (previous_count > 0);
+        if (psh_likely(status)) {
+            darray->count = previous_count - 1u;
+        }
+
+        return status;
+    }
+
+    /// Clear the dynamic array data, resetting its size.
+    template <typename T>
+    psh_api psh_inline void dynarray_clear(DynArray<T>* darray) psh_no_except {
+        psh_validate_usage(psh_assert_not_null(darray));
+        darray->count = 0;
+    }
+
+    // -------------------------------------------------------------------------------------------------
     // Memory manipulation.
     // -------------------------------------------------------------------------------------------------
 
     /// Query the current size in bytes of a given container.
     template <typename Container, typename T = Container::ValueType>
-    psh_api usize size_bytes(Container const& c) psh_no_except {
-        psh_static_assert_valid_const_container_type(Container, c);
+    psh_api usize size_bytes(Container const* c) psh_no_except {
+        psh_validate_usage({
+            psh_static_assert_valid_const_container_type(Container, c);
+            psh_assert_not_null(c);
+        });
         return sizeof(T) * c.count;
+    }
+
+    psh_api void unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except;
+
+    /// Try to remove a buffer element at a given index.
+    ///
+    /// This won't preserve the current ordering of the buffer.
+    template <typename T>
+    psh_api void unordered_remove(FatPtr<T>* fptr, usize idx) psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(fptr);
+            psh_assert_bounds_check(idx, fptr->count);
+        });
+
+        T*    buf   = fptr->buf;
+        usize count = fptr->count;
+
+        --fptr->count;
+        unordered_remove(
+            FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
+            reinterpret_cast<u8*>(buf + idx),
+            sizeof(T));
+    }
+    template <typename T>
+    psh_api void unordered_remove(DynArray<T>* darray, usize idx) psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(darray);
+            psh_assert_bounds_check(idx, darray->count);
+        });
+
+        T*    buf   = darray->buf;
+        usize count = darray->count;
+
+        --darray->count;
+        unordered_remove(
+            FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
+            reinterpret_cast<u8*>(buf + idx),
+            sizeof(T));
+    }
+
+    psh_api void ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except;
+
+    /// Try to remove a buffer element at a given index.
+    ///
+    /// This will move all of the buffer contents above the removed element index down one.
+    template <typename T>
+    psh_api void ordered_remove(FatPtr<T>* fptr, usize idx) psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(fptr);
+            psh_assert_bounds_check(idx, fptr->count);
+        });
+
+        T*    buf   = fptr->buf;
+        usize count = fptr->count;
+
+        --fptr->count;
+        ordered_remove(
+            FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
+            reinterpret_cast<u8*>(buf + idx),
+            sizeof(T));
+    }
+    template <typename T>
+    psh_api void ordered_remove(DynArray<T>* darray, usize idx) psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(darray);
+            psh_assert_bounds_check(idx, darray->count);
+        });
+
+        T*    buf   = darray->buf;
+        usize count = darray->count;
+
+        --darray->count;
+        ordered_remove(
+            FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
+            reinterpret_cast<u8*>(buf + idx),
+            sizeof(T));
     }
 
     /// Simple wrapper around memset that automatically deals with null values.
@@ -388,8 +686,8 @@ namespace psh {
 
     /// Zero-out all of the members of a given structure.
     template <typename T>
-    psh_api psh_inline void zero_struct(T& s) psh_no_except {
-        memory_set(reinterpret_cast<u8*>(&s), sizeof(T), 0);
+    psh_api psh_inline void zero_struct(T* s) psh_no_except {
+        memory_set(reinterpret_cast<u8*>(s), sizeof(T), 0);
     }
 
     /// Simple wrapper around memcpy.
@@ -404,23 +702,21 @@ namespace psh {
     psh_api void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except;
 
     /// Allocate a new block of memory with a given alignment.
-    u8* memory_alloc_align(Arena* arena, usize size_bytes, u32 alignment) psh_no_except;
-    u8* memory_alloc_align(Stack* stack, usize size_bytes, u32 alignment) psh_no_except;
+    psh_api u8* memory_alloc_align(Arena* arena, usize size_bytes, u32 alignment) psh_no_except;
+    psh_api u8* memory_alloc_align(Stack* stack, usize size_bytes, u32 alignment) psh_no_except;
 
-    /// Allocates a new block of memory.
-    ///
-    /// Parameters:
-    ///     - count: Number of entities of type T that should fit in the new block.
+    /// Allocates a new block of memory capable of holding a certain count of elements of a
+    /// given type.
     template <typename T>
-    psh_inline T* memory_alloc(Arena* arena, usize count) psh_no_except {
+    psh_api psh_inline T* memory_alloc(Arena* arena, usize count) psh_no_except {
         return reinterpret_cast<T*>(memory_alloc_align(arena, sizeof(T) * count, alignof(T)));
     }
     template <typename T>
-    psh_inline T* memory_alloc(Stack* stack, usize count) psh_no_except {
+    psh_api psh_inline T* memory_alloc(Stack* stack, usize count) psh_no_except {
         return reinterpret_cast<T*>(memory_alloc_align(stack, sizeof(T) * count, alignof(T)));
     }
     template <typename T>
-    psh_inline T* memory_alloc(MemoryManager* memory_manager, usize count) psh_no_except {
+    psh_api psh_inline T* memory_alloc(MemoryManager* memory_manager, usize count) psh_no_except {
         if (memory_manager == nullptr) {
             return nullptr;
         }
@@ -431,13 +727,13 @@ namespace psh {
     }
 
     /// Reallocate an existing block of memory with a given alignment.
-    u8* memory_realloc_align(
+    psh_api u8* memory_realloc_align(
         Arena* arena,
         u8*    block,
         usize  current_size_bytes,
         usize  new_size_bytes,
         u32    alignment) psh_no_except;
-    u8* memory_realloc_align(
+    psh_api u8* memory_realloc_align(
         Stack* stack,
         u8*    block,
         usize  new_size_bytes,
@@ -451,7 +747,7 @@ namespace psh {
     ///     - new_count: Number of entities of type T that the new memory block should be
     ///                  able to contain.
     template <typename T>
-    psh_inline T* memory_realloc(Arena* arena, T* block, usize current_count, usize new_count) psh_no_except {
+    psh_api psh_inline T* memory_realloc(Arena* arena, T* block, usize current_count, usize new_count) psh_no_except {
         return reinterpret_cast<T*>(memory_realloc_align(
             arena,
             reinterpret_cast<u8*>(block),
@@ -460,11 +756,11 @@ namespace psh {
             alignof(T)));
     }
     template <typename T>
-    psh_inline T* memory_realloc(Stack* stack, T* block, usize new_count) psh_no_except {
+    psh_api psh_inline T* memory_realloc(Stack* stack, T* block, usize new_count) psh_no_except {
         return reinterpret_cast<T*>(memory_realloc_align(stack, block, sizeof(T) * new_count));
     }
     template <typename T>
-    psh_inline T* memory_realloc(MemoryManager* memory_manager, T* block, usize new_count) psh_no_except {
+    psh_api psh_inline T* memory_realloc(MemoryManager* memory_manager, T* block, usize new_count) psh_no_except {
         if (memory_manager == nullptr) {
             return nullptr;
         }

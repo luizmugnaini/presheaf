@@ -1,5 +1,10 @@
 TODO
 
+- Create procedures like make_array, make_dynarray, and such to avoid declaration and initialization
+  in two distinct steps when it doesn't need to be that way.
+- StringView -> String.
+- Use isize for counts and indices. Check if idx >= 0 in the bounds checking.
+- String -> DynString.
 - Implement a hash map.
 - Threading abstraction for Windows/pthreads.
 - Tests for `psh/stream.h`.

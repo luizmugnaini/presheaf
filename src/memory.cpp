@@ -53,10 +53,14 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     u8* Stack::top() psh_no_except {
+        psh_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialized."));
+
         return pointer_add(this->buf, this->previous_offset);
     }
 
     StackHeader const* Stack::top_header() const psh_no_except {
+        psh_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialized."));
+
         return reinterpret_cast<StackHeader const*>(
             pointer_const_add(this->buf, this->previous_offset - sizeof(StackHeader)));
     }
@@ -72,15 +76,18 @@ namespace psh {
     }
 
     StackHeader const* Stack::header_of(u8 const* block) const psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(block);
+            psh_assert_msg(this->buf != nullptr, "Stack uninitialized.");
+        });
+
         u8 const* memory_start = this->buf;
+        u8 const* block_header = block + sizeof(StackHeader);
 
         bool valid = true;
-        valid &= (block != nullptr);
         valid &= (block >= memory_start);
         valid &= (block <= memory_start + this->capacity);
         valid &= (block <= memory_start + this->previous_offset);
-
-        u8 const* block_header = block + sizeof(StackHeader);
         valid &= (block_header >= memory_start);
 
         return valid ? reinterpret_cast<StackHeader const*>(block_header) : nullptr;
@@ -110,13 +117,15 @@ namespace psh {
     }
 
     Status Stack::clear_at(u8 const* block) psh_no_except {
-        if (psh_unlikely(block == nullptr)) {
-            return STATUS_FAILED;
-        }
+        u8* this_buf = this->buf;
+        psh_validate_usage({
+            psh_assert_msg(this_buf != nullptr, "Stack uninitialized.");
+            psh_assert_not_null(block);
+        });
 
         // Check if the block is within the allocator's memory.
-        if (psh_unlikely((block < this->buf) || (block > this->buf + this->previous_offset))) {
-            cstring fail_reason = (block > this->buf + this->capacity)
+        if (psh_unlikely((block < this_buf) || (block > this_buf + this->previous_offset))) {
+            cstring fail_reason = (block > this_buf + this->capacity)
                                       ? "Pointer outside of the stack allocator memory region."
                                       : "Pointer to an already free region of the stack allocator memory.";
             psh_log_error(fail_reason);
@@ -126,10 +135,10 @@ namespace psh {
 
         StackHeader const* header = reinterpret_cast<StackHeader const*>(block - sizeof(StackHeader));
 
-        this->offset = no_wrap_sub(
-            no_wrap_sub(reinterpret_cast<uptr>(block), header->padding),
-            reinterpret_cast<uptr>(this->buf));
         this->previous_offset = header->previous_offset;
+        this->offset          = no_wrap_sub(
+            no_wrap_sub(reinterpret_cast<uptr>(block), header->padding),
+            reinterpret_cast<uptr>(this_buf));
 
         return STATUS_OK;
     }
@@ -139,7 +148,7 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     void MemoryManager::init(usize capacity_bytes) psh_no_except {
-        this->allocation_count = 0;
+        psh_validate_usage(psh_assert_msg(this->allocation_count == 0, "MemoryManager already initialized."));
 
         this->allocator.init(memory_virtual_alloc(capacity_bytes), capacity_bytes);
     }
@@ -157,6 +166,8 @@ namespace psh {
     }
 
     Status MemoryManager::clear_until(u8 const* block) psh_no_except {
+        psh_validate_usage(psh_assert_not_null(block));
+
         u8 const* memory_start = this->allocator.buf;
 
         // Check if the block lies within the allocator's memory.
@@ -194,19 +205,46 @@ namespace psh {
         this->allocator.clear();
     }
     // -------------------------------------------------------------------------------------------------
-    // Memory handling procedures.
+    // Memory manipulation procedures.
     // -------------------------------------------------------------------------------------------------
+
+    void unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
+        u8 const* buf_end = fptr.buf + fptr.count;
+        psh_validate_usage(psh_assert_bounds_check(reinterpret_cast<uptr>(element_ptr), reinterpret_cast<uptr>(buf_end)));
+
+        // Only effectively remove if the element isn't the last one.
+        u8 const* last_element_ptr = buf_end - element_size;
+        if (element_ptr != last_element_ptr) {
+            memory_move(element_ptr, last_element_ptr, element_size);
+        }
+    }
+
+    void ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
+        u8 const* buf_end = fptr.buf + fptr.count;
+        psh_validate_usage(psh_assert_bounds_check(reinterpret_cast<uptr>(element_ptr), reinterpret_cast<uptr>(buf_end)));
+
+        // Only effectively remove if the element isn't the last one.
+        if (element_ptr != (buf_end - element_size)) {
+            u8 const* next_element_ptr = element_ptr + element_size;
+            memory_move(element_ptr, next_element_ptr, static_cast<usize>(pointer_offset(next_element_ptr, buf_end)));
+        }
+    }
 
     usize padding_with_header(
         uptr  ptr_addr,
         usize alignment,
         usize header_size,
         usize header_alignment) psh_no_except {
-        psh_assert_fmt(
-            psh_is_pow_of_two(alignment) && psh_is_pow_of_two(header_alignment),
-            "Expected the alignments to be powers of two (alignment: %zu; header_alignment: %zu).",
-            alignment,
-            header_alignment);
+        psh_validate_usage({
+            psh_assert_fmt(
+                psh_is_pow_of_two(alignment),
+                "Expected the element alignment to be a power of two (got %zu).",
+                alignment);
+            psh_assert_fmt(
+                psh_is_pow_of_two(header_alignment),
+                "Expected the header alignment to be a power of two (got %zu).",
+                header_alignment);
+        });
 
         // Calculate the padding necessary for the alignment of the new block of memory.
         usize padding   = 0;
@@ -229,7 +267,7 @@ namespace psh {
     }
 
     usize align_forward(uptr ptr_addr, usize alignment) psh_no_except {
-        psh_assert_fmt(psh_is_pow_of_two(alignment), "Expected alignment (%zu) to be a power of two.", alignment);
+        psh_validate_usage(psh_assert_fmt(psh_is_pow_of_two(alignment), "Expected alignment (%zu) to be a power of two.", alignment));
 
         usize mod_align = ptr_addr & (alignment - 1u);
         if (mod_align != 0) {
@@ -240,20 +278,25 @@ namespace psh {
     }
 
     void memory_set(u8* memory, usize size_bytes, i32 fill) psh_no_except {
+        psh_validate_usage(psh_assert_not_null(memory));
+
         if (psh_unlikely(size_bytes == 0)) {
             return;
         }
-        psh_assert_not_null(memory);
 
         psh_discard_value(memset(memory, fill, size_bytes));
     }
 
     void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(dst);
+            psh_assert_not_null(src);
+            psh_assert_no_alias(src, dst);
+        });
+
         if (psh_unlikely(size_bytes == 0)) {
             return;
         }
-        psh_assert_not_null(dst);
-        psh_assert_not_null(src);
 
 #if PSH_ENABLE_MEMCPY_OVERLAP_CHECK
         psh_assert_msg(
@@ -265,11 +308,15 @@ namespace psh {
     }
 
     void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(dst);
+            psh_assert_not_null(src);
+            psh_assert_no_alias(src, dst);
+        });
+
         if (psh_unlikely(size_bytes == 0)) {
             return;
         }
-        psh_assert_not_null(dst);
-        psh_assert_not_null(src);
 
         psh_discard_value(memmove(dst, src, size_bytes));
     }
@@ -294,6 +341,7 @@ namespace psh {
 
     void memory_virtual_free(u8* memory, usize size_bytes) psh_no_except {
 #if defined(PSH_OS_WINDOWS)
+        psh_validate_usage(psh_assert_not_null(memory));
         psh_discard_value(size_bytes);
 
         BOOL result = VirtualFree(memory, 0, MEM_RELEASE);
@@ -301,6 +349,11 @@ namespace psh {
             psh_log_error_fmt("Failed free memory with error code: %lu", GetLastError());
         }
 #elif defined(PSH_OS_UNIX)
+        psh_validate_usage({
+            psh_assert_not_null(memory);
+            psh_assert(size_bytes > 0);
+        });
+
         i32 result = munmap(memory, size_bytes);
         if (psh_unlikely(result == -1)) {
             psh_log_error_fmt("Failed to free memory due to: %s", strerror(errno));
@@ -321,7 +374,9 @@ namespace psh {
 #define psh_impl_arena_is_empty(arena) (((arena)->capacity == 0) || ((arena)->buf == nullptr))
 
     u8* memory_alloc_align(Arena* arena, usize size_bytes, u32 alignment) psh_no_except {
-        if (psh_unlikely((arena == nullptr) || (size_bytes == 0))) {
+        psh_validate_usage(psh_assert_not_null(arena));
+
+        if (psh_unlikely(size_bytes == 0)) {
             return nullptr;
         }
 
@@ -342,7 +397,9 @@ namespace psh {
     }
 
     u8* memory_alloc_align(Stack* stack, usize size_bytes, u32 alignment) psh_no_except {
-        if (psh_unlikely((stack == nullptr) || (size_bytes == 0))) {
+        psh_validate_usage(psh_assert_not_null(stack));
+
+        if (psh_unlikely(size_bytes == 0)) {
             return nullptr;
         }
 
@@ -390,9 +447,12 @@ namespace psh {
         usize  current_size_bytes,
         usize  new_size_bytes,
         u32    alignment) psh_no_except {
-        psh_assert_msg(new_size_bytes != 0, "Don't use realloc to free blocks of memory.");
-        psh_assert_msg((block != nullptr) && (current_size_bytes != 0), "Don't use realloc to allocate new memory.");
-        psh_assert_not_null(arena);
+        psh_validate_usage({
+            psh_assert_not_null(arena);
+            psh_assert_msg(block != nullptr, "Don't use realloc to allocate new memory.");
+            psh_assert_msg(current_size_bytes != 0, "Don't use realloc to allocate new memory.");
+            psh_assert_msg(new_size_bytes != 0, "Don't use realloc to free blocks of memory.");
+        });
 
         uptr  memory_addr      = reinterpret_cast<uptr>(arena->buf);
         uptr  memory_end       = memory_addr + arena->capacity;
@@ -445,8 +505,11 @@ namespace psh {
     }
 
     u8* memory_realloc_align(Stack* stack, u8* block, usize new_size_bytes, u32 alignment) psh_no_except {
-        psh_assert_msg(new_size_bytes != 0, "Don't use realloc to free existing memory blocks.");
-        psh_assert_not_null(stack);
+        psh_validate_usage({
+            psh_assert_not_null(stack);
+            psh_assert_msg(block != nullptr, "Don't use realloc to allocate new memory.");
+            psh_assert_msg(new_size_bytes != 0, "Don't use realloc to free existing memory blocks.");
+        });
 
         // If ptr is the last allocated block, just adjust the offsets.
         if (block == stack->top()) {

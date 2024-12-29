@@ -36,40 +36,38 @@
 #    define PSH_IMPL_PATH_MAX_CHAR_COUNT PATH_MAX
 #endif
 
-// @TODO(luiz): Substitute the perror calls with psh::log_fmt taking the error strings via a
+// @TODO(luiz): Substitute the perror calls with psh_log_fmt taking the error strings via a
 //       thread safe alternative to strerror.
 
 namespace psh {
     namespace impl::streams {
-        // @TODO(luiz): To be honest this is quite ugly, OpenFileFlag is just a concatenation of
-        // ReadFileFlag and WriteFileFlag. It is not exposed, but is still a weak maintainance point.
-        enum struct OpenFileFlag : u32 {
-            READ_TEXT = 0,
-            READ_TEXT_EXTENDED,
-            READ_BIN,
-            READ_BIN_EXTENDED,
-            WRITE,
-            WRITE_EXTENDED,
-            APPEND,
-            FLAG_COUNT,
-        };
-        constexpr cstring OPEN_FILE_FLAG_TO_STR_MAP[static_cast<usize>(OpenFileFlag::FLAG_COUNT)] = {
-            "r",    // ReadFileFlag::READ_TEXT
-            "r+",   // ReadFileFlag::READ_TEXT_EXTENDED
-            "rb",   // ReadFileFlag::READ_BIN
-            "rb+",  // ReadFileFlag::READ_BIN_EXTENDED
-            "w",    // WriteFileFlag::WRITE
-            "w+",   // WriteFileFlag::WRITE_EXTENDED
-            "a",    // WriteFileFlag::APPEND
+        constexpr cstring OPEN_FILE_FLAG_TO_STR_MAP[OPEN_FILE_FLAG_COUNT] = {
+            "r",    // OPEN_FILE_FLAG_READ_TEXT
+            "r+",   // OPEN_FILE_FLAG_READ_TEXT_EXTENDED
+            "rb",   // OPEN_FILE_FLAG_READ_BIN
+            "rb+",  // OPEN_FILE_FLAG_READ_BIN_EXTENDED
+            "w",    // OPEN_FILE_FLAG_WRITE
+            "w+",   // OPEN_FILE_FLAG_WRITE_EXTENDED
+            "a",    // OPEN_FILE_FLAG_APPEND
         };
 
         constexpr bool has_read_permission(OpenFileFlag flag) psh_no_except {
-            return (flag == OpenFileFlag::READ_TEXT) || (flag == OpenFileFlag::READ_TEXT_EXTENDED) || (flag == OpenFileFlag::READ_BIN) || (flag == OpenFileFlag::READ_BIN_EXTENDED) || (flag == OpenFileFlag::WRITE_EXTENDED);
+            return (flag == OPEN_FILE_FLAG_READ_TEXT)
+                   || (flag == OPEN_FILE_FLAG_READ_TEXT_EXTENDED)
+                   || (flag == OPEN_FILE_FLAG_READ_BIN)
+                   || (flag == OPEN_FILE_FLAG_READ_BIN_EXTENDED)
+                   || (flag == OPEN_FILE_FLAG_WRITE_EXTENDED);
         }
     }  // namespace impl::streams
 
-    FileReadResult read_file(Arena* arena, cstring path, ReadFileFlag flag) psh_no_except {
-        cstring mode = impl::streams::OPEN_FILE_FLAG_TO_STR_MAP[static_cast<u32>(flag)];
+    FileReadResult read_file(Arena* arena, cstring path, OpenFileFlag flag) psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(arena);
+            psh_assert_not_null(path);
+            psh_assert_msg(impl::streams::has_read_permission(flag), "Cannot read file without opening with read permissions.");
+        });
+
+        cstring mode = impl::streams::OPEN_FILE_FLAG_TO_STR_MAP[flag];
         FILE*   fhandle;
 
 #if defined(PSH_OS_WINDOWS)
@@ -99,11 +97,9 @@ namespace psh {
             return FileReadResult{.status = FileStatus::FAILED_TO_READ};
         }
 
-        psh_assert_not_null(arena);
         ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
 
-        Array<u8> content;
-        psh::array_init(&content, arena, size);
+        Array<u8> content = make_array<u8>(arena, size);
 
         usize read_count = fread(content.buf, sizeof(u8), content.count, fhandle);
         psh_discard_value(read_count);  // @TODO: Maybe we should check this.
@@ -127,9 +123,10 @@ namespace psh {
     }
 
     String read_stdin(Arena* arena, u32 initial_buf_size, u32 read_chunk_size) psh_no_except {
-        ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
+        psh_validate_usage(psh_assert_not_null(arena));
 
-        String content{arena, initial_buf_size};
+        ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
+        String          content          = make_string(arena, initial_buf_size);
 
 #if defined(PSH_OS_WINDOWS)
         HANDLE handle_stdin = GetStdHandle(STD_INPUT_HANDLE);
@@ -137,22 +134,22 @@ namespace psh {
             psh_log_error("Unable to acquire the handle to the stdin stream.");
 
             arena_checkpoint_restore(arena_checkpoint);
-            return {};
+            return String{};
         }
 
         for (;;) {
             if (content.count + read_chunk_size > content.capacity) {
-                content.reserve(content.count + read_chunk_size);
+                dynarray_reserve(&content, content.count + read_chunk_size);
             }
 
             DWORD bytes_read;
-            BOOL  success = ReadFile(handle_stdin, content.end(), read_chunk_size, &bytes_read, nullptr);
+            BOOL  success = ReadFile(handle_stdin, content.buf + content.count, read_chunk_size, &bytes_read, nullptr);
             content.count += bytes_read;
             if (psh_unlikely(!success)) {
                 psh_log_error("Unable to read from the stdin stream.");
 
                 arena_checkpoint_restore(arena_checkpoint);
-                return {};
+                return String{};
             }
 
             if (bytes_read < read_chunk_size) {
@@ -162,16 +159,16 @@ namespace psh {
 #else
         for (;;) {
             if (content.count + read_chunk_size > content.capacity) {
-                content.reserve(content.count + read_chunk_size);
+                dynarray_reserve(&content, content.count + read_chunk_size);
             }
 
-            isize bytes_read = read(STDIN_FILENO, content.end(), read_chunk_size);
+            isize bytes_read = read(STDIN_FILENO, content.buf + content.count, read_chunk_size);
 
             if (psh_unlikely(bytes_read == -1)) {
                 psh_log_error("Unable to read from the stdin stream.");
 
                 arena_checkpoint_restore(arena_checkpoint);
-                return {};
+                return String{};
             }
 
             content.count += static_cast<usize>(bytes_read);
@@ -183,7 +180,7 @@ namespace psh {
 
         // Add null terminator to the end of the string.
         if (content.count == content.capacity) {
-            content.reserve(content.count + 1);
+            dynarray_reserve(&content, content.count + 1);
         }
         content.buf[content.count] = 0;
 
@@ -191,10 +188,15 @@ namespace psh {
     }
 
     String absolute_path(Arena* arena, cstring file_path) psh_no_except {
-        psh_assert_not_null(arena);
+        psh_validate_usage({
+            psh_assert_not_null(arena);
+            psh_assert_not_null(file_path);
+        });
+
         ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
 
-        String abs_path{arena, PSH_IMPL_PATH_MAX_CHAR_COUNT};
+        String abs_path;
+        dynarray_init(&abs_path, arena, PSH_IMPL_PATH_MAX_CHAR_COUNT);
 
 #if defined(PSH_OS_WINDOWS)
         DWORD result = GetFullPathName(file_path, PSH_IMPL_PATH_MAX_CHAR_COUNT, abs_path.buf, nullptr);
@@ -205,16 +207,16 @@ namespace psh {
                 GetLastError());
 
             arena_checkpoint_restore(arena_checkpoint);
-            return {};
+            return String{};
         }
 #else
-        char* result = realpath(file_path, abs_path.buf);
+        char const* result = realpath(file_path, abs_path.buf);
         if (result == nullptr) {
             psh_log_error_fmt("Unable to obtain the full path of %s due to the error:", file_path);
             perror(nullptr);
 
             arena_checkpoint_restore(arena_checkpoint);
-            return {};
+            return String{};
         }
 #endif
 

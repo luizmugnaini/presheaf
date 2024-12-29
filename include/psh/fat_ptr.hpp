@@ -46,49 +46,33 @@ namespace psh {
         Status status         = (idx < previous_count);
 
         if (psh_likely(status)) {
-            if (idx != previous_count - 1u) {
+            if (idx != previous_count - 1) {
                 // If the element isn't the last we have to copy the array content with overlap.
                 u8*       dst = reinterpret_cast<u8*>(fptr.buf + idx);
                 u8 const* src = reinterpret_cast<u8 const*>(fptr.buf + (idx + 1));
                 memory_move(dst, src, sizeof(T) * (previous_count - idx - 1u));
             }
 
-            fptr->count = previous_count - 1u;
-        }
-
-        return status;
-    }
-
-    /// Try to remove a buffer element at a given index.
-    ///
-    /// This won't preserve the current ordering of the buffer.
-    template <typename T>
-    psh_inline Status unordered_remove(FatPtr<T>& fptr, usize idx) psh_no_except {
-        usize  previous_count = fptr.count;
-        Status status         = (idx < previous_count);
-
-        if (psh_likely(status)) {
-            fptr.buf[idx] = fptr.buf[previous_count - 1u];
-            fptr.count    = previous_count - 1u;
+            fptr->count = previous_count - 1;
         }
 
         return status;
     }
 
     template <typename Container, typename T = Container::ValueType>
-    psh_inline FatPtr<T> make_slice(Container& c, usize start, usize slice_count) psh_no_except {
+    psh_inline FatPtr<T> make_slice(Container& c, usize start_idx, usize slice_count) psh_no_except {
         psh_static_assert_valid_mutable_container_type(Container, c);
         psh_assert_bounds_check(slice_count, c.count + 1);
 
-        return FatPtr<T>{c.buf + start, slice_count};
+        return FatPtr<T>{c.buf + start_idx, slice_count};
     }
 
     template <typename Container, typename T = Container::ValueType>
-    psh_inline FatPtr<T const> make_const_slice(Container const& c, usize start, usize slice_count) psh_no_except {
+    psh_inline FatPtr<T const> make_const_slice(Container const& c, usize start_idx, usize slice_count) psh_no_except {
         psh_static_assert_valid_const_container_type(Container, c);
-        psh_assert_bounds_check(slice_count, c.count + 1);
+        psh_assert_bounds_check(start_idx + slice_count - 1, c.count + 1);
 
-        return FatPtr<T const>{c.buf + start, slice_count};
+        return FatPtr<T const>{c.buf + start_idx, slice_count};
     }
 
     template <typename Container, typename T = Container::ValueType>

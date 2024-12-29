@@ -36,10 +36,10 @@ namespace psh::test::allocators {
     };
 
     psh_internal void scratch_arena_basic() {
-        usize     size = 1024;
-        u8* const buf  = reinterpret_cast<u8*>(malloc(size));
-        Arena     arena{buf, size};
-        usize     base_offset = 0;
+        Arena arena = make_owned_arena(1024);
+        psh_defer(free_owned_arena(&arena));
+
+        usize base_offset = 0;
 
         // Test 1
         //
@@ -214,7 +214,6 @@ namespace psh::test::allocators {
         }
         psh_assert(arena.offset == base_offset);
 
-        free(buf);
         report_test_successful();
     }
 
@@ -223,25 +222,21 @@ namespace psh::test::allocators {
     }
 
     psh_internal void scratch_arena_passed_as_reference() {
-        usize     size = 1024;
-        u8* const buf  = reinterpret_cast<u8*>(malloc(size));
+        Arena ar = make_owned_arena(1024);
+        psh_defer(free_owned_arena(&ar));
+
+        usize expected_offset = 0;
+        psh_discard_value(memory_alloc<u8>(&ar, 32));
+        expected_offset += 32;
         {
-            Arena ar{buf, size};
-            usize expected_offset = 0;
-
-            psh_discard_value(memory_alloc<u8>(&ar, 32));
-            expected_offset += 32;
-
-            {
-                ScratchArena s{&ar};
-                psh_discard_value(fn_scratch_as_ref(s, 64));
-                expected_offset += 64;
-                psh_assert(ar.offset == expected_offset);
-            }
-            expected_offset -= 64;
+            ScratchArena s{&ar};
+            psh_discard_value(fn_scratch_as_ref(s, 64));
+            expected_offset += 64;
             psh_assert(ar.offset == expected_offset);
         }
-        free(buf);
+        expected_offset -= 64;
+        psh_assert(ar.offset == expected_offset);
+
         report_test_successful();
     }
 

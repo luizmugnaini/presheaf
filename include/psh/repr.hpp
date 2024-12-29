@@ -45,14 +45,18 @@ namespace psh {
             return make_string(arena, psh_comptime_make_string_view("0b0"));
         }
 
+        // @TODO: First construct a local char[BIT_COUNT] buffer then copy everything to
+        //        the resulting representaiton string.
         constexpr i32 BIT_COUNT = psh_type_bit_count(T);
 
-        String repr{arena, 2 + BIT_COUNT + 1};
+        String repr;
+        dynarray_init(&repr, arena, 2 + BIT_COUNT + 1);
 
         repr.buf[0] = '0';
         repr.buf[1] = 'b';
         repr.count += 2;
 
+        // @TODO: We can make better, right?
         i32 leading_zeros_count = 0;
         for (i32 idx = BIT_COUNT - 1; idx >= 0; --idx) {
             if (psh_bit_at(val, idx) == 0) {
