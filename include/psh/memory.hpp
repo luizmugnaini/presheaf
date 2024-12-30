@@ -60,6 +60,25 @@ namespace psh {
     psh_api void memory_virtual_free(u8* memory, usize size_bytes) psh_no_except;
 
     // -------------------------------------------------------------------------------------------------
+    // Raw memory manipulation.
+    // -------------------------------------------------------------------------------------------------
+
+    /// Set the value of a given range of bytes.
+    psh_api void memory_set(u8* memory, usize size_bytes, i32 fill) psh_no_except;
+
+    /// Zero-out all of the members of a given structure.
+    template <typename T>
+    psh_api psh_inline void zero_struct(T* s) psh_no_except {
+        memory_set(reinterpret_cast<u8*>(s), sizeof(T), 0);
+    }
+
+    /// Copy non-overlapping memory regions.
+    psh_api void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except;
+
+    /// Copy possibly-overlapping memory regions.
+    psh_api void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except;
+
+    // -------------------------------------------------------------------------------------------------
     // Alignment utilities.
     // -------------------------------------------------------------------------------------------------
 
@@ -382,6 +401,79 @@ namespace psh {
     };
 
     // -------------------------------------------------------------------------------------------------
+    // Memory handling using the Presheaf custom allocators.
+    // -------------------------------------------------------------------------------------------------
+
+    /// Allocate a new block of memory with a given alignment.
+    psh_api u8* memory_alloc_align(Arena* arena, usize size_bytes, u32 alignment) psh_no_except;
+    psh_api u8* memory_alloc_align(Stack* stack, usize size_bytes, u32 alignment) psh_no_except;
+
+    /// Allocates a new block of memory capable of holding a certain count of elements of a
+    /// given type.
+    template <typename T>
+    psh_api psh_inline T* memory_alloc(Arena* arena, usize count) psh_no_except {
+        return reinterpret_cast<T*>(memory_alloc_align(arena, sizeof(T) * count, alignof(T)));
+    }
+    template <typename T>
+    psh_api psh_inline T* memory_alloc(Stack* stack, usize count) psh_no_except {
+        return reinterpret_cast<T*>(memory_alloc_align(stack, sizeof(T) * count, alignof(T)));
+    }
+    template <typename T>
+    psh_api psh_inline T* memory_alloc(MemoryManager* memory_manager, usize count) psh_no_except {
+        if (memory_manager == nullptr) {
+            return nullptr;
+        }
+
+        T* const new_block = memory_alloc<T>(&memory_manager->allocator, count);
+        memory_manager->allocation_count += static_cast<usize>(new_block != nullptr);
+        return new_block;
+    }
+
+    /// Reallocate an existing block of memory with a given alignment.
+    psh_api u8* memory_realloc_align(
+        Arena* arena,
+        u8*    block,
+        usize  current_size_bytes,
+        usize  new_size_bytes,
+        u32    alignment) psh_no_except;
+    psh_api u8* memory_realloc_align(
+        Stack* stack,
+        u8*    block,
+        usize  new_size_bytes,
+        u32    alignment) psh_no_except;
+
+    /// Reallocate a block of memory of a given type.
+    ///
+    /// Parameters:
+    ///     - block: Pointer to the start of the memory block to be resized.
+    ///     - current_count: The current number of entities of type T that fits in the block.
+    ///     - new_count: Number of entities of type T that the new memory block should be
+    ///                  able to contain.
+    template <typename T>
+    psh_api psh_inline T* memory_realloc(Arena* arena, T* block, usize current_count, usize new_count) psh_no_except {
+        return reinterpret_cast<T*>(memory_realloc_align(
+            arena,
+            reinterpret_cast<u8*>(block),
+            sizeof(T) * current_count,
+            sizeof(T) * new_count,
+            alignof(T)));
+    }
+    template <typename T>
+    psh_api psh_inline T* memory_realloc(Stack* stack, T* block, usize new_count) psh_no_except {
+        return reinterpret_cast<T*>(memory_realloc_align(stack, block, sizeof(T) * new_count));
+    }
+    template <typename T>
+    psh_api psh_inline T* memory_realloc(MemoryManager* memory_manager, T* block, usize new_count) psh_no_except {
+        if (memory_manager == nullptr) {
+            return nullptr;
+        }
+
+        T* const new_block = memory_realloc<T>(&memory_manager->allocator, block, new_count);
+        memory_manager->allocation_count += static_cast<usize>(new_block != block);
+        return new_block;
+    }
+
+    // -------------------------------------------------------------------------------------------------
     // Plain old buffers.
     // -------------------------------------------------------------------------------------------------
 
@@ -690,8 +782,18 @@ namespace psh {
     }
 
     // -------------------------------------------------------------------------------------------------
-    // Removing elements from a container.
+    // Memory manipulation procedures common to all containers.
     // -------------------------------------------------------------------------------------------------
+
+    /// Query the current size in bytes of a given container.
+    template <typename Container, typename T = Container::ValueType>
+    psh_api usize size_bytes(Container const* c) psh_no_except {
+        psh_validate_usage({
+            psh_static_assert_valid_const_container_type(Container, c);
+            psh_assert_not_null(c);
+        });
+        return sizeof(T) * c->count;
+    }
 
     psh_api void raw_unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except;
     psh_api void raw_ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except;
@@ -766,110 +868,5 @@ namespace psh {
             FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
             reinterpret_cast<u8*>(buf + idx),
             sizeof(T));
-    }
-
-    // -------------------------------------------------------------------------------------------------
-    // Memory manipulation.
-    // -------------------------------------------------------------------------------------------------
-
-    /// Query the current size in bytes of a given container.
-    template <typename Container, typename T = Container::ValueType>
-    psh_api usize size_bytes(Container const* c) psh_no_except {
-        psh_validate_usage({
-            psh_static_assert_valid_const_container_type(Container, c);
-            psh_assert_not_null(c);
-        });
-        return sizeof(T) * c->count;
-    }
-
-    /// Simple wrapper around memset that automatically deals with null values.
-    ///
-    /// Does nothing if ptr is a null pointer.
-    psh_api void memory_set(u8* memory, usize size_bytes, i32 fill) psh_no_except;
-
-    /// Zero-out all of the members of a given structure.
-    template <typename T>
-    psh_api psh_inline void zero_struct(T* s) psh_no_except {
-        memory_set(reinterpret_cast<u8*>(s), sizeof(T), 0);
-    }
-
-    /// Simple wrapper around memcpy.
-    ///
-    /// This function will assert that the blocks of memory don't overlap, avoiding undefined
-    /// behaviour introduced by memcpy in this case.
-    psh_api void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except;
-
-    /// Simple wrapper around memmove.
-    ///
-    /// Does nothing if either dst or src are null pointers.
-    psh_api void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except;
-
-    /// Allocate a new block of memory with a given alignment.
-    psh_api u8* memory_alloc_align(Arena* arena, usize size_bytes, u32 alignment) psh_no_except;
-    psh_api u8* memory_alloc_align(Stack* stack, usize size_bytes, u32 alignment) psh_no_except;
-
-    /// Allocates a new block of memory capable of holding a certain count of elements of a
-    /// given type.
-    template <typename T>
-    psh_api psh_inline T* memory_alloc(Arena* arena, usize count) psh_no_except {
-        return reinterpret_cast<T*>(memory_alloc_align(arena, sizeof(T) * count, alignof(T)));
-    }
-    template <typename T>
-    psh_api psh_inline T* memory_alloc(Stack* stack, usize count) psh_no_except {
-        return reinterpret_cast<T*>(memory_alloc_align(stack, sizeof(T) * count, alignof(T)));
-    }
-    template <typename T>
-    psh_api psh_inline T* memory_alloc(MemoryManager* memory_manager, usize count) psh_no_except {
-        if (memory_manager == nullptr) {
-            return nullptr;
-        }
-
-        T* const new_block = memory_alloc<T>(&memory_manager->allocator, count);
-        memory_manager->allocation_count += static_cast<usize>(new_block != nullptr);
-        return new_block;
-    }
-
-    /// Reallocate an existing block of memory with a given alignment.
-    psh_api u8* memory_realloc_align(
-        Arena* arena,
-        u8*    block,
-        usize  current_size_bytes,
-        usize  new_size_bytes,
-        u32    alignment) psh_no_except;
-    psh_api u8* memory_realloc_align(
-        Stack* stack,
-        u8*    block,
-        usize  new_size_bytes,
-        u32    alignment) psh_no_except;
-
-    /// Reallocate a block of memory of a given type.
-    ///
-    /// Parameters:
-    ///     - block: Pointer to the start of the memory block to be resized.
-    ///     - current_count: The current number of entities of type T that fits in the block.
-    ///     - new_count: Number of entities of type T that the new memory block should be
-    ///                  able to contain.
-    template <typename T>
-    psh_api psh_inline T* memory_realloc(Arena* arena, T* block, usize current_count, usize new_count) psh_no_except {
-        return reinterpret_cast<T*>(memory_realloc_align(
-            arena,
-            reinterpret_cast<u8*>(block),
-            sizeof(T) * current_count,
-            sizeof(T) * new_count,
-            alignof(T)));
-    }
-    template <typename T>
-    psh_api psh_inline T* memory_realloc(Stack* stack, T* block, usize new_count) psh_no_except {
-        return reinterpret_cast<T*>(memory_realloc_align(stack, block, sizeof(T) * new_count));
-    }
-    template <typename T>
-    psh_api psh_inline T* memory_realloc(MemoryManager* memory_manager, T* block, usize new_count) psh_no_except {
-        if (memory_manager == nullptr) {
-            return nullptr;
-        }
-
-        T* const new_block = memory_realloc<T>(&memory_manager->allocator, block, new_count);
-        memory_manager->allocation_count += static_cast<usize>(new_block != block);
-        return new_block;
     }
 }  // namespace psh

@@ -49,6 +49,149 @@
 
 namespace psh {
     // -------------------------------------------------------------------------------------------------
+    // Virtual memory.
+    // -------------------------------------------------------------------------------------------------
+
+    u8* memory_virtual_alloc(usize size_bytes) psh_no_except {
+        u8* buf;
+#if defined(PSH_OS_WINDOWS)
+        buf = reinterpret_cast<u8*>(VirtualAlloc(nullptr, size_bytes, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+
+#    if PSH_ENABLE_ASSERT_NO_MEMORY_ERROR
+        psh_assert_fmt(buf != nullptr, "OS failed to allocate memory with error code: %lu", GetLastError());
+#    endif
+#elif defined(PSH_OS_UNIX)
+        buf = reinterpret_cast<u8*>(mmap(nullptr, size_bytes, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
+
+#    if PSH_ENABLE_ASSERT_NO_MEMORY_ERROR
+        psh_assert_fmt(reinterpret_cast<void*>(buf) != MAP_FAILED, "OS failed to allocate memory due to: %s", strerror(errno));
+#    endif
+#endif
+        return buf;
+    }
+
+    void memory_virtual_free(u8* memory, usize size_bytes) psh_no_except {
+#if defined(PSH_OS_WINDOWS)
+        psh_validate_usage(psh_assert_not_null(memory));
+        psh_discard_value(size_bytes);
+
+        BOOL result = VirtualFree(memory, 0, MEM_RELEASE);
+        if (psh_unlikely(result == FALSE)) {
+            psh_log_error_fmt("Failed free memory with error code: %lu", GetLastError());
+        }
+#elif defined(PSH_OS_UNIX)
+        psh_validate_usage({
+            psh_assert_not_null(memory);
+            psh_assert(size_bytes > 0);
+        });
+
+        i32 result = munmap(memory, size_bytes);
+        if (psh_unlikely(result == -1)) {
+            psh_log_error_fmt("Failed to free memory due to: %s", strerror(errno));
+        }
+#endif
+    }
+
+    // -------------------------------------------------------------------------------------------------
+    // Memory moves.
+    // -------------------------------------------------------------------------------------------------
+
+    void memory_set(u8* memory, usize size_bytes, i32 fill) psh_no_except {
+        psh_validate_usage(psh_assert_not_null(memory));
+
+        if (psh_unlikely(size_bytes == 0)) {
+            return;
+        }
+
+        psh_discard_value(memset(memory, fill, size_bytes));
+    }
+
+    void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(dst);
+            psh_assert_not_null(src);
+            psh_assert_no_alias(src, dst);
+        });
+
+        if (psh_unlikely(size_bytes == 0)) {
+            return;
+        }
+
+#if PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP
+        psh_assert_msg(
+            (dst + size_bytes > src) || (dst < src + size_bytes),
+            "Source and destination overlap in copy region, which is undefined behaviour when using libc memcpy.");
+#endif
+
+        psh_discard_value(memcpy(dst, src, size_bytes));
+    }
+
+    void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except {
+        psh_validate_usage({
+            psh_assert_not_null(dst);
+            psh_assert_not_null(src);
+            psh_assert_no_alias(src, dst);
+        });
+
+        if (psh_unlikely(size_bytes == 0)) {
+            return;
+        }
+
+        psh_discard_value(memmove(dst, src, size_bytes));
+    }
+
+    // -------------------------------------------------------------------------------------------------
+    // Memory alignment.
+    // -------------------------------------------------------------------------------------------------
+
+    usize padding_with_header(
+        uptr  ptr_addr,
+        usize alignment,
+        usize header_size,
+        usize header_alignment) psh_no_except {
+        psh_validate_usage({
+            psh_assert_fmt(
+                psh_is_pow_of_two(alignment),
+                "Expected the element alignment to be a power of two (got %zu).",
+                alignment);
+            psh_assert_fmt(
+                psh_is_pow_of_two(header_alignment),
+                "Expected the header alignment to be a power of two (got %zu).",
+                header_alignment);
+        });
+
+        // Calculate the padding necessary for the alignment of the new block of memory.
+        usize padding   = 0;
+        usize mod_align = ptr_addr & (alignment - 1u);  // Same as ptr_addr % alignment.
+        if (mod_align != 0) {
+            padding += alignment - mod_align;
+        }
+        ptr_addr += padding;
+
+        // Padding necessary for the header alignment.
+        usize mod_header = ptr_addr & (header_alignment - 1u);  // Same as ptr_addr % header_alignment.
+        if (mod_header != 0) {
+            padding += header_alignment - mod_header;
+        }
+
+        // The padding should at least contain the header.
+        padding += header_size;
+
+        return padding;
+    }
+
+    usize align_forward(uptr ptr_addr, usize alignment) psh_no_except {
+        psh_validate_usage(psh_assert_fmt(psh_is_pow_of_two(alignment), "Expected alignment (%zu) to be a power of two.", alignment));
+
+        usize mod_align = ptr_addr & (alignment - 1u);
+        if (mod_align != 0) {
+            ptr_addr += alignment - mod_align;
+        }
+
+        return ptr_addr;
+    }
+
+    // -------------------------------------------------------------------------------------------------
     // Stack memory allocator implementation.
     // -------------------------------------------------------------------------------------------------
 
@@ -228,137 +371,6 @@ namespace psh {
             u8 const* next_element_ptr = element_ptr + element_size;
             memory_move(element_ptr, next_element_ptr, static_cast<usize>(pointer_offset(next_element_ptr, buf_end)));
         }
-    }
-
-    usize padding_with_header(
-        uptr  ptr_addr,
-        usize alignment,
-        usize header_size,
-        usize header_alignment) psh_no_except {
-        psh_validate_usage({
-            psh_assert_fmt(
-                psh_is_pow_of_two(alignment),
-                "Expected the element alignment to be a power of two (got %zu).",
-                alignment);
-            psh_assert_fmt(
-                psh_is_pow_of_two(header_alignment),
-                "Expected the header alignment to be a power of two (got %zu).",
-                header_alignment);
-        });
-
-        // Calculate the padding necessary for the alignment of the new block of memory.
-        usize padding   = 0;
-        usize mod_align = ptr_addr & (alignment - 1u);  // Same as ptr_addr % alignment.
-        if (mod_align != 0) {
-            padding += alignment - mod_align;
-        }
-        ptr_addr += padding;
-
-        // Padding necessary for the header alignment.
-        usize mod_header = ptr_addr & (header_alignment - 1u);  // Same as ptr_addr % header_alignment.
-        if (mod_header != 0) {
-            padding += header_alignment - mod_header;
-        }
-
-        // The padding should at least contain the header.
-        padding += header_size;
-
-        return padding;
-    }
-
-    usize align_forward(uptr ptr_addr, usize alignment) psh_no_except {
-        psh_validate_usage(psh_assert_fmt(psh_is_pow_of_two(alignment), "Expected alignment (%zu) to be a power of two.", alignment));
-
-        usize mod_align = ptr_addr & (alignment - 1u);
-        if (mod_align != 0) {
-            ptr_addr += alignment - mod_align;
-        }
-
-        return ptr_addr;
-    }
-
-    void memory_set(u8* memory, usize size_bytes, i32 fill) psh_no_except {
-        psh_validate_usage(psh_assert_not_null(memory));
-
-        if (psh_unlikely(size_bytes == 0)) {
-            return;
-        }
-
-        psh_discard_value(memset(memory, fill, size_bytes));
-    }
-
-    void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except {
-        psh_validate_usage({
-            psh_assert_not_null(dst);
-            psh_assert_not_null(src);
-            psh_assert_no_alias(src, dst);
-        });
-
-        if (psh_unlikely(size_bytes == 0)) {
-            return;
-        }
-
-#if PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP
-        psh_assert_msg(
-            (dst + size_bytes > src) || (dst < src + size_bytes),
-            "Source and destination overlap in copy region (UB).");
-#endif
-
-        psh_discard_value(memcpy(dst, src, size_bytes));
-    }
-
-    void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except {
-        psh_validate_usage({
-            psh_assert_not_null(dst);
-            psh_assert_not_null(src);
-            psh_assert_no_alias(src, dst);
-        });
-
-        if (psh_unlikely(size_bytes == 0)) {
-            return;
-        }
-
-        psh_discard_value(memmove(dst, src, size_bytes));
-    }
-
-    u8* memory_virtual_alloc(usize size_bytes) psh_no_except {
-        u8* buf;
-#if defined(PSH_OS_WINDOWS)
-        buf = reinterpret_cast<u8*>(VirtualAlloc(nullptr, size_bytes, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
-
-#    if PSH_ENABLE_ASSERT_NO_MEMORY_ERROR
-        psh_assert_fmt(buf != nullptr, "OS failed to allocate memory with error code: %lu", GetLastError());
-#    endif
-#elif defined(PSH_OS_UNIX)
-        buf = reinterpret_cast<u8*>(mmap(nullptr, size_bytes, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
-
-#    if PSH_ENABLE_ASSERT_NO_MEMORY_ERROR
-        psh_assert_fmt(reinterpret_cast<void*>(buf) != MAP_FAILED, "OS failed to allocate memory due to: %s", strerror(errno));
-#    endif
-#endif
-        return buf;
-    }
-
-    void memory_virtual_free(u8* memory, usize size_bytes) psh_no_except {
-#if defined(PSH_OS_WINDOWS)
-        psh_validate_usage(psh_assert_not_null(memory));
-        psh_discard_value(size_bytes);
-
-        BOOL result = VirtualFree(memory, 0, MEM_RELEASE);
-        if (psh_unlikely(result == FALSE)) {
-            psh_log_error_fmt("Failed free memory with error code: %lu", GetLastError());
-        }
-#elif defined(PSH_OS_UNIX)
-        psh_validate_usage({
-            psh_assert_not_null(memory);
-            psh_assert(size_bytes > 0);
-        });
-
-        i32 result = munmap(memory, size_bytes);
-        if (psh_unlikely(result == -1)) {
-            psh_log_error_fmt("Failed to free memory due to: %s", strerror(errno));
-        }
-#endif
     }
 
 #define psh_impl_arena_report_out_of_memory(arena, requested_size, requested_alignment)  \
