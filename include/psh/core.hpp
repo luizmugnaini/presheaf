@@ -472,7 +472,7 @@ namespace psh {
 
     /// Subtract an offset in bytes to a pointer if and only if the pointer is not null.
     template <typename T>
-    psh_inline void* pointer_sub(void* ptr, isize offset_bytes) psh_no_except {
+    psh_inline void* pointer_sub(T* ptr, isize offset_bytes) psh_no_except {
 #if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
         if (ptr == nullptr) {
             return nullptr;
@@ -481,7 +481,7 @@ namespace psh {
         return reinterpret_cast<T*>(reinterpret_cast<u8*>(ptr) - offset_bytes);
     }
     template <typename T>
-    psh_inline void const* pointer_const_sub(void const* ptr, isize offset_bytes) psh_no_except {
+    psh_inline void const* pointer_const_sub(T const* ptr, isize offset_bytes) psh_no_except {
 #if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
         if (ptr == nullptr) {
             return nullptr;
@@ -513,9 +513,9 @@ namespace psh {
     /// Swap the values of two given variables.
     template <typename T>
     psh_inline void swap_values(T& lhs, T& rhs) psh_no_except {
-        T tmp   = lhs;
-        lhs_var = rhs_var;
-        rhs_var = tmp;
+        T tmp = lhs;
+        lhs   = rhs;
+        rhs   = tmp;
     }
 }  // namespace psh
 
@@ -645,4 +645,3 @@ namespace psh {
     psh_inline constexpr InnerType*       end() psh_no_except { return this_buf + this_count; } \
     psh_inline constexpr InnerType const* begin() const psh_no_except { return this_buf; }      \
     psh_inline constexpr InnerType const* end() const psh_no_except { return this_buf + this_count; }
-
