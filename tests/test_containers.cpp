@@ -104,7 +104,7 @@ namespace psh::test::containers {
         DynArray<i32> v = make_dynarray<i32>(&arena, 3);
         {
             Buffer<i32, 2> elements = {4, 5};
-            psh_assert(dynarray_push(&v, make_const_fat_ptr(elements)));
+            psh_assert(dynarray_push_many(&v, make_const_fat_ptr(elements)));
         }
         psh_assert(dynarray_push(&v, 6));
 
@@ -149,7 +149,7 @@ namespace psh::test::containers {
         psh_assert(dynarray_push(&v, 7));
         {
             i32 last_two[3] = {8, 9, 55};
-            psh_assert(dynarray_push(&v, {last_two, count_of(last_two)}));
+            psh_assert(dynarray_push_many(&v, {last_two, count_of(last_two)}));
         }
 
         // Do nothing.
@@ -164,7 +164,7 @@ namespace psh::test::containers {
 
         // Remove at index 1.
         {
-            ordered_remove(&v, 1);
+            dynarray_ordered_remove(&v, 1);
             psh_assert(v.count == 4);
             psh_assert(v[0] == 4);
             psh_assert(v[1] == 8);
@@ -174,7 +174,7 @@ namespace psh::test::containers {
 
         // Remove at index 2.
         {
-            ordered_remove(&v, 2);
+            dynarray_ordered_remove(&v, 2);
             psh_assert(v.count == 3);
             psh_assert(v[0] == 4);
             psh_assert(v[1] == 8);
@@ -183,7 +183,7 @@ namespace psh::test::containers {
 
         // Remove at index 0.
         {
-            ordered_remove(&v, 0);
+            dynarray_ordered_remove(&v, 0);
             psh_assert(v.count == 2);
             psh_assert(v[0] == 8);
             psh_assert(v[1] == 55);
@@ -191,14 +191,14 @@ namespace psh::test::containers {
 
         // Remove at index 1.
         {
-            ordered_remove(&v, 1);
+            dynarray_ordered_remove(&v, 1);
             psh_assert(v.count == 1);
             psh_assert(v[0] == 8);
         }
 
         // Remove at index 0.
         {
-            ordered_remove(&v, 0);
+            dynarray_ordered_remove(&v, 0);
             psh_assert(v.count == 0);
         }
 
@@ -216,7 +216,7 @@ namespace psh::test::containers {
         DynArray<f32> v = make_dynarray<f32>(&arena, 4);
         {
             f32 elements[4] = {7.0f, 4.8f, 6.1f, 3.14f};
-            psh_assert(dynarray_push(&v, {elements, count_of(elements)}));
+            psh_assert(dynarray_push_many(&v, {elements, count_of(elements)}));
         }
 
         psh_assert(v.count == 4);

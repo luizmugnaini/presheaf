@@ -208,7 +208,7 @@ namespace psh {
     // Memory manipulation procedures.
     // -------------------------------------------------------------------------------------------------
 
-    void unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
+    void raw_unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
         u8 const* buf_end = fptr.buf + fptr.count;
         psh_validate_usage(psh_assert_bounds_check(reinterpret_cast<uptr>(element_ptr), reinterpret_cast<uptr>(buf_end)));
 
@@ -219,7 +219,7 @@ namespace psh {
         }
     }
 
-    void ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
+    void raw_ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
         u8 const* buf_end = fptr.buf + fptr.count;
         psh_validate_usage(psh_assert_bounds_check(reinterpret_cast<uptr>(element_ptr), reinterpret_cast<uptr>(buf_end)));
 

@@ -545,7 +545,7 @@ namespace psh {
 
     /// Insert a collection of new elements to the end of the dynamic array.
     template <typename T>
-    psh_api Status dynarray_push(DynArray<T>* darray, FatPtr<T const> new_elements) psh_no_except {
+    psh_api Status dynarray_push_many(DynArray<T>* darray, FatPtr<T const> new_elements) psh_no_except {
         psh_validate_usage(psh_assert_not_null(darray));
 
         usize previous_count = darray->count;
@@ -589,26 +589,17 @@ namespace psh {
     }
 
     // -------------------------------------------------------------------------------------------------
-    // Memory manipulation.
+    // Removing elements from a container.
     // -------------------------------------------------------------------------------------------------
 
-    /// Query the current size in bytes of a given container.
-    template <typename Container, typename T = Container::ValueType>
-    psh_api usize size_bytes(Container const* c) psh_no_except {
-        psh_validate_usage({
-            psh_static_assert_valid_const_container_type(Container, c);
-            psh_assert_not_null(c);
-        });
-        return sizeof(T) * c.count;
-    }
-
-    psh_api void unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except;
+    psh_api void raw_unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except;
+    psh_api void raw_ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except;
 
     /// Try to remove a buffer element at a given index.
     ///
     /// This won't preserve the current ordering of the buffer.
     template <typename T>
-    psh_api void unordered_remove(FatPtr<T>* fptr, usize idx) psh_no_except {
+    psh_api void fat_ptr_unordered_remove(FatPtr<T>* fptr, usize idx) psh_no_except {
         psh_validate_usage({
             psh_assert_not_null(fptr);
             psh_assert_bounds_check(idx, fptr->count);
@@ -618,13 +609,13 @@ namespace psh {
         usize count = fptr->count;
 
         --fptr->count;
-        unordered_remove(
+        raw_unordered_remove(
             FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
             reinterpret_cast<u8*>(buf + idx),
             sizeof(T));
     }
     template <typename T>
-    psh_api void unordered_remove(DynArray<T>* darray, usize idx) psh_no_except {
+    psh_api void dynarray_unordered_remove(DynArray<T>* darray, usize idx) psh_no_except {
         psh_validate_usage({
             psh_assert_not_null(darray);
             psh_assert_bounds_check(idx, darray->count);
@@ -634,19 +625,17 @@ namespace psh {
         usize count = darray->count;
 
         --darray->count;
-        unordered_remove(
+        raw_unordered_remove(
             FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
             reinterpret_cast<u8*>(buf + idx),
             sizeof(T));
     }
-
-    psh_api void ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except;
 
     /// Try to remove a buffer element at a given index.
     ///
     /// This will move all of the buffer contents above the removed element index down one.
     template <typename T>
-    psh_api void ordered_remove(FatPtr<T>* fptr, usize idx) psh_no_except {
+    psh_api void fat_ptr_ordered_remove(FatPtr<T>* fptr, usize idx) psh_no_except {
         psh_validate_usage({
             psh_assert_not_null(fptr);
             psh_assert_bounds_check(idx, fptr->count);
@@ -656,13 +645,13 @@ namespace psh {
         usize count = fptr->count;
 
         --fptr->count;
-        ordered_remove(
+        raw_ordered_remove(
             FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
             reinterpret_cast<u8*>(buf + idx),
             sizeof(T));
     }
     template <typename T>
-    psh_api void ordered_remove(DynArray<T>* darray, usize idx) psh_no_except {
+    psh_api void dynarray_ordered_remove(DynArray<T>* darray, usize idx) psh_no_except {
         psh_validate_usage({
             psh_assert_not_null(darray);
             psh_assert_bounds_check(idx, darray->count);
@@ -672,7 +661,7 @@ namespace psh {
         usize count = darray->count;
 
         --darray->count;
-        ordered_remove(
+        raw_ordered_remove(
             FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
             reinterpret_cast<u8*>(buf + idx),
             sizeof(T));
