@@ -630,8 +630,8 @@ namespace psh {
     }                                                                                 \
     psh_inline InnerType*       begin() psh_no_except { return this_buf; }            \
     psh_inline InnerType*       end() psh_no_except { return this_buf + this_count; } \
-    psh_inline InnerType const* cbegin() const psh_no_except { return this_buf; }     \
-    psh_inline InnerType const* cend() const psh_no_except { return this_buf + this_count; }
+    psh_inline InnerType const* begin() const psh_no_except { return this_buf; }      \
+    psh_inline InnerType const* end() const psh_no_except { return this_buf + this_count; }
 #define psh_impl_generate_constexpr_container_boilerplate(InnerType, this_buf, this_count)      \
     using ValueType = InnerType;                                                                \
     psh_inline constexpr InnerType& operator[](usize idx) psh_no_except {                       \
@@ -644,5 +644,5 @@ namespace psh {
     }                                                                                           \
     psh_inline constexpr InnerType*       begin() psh_no_except { return this_buf; }            \
     psh_inline constexpr InnerType*       end() psh_no_except { return this_buf + this_count; } \
-    psh_inline constexpr InnerType const* cbegin() const psh_no_except { return this_buf; }     \
-    psh_inline constexpr InnerType const* cend() const psh_no_except { return this_buf + this_count; }
+    psh_inline constexpr InnerType const* begin() const psh_no_except { return this_buf; }      \
+    psh_inline constexpr InnerType const* end() const psh_no_except { return this_buf + this_count; }
