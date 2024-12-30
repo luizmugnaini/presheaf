@@ -25,7 +25,6 @@
 #pragma once
 
 #include <psh/core.hpp>
-#include <psh/fat_ptr.hpp>
 #include <psh/memory.hpp>
 
 // -------------------------------------------------------------------------------------------------

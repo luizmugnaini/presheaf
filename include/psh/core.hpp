@@ -434,6 +434,7 @@ using b32 = i32;
 /// A pointer to a contiguous array of constant character values.
 using cstring = char const*;
 
+// Namespaced fundamental Presheaf types.
 namespace psh {
     /// Status of an operation.
     ///
@@ -442,11 +443,13 @@ namespace psh {
     using Status                   = bool;
     constexpr Status STATUS_FAILED = false;
     constexpr Status STATUS_OK     = true;
+};  // namespace psh
 
-    // -------------------------------------------------------------------------------------------------
-    // Pointer operations.
-    // -------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
+// Common operations.
+// -------------------------------------------------------------------------------------------------
 
+namespace psh {
     /// Add an offset in bytes to a pointer if and only if the pointer is not null.
     template <typename T>
     psh_inline T* pointer_add(T* ptr, usize offset_bytes) psh_no_except {
@@ -506,11 +509,15 @@ namespace psh {
     psh_inline constexpr usize count_of(T[COUNT]) psh_no_except {
         return COUNT;
     }
-}  // namespace psh
 
-// -------------------------------------------------------------------------------------------------
-// Common operations.
-// -------------------------------------------------------------------------------------------------
+    /// Swap the values of two given variables.
+    template <typename T>
+    psh_inline void swap_values(T& lhs, T& rhs) psh_no_except {
+        T tmp   = lhs;
+        lhs_var = rhs_var;
+        rhs_var = tmp;
+    }
+}  // namespace psh
 
 /// Compute, at compile time, the size of a given type, signed or unsigned for convenience.
 #define psh_isize_of(T) static_cast<isize>(sizeof(T))
@@ -518,14 +525,6 @@ namespace psh {
 
 /// Evaluate then discard the value of a given expression.
 #define psh_discard_value(x) (void)(x)
-
-/// Swap the values of two given variables.
-#define psh_swap_values(lhs_var, rhs_var)       \
-    do {                                        \
-        decltype(lhs_var) psh_tmp_ = (lhs_var); \
-        lhs_var                    = rhs_var;   \
-        rhs_var                    = psh_tmp_;  \
-    } while (0)
 
 // -------------------------------------------------------------------------------------------------
 // Mathematical operations.
@@ -646,3 +645,4 @@ namespace psh {
     psh_inline constexpr InnerType*       end() psh_no_except { return this_buf + this_count; } \
     psh_inline constexpr InnerType const* begin() const psh_no_except { return this_buf; }      \
     psh_inline constexpr InnerType const* end() const psh_no_except { return this_buf + this_count; }
+

@@ -27,7 +27,6 @@
 #pragma once
 
 #include <psh/core.hpp>
-#include <psh/fat_ptr.hpp>
 #include <psh/option.hpp>
 
 /// Range size threshold for the quick sort algorithm to fallback to the insertion sort algorithm.

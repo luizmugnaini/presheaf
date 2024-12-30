@@ -24,8 +24,8 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <psh/buffer.hpp>
 #include <psh/core.hpp>
+#include <psh/memory.hpp>
 #include <psh/string.hpp>
 #include "utils.hpp"
 
