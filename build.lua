@@ -28,7 +28,7 @@
 -- You can also pass ad-hoc flags directly to the compiler command. Any argument passed
 -- after `--` will be directed to the compilation command. For instance:
 --
--- lua build.lua -clang -- -fsanitize=address -DPSH_DEBUG
+-- lua build.lua -clang -- -fsanitize=address -DPSH_ENABLE_DEBUG
 --
 
 local start_time = os.time()

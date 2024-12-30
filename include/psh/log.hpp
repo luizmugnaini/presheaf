@@ -75,13 +75,13 @@ namespace psh::impl::log {
 #    define psh_log_error_fmt(fmt, ...)   psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_ERROR), fmt, __VA_ARGS__)
 #    define psh_log_warning_fmt(fmt, ...) psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_WARNING), fmt, __VA_ARGS__)
 #    define psh_log_info_fmt(fmt, ...)    psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_INFO), fmt, __VA_ARGS__)
-#    if defined(PSH_DEBUG)
+#    if defined(PSH_ENABLE_DEBUG)
 #        define psh_log_debug(msg)          psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_DEBUG), msg)
 #        define psh_log_debug_fmt(fmt, ...) psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_DEBUG), fmt, __VA_ARGS__)
 #    else
 #        define psh_log_debug(msg)          0
 #        define psh_log_debug_fmt(fmt, ...) 0
-#    endif  // PSH_DEBUG
+#    endif  // PSH_ENABLE_DEBUG
 #else
 #    define psh_log_fatal(msg)            0
 #    define psh_log_error(msg)            0
