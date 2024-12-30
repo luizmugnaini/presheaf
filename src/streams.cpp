@@ -195,8 +195,7 @@ namespace psh {
 
         ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
 
-        String abs_path;
-        dynarray_init(&abs_path, arena, PSH_IMPL_PATH_MAX_CHAR_COUNT);
+        String abs_path = make_string(arena, PSH_IMPL_PATH_MAX_CHAR_COUNT);
 
 #if defined(PSH_OS_WINDOWS)
         DWORD result = GetFullPathName(file_path, PSH_IMPL_PATH_MAX_CHAR_COUNT, abs_path.buf, nullptr);

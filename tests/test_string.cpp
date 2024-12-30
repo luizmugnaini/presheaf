@@ -108,8 +108,7 @@ namespace psh::test::string {
         {
             // Empty string.
             {
-                String estr;
-                dynarray_init(&estr, &arena, 20);
+                String estr = make_string(&arena, 20);
                 psh_assert(join_strings(estr, make_const_fat_ptr(views1), psh_comptime_make_string_view(", ")));
 
                 psh_assert(string_equal(make_string_view(estr), check_str1.buf));

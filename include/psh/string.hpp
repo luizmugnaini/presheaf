@@ -129,15 +129,13 @@ namespace psh {
     ///
     /// Example:
     ///
-    /// psh::Arena arena{...};
-    /// psh::String s = make_string(&arena, "Hello");
-    /// psh::Buffer<StringView, 3> words = {"World", "Earth", "Terra"};
+    /// Arena arena{...};
+    /// String s = make_string(&arena, "Hello");
+    /// Buffer<StringView, 3> words = {"World", "Earth", "Terra"};
     ///
     /// assert(s.join(psh::make_const_fat_ptr(words), ", "));
-    /// assert(psh::string_compare(s.data.buf, "Hello, World, Earth, Terra") == psh::StringCompareResult::EQUAL);
+    /// assert(string_equal(s.data.buf, "Hello, World, Earth, Terra"));
     ///
-    /// Although this example uses initializer lists, you can also achieve the same using the
-    /// implementation based on psh::FatPtr.
     psh_api Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element = {}) psh_no_except;
 
     // -------------------------------------------------------------------------------------------------

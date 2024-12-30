@@ -49,8 +49,7 @@ namespace psh {
         //        the resulting representaiton string.
         constexpr i32 BIT_COUNT = psh_type_bit_count(T);
 
-        String repr;
-        dynarray_init(&repr, arena, 2 + BIT_COUNT + 1);
+        String repr = make_string(arena, 2 + BIT_COUNT + 1);
 
         repr.buf[0] = '0';
         repr.buf[1] = 'b';
