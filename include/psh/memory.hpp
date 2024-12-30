@@ -459,7 +459,7 @@ namespace psh {
         usize        capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) psh_no_except {
         psh_validate_usage({
             psh_assert_not_null(darray);
-            psh_assert_msg(darray->count == 0, "Tried to re-initialize an initialized DynArray");
+            psh_assert_msg(darray->count == 0, "DynArray already initialized");
         });
 
         darray->buf      = memory_alloc<T>(arena, capacity);
@@ -500,7 +500,6 @@ namespace psh {
     ///        by this procedure. DO NOT use this array structure with types having this property.
     template <typename T>
     psh_api Status dynarray_reserve(DynArray<T>* darray, usize new_capacity) psh_no_except {
-        // @TODO: reserve should change the count
         psh_validate_usage({
             psh_assert_not_null(darray);
             psh_assert_msg(darray->capacity < new_capacity, "DynArray doesn't shrink.");
@@ -677,6 +676,20 @@ namespace psh {
             FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
             reinterpret_cast<u8*>(buf + idx),
             sizeof(T));
+    }
+
+    // -------------------------------------------------------------------------------------------------
+    // Memory manipulation.
+    // -------------------------------------------------------------------------------------------------
+
+    /// Query the current size in bytes of a given container.
+    template <typename Container, typename T = Container::ValueType>
+    psh_api usize size_bytes(Container const* c) psh_no_except {
+        psh_validate_usage({
+            psh_static_assert_valid_const_container_type(Container, c);
+            psh_assert_not_null(c);
+        });
+        return sizeof(T) * c->count;
     }
 
     /// Simple wrapper around memset that automatically deals with null values.
