@@ -150,21 +150,23 @@ namespace psh {
     psh_api StringCompareResult string_compare(StringView lhs, StringView rhs) psh_no_except;
     template <usize RHS_LENGTH>
     psh_api psh_inline StringCompareResult string_compare(StringView lhs, char (&rhs)[RHS_LENGTH]) psh_no_except {
-        return string_compare(lhs, StringView{rhs, RHS_LENGTH - 1});
+        return string_compare(lhs, StringView{rhs, RHS_LENGTH - 1u});
     }
     template <usize RHS_LENGTH>
     psh_api psh_inline StringCompareResult string_compare(StringView lhs, char rhs[RHS_LENGTH]) psh_no_except {
-        return string_compare(lhs, StringView{rhs, RHS_LENGTH - 1});
+        return string_compare(lhs, StringView{rhs, RHS_LENGTH - 1u});
     }
 
     psh_api bool string_equal(StringView lhs, StringView rhs) psh_no_except;
     template <usize RHS_LENGTH>
     psh_api psh_inline bool string_equal(StringView lhs, char const (&rhs)[RHS_LENGTH]) psh_no_except {
-        return string_equal(lhs, StringView{rhs, RHS_LENGTH - 1});
+        usize len = RHS_LENGTH;
+        psh_discard_value(len);
+        return string_equal(lhs, StringView{rhs, RHS_LENGTH - 1u});
     }
     template <usize RHS_LENGTH>
     psh_api psh_inline bool string_equal(StringView lhs, char const rhs[RHS_LENGTH]) psh_no_except {
-        return string_equal(lhs, StringView{rhs, RHS_LENGTH - 1});
+        return string_equal(lhs, StringView{rhs, RHS_LENGTH - 1u});
     }
 
     // -------------------------------------------------------------------------------------------------
