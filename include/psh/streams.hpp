@@ -85,6 +85,18 @@ namespace psh {
         OK,
     };
 
+    psh_inline StringView file_status_to_string(FileStatus status) psh_no_except {
+        StringView string;
+        switch (status) {
+            case FileStatus::FAILED_TO_OPEN: string = psh::make_string_view("psh::FileStatus::FAILED_TO_OPEN"); break;
+            case FileStatus::FAILED_TO_READ: string = psh::make_string_view("psh::FileStatus::FAILED_TO_READ"); break;
+            case FileStatus::OUT_OF_MEMORY:  string = psh::make_string_view("psh::FileStatus::OUT_OF_MEMORY"); break;
+            case FileStatus::SIZE_UNKNOWN:   string = psh::make_string_view("psh::FileStatus::SIZE_UNKNOWN"); break;
+            case FileStatus::OK:             string = psh::make_string_view("psh::FileStatus::OK"); break;
+        }
+        return string;
+    }
+
     struct psh_api FileReadResult {
         Array<u8>  content = {};
         FileStatus status  = {};
