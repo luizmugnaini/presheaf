@@ -27,7 +27,6 @@
 #pragma once
 
 #include <psh/core.hpp>
-#include <psh/option.hpp>
 
 /// Range size threshold for the quick sort algorithm to fallback to the insertion sort algorithm.
 #ifndef QUICK_SORT_CUTOFF_TO_INSERTION_SORT
@@ -72,11 +71,11 @@ namespace psh {
 
     /// Try to find the index of the first match.
     template <typename T>
-    Option<usize> linear_search(FatPtr<T const> fptr, T match) psh_no_except {
-        Option<usize> match_idx = {};
+    isize linear_search(FatPtr<T const> fptr, T match) psh_no_except {
+        isize match_idx = -1;
         for (usize idx = 0; idx < fptr.count; ++idx) {
             if (fptr[idx] == match) {
-                match_idx = idx;
+                match_idx = static_cast<isize>(idx);
                 break;
             }
         }
@@ -85,11 +84,11 @@ namespace psh {
 
     /// Try to find the index of the first match.
     template <typename T>
-    Option<usize> linear_search(FatPtr<T const> fptr, T match, MatchFn<T>* match_fn) psh_no_except {
-        Option<usize> match_idx = {};
+    isize linear_search(FatPtr<T const> fptr, T match, MatchFn<T>* match_fn) psh_no_except {
+        isize match_idx = -1;
         for (usize idx = 0; idx < fptr.count; ++idx) {
             if (match_fn(fptr[idx], match)) {
-                match_idx = idx;
+                match_idx = static_cast<isize>(idx);
                 break;
             }
         }
@@ -100,14 +99,14 @@ namespace psh {
     ///
     /// Note: We assume that the buffer of data is ordered.
     template <typename T>
-    Option<usize> binary_search(FatPtr<T const> fptr, T match) psh_no_except {
+    isize binary_search(FatPtr<T const> fptr, T match) psh_no_except {
         return binary_search_range(fptr, match, 0, fptr.count - 1u);
     }
 
     template <typename T>
-    Option<usize> binary_search_range(FatPtr<T const> fptr, T match, usize low, usize high) psh_no_except {
+    isize binary_search_range(FatPtr<T const> fptr, T match, usize low, usize high) psh_no_except {
         if (psh_unlikely(high < low)) {
-            return {};
+            return -1;
         }
 
         usize mid      = (low + high) / 2;
@@ -115,7 +114,7 @@ namespace psh {
 
         // Found.
         if (mid_elem == match) {
-            return {mid};
+            return static_cast<isize>(mid);
         }
 
         // Search the left side.

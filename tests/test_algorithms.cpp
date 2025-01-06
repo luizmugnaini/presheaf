@@ -178,22 +178,22 @@ namespace psh::test::algorithms {
             FatPtr<u64 const> fptr = make_const_fat_ptr(buf);
 
             // Exact elements.
-            psh_assert(psh::linear_search(fptr, static_cast<u64>(192381)).demand() == 0);
-            psh_assert(psh::linear_search(fptr, static_cast<u64>(281937123)).demand() == 1);
-            psh_assert(psh::linear_search(fptr, static_cast<u64>(123)).demand() == 2);
-            psh_assert(psh::linear_search(fptr, static_cast<u64>(0)).demand() == 3);
-            psh_assert(psh::linear_search(fptr, static_cast<u64>(3)).demand() == 5);
-            psh_assert(psh::linear_search(fptr, static_cast<u64>(90)).demand() == 6);
-            psh_assert(psh::linear_search(fptr, static_cast<u64>(23198237)).demand() == 7);
-            psh_assert(psh::linear_search(fptr, static_cast<u64>(127391723)).demand() == 8);
-            psh_assert(psh::linear_search(fptr, static_cast<u64>(123769128)).demand() == 9);
-            psh_assert(psh::linear_search(fptr, static_cast<u64>(5)).demand() == 10);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(192381)) == 0);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(281937123)) == 1);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(123)) == 2);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(0)) == 3);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(3)) == 5);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(90)) == 6);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(23198237)) == 7);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(127391723)) == 8);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(123769128)) == 9);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(5)) == 10);
 
             // Non-existent elements.
-            psh_assert(!psh::linear_search(fptr, static_cast<u64>(92381)).has_value);
-            psh_assert(!psh::linear_search(fptr, static_cast<u64>(28197123)).has_value);
-            psh_assert(!psh::linear_search(fptr, static_cast<u64>(12)).has_value);
-            psh_assert(!psh::linear_search(fptr, static_cast<u64>(1)).has_value);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(92381)) == -1);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(28197123)) == -1);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(12)) == -1);
+            psh_assert(psh::linear_search(fptr, static_cast<u64>(1)) == -1);
         }
 
         // Custom function.
@@ -202,24 +202,24 @@ namespace psh::test::algorithms {
             FatPtr<Fraction const> fptr = make_const_fat_ptr(buf);
 
             // Check the exact fractions in buf.
-            psh_assert(psh::linear_search(fptr, Fraction{3, 3}, equal_fractions).demand() == 0);
-            psh_assert(psh::linear_search(fptr, Fraction{12, 3}, equal_fractions).demand() == 1);
-            psh_assert(psh::linear_search(fptr, Fraction{2, 4}, equal_fractions).demand() == 2);
-            psh_assert(psh::linear_search(fptr, Fraction{60, 8}, equal_fractions).demand() == 3);
+            psh_assert(psh::linear_search(fptr, Fraction{3, 3}, equal_fractions) == 0);
+            psh_assert(psh::linear_search(fptr, Fraction{12, 3}, equal_fractions) == 1);
+            psh_assert(psh::linear_search(fptr, Fraction{2, 4}, equal_fractions) == 2);
+            psh_assert(psh::linear_search(fptr, Fraction{60, 8}, equal_fractions) == 3);
 
             // Check equivalent fractions.
-            psh_assert(psh::linear_search(fptr, Fraction{1, 1}, equal_fractions).demand() == 0);   //  3 / 3
-            psh_assert(psh::linear_search(fptr, Fraction{4, 1}, equal_fractions).demand() == 1);   // 12 / 3
-            psh_assert(psh::linear_search(fptr, Fraction{1, 2}, equal_fractions).demand() == 2);   //  2 / 4
-            psh_assert(psh::linear_search(fptr, Fraction{30, 4}, equal_fractions).demand() == 3);  // 60 / 8
-            psh_assert(psh::linear_search(fptr, Fraction{15, 2}, equal_fractions).demand() == 3);  // 60 / 8
+            psh_assert(psh::linear_search(fptr, Fraction{1, 1}, equal_fractions) == 0);   //  3 / 3
+            psh_assert(psh::linear_search(fptr, Fraction{4, 1}, equal_fractions) == 1);   // 12 / 3
+            psh_assert(psh::linear_search(fptr, Fraction{1, 2}, equal_fractions) == 2);   //  2 / 4
+            psh_assert(psh::linear_search(fptr, Fraction{30, 4}, equal_fractions) == 3);  // 60 / 8
+            psh_assert(psh::linear_search(fptr, Fraction{15, 2}, equal_fractions) == 3);  // 60 / 8
 
             // Non-matching fractions.
-            psh_assert(!psh::linear_search(fptr, Fraction{2, 1}, equal_fractions).has_value);
-            psh_assert(!psh::linear_search(fptr, Fraction{4, 3}, equal_fractions).has_value);
-            psh_assert(!psh::linear_search(fptr, Fraction{1, 4}, equal_fractions).has_value);
-            psh_assert(!psh::linear_search(fptr, Fraction{27, 5}, equal_fractions).has_value);
-            psh_assert(!psh::linear_search(fptr, Fraction{0, 2}, equal_fractions).has_value);
+            psh_assert(psh::linear_search(fptr, Fraction{2, 1}, equal_fractions) == -1);
+            psh_assert(psh::linear_search(fptr, Fraction{4, 3}, equal_fractions) == -1);
+            psh_assert(psh::linear_search(fptr, Fraction{1, 4}, equal_fractions) == -1);
+            psh_assert(psh::linear_search(fptr, Fraction{27, 5}, equal_fractions) == -1);
+            psh_assert(psh::linear_search(fptr, Fraction{0, 2}, equal_fractions) == -1);
         }
         report_test_successful();
     }
@@ -231,21 +231,21 @@ namespace psh::test::algorithms {
             FatPtr<i64 const> fptr = make_const_fat_ptr(buf);
 
             // Exact elements.
-            psh_assert(psh::binary_search(fptr, static_cast<i64>(-12837)).demand() == 0);
-            psh_assert(psh::binary_search(fptr, static_cast<i64>(-123)).demand() == 1);
-            psh_assert(psh::binary_search(fptr, static_cast<i64>(-72)).demand() == 2);
-            psh_assert(psh::binary_search(fptr, static_cast<i64>(-1)).demand() == 3);
-            psh_assert(psh::binary_search(fptr, static_cast<i64>(0)).demand() == 4);
-            psh_assert(psh::binary_search(fptr, static_cast<i64>(19)).demand() == 6);
-            psh_assert(psh::binary_search(fptr, static_cast<i64>(192381)).demand() == 7);
-            psh_assert(psh::binary_search(fptr, static_cast<i64>(281937123)).demand() == 8);
-            psh_assert(psh::binary_search(fptr, static_cast<i64>(55518237198)).demand() == 9);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(-12837)) == 0);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(-123)) == 1);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(-72)) == 2);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(-1)) == 3);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(0)) == 4);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(19)) == 6);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(192381)) == 7);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(281937123)) == 8);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(55518237198)) == 9);
 
             // Non-existent elements.
-            psh_assert(!psh::binary_search(fptr, static_cast<i64>(92381)).has_value);
-            psh_assert(!psh::binary_search(fptr, static_cast<i64>(28197123)).has_value);
-            psh_assert(!psh::binary_search(fptr, static_cast<i64>(12)).has_value);
-            psh_assert(!psh::binary_search(fptr, static_cast<i64>(1)).has_value);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(92381)) == -1);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(28197123)) == -1);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(12)) == -1);
+            psh_assert(psh::binary_search(fptr, static_cast<i64>(1)) == -1);
         }
 
         // Basic test.
@@ -254,7 +254,7 @@ namespace psh::test::algorithms {
             FatPtr<i32 const> fptr = make_const_fat_ptr(buf);
 
             // Exact elements.
-            psh_assert(psh::binary_search(fptr, static_cast<i32>(4)).demand() == 3);
+            psh_assert(psh::binary_search(fptr, static_cast<i32>(4)) == 3);
         }
 
         // Random test.
@@ -267,7 +267,7 @@ namespace psh::test::algorithms {
                 psh::quick_sort(make_fat_ptr(buf));
 
                 for (i32 v : buf) {
-                    psh_assert(psh::binary_search(make_const_fat_ptr(buf), v).has_value);
+                    psh_assert(psh::binary_search(make_const_fat_ptr(buf), v) != -1);
                 }
             }
         }

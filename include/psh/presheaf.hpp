@@ -30,7 +30,6 @@
 #include <psh/time.hpp>
 #include <psh/vec.hpp>
 #include <psh/log.hpp>
-#include <psh/option.hpp>
 #include <psh/memory.hpp>
 #include <psh/string.hpp>
 #include <psh/streams.hpp>

@@ -26,7 +26,6 @@
 
 #include <string.h>
 #include <psh/memory.hpp>
-#include <psh/option.hpp>
 
 namespace psh {
     usize cstring_length(cstring str) psh_no_except {
