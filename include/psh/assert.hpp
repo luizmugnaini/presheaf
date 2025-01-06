@@ -149,14 +149,19 @@ namespace psh {
 #    define psh_static_assert_valid_const_container_type(ContainerType, container)   0
 #endif
 
-#define psh_todo()                                       \
-    do {                                                 \
-        psh_log_fatal("TODO: code-path unimplemented!"); \
-        psh::abort_program();                            \
+#define psh_todo()                                        \
+    do {                                                  \
+        psh_log_fatal("@TODO: code-path unimplemented."); \
+        psh::abort_program();                             \
     } while (0)
 
-#define psh_todo_msg(msg)                                                 \
-    do {                                                                  \
-        psh_log_fatal_fmt("TODO: code-path unimplemented, msg: %s", msg); \
-        psh::abort_program();                                             \
+#define psh_todo_msg(msg)                                                  \
+    do {                                                                   \
+        psh_log_fatal_fmt("@TODO: code-path unimplemented, msg: %s", msg); \
+        psh::abort_program();                                              \
+    } while (0)
+#define psh_todo_fmt(fmt, ...)                                                       \
+    do {                                                                             \
+        psh_log_fatal_fmt("@TODO: code-path unimplemented, msg: " fmt, __VA_ARGS__); \
+        psh::abort_program();                                                        \
     } while (0)
