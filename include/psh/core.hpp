@@ -459,7 +459,7 @@ namespace psh {
 namespace psh {
     /// Add an offset in bytes to a pointer if and only if the pointer is not null.
     template <typename T>
-    psh_inline T* pointer_add(T* ptr, usize offset_bytes) psh_no_except {
+    psh_inline T* pointer_add_bytes(T* ptr, usize offset_bytes) psh_no_except {
 #if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
         if (ptr == nullptr) {
             return nullptr;
@@ -468,7 +468,7 @@ namespace psh {
         return reinterpret_cast<T*>(reinterpret_cast<u8*>(ptr) + offset_bytes);
     }
     template <typename T>
-    psh_inline T const* pointer_const_add(T const* ptr, usize offset_bytes) psh_no_except {
+    psh_inline T const* pointer_const_add_bytes(T const* ptr, usize offset_bytes) psh_no_except {
 #if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
         if (ptr == nullptr) {
             return nullptr;
@@ -479,7 +479,7 @@ namespace psh {
 
     /// Subtract an offset in bytes to a pointer if and only if the pointer is not null.
     template <typename T>
-    psh_inline T* pointer_sub(T* ptr, isize offset_bytes) psh_no_except {
+    psh_inline T* pointer_subtract_bytes(T* ptr, isize offset_bytes) psh_no_except {
 #if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
         if (ptr == nullptr) {
             return nullptr;
@@ -488,7 +488,7 @@ namespace psh {
         return reinterpret_cast<T*>(reinterpret_cast<u8*>(ptr) - offset_bytes);
     }
     template <typename T>
-    psh_inline T const* pointer_const_sub(T const* ptr, isize offset_bytes) psh_no_except {
+    psh_inline T const* pointer_const_subtract_bytes(T const* ptr, isize offset_bytes) psh_no_except {
 #if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
         if (ptr == nullptr) {
             return nullptr;

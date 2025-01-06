@@ -205,7 +205,7 @@ namespace psh {
     StackHeader const* Stack::top_header() const psh_no_except {
         psh_paranoid_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialized."));
 
-        return reinterpret_cast<StackHeader const*>(pointer_add(this->buf, this->previous_offset - psh_usize_of(StackHeader)));
+        return reinterpret_cast<StackHeader const*>(pointer_add_bytes(this->buf, this->previous_offset - psh_usize_of(StackHeader)));
     }
 
     usize Stack::top_size() const psh_no_except {
@@ -248,8 +248,8 @@ namespace psh {
             return STATUS_FAILED;
         }
 
-        u8 const*          top        = pointer_add(this->buf, this->previous_offset);
-        StackHeader const* top_header = reinterpret_cast<StackHeader const*>(pointer_const_sub(top, psh_isize_of(StackHeader)));
+        u8 const*          top        = pointer_add_bytes(this->buf, this->previous_offset);
+        StackHeader const* top_header = reinterpret_cast<StackHeader const*>(pointer_const_subtract_bytes(top, psh_isize_of(StackHeader)));
 
         this->offset          = this->previous_offset - top_header->padding;
         this->previous_offset = top_header->previous_offset;
@@ -260,7 +260,7 @@ namespace psh {
         u8* this_buf = this->buf;
 
         // Check if the block is within the allocator's memory.
-        bool is_within_region = (block >= this_buf) || (block < pointer_add(this_buf, this->previous_offset));
+        bool is_within_region = (block >= this_buf) || (block < pointer_add_bytes(this_buf, this->previous_offset));
         if (psh_unlikely((block == nullptr) || !is_within_region)) {
             return STATUS_FAILED;
         }
@@ -341,24 +341,24 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     void raw_unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
-        u8 const* buf_end = pointer_const_add(fptr.buf, fptr.count);
+        u8 const* buf_end = pointer_const_add_bytes(fptr.buf, fptr.count);
         psh_validate_usage(psh_assert_bounds_check(reinterpret_cast<uptr>(element_ptr), reinterpret_cast<uptr>(buf_end)));
 
         // Only effectively remove if the element isn't the last one.
-        u8 const* last_element_ptr = pointer_const_sub(buf_end, static_cast<isize>(element_size));
+        u8 const* last_element_ptr = pointer_const_subtract_bytes(buf_end, static_cast<isize>(element_size));
         if (element_ptr != last_element_ptr) {
             memory_move(element_ptr, last_element_ptr, element_size);
         }
     }
 
     void raw_ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
-        u8 const* buf_end = pointer_const_add(fptr.buf, fptr.count);
+        u8 const* buf_end = pointer_const_add_bytes(fptr.buf, fptr.count);
         psh_validate_usage(psh_assert_bounds_check(reinterpret_cast<uptr>(element_ptr), reinterpret_cast<uptr>(buf_end)));
 
         // Only effectively remove if the element isn't the last one.
-        u8 const* last_element_ptr = pointer_const_sub(buf_end, static_cast<isize>(element_size));
+        u8 const* last_element_ptr = pointer_const_subtract_bytes(buf_end, static_cast<isize>(element_size));
         if (element_ptr != last_element_ptr) {
-            u8 const* next_element_ptr = pointer_const_add(element_ptr, element_size);
+            u8 const* next_element_ptr = pointer_const_add_bytes(element_ptr, element_size);
             memory_move(element_ptr, next_element_ptr, static_cast<usize>(pointer_offset(next_element_ptr, buf_end)));
         }
     }
@@ -407,7 +407,7 @@ namespace psh {
 
         usize current_capacity = stack->capacity;
         usize current_offset   = stack->offset;
-        u8*   free_memory      = pointer_add(stack->buf, current_offset);
+        u8*   free_memory      = pointer_add_bytes(stack->buf, current_offset);
 
         usize padding = padding_with_header(
             reinterpret_cast<uptr>(free_memory),
@@ -427,10 +427,10 @@ namespace psh {
         }
 
         // Address to the start of the new block of memory.
-        u8* new_block = pointer_add(free_memory, padding);
+        u8* new_block = pointer_add_bytes(free_memory, padding);
 
         // Write to the header associated with the new block of memory.
-        StackHeader* new_header     = reinterpret_cast<StackHeader*>(pointer_sub(new_block, psh_isize_of(StackHeader)));
+        StackHeader* new_header     = reinterpret_cast<StackHeader*>(pointer_subtract_bytes(new_block, psh_isize_of(StackHeader)));
         new_header->padding         = padding;
         new_header->capacity        = size_bytes;
         new_header->previous_offset = stack->previous_offset;
