@@ -77,24 +77,24 @@ namespace psh {
 #endif
 
         if (psh_unlikely(fhandle == nullptr)) {
-            return FileReadResult{.status = FileStatus::FAILED_TO_OPEN};
+            return FileReadResult{.status = FILE_STATUS_FAILED_TO_OPEN};
         }
 
         if (psh_unlikely(fseek(fhandle, 0, SEEK_END) == -1)) {
             perror("Couldn't seek end of file.\n");
-            return FileReadResult{.status = FileStatus::FAILED_TO_READ};
+            return FileReadResult{.status = FILE_STATUS_FAILED_TO_READ};
         }
 
         isize file_size = ftell(fhandle);
         if (psh_unlikely(file_size == -1)) {
             perror("Couldn't tell the size of the file.\n");
-            return FileReadResult{.status = FileStatus::SIZE_UNKNOWN};
+            return FileReadResult{.status = FILE_STATUS_SIZE_UNKNOWN};
         }
         usize size = static_cast<usize>(file_size);
 
         if (psh_unlikely(fseek(fhandle, 0, SEEK_SET) == -1)) {
             perror("Couldn't seek start of file.\n");
-            return FileReadResult{.status = FileStatus::FAILED_TO_READ};
+            return FileReadResult{.status = FILE_STATUS_FAILED_TO_READ};
         }
 
         ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
@@ -108,7 +108,7 @@ namespace psh {
             perror("Couldn't read file.\n");
 
             arena_checkpoint_restore(arena_checkpoint);
-            return FileReadResult{.status = FileStatus::FAILED_TO_READ};
+            return FileReadResult{.status = FILE_STATUS_FAILED_TO_READ};
         }
 
         i32 res = fclose(reinterpret_cast<FILE*>(fhandle));
@@ -118,7 +118,7 @@ namespace psh {
 
         return FileReadResult{
             .content = content,
-            .status  = FileStatus::OK,
+            .status  = FILE_STATUS_OK,
         };
     }
 

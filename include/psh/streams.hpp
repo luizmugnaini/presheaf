@@ -77,22 +77,22 @@ namespace psh {
         OPEN_FILE_FLAG_COUNT,
     };
 
-    enum struct FileStatus {
-        FAILED_TO_OPEN,
-        FAILED_TO_READ,
-        OUT_OF_MEMORY,
-        SIZE_UNKNOWN,
-        OK,
+    enum FileStatus {
+        FILE_STATUS_FAILED_TO_OPEN,
+        FILE_STATUS_FAILED_TO_READ,
+        FILE_STATUS_OUT_OF_MEMORY,
+        FILE_STATUS_SIZE_UNKNOWN,
+        FILE_STATUS_OK,
     };
 
     psh_inline StringView file_status_to_string(FileStatus status) psh_no_except {
-        StringView string;
+        StringView string = {};
         switch (status) {
-            case FileStatus::FAILED_TO_OPEN: string = psh::make_string_view("psh::FileStatus::FAILED_TO_OPEN"); break;
-            case FileStatus::FAILED_TO_READ: string = psh::make_string_view("psh::FileStatus::FAILED_TO_READ"); break;
-            case FileStatus::OUT_OF_MEMORY:  string = psh::make_string_view("psh::FileStatus::OUT_OF_MEMORY"); break;
-            case FileStatus::SIZE_UNKNOWN:   string = psh::make_string_view("psh::FileStatus::SIZE_UNKNOWN"); break;
-            case FileStatus::OK:             string = psh::make_string_view("psh::FileStatus::OK"); break;
+            case FILE_STATUS_FAILED_TO_OPEN: string = psh::make_string_view("psh::FILE_STATUS_FAILED_TO_OPEN"); break;
+            case FILE_STATUS_FAILED_TO_READ: string = psh::make_string_view("psh::FILE_STATUS_FAILED_TO_READ"); break;
+            case FILE_STATUS_OUT_OF_MEMORY:  string = psh::make_string_view("psh::FILE_STATUS_OUT_OF_MEMORY"); break;
+            case FILE_STATUS_SIZE_UNKNOWN:   string = psh::make_string_view("psh::FILE_STATUS_SIZE_UNKNOWN"); break;
+            case FILE_STATUS_OK:             string = psh::make_string_view("psh::FILE_STATUS_OK"); break;
         }
         return string;
     }
