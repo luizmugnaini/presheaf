@@ -479,7 +479,7 @@ namespace psh {
 
     /// Subtract an offset in bytes to a pointer if and only if the pointer is not null.
     template <typename T>
-    psh_inline void* pointer_sub(T* ptr, isize offset_bytes) psh_no_except {
+    psh_inline T* pointer_sub(T* ptr, isize offset_bytes) psh_no_except {
 #if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
         if (ptr == nullptr) {
             return nullptr;
@@ -488,7 +488,7 @@ namespace psh {
         return reinterpret_cast<T*>(reinterpret_cast<u8*>(ptr) - offset_bytes);
     }
     template <typename T>
-    psh_inline void const* pointer_const_sub(T const* ptr, isize offset_bytes) psh_no_except {
+    psh_inline T const* pointer_const_sub(T const* ptr, isize offset_bytes) psh_no_except {
 #if PSH_ENABLE_CHECKED_POINTER_ARITHMETIC
         if (ptr == nullptr) {
             return nullptr;
@@ -504,7 +504,7 @@ namespace psh {
 
     /// Compute the offset in bytes, between two pointers.
     psh_inline isize pointer_offset(void const* start, void const* end) psh_no_except {
-        return static_cast<isize>(reinterpret_cast<u8 const*>(end) - reinterpret_cast<u8 const*>(start));
+        return reinterpret_cast<isize>(end) - reinterpret_cast<isize>(start);
     }
 
     /// Calculate, at compile-time, the element count of a literal array.
