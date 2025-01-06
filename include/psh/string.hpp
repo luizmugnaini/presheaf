@@ -45,11 +45,6 @@
         .buf   = cstr_literal,                      \
         .count = sizeof(cstr_literal) - 1u,         \
     }
-#define psh_comptime_make_string_view_from_str(str) \
-    psh::StringView {                               \
-        .buf   = str.buf,                           \
-        .count = str.count,                         \
-    }
 
 namespace psh {
     // Forward declaration.
@@ -92,17 +87,17 @@ namespace psh {
     using StringView = FatPtr<char const>;
 
     template <usize count>
-    psh_api psh_inline constexpr StringView make_string_view(Str<count> str) psh_no_except {
+    psh_api constexpr StringView make_string_view(Str<count> str) psh_no_except {
         return StringView{str.buf, str.count};
+    }
+
+    template <usize STR_LENGTH>
+    psh_api constexpr StringView make_string_view(char (&str)[STR_LENGTH]) psh_no_except {
+        return StringView{str, STR_LENGTH - 1};
     }
 
     psh_api psh_inline StringView make_string_view(cstring str) psh_no_except {
         return StringView{str, cstring_length(str)};
-    }
-
-    template <usize STR_LENGTH>
-    psh_api psh_inline StringView make_string_view(char (&str)[STR_LENGTH]) psh_no_except {
-        return StringView{str, STR_LENGTH - 1};
     }
 
     psh_api psh_inline String make_string(Arena* arena, usize initial_capacity) psh_no_except {
