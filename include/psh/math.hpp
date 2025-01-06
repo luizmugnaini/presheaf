@@ -34,7 +34,9 @@ namespace psh {
     constexpr f32 F32_IS_ZERO_RANGE = 1e-6f;
 
     psh_api constexpr bool approx_equal(f32 a, f32 b, f32 zero_range = F32_IS_ZERO_RANGE) psh_no_except {
-        psh_assert_msg(zero_range > 0.0f, "Expected the 'within zero range' value to be positive.");
+        psh_paranoid_validate_usage({
+            psh_assert_msg(zero_range > 0.0f, "Expected the 'within zero range' value to be positive.");
+        });
         f32 sub = a - b;
         return (-zero_range < sub) && (sub < zero_range);
     }

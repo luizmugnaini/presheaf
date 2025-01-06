@@ -100,8 +100,10 @@ The following #define macros can be used to tweak the behaviour of the library a
   and callee is followed. Parts of the validation process can be enabled/disabled by using their
   corresponding flags. For instance:
                       -DPSH_ENABLE_USAGE_VALIDATION -DPSH_ENABLE_ASSERT_BOUNDS_CHECK=0
-- PSH_ENABLE_DEBUG: Enables all of the above debug checks if those aren't manually disabled. For instance,
-  if you want all debug checks but not memory error crashes, you can compile with
+- PSH_ENABLE_PARANOID_USAGE_VALIDATION: Inserts even more validation checks (this option isn't enabled
+  via PSH_ENABLE_DEBUG, you have to set it manually).
+- PSH_ENABLE_DEBUG: Enables all of the above debug checks if those aren't manually disabled. For
+  instance, if you want all debug checks but not memory error crashes, you can compile with
                       -DPSH_ENABLE_DEBUG -DPSH_ENABLE_ASSERT_NO_MEMORY_ERROR=0
   any of the above options can be enabled/disabled as just explained.
 - PSH_ENABLE_ANSI_COLOURS: When logging, use ANSI colour codes for pretty printing. This may not
@@ -129,6 +131,6 @@ Dependencies
 The only dependencies of the Presheaf library are libc and OS headers. Explicitly, the only external
 headers included are:
 
-- libc headers:    stdio.h, stdint.h, stddef.h, stdarg.h, string.h, math.h
+- libc headers:    stdio.h, stdint.h, stddef.h, stdarg.h, string.h, math.h, assert.h, limits.h
 - Windows headers: Windows.h
 - Unix headers:    unistd.h, errno.h, time.h, sys/mman.h

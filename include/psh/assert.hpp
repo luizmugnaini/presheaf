@@ -56,6 +56,15 @@ namespace psh {
 #    define psh_validate_usage(validation_code) 0
 #endif
 
+#if PSH_ENABLE_PARANOID_USAGE_VALIDATION
+#    define psh_paranoid_validate_usage(validation_code) \
+        do {                                             \
+            validation_code;                             \
+        } while (0)
+#else
+#    define psh_paranoid_validate_usage(validation_code) 0
+#endif
+
 /// Assertion macros.
 #if PSH_ENABLE_ASSERTIONS
 #    define psh_assert(expr)                                                              \

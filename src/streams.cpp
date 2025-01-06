@@ -188,10 +188,8 @@ namespace psh {
     }
 
     String absolute_path(Arena* arena, cstring file_path) psh_no_except {
-        psh_validate_usage({
-            psh_assert_not_null(arena);
-            psh_assert_not_null(file_path);
-        });
+        psh_paranoid_validate_usage(psh_assert_not_null(file_path));
+        psh_validate_usage(psh_assert_not_null(arena));
 
         ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
 

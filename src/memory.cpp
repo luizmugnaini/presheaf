@@ -52,6 +52,7 @@ namespace psh {
     // Virtual memory.
     // -------------------------------------------------------------------------------------------------
 
+    // @TODO: We should round this up to a multiple of a page-size.
     u8* memory_virtual_alloc(usize size_bytes) psh_no_except {
         u8* buf;
 #if defined(PSH_OS_WINDOWS)
@@ -72,7 +73,7 @@ namespace psh {
 
     void memory_virtual_free(u8* memory, usize size_bytes) psh_no_except {
 #if defined(PSH_OS_WINDOWS)
-        psh_validate_usage(psh_assert_not_null(memory));
+        psh_paranoid_validate_usage(psh_assert_not_null(memory));
         psh_discard_value(size_bytes);
 
         BOOL result = VirtualFree(memory, 0, MEM_RELEASE);
@@ -80,7 +81,7 @@ namespace psh {
             psh_log_error_fmt("Failed free memory with error code: %lu", GetLastError());
         }
 #elif defined(PSH_OS_UNIX)
-        psh_validate_usage({
+        psh_paranoid_validate_usage({
             psh_assert_not_null(memory);
             psh_assert(size_bytes > 0);
         });
@@ -97,7 +98,7 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     void memory_set(u8* memory, usize size_bytes, i32 fill) psh_no_except {
-        psh_validate_usage(psh_assert_not_null(memory));
+        psh_paranoid_validate_usage(psh_assert_not_null(memory));
 
         if (psh_unlikely(size_bytes == 0)) {
             return;
@@ -107,7 +108,7 @@ namespace psh {
     }
 
     void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except {
-        psh_validate_usage({
+        psh_paranoid_validate_usage({
             psh_assert_not_null(dst);
             psh_assert_not_null(src);
             psh_assert_no_alias(src, dst);
@@ -127,7 +128,7 @@ namespace psh {
     }
 
     void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except {
-        psh_validate_usage({
+        psh_paranoid_validate_usage({
             psh_assert_not_null(dst);
             psh_assert_not_null(src);
             psh_assert_no_alias(src, dst);
@@ -196,16 +197,15 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     u8* Stack::top() psh_no_except {
-        psh_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialized."));
+        psh_paranoid_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialized."));
 
-        return pointer_add(this->buf, this->previous_offset);
+        return this->buf + this->previous_offset;
     }
 
     StackHeader const* Stack::top_header() const psh_no_except {
-        psh_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialized."));
+        psh_paranoid_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialized."));
 
-        return reinterpret_cast<StackHeader const*>(
-            pointer_const_add(this->buf, this->previous_offset - sizeof(StackHeader)));
+        return reinterpret_cast<StackHeader const*>(pointer_add(this->buf, this->previous_offset - psh_usize_of(StackHeader)));
     }
 
     usize Stack::top_size() const psh_no_except {
@@ -219,19 +219,16 @@ namespace psh {
     }
 
     StackHeader const* Stack::header_of(u8 const* block) const psh_no_except {
-        psh_validate_usage({
-            psh_assert_not_null(block);
-            psh_assert_msg(this->buf != nullptr, "Stack uninitialized.");
-        });
+        psh_validate_usage(psh_assert_not_null(block));
+        psh_paranoid_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialized."));
 
         u8 const* memory_start = this->buf;
         u8 const* block_header = block + sizeof(StackHeader);
 
-        bool valid = true;
-        valid &= (block >= memory_start);
-        valid &= (block <= memory_start + this->capacity);
-        valid &= (block <= memory_start + this->previous_offset);
-        valid &= (block_header >= memory_start);
+        bool valid = (block >= memory_start)
+                     && (block <= memory_start + this->capacity)
+                     && (block <= memory_start + this->previous_offset)
+                     && (block_header >= memory_start);
 
         return valid ? reinterpret_cast<StackHeader const*>(block_header) : nullptr;
     }
@@ -251,8 +248,8 @@ namespace psh {
             return STATUS_FAILED;
         }
 
-        u8 const*          top        = this->buf + this->previous_offset;
-        StackHeader const* top_header = reinterpret_cast<StackHeader const*>(top - sizeof(StackHeader));
+        u8 const*          top        = pointer_add(this->buf, this->previous_offset);
+        StackHeader const* top_header = reinterpret_cast<StackHeader const*>(pointer_const_sub(top, psh_isize_of(StackHeader)));
 
         this->offset          = this->previous_offset - top_header->padding;
         this->previous_offset = top_header->previous_offset;
@@ -261,22 +258,14 @@ namespace psh {
 
     Status Stack::clear_at(u8 const* block) psh_no_except {
         u8* this_buf = this->buf;
-        psh_validate_usage({
-            psh_assert_msg(this_buf != nullptr, "Stack uninitialized.");
-            psh_assert_not_null(block);
-        });
 
         // Check if the block is within the allocator's memory.
-        if (psh_unlikely((block < this_buf) || (block > this_buf + this->previous_offset))) {
-            cstring fail_reason = (block > this_buf + this->capacity)
-                                      ? "Pointer outside of the stack allocator memory region."
-                                      : "Pointer to an already free region of the stack allocator memory.";
-            psh_log_error(fail_reason);
-
-            psh_impl_return_from_memory_error();
+        bool is_within_region = (block >= this_buf) || (block < pointer_add(this_buf, this->previous_offset));
+        if (psh_unlikely((block == nullptr) || !is_within_region)) {
+            return STATUS_FAILED;
         }
 
-        StackHeader const* header = reinterpret_cast<StackHeader const*>(block - sizeof(StackHeader));
+        StackHeader const* header = reinterpret_cast<StackHeader const*>(block - psh_usize_of(StackHeader));
 
         this->previous_offset = header->previous_offset;
         this->offset          = no_wrap_sub(
@@ -291,7 +280,7 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     void MemoryManager::init(usize capacity_bytes) psh_no_except {
-        psh_validate_usage(psh_assert_msg(this->allocation_count == 0, "MemoryManager already initialized."));
+        psh_paranoid_validate_usage(psh_assert_msg(this->allocation_count == 0, "MemoryManager already initialized."));
 
         this->allocator.init(memory_virtual_alloc(capacity_bytes), capacity_bytes);
     }
@@ -352,23 +341,24 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     void raw_unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
-        u8 const* buf_end = fptr.buf + fptr.count;
+        u8 const* buf_end = pointer_const_add(fptr.buf, fptr.count);
         psh_validate_usage(psh_assert_bounds_check(reinterpret_cast<uptr>(element_ptr), reinterpret_cast<uptr>(buf_end)));
 
         // Only effectively remove if the element isn't the last one.
-        u8 const* last_element_ptr = buf_end - element_size;
+        u8 const* last_element_ptr = pointer_const_sub(buf_end, static_cast<isize>(element_size));
         if (element_ptr != last_element_ptr) {
             memory_move(element_ptr, last_element_ptr, element_size);
         }
     }
 
     void raw_ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
-        u8 const* buf_end = fptr.buf + fptr.count;
+        u8 const* buf_end = pointer_const_add(fptr.buf, fptr.count);
         psh_validate_usage(psh_assert_bounds_check(reinterpret_cast<uptr>(element_ptr), reinterpret_cast<uptr>(buf_end)));
 
         // Only effectively remove if the element isn't the last one.
-        if (element_ptr != (buf_end - element_size)) {
-            u8 const* next_element_ptr = element_ptr + element_size;
+        u8 const* last_element_ptr = pointer_const_sub(buf_end, static_cast<isize>(element_size));
+        if (element_ptr != last_element_ptr) {
+            u8 const* next_element_ptr = pointer_const_add(element_ptr, element_size);
             memory_move(element_ptr, next_element_ptr, static_cast<usize>(pointer_offset(next_element_ptr, buf_end)));
         }
     }
@@ -409,7 +399,7 @@ namespace psh {
     }
 
     u8* memory_alloc_align(Stack* stack, usize size_bytes, u32 alignment) psh_no_except {
-        psh_validate_usage(psh_assert_not_null(stack));
+        psh_paranoid_validate_usage(psh_assert_not_null(stack));
 
         if (psh_unlikely(size_bytes == 0)) {
             return nullptr;
@@ -417,12 +407,12 @@ namespace psh {
 
         usize current_capacity = stack->capacity;
         usize current_offset   = stack->offset;
-        u8*   free_memory      = stack->buf + current_offset;
+        u8*   free_memory      = pointer_add(stack->buf, current_offset);
 
         usize padding = padding_with_header(
             reinterpret_cast<uptr>(free_memory),
             alignment,
-            sizeof(StackHeader),
+            psh_usize_of(StackHeader),
             alignof(StackHeader));
         usize required_bytes = padding + size_bytes;
 
@@ -437,10 +427,10 @@ namespace psh {
         }
 
         // Address to the start of the new block of memory.
-        u8* new_block = free_memory + padding;
+        u8* new_block = pointer_add(free_memory, padding);
 
         // Write to the header associated with the new block of memory.
-        StackHeader* new_header     = reinterpret_cast<StackHeader*>(new_block - sizeof(StackHeader));
+        StackHeader* new_header     = reinterpret_cast<StackHeader*>(pointer_sub(new_block, psh_isize_of(StackHeader)));
         new_header->padding         = padding;
         new_header->capacity        = size_bytes;
         new_header->previous_offset = stack->previous_offset;
@@ -459,8 +449,8 @@ namespace psh {
         usize  current_size_bytes,
         usize  new_size_bytes,
         u32    alignment) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(arena));
         psh_validate_usage({
-            psh_assert_not_null(arena);
             psh_assert_msg(block != nullptr, "Don't use realloc to allocate new memory.");
             psh_assert_msg(current_size_bytes != 0, "Don't use realloc to allocate new memory.");
             psh_assert_msg(new_size_bytes != 0, "Don't use realloc to free blocks of memory.");
@@ -517,8 +507,9 @@ namespace psh {
     }
 
     u8* memory_realloc_align(Stack* stack, u8* block, usize new_size_bytes, u32 alignment) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(stack));
         psh_validate_usage({
-            psh_assert_not_null(stack);
+            psh_assert_msg(stack->buf != nullptr, "Stack uninitialized.");
             psh_assert_msg(block != nullptr, "Don't use realloc to allocate new memory.");
             psh_assert_msg(new_size_bytes != 0, "Don't use realloc to free existing memory blocks.");
         });
@@ -541,7 +532,7 @@ namespace psh {
             psh_impl_return_from_memory_error();
         }
 
-        StackHeader const* header = reinterpret_cast<StackHeader const*>(block - sizeof(StackHeader));
+        StackHeader const* header = reinterpret_cast<StackHeader const*>(block + psh_usize_of(StackHeader));
 
         // Check memory availability.
         if (psh_unlikely(new_size_bytes > stack->capacity - stack->offset)) {
@@ -553,11 +544,11 @@ namespace psh {
             psh_impl_return_from_memory_error();
         }
 
-        u8* new_mem = memory_alloc_align(stack, new_size_bytes, alignment);
+        u8* new_block = memory_alloc_align(stack, new_size_bytes, alignment);
 
         usize const copy_size = psh_min_value(header->capacity, new_size_bytes);
-        memory_copy(reinterpret_cast<u8*>(new_mem), reinterpret_cast<u8 const*>(block), copy_size);
+        memory_copy(reinterpret_cast<u8*>(new_block), reinterpret_cast<u8 const*>(block), copy_size);
 
-        return new_mem;
+        return new_block;
     }
 }  // namespace psh

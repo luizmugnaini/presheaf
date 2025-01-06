@@ -153,14 +153,14 @@ namespace psh {
 
     /// Initialize the arena with a given memory buffer and a capacity.
     psh_inline void arena_init(Arena* arena, u8* buf, usize capacity) psh_no_except {
-        psh_validate_usage(psh_assert_not_null(arena));
+        psh_paranoid_validate_usage(psh_assert_not_null(arena));
         arena->buf      = buf;
         arena->capacity = (buf != nullptr) ? capacity : 0;
     }
 
     /// Reset the offset of the allocator.
     psh_inline void arena_clear(Arena* arena) psh_no_except {
-        psh_validate_usage(psh_assert_not_null(arena));
+        psh_paranoid_validate_usage(psh_assert_not_null(arena));
         arena->offset = 0;
     }
 
@@ -181,7 +181,7 @@ namespace psh {
     ///
     /// This function should only be called for arenas that where created by make_owned_arena.
     psh_inline void free_owned_arena(Arena* arena) psh_no_except {
-        psh_validate_usage(psh_assert_not_null(arena));
+        psh_paranoid_validate_usage(psh_assert_not_null(arena));
 
         usize capacity  = arena->capacity;
         arena->capacity = 0;
@@ -191,7 +191,7 @@ namespace psh {
     /// Create a restorable checkpoint for the arena. This is a more flexible alternative to the
     /// ScratchArena construct since you can manually restore the arena, not relying on destructors.
     psh_inline ArenaCheckpoint make_arena_checkpoint(Arena* arena) psh_no_except {
-        psh_validate_usage(psh_assert_not_null(arena));
+        psh_paranoid_validate_usage(psh_assert_not_null(arena));
         return ArenaCheckpoint{
             .arena        = arena,
             .saved_offset = arena->offset,
@@ -200,7 +200,7 @@ namespace psh {
 
     /// Restore the arena state to a given checkpoint.
     psh_inline void arena_checkpoint_restore(ArenaCheckpoint checkpoint) psh_no_except {
-        psh_validate_usage({
+        psh_paranoid_validate_usage({
             psh_assert_not_null(checkpoint.arena);
             psh_assert_fmt(
                 checkpoint.saved_offset <= checkpoint.arena->offset,
@@ -226,7 +226,7 @@ namespace psh {
         usize  saved_offset;
 
         psh_inline ScratchArena(Arena* arena_) psh_no_except {
-            psh_validate_usage(psh_assert_not_null(arena_));
+            psh_paranoid_validate_usage(psh_assert_not_null(arena_));
             this->arena        = arena_;
             this->saved_offset = arena_->offset;
         }
@@ -305,7 +305,7 @@ namespace psh {
         usize previous_offset = 0;
 
         psh_inline void init(u8* buf_, usize capacity_) psh_no_except {
-            psh_validate_usage(psh_assert_msg(this->capacity == 0, "Stack already initialized."));
+            psh_paranoid_validate_usage(psh_assert_msg(this->capacity == 0, "Stack already initialized."));
             this->buf      = buf_;
             this->capacity = (buf_ != nullptr) ? capacity_ : 0;
         }
@@ -501,10 +501,9 @@ namespace psh {
 
     template <typename Container, typename T = Container::ValueType>
     psh_inline FatPtr<T> make_slice(Container* c, usize start_idx, usize slice_count) psh_no_except {
-        psh_validate_usage({
-            psh_static_assert_valid_mutable_container_type(Container, c);
-            psh_assert_bounds_check(slice_count, c->count + 1);
-        });
+        psh_validate_usage(psh_static_assert_valid_const_container_type(Container, c));
+        psh_paranoid_validate_usage(psh_assert_not_null(c));
+        psh_validate_usage(psh_assert_bounds_check(slice_count, c->count + 1));
 
         return FatPtr<T>{c->buf + start_idx, slice_count};
     }
@@ -520,11 +519,9 @@ namespace psh {
 
     template <typename Container, typename T = Container::ValueType>
     psh_inline FatPtr<T const> make_const_slice(Container const* c, usize start_idx, usize slice_count) psh_no_except {
-        psh_validate_usage({
-            psh_static_assert_valid_const_container_type(Container, c);
-            psh_assert_not_null(c);
-            psh_assert_bounds_check(start_idx + slice_count - 1, c->count + 1);
-        });
+        psh_validate_usage(psh_static_assert_valid_const_container_type(Container, c));
+        psh_paranoid_validate_usage(psh_assert_not_null(c));
+        psh_validate_usage(psh_assert_bounds_check(start_idx + slice_count - 1, c->count + 1));
 
         return FatPtr<T const>{c->buf + start_idx, slice_count};
     }
@@ -540,36 +537,28 @@ namespace psh {
 
     template <typename Container, typename T = Container::ValueType>
     psh_inline FatPtr<T> make_fat_ptr(Container* c) psh_no_except {
-        psh_validate_usage({
-            psh_static_assert_valid_mutable_container_type(Container, c);
-            psh_assert_not_null(c);
-        });
+        psh_validate_usage(psh_static_assert_valid_mutable_container_type(Container, c));
+        psh_paranoid_validate_usage(psh_assert_not_null(c));
 
         return FatPtr<T>{c->buf, c->count};
     }
     template <typename Container, typename T = Container::ValueType>
     psh_inline FatPtr<T> make_fat_ptr(Container& c) psh_no_except {
-        psh_validate_usage({
-            psh_static_assert_valid_mutable_container_type(Container, &c);
-        });
+        psh_validate_usage(psh_static_assert_valid_mutable_container_type(Container, &c));
 
         return FatPtr<T>{c.buf, c.count};
     }
 
     template <typename Container, typename T = Container::ValueType>
     psh_inline FatPtr<T const> make_const_fat_ptr(Container const* c) psh_no_except {
-        psh_validate_usage({
-            psh_static_assert_valid_const_container_type(Container, c);
-            psh_assert_not_null(c);
-        });
+        psh_validate_usage(psh_static_assert_valid_const_container_type(Container, c));
+        psh_paranoid_validate_usage(psh_assert_not_null(c));
 
         return FatPtr<T const>{reinterpret_cast<T const*>(c->buf), c->count};
     }
     template <typename Container, typename T = Container::ValueType>
     psh_inline FatPtr<T const> make_const_fat_ptr(Container const& c) psh_no_except {
-        psh_validate_usage({
-            psh_static_assert_valid_const_container_type(Container, &c);
-        });
+        psh_validate_usage(psh_static_assert_valid_const_container_type(Container, &c));
 
         return FatPtr<T const>{reinterpret_cast<T const*>(c.buf), c.count};
     }
@@ -601,9 +590,9 @@ namespace psh {
 
     template <typename T>
     psh_inline void array_init(Array<T>* array, Arena* arena, usize count) psh_no_except {
-        psh_validate_usage({
+        psh_paranoid_validate_usage({
             psh_assert_not_null(array);
-            psh_assert_msg(array->count == 0, "Tried to re-initialize an Array.");
+            psh_assert_msg(array->count == 0, "Array already initialized.");
         });
 
         T* buf       = memory_alloc<T>(arena, count);
@@ -650,9 +639,9 @@ namespace psh {
         DynArray<T>* darray,
         Arena*       arena,
         usize        capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) psh_no_except {
-        psh_validate_usage({
+        psh_paranoid_validate_usage({
             psh_assert_not_null(darray);
-            psh_assert_msg(darray->count == 0, "DynArray already initialized");
+            psh_assert_msg(darray->count == 0, "DynArray already initialized.");
         });
 
         darray->buf      = memory_alloc<T>(arena, capacity);
@@ -665,7 +654,7 @@ namespace psh {
     psh_api Status dynarray_grow(
         DynArray<T>* darray,
         u32          growth_factor = DYNARRAY_RESIZE_CAPACITY_GROWTH_FACTOR) psh_no_except {
-        psh_validate_usage(psh_assert_not_null(darray));
+        psh_paranoid_validate_usage(psh_assert_not_null(darray));
 
         usize  new_capacity      = 0;
         T*     new_buf           = nullptr;
@@ -693,10 +682,8 @@ namespace psh {
     ///        by this procedure. DO NOT use this array structure with types having this property.
     template <typename T>
     psh_api Status dynarray_reserve(DynArray<T>* darray, usize new_capacity) psh_no_except {
-        psh_validate_usage({
-            psh_assert_not_null(darray);
-            psh_assert_msg(darray->capacity < new_capacity, "DynArray doesn't shrink.");
-        });
+        psh_paranoid_validate_usage(psh_assert_not_null(darray));
+        psh_validate_usage(psh_assert_msg(darray->capacity < new_capacity, "DynArray doesn't shrink."));
 
         T*     new_buf          = nullptr;
         Arena* arena            = darray->arena;
@@ -719,7 +706,7 @@ namespace psh {
     /// Inserts a new element to the end of the dynamic array.
     template <typename T>
     psh_api Status dynarray_push(DynArray<T>* darray, T new_element) psh_no_except {
-        psh_validate_usage(psh_assert_not_null(darray));
+        psh_paranoid_validate_usage(psh_assert_not_null(darray));
 
         usize previous_count = darray->count;
 
@@ -739,7 +726,7 @@ namespace psh {
     /// Insert a collection of new elements to the end of the dynamic array.
     template <typename T>
     psh_api Status dynarray_push_many(DynArray<T>* darray, FatPtr<T const> new_elements) psh_no_except {
-        psh_validate_usage(psh_assert_not_null(darray));
+        psh_paranoid_validate_usage(psh_assert_not_null(darray));
 
         usize previous_count = darray->count;
 
@@ -762,7 +749,7 @@ namespace psh {
     /// Try to pop the last element of the dynamic array.
     template <typename T>
     psh_api Status dynarray_pop(DynArray<T>* darray) psh_no_except {
-        psh_validate_usage(psh_assert_not_null(darray));
+        psh_paranoid_validate_usage(psh_assert_not_null(darray));
 
         usize previous_count = darray->count;
 
@@ -777,7 +764,7 @@ namespace psh {
     /// Clear the dynamic array data, resetting its size.
     template <typename T>
     psh_api psh_inline void dynarray_clear(DynArray<T>* darray) psh_no_except {
-        psh_validate_usage(psh_assert_not_null(darray));
+        psh_paranoid_validate_usage(psh_assert_not_null(darray));
         darray->count = 0;
     }
 
@@ -788,25 +775,25 @@ namespace psh {
     /// Query the current size in bytes of a given container.
     template <typename Container, typename T = Container::ValueType>
     psh_api usize size_bytes(Container const* c) psh_no_except {
-        psh_validate_usage({
-            psh_static_assert_valid_const_container_type(Container, c);
-            psh_assert_not_null(c);
-        });
+        psh_validate_usage(psh_static_assert_valid_const_container_type(Container, c));
+        psh_paranoid_validate_usage(psh_assert_not_null(c));
+
         return sizeof(T) * c->count;
     }
 
     psh_api void raw_unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except;
     psh_api void raw_ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except;
 
+    ///
     /// Try to remove a buffer element at a given index.
     ///
     /// This won't preserve the current ordering of the buffer.
+    ///
+
     template <typename T>
     psh_api void fat_ptr_unordered_remove(FatPtr<T>* fptr, usize idx) psh_no_except {
-        psh_validate_usage({
-            psh_assert_not_null(fptr);
-            psh_assert_bounds_check(idx, fptr->count);
-        });
+        psh_paranoid_validate_usage(psh_assert_not_null(fptr));
+        psh_validate_usage(psh_assert_bounds_check(idx, fptr->count));
 
         T*    buf   = fptr->buf;
         usize count = fptr->count;
@@ -817,12 +804,11 @@ namespace psh {
             reinterpret_cast<u8*>(buf + idx),
             sizeof(T));
     }
+
     template <typename T>
     psh_api void dynarray_unordered_remove(DynArray<T>* darray, usize idx) psh_no_except {
-        psh_validate_usage({
-            psh_assert_not_null(darray);
-            psh_assert_bounds_check(idx, darray->count);
-        });
+        psh_paranoid_validate_usage(psh_assert_not_null(darray));
+        psh_validate_usage(psh_assert_bounds_check(idx, darray->count));
 
         T*    buf   = darray->buf;
         usize count = darray->count;
@@ -834,15 +820,16 @@ namespace psh {
             sizeof(T));
     }
 
+    ///
     /// Try to remove a buffer element at a given index.
     ///
     /// This will move all of the buffer contents above the removed element index down one.
+    ///
+
     template <typename T>
     psh_api void fat_ptr_ordered_remove(FatPtr<T>* fptr, usize idx) psh_no_except {
-        psh_validate_usage({
-            psh_assert_not_null(fptr);
-            psh_assert_bounds_check(idx, fptr->count);
-        });
+        psh_paranoid_validate_usage(psh_assert_not_null(fptr));
+        psh_validate_usage(psh_assert_bounds_check(idx, fptr->count));
 
         T*    buf   = fptr->buf;
         usize count = fptr->count;
@@ -853,12 +840,11 @@ namespace psh {
             reinterpret_cast<u8*>(buf + idx),
             sizeof(T));
     }
+
     template <typename T>
     psh_api void dynarray_ordered_remove(DynArray<T>* darray, usize idx) psh_no_except {
-        psh_validate_usage({
-            psh_assert_not_null(darray);
-            psh_assert_bounds_check(idx, darray->count);
-        });
+        psh_paranoid_validate_usage(psh_assert_not_null(darray));
+        psh_validate_usage(psh_assert_bounds_check(idx, darray->count));
 
         T*    buf   = darray->buf;
         usize count = darray->count;

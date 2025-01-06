@@ -36,6 +36,8 @@
 // - PSH_ENABLE_USAGE_VALIDATION: Insert checks to ensure that any given Presheaf function is given
 //   valid arguments. In other words, this will assert that the implicit contract between caller
 //   and callee is followed.
+// - PSH_ENABLE_PARANOID_USAGE_VALIDATION: Inserts even more validation checks (this option isn't
+//   enabled via PSH_ENABLE_DEBUG, you have to set it manually).
 // - PSH_ENABLE_ASSERT_NOT_NULL: Assert that arguments that shouldn't be null, aren't.
 // - PSH_ENABLE_ASSERT_NO_ALIAS: Assert that the no-aliasing rule is followed.
 // - PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE: Check at compile time if template based functions have
@@ -130,6 +132,11 @@
 #    if !defined(PSH_DISABLE_NO_ALIAS)
 #        define PSH_DISABLE_NO_ALIAS 0
 #    endif
+#endif
+
+// By default, disable the extra paranoid usage validation checks.
+#if !defined(PSH_ENABLE_PARANOID_USAGE_VALIDATION) || !PSH_ENABLE_PARANOID_USAGE_VALIDATION
+#    define PSH_ENABLE_PARANOID_USAGE_VALIDATION 0
 #endif
 
 // By default, disable the use of ANSI colours for logging.

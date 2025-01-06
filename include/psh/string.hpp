@@ -80,7 +80,7 @@ namespace psh {
         static constexpr usize count = count_ - 1;
 
         char operator[](usize index) const psh_no_except {
-            psh_assert_bounds_check(index, count_);
+            psh_validate_usage(psh_assert_bounds_check(index, count_));
             return this->buf[index];
         }
     };
