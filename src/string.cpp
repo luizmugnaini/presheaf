@@ -84,7 +84,7 @@ namespace psh {
 
             usize new_capacity = target.count + additional_length;
             if (target.capacity < new_capacity) {
-                if (psh_unlikely(!dynarray_reserve(&target, new_capacity))) {
+                if (psh_unlikely(!dynamic_array_reserve(&target, new_capacity))) {
                     return STATUS_FAILED;
                 }
             }

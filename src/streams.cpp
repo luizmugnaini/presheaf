@@ -139,7 +139,7 @@ namespace psh {
 
         for (;;) {
             if (content.count + read_chunk_size > content.capacity) {
-                dynarray_reserve(&content, content.count + read_chunk_size);
+                dynamic_array_reserve(&content, content.count + read_chunk_size);
             }
 
             DWORD bytes_read;
@@ -159,7 +159,7 @@ namespace psh {
 #else
         for (;;) {
             if (content.count + read_chunk_size > content.capacity) {
-                dynarray_reserve(&content, content.count + read_chunk_size);
+                dynamic_array_reserve(&content, content.count + read_chunk_size);
             }
 
             isize bytes_read = read(STDIN_FILENO, content.buf + content.count, read_chunk_size);
@@ -180,7 +180,7 @@ namespace psh {
 
         // Add null terminator to the end of the string.
         if (content.count == content.capacity) {
-            dynarray_reserve(&content, content.count + 1);
+            dynamic_array_reserve(&content, content.count + 1);
         }
         content.buf[content.count] = 0;
 

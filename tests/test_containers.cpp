@@ -43,17 +43,17 @@ namespace psh::test::containers {
         psh_assert(count_of("this is a string") == psh_usize_of("this is a string"));
     }
 
-    psh_internal void dynarray_push_elements(MemoryManager& memory_manager) {
+    psh_internal void dynamic_array_push_elements(MemoryManager& memory_manager) {
         Arena arena;
         {
             usize arena_capacity = sizeof(i32) * 1024;
             arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
-        DynArray<i32> v = make_dynarray<i32>(&arena);
+        DynamicArray<i32> v = make_dynamic_array<i32>(&arena);
 
         for (i32 i = 0; i < 100; ++i) {
-            psh_assert(dynarray_push(&v, i));
+            psh_assert(dynamic_array_push(&v, i));
             for (i32 j = 0; j < i; ++j) {
                 psh_assert(v[static_cast<usize>(j)] == j);
             }
@@ -63,19 +63,19 @@ namespace psh::test::containers {
         report_test_successful();
     }
 
-    psh_internal void dynarray_count_and_capacity(MemoryManager& memory_manager) {
+    psh_internal void dynamic_array_count_and_capacity(MemoryManager& memory_manager) {
         Arena arena;
         {
             usize arena_capacity = sizeof(Foo) * 100;
             arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
-        DynArray<Foo> v = make_dynarray<Foo>(&arena);
-        psh_assert(dynarray_push(&v, Foo{0}));
+        DynamicArray<Foo> v = make_dynamic_array<Foo>(&arena);
+        psh_assert(dynamic_array_push(&v, Foo{0}));
 
         usize last_capacity = v.capacity;
         for (i32 i = 2; i < 50; ++i) {
-            psh_assert(dynarray_push(&v, Foo{i}));
+            psh_assert(dynamic_array_push(&v, Foo{i}));
 
             usize const count = v.count;
             psh_assert(count == static_cast<usize>(i));
@@ -94,39 +94,39 @@ namespace psh::test::containers {
         report_test_successful();
     }
 
-    psh_internal void dynarray_peek_and_pop(MemoryManager& memory_manager) {
+    psh_internal void dynamic_array_peek_and_pop(MemoryManager& memory_manager) {
         Arena arena;
         {
             usize arena_capacity = sizeof(i32) * 3;
             arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
-        DynArray<i32> v = make_dynarray<i32>(&arena, 3);
+        DynamicArray<i32> v = make_dynamic_array<i32>(&arena, 3);
         {
             Buffer<i32, 2> elements = {4, 5};
-            psh_assert(dynarray_push_many(&v, make_const_fat_ptr(elements)));
+            psh_assert(dynamic_array_push_many(&v, make_const_fat_ptr(elements)));
         }
-        psh_assert(dynarray_push(&v, 6));
+        psh_assert(dynamic_array_push(&v, 6));
 
         // Peek then pop 6.
         {
             psh_assert(v.count == 3);
             psh_assert(v[2] == 6);
-            psh_assert(dynarray_pop(&v));
+            psh_assert(dynamic_array_pop(&v));
         }
 
         // Peek then pop 5;
         {
             psh_assert(v.count == 2);
             psh_assert(v[1] == 5);
-            psh_assert(dynarray_pop(&v));
+            psh_assert(dynamic_array_pop(&v));
         }
 
         // Peek then pop 6.
         {
             psh_assert(v.count == 1);
             psh_assert(v[0] == 4);
-            psh_assert(dynarray_pop(&v));
+            psh_assert(dynamic_array_pop(&v));
         }
 
         psh_assert(v.count == 0);
@@ -135,21 +135,21 @@ namespace psh::test::containers {
         report_test_successful();
     }
 
-    psh_internal void dynarray_remove(MemoryManager& memory_manager) {
+    psh_internal void dynamic_array_remove(MemoryManager& memory_manager) {
         Arena arena;
         {
             usize arena_capacity = sizeof(i32) * 5;
             arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
-        DynArray<i32> v = make_dynarray<i32>(&arena, 5);
+        DynamicArray<i32> v = make_dynamic_array<i32>(&arena, 5);
 
         // Populate the array.
-        psh_assert(dynarray_push(&v, 4));
-        psh_assert(dynarray_push(&v, 7));
+        psh_assert(dynamic_array_push(&v, 4));
+        psh_assert(dynamic_array_push(&v, 7));
         {
             i32 last_two[3] = {8, 9, 55};
-            psh_assert(dynarray_push_many(&v, {last_two, count_of(last_two)}));
+            psh_assert(dynamic_array_push_many(&v, {last_two, count_of(last_two)}));
         }
 
         // Do nothing.
@@ -164,7 +164,7 @@ namespace psh::test::containers {
 
         // Remove at index 1.
         {
-            dynarray_ordered_remove(&v, 1);
+            dynamic_array_ordered_remove(&v, 1);
             psh_assert(v.count == 4);
             psh_assert(v[0] == 4);
             psh_assert(v[1] == 8);
@@ -174,7 +174,7 @@ namespace psh::test::containers {
 
         // Remove at index 2.
         {
-            dynarray_ordered_remove(&v, 2);
+            dynamic_array_ordered_remove(&v, 2);
             psh_assert(v.count == 3);
             psh_assert(v[0] == 4);
             psh_assert(v[1] == 8);
@@ -183,7 +183,7 @@ namespace psh::test::containers {
 
         // Remove at index 0.
         {
-            dynarray_ordered_remove(&v, 0);
+            dynamic_array_ordered_remove(&v, 0);
             psh_assert(v.count == 2);
             psh_assert(v[0] == 8);
             psh_assert(v[1] == 55);
@@ -191,14 +191,14 @@ namespace psh::test::containers {
 
         // Remove at index 1.
         {
-            dynarray_ordered_remove(&v, 1);
+            dynamic_array_ordered_remove(&v, 1);
             psh_assert(v.count == 1);
             psh_assert(v[0] == 8);
         }
 
         // Remove at index 0.
         {
-            dynarray_ordered_remove(&v, 0);
+            dynamic_array_ordered_remove(&v, 0);
             psh_assert(v.count == 0);
         }
 
@@ -206,22 +206,22 @@ namespace psh::test::containers {
         report_test_successful();
     }
 
-    psh_internal void dynarray_clear(MemoryManager& memory_manager) {
+    psh_internal void dynamic_array_clear(MemoryManager& memory_manager) {
         Arena arena;
         {
             usize arena_capacity = sizeof(f32) * 4;
             arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
-        DynArray<f32> v = make_dynarray<f32>(&arena, 4);
+        DynamicArray<f32> v = make_dynamic_array<f32>(&arena, 4);
         {
             f32 elements[4] = {7.0f, 4.8f, 6.1f, 3.14f};
-            psh_assert(dynarray_push_many(&v, {elements, count_of(elements)}));
+            psh_assert(dynamic_array_push_many(&v, {elements, count_of(elements)}));
         }
 
         psh_assert(v.count == 4);
 
-        dynarray_clear(&v);
+        dynamic_array_clear(&v);
         psh_assert(v.count == 0);
         psh_assert(v.capacity == 4);
 
@@ -234,11 +234,11 @@ namespace psh::test::containers {
         memory_manager.init(10240);
 
         c_array_count();
-        dynarray_push_elements(memory_manager);
-        dynarray_count_and_capacity(memory_manager);
-        dynarray_peek_and_pop(memory_manager);
-        dynarray_remove(memory_manager);
-        dynarray_clear(memory_manager);
+        dynamic_array_push_elements(memory_manager);
+        dynamic_array_count_and_capacity(memory_manager);
+        dynamic_array_peek_and_pop(memory_manager);
+        dynamic_array_remove(memory_manager);
+        dynamic_array_clear(memory_manager);
     }
 }  // namespace psh::test::containers
 

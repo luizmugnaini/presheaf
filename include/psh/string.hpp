@@ -81,7 +81,7 @@ namespace psh {
     };
 
     /// Dynamically sized string.
-    using String = DynArray<char>;
+    using String = DynamicArray<char>;
 
     /// Immutable view of a string.
     using StringView = FatPtr<char const>;
@@ -101,12 +101,12 @@ namespace psh {
     }
 
     psh_api psh_inline String make_string(Arena* arena, usize initial_capacity) psh_no_except {
-        return make_dynarray<char>(arena, initial_capacity);
+        return make_dynamic_array<char>(arena, initial_capacity);
     }
 
     psh_api psh_inline String make_string(Arena* arena, StringView sv) psh_no_except {
         String string;
-        dynarray_init(&string, arena, sv.count + 1u);
+        dynamic_array_init(&string, arena, sv.count + 1u);
         string.count = sv.count;
 
         memory_copy(reinterpret_cast<u8*>(string.buf), reinterpret_cast<u8 const*>(sv.buf), sizeof(char) * sv.count);

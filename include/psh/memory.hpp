@@ -611,7 +611,7 @@ namespace psh {
     ///
     /// A dynamic array has its lifetime bound to its associated arena.
     template <typename T>
-    struct psh_api DynArray {
+    struct psh_api DynamicArray {
         T*     buf;
         Arena* arena;
         usize  capacity = 0;
@@ -621,11 +621,11 @@ namespace psh {
     };
 
     template <typename T>
-    psh_api psh_inline DynArray<T> make_dynarray(
+    psh_api psh_inline DynamicArray<T> make_dynamic_array(
         Arena* arena,
         usize  capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) psh_no_except {
         T* buf = memory_alloc<T>(arena, capacity);
-        return DynArray<T>{
+        return DynamicArray<T>{
             .buf      = buf,
             .arena    = arena,
             .capacity = (buf != nullptr) ? capacity : 0,
@@ -635,13 +635,13 @@ namespace psh {
 
     /// Initialize the dynamic array with a given capacity.
     template <typename T>
-    psh_api psh_inline void dynarray_init(
-        DynArray<T>* darray,
+    psh_api psh_inline void dynamic_array_init(
+        DynamicArray<T>* darray,
         Arena*       arena,
         usize        capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) psh_no_except {
         psh_paranoid_validate_usage({
             psh_assert_not_null(darray);
-            psh_assert_msg(darray->count == 0, "DynArray already initialized.");
+            psh_assert_msg(darray->count == 0, "DynamicArray already initialized.");
         });
 
         darray->buf      = memory_alloc<T>(arena, capacity);
@@ -651,8 +651,8 @@ namespace psh {
 
     /// Grow the capacity of the dynamic array underlying buffer.
     template <typename T>
-    psh_api Status dynarray_grow(
-        DynArray<T>* darray,
+    psh_api Status dynamic_array_grow(
+        DynamicArray<T>* darray,
         u32          growth_factor = DYNARRAY_RESIZE_CAPACITY_GROWTH_FACTOR) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(darray));
 
@@ -681,9 +681,9 @@ namespace psh {
     /// @NOTE: If T is a struct with a pointer to itself, the pointer address will be invalidated
     ///        by this procedure. DO NOT use this array structure with types having this property.
     template <typename T>
-    psh_api Status dynarray_reserve(DynArray<T>* darray, usize new_capacity) psh_no_except {
+    psh_api Status dynamic_array_reserve(DynamicArray<T>* darray, usize new_capacity) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(darray));
-        psh_validate_usage(psh_assert_msg(darray->capacity < new_capacity, "DynArray doesn't shrink."));
+        psh_validate_usage(psh_assert_msg(darray->capacity < new_capacity, "DynamicArray doesn't shrink."));
 
         T*     new_buf          = nullptr;
         Arena* arena            = darray->arena;
@@ -705,14 +705,14 @@ namespace psh {
 
     /// Inserts a new element to the end of the dynamic array.
     template <typename T>
-    psh_api Status dynarray_push(DynArray<T>* darray, T new_element) psh_no_except {
+    psh_api Status dynamic_array_push(DynamicArray<T>* darray, T new_element) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(darray));
 
         usize previous_count = darray->count;
 
         Status status = STATUS_OK;
         if (darray->capacity == previous_count) {
-            status = dynarray_grow(darray);
+            status = dynamic_array_grow(darray);
         }
 
         if (psh_likely(status)) {
@@ -725,14 +725,14 @@ namespace psh {
 
     /// Insert a collection of new elements to the end of the dynamic array.
     template <typename T>
-    psh_api Status dynarray_push_many(DynArray<T>* darray, FatPtr<T const> new_elements) psh_no_except {
+    psh_api Status dynamic_array_push_many(DynamicArray<T>* darray, FatPtr<T const> new_elements) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(darray));
 
         usize previous_count = darray->count;
 
         Status status = STATUS_OK;
         if (darray->capacity < new_elements.count + previous_count) {
-            status = dynarray_reserve(darray, previous_count + new_elements.count);
+            status = dynamic_array_reserve(darray, previous_count + new_elements.count);
         }
 
         if (psh_likely(status)) {
@@ -748,7 +748,7 @@ namespace psh {
 
     /// Try to pop the last element of the dynamic array.
     template <typename T>
-    psh_api Status dynarray_pop(DynArray<T>* darray) psh_no_except {
+    psh_api Status dynamic_array_pop(DynamicArray<T>* darray) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(darray));
 
         usize previous_count = darray->count;
@@ -763,7 +763,7 @@ namespace psh {
 
     /// Clear the dynamic array data, resetting its size.
     template <typename T>
-    psh_api psh_inline void dynarray_clear(DynArray<T>* darray) psh_no_except {
+    psh_api psh_inline void dynamic_array_clear(DynamicArray<T>* darray) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(darray));
         darray->count = 0;
     }
@@ -806,7 +806,7 @@ namespace psh {
     }
 
     template <typename T>
-    psh_api void dynarray_unordered_remove(DynArray<T>* darray, usize idx) psh_no_except {
+    psh_api void dynamic_array_unordered_remove(DynamicArray<T>* darray, usize idx) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(darray));
         psh_validate_usage(psh_assert_bounds_check(idx, darray->count));
 
@@ -842,7 +842,7 @@ namespace psh {
     }
 
     template <typename T>
-    psh_api void dynarray_ordered_remove(DynArray<T>* darray, usize idx) psh_no_except {
+    psh_api void dynamic_array_ordered_remove(DynamicArray<T>* darray, usize idx) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(darray));
         psh_validate_usage(psh_assert_bounds_check(idx, darray->count));
 
