@@ -26,57 +26,48 @@
 
 #include <psh/core.hpp>
 
+// -------------------------------------------------------------------------------------------------
+// Implementation details.
+// -------------------------------------------------------------------------------------------------
+
+namespace psh::impl {
+    template <typename T, typename U>
+    struct IsSameType {
+        static constexpr bool value = false;
+    };
+    template <typename T>
+    struct IsSameType<T, T> {
+        static constexpr bool value = true;
+    };
+
+    enum LogLevel : u32 {
+        LOG_LEVEL_FATAL = 0,
+        LOG_LEVEL_ERROR,
+        LOG_LEVEL_WARNING,
+        LOG_LEVEL_INFO,
+        LOG_LEVEL_DEBUG,
+        LOG_LEVEL_COUNT,
+    };
+
+    struct psh_api LogInfo {
+        cstring  file_name;
+        cstring  function_name;
+        u32      line;
+        LogLevel level;
+    };
+
+    /// Log a message to the standard error stream.
+    psh_api void log_msg(LogInfo info, cstring msg) psh_no_except;
+
+    /// Log a formatted message to the standard error stream.
+    psh_api psh_attr_fmt(2) void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except;
+}  // namespace psh::impl
+
+// -------------------------------------------------------------------------------------------------
+// Procedures for program abortion.
+// -------------------------------------------------------------------------------------------------
+
 namespace psh {
-    // -------------------------------------------------------------------------------------------------
-    // Implementation details.
-    // -------------------------------------------------------------------------------------------------
-
-    namespace impl {
-        namespace assertion {
-            /// Detect if two types are the same.
-            template <typename T, typename U>
-            struct IsSameType {
-                static constexpr bool value = false;
-            };
-            template <typename T>
-            struct IsSameType<T, T> {
-                static constexpr bool value = true;
-            };
-        }  // namespace assertion
-
-        namespace log {
-            /// Log level.
-            ///
-            /// The levels are set in an increasing level of vebosity, where LogLevel::Fatal is the lowest
-            /// and LogLevel::Debug is the highest.
-            enum LogLevel : u32 {
-                LOG_LEVEL_FATAL = 0,
-                LOG_LEVEL_ERROR,
-                LOG_LEVEL_WARNING,
-                LOG_LEVEL_INFO,
-                LOG_LEVEL_DEBUG,
-                LOG_LEVEL_COUNT,
-            };
-
-            struct psh_api LogInfo {
-                cstring  file_name;
-                cstring  function_name;
-                u32      line;
-                LogLevel level;
-            };
-
-            /// Log a message to the standard error stream.
-            psh_api void log_msg(LogInfo info, cstring msg) psh_no_except;
-
-            /// Log a formatted message to the standard error stream.
-            psh_api psh_attr_fmt(2) void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except;
-        }  // namespace log
-    }      // namespace impl
-
-    // -------------------------------------------------------------------------------------------------
-    // Procedures for program abortion.
-    // -------------------------------------------------------------------------------------------------
-
     using AbortFunction = void(void* arg);
 
     psh_api void set_abort_function(AbortFunction* func, void* abort_context = nullptr) psh_no_except;
@@ -89,7 +80,7 @@ namespace psh {
 // -------------------------------------------------------------------------------------------------
 
 #define psh_impl_make_log_info(log_level)            \
-    psh::impl::log::LogInfo {                        \
+    psh::impl::LogInfo {                             \
         .file_name     = psh_source_file_name(),     \
         .function_name = psh_source_function_name(), \
         .line          = psh_source_line_number(),   \
@@ -97,17 +88,17 @@ namespace psh {
     }
 
 #if PSH_ENABLE_LOGGING
-#    define psh_log_fatal(msg)            psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_FATAL), msg)
-#    define psh_log_error(msg)            psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_ERROR), msg)
-#    define psh_log_warning(msg)          psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_WARNING), msg)
-#    define psh_log_info(msg)             psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_INFO), msg)
-#    define psh_log_fatal_fmt(fmt, ...)   psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_FATAL), fmt, __VA_ARGS__)
-#    define psh_log_error_fmt(fmt, ...)   psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_ERROR), fmt, __VA_ARGS__)
-#    define psh_log_warning_fmt(fmt, ...) psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_WARNING), fmt, __VA_ARGS__)
-#    define psh_log_info_fmt(fmt, ...)    psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_INFO), fmt, __VA_ARGS__)
+#    define psh_log_fatal(msg)            psh::impl::log_msg(psh_impl_make_log_info(psh::impl::LOG_LEVEL_FATAL), msg)
+#    define psh_log_error(msg)            psh::impl::log_msg(psh_impl_make_log_info(psh::impl::LOG_LEVEL_ERROR), msg)
+#    define psh_log_warning(msg)          psh::impl::log_msg(psh_impl_make_log_info(psh::impl::LOG_LEVEL_WARNING), msg)
+#    define psh_log_info(msg)             psh::impl::log_msg(psh_impl_make_log_info(psh::impl::LOG_LEVEL_INFO), msg)
+#    define psh_log_fatal_fmt(fmt, ...)   psh::impl::log_fmt(psh_impl_make_log_info(psh::impl::LOG_LEVEL_FATAL), fmt, __VA_ARGS__)
+#    define psh_log_error_fmt(fmt, ...)   psh::impl::log_fmt(psh_impl_make_log_info(psh::impl::LOG_LEVEL_ERROR), fmt, __VA_ARGS__)
+#    define psh_log_warning_fmt(fmt, ...) psh::impl::log_fmt(psh_impl_make_log_info(psh::impl::LOG_LEVEL_WARNING), fmt, __VA_ARGS__)
+#    define psh_log_info_fmt(fmt, ...)    psh::impl::log_fmt(psh_impl_make_log_info(psh::impl::LOG_LEVEL_INFO), fmt, __VA_ARGS__)
 #    if defined(PSH_ENABLE_DEBUG)
-#        define psh_log_debug(msg)          psh::impl::log::log_msg(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_DEBUG), msg)
-#        define psh_log_debug_fmt(fmt, ...) psh::impl::log::log_fmt(psh_impl_make_log_info(psh::impl::log::LOG_LEVEL_DEBUG), fmt, __VA_ARGS__)
+#        define psh_log_debug(msg)          psh::impl::log_msg(psh_impl_make_log_info(psh::impl::LOG_LEVEL_DEBUG), msg)
+#        define psh_log_debug_fmt(fmt, ...) psh::impl::log_fmt(psh_impl_make_log_info(psh::impl::LOG_LEVEL_DEBUG), fmt, __VA_ARGS__)
 #    else
 #        define psh_log_debug(msg)          0
 #        define psh_log_debug_fmt(fmt, ...) 0
@@ -204,31 +195,35 @@ namespace psh {
 /// Ensure that a certain container function argument satisfies all of the properties expected from
 /// a proper Presheaf container.
 #if PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE
-#    define psh_static_assert_valid_mutable_container_type(ContainerType, container)                                         \
-        do {                                                                                                                 \
-            static_assert(                                                                                                   \
-                psh::impl::assertion::IsSameType<decltype(&(container)->buf[0]), typename ContainerType::ValueType*>::value, \
-                "A valid mutable container must have a 'buf' member variable of type 'ValueType*' or 'ValueType const*'.");  \
-            static_assert(                                                                                                   \
-                psh::impl::assertion::IsSameType<decltype((container)->count), usize const>::value                           \
-                    || psh::impl::assertion::IsSameType<decltype((container)->count), usize>::value,                         \
-                "A valid mutable container must have a 'count' member variable of type 'usize' or 'usize const'.");          \
+#    define psh_static_assert_valid_mutable_container_type(ContainerType, container)                                        \
+        do {                                                                                                                \
+            static_assert(                                                                                                  \
+                psh::impl::IsSameType<decltype(&(container)->buf[0]), typename ContainerType::ValueType*>::value,           \
+                "A valid mutable container must have a 'buf' member variable of type 'ValueType*' or 'ValueType const*'."); \
+            static_assert(                                                                                                  \
+                psh::impl::IsSameType<decltype((container)->count), usize const>::value                                     \
+                    || psh::impl::IsSameType<decltype((container)->count), usize>::value,                                   \
+                "A valid mutable container must have a 'count' member variable of type 'usize' or 'usize const'.");         \
         } while (0)
-#    define psh_static_assert_valid_const_container_type(ContainerType, container)                                                        \
-        do {                                                                                                                              \
-            static_assert(                                                                                                                \
-                psh::impl::assertion::IsSameType<decltype(&(container)->buf[0]), typename ContainerType::ValueType*>::value               \
-                    || psh::impl::assertion::IsSameType<decltype(&(container)->buf[0]), typename ContainerType::ValueType const*>::value, \
-                "A valid constant container must have a 'buf' member variable of type 'ValueType*' or 'ValueType const*'.");              \
-            static_assert(                                                                                                                \
-                psh::impl::assertion::IsSameType<decltype((container)->count), usize>::value                                              \
-                    || psh::impl::assertion::IsSameType<decltype((container)->count), usize const>::value,                                \
-                "A valid constant container must have a 'count' member variable of type 'usize' or 'usize const'.");                      \
+#    define psh_static_assert_valid_const_container_type(ContainerType, container)                                             \
+        do {                                                                                                                   \
+            static_assert(                                                                                                     \
+                psh::impl::IsSameType<decltype(&(container)->buf[0]), typename ContainerType::ValueType*>::value               \
+                    || psh::impl::IsSameType<decltype(&(container)->buf[0]), typename ContainerType::ValueType const*>::value, \
+                "A valid constant container must have a 'buf' member variable of type 'ValueType*' or 'ValueType const*'.");   \
+            static_assert(                                                                                                     \
+                psh::impl::IsSameType<decltype((container)->count), usize>::value                                              \
+                    || psh::impl::IsSameType<decltype((container)->count), usize const>::value,                                \
+                "A valid constant container must have a 'count' member variable of type 'usize' or 'usize const'.");           \
         } while (0)
 #else
 #    define psh_static_assert_valid_mutable_container_type(ContainerType, container) 0
 #    define psh_static_assert_valid_const_container_type(ContainerType, container)   0
 #endif
+
+// -------------------------------------------------------------------------------------------------
+// Todo abortion macros.
+// -------------------------------------------------------------------------------------------------
 
 #define psh_todo()                                        \
     do {                                                  \

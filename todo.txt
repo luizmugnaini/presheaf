@@ -1,6 +1,5 @@
 TODO
 
-- Remove the nesting of psh::impl::[something], just use psh::impl.
 - StringView -> String.
 - Use isize for counts and indices. Check if idx >= 0 in the bounds checking.
 - String -> DynString.

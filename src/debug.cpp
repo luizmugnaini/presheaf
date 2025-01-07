@@ -31,99 +31,95 @@
 
 namespace psh {
     namespace impl {
-        namespace assertion {
-            psh_internal void default_abort_function(void* arg) psh_no_except {
-                psh_discard_value(arg);
+        psh_internal void default_abort_function(void* arg) psh_no_except {
+            psh_discard_value(arg);
 
 #if defined(PSH_COMPILER_MSVC)
-                __debugbreak();
+            __debugbreak();
 #elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-                __builtin_trap();
+            __builtin_trap();
 #else
-                // Stall the program if we don't have a sane default.
-                for (;;) {}
+            // Stall the program if we don't have a sane default.
+            for (;;) {}
 #endif
-            };
+        };
 
-            psh_internal void*          abort_context  = nullptr;
-            psh_internal AbortFunction* abort_function = default_abort_function;
-        }  // namespace assertion
+        psh_internal void*          abort_context  = nullptr;
+        psh_internal AbortFunction* abort_function = default_abort_function;
 
-           // @TODO:
+        // @TODO:
         // - Enable the user to set a different output stream for the logs.
         // - Remove dependency on stdio.h for windows by using WriteFile.
         // - Use stb_sprintf for formatting.
 #if PSH_ENABLE_LOGGING
-        namespace log {
-            constexpr cstring LOG_FMT = "%s [%s:%u:%s] %s\n";
+        constexpr cstring LOG_FMT = "%s [%s:%u:%s] %s\n";
 
-            constexpr Buffer<cstring, LOG_LEVEL_COUNT> LOG_LEVEL_STR = {
+        constexpr Buffer<cstring, LOG_LEVEL_COUNT> LOG_LEVEL_STR = {
 #    if PSH_ENABLE_ANSI_COLOURS
-                "\x1b[1;41m[FATAL]\x1b[0m",
-                "\x1b[1;31m[ERROR]\x1b[0m",
-                "\x1b[1;33m[WARNING]\x1b[0m",
-                "\x1b[1;32m[INFO]\x1b[0m",
-                "\x1b[1;34m[DEBUG]\x1b[0m",
+            "\x1b[1;41m[FATAL]\x1b[0m",
+            "\x1b[1;31m[ERROR]\x1b[0m",
+            "\x1b[1;33m[WARNING]\x1b[0m",
+            "\x1b[1;32m[INFO]\x1b[0m",
+            "\x1b[1;34m[DEBUG]\x1b[0m",
 #    else
-                "[FATAL]",
-                "[ERROR]",
-                "[WARNING]",
-                "[INFO]",
-                "[DEBUG]",
+            "[FATAL]",
+            "[ERROR]",
+            "[WARNING]",
+            "[INFO]",
+            "[DEBUG]",
 #    endif
-            };
+        };
 
-            void log_msg(LogInfo info, cstring msg) psh_no_except {
-                psh_discard_value(fprintf(
-                    stderr,
-                    LOG_FMT,
-                    LOG_LEVEL_STR[info.level],
-                    info.file_name,
-                    info.line,
-                    info.function_name,
-                    msg));
-            }
+        void log_msg(LogInfo info, cstring msg) psh_no_except {
+            psh_discard_value(fprintf(
+                stderr,
+                LOG_FMT,
+                LOG_LEVEL_STR[info.level],
+                info.file_name,
+                info.line,
+                info.function_name,
+                msg));
+        }
 
-            void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
-                constexpr usize           MAX_MSG_LEN = 8192;
-                Buffer<char, MAX_MSG_LEN> msg;
+        void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
+            constexpr usize           MAX_MSG_LEN = 8192;
+            Buffer<char, MAX_MSG_LEN> msg;
 
-                va_list args;
-                va_start(args, fmt);
-                {
-                    // Format the message with the given arguments.
-                    i32 res_len = vsnprintf(msg.buf, MAX_MSG_LEN, fmt, args);
-                    if (res_len != -1) {
-                        psh_log_fatal("snptrintf unable to parse the format string and arguments");
-                        abort_program();
-                    }
-
-                    // Stamp the message with a null-terminator.
-                    usize ures_len = static_cast<usize>(res_len);
-                    usize msg_len  = psh_min_value(ures_len, MAX_MSG_LEN);
-                    msg[msg_len]   = 0;
+            va_list args;
+            va_start(args, fmt);
+            {
+                // Format the message with the given arguments.
+                i32 res_len = vsnprintf(msg.buf, MAX_MSG_LEN, fmt, args);
+                if (res_len != -1) {
+                    psh_log_fatal("snptrintf unable to parse the format string and arguments");
+                    abort_program();
                 }
-                va_end(args);
 
-                psh_discard_value(fprintf(
-                    stderr,
-                    LOG_FMT,
-                    LOG_LEVEL_STR[info.level],
-                    info.file_name,
-                    info.line,
-                    info.function_name,
-                    msg.buf));
+                // Stamp the message with a null-terminator.
+                usize ures_len = static_cast<usize>(res_len);
+                usize msg_len  = psh_min_value(ures_len, MAX_MSG_LEN);
+                msg[msg_len]   = 0;
             }
-        }  // namespace log
-#endif     // PSH_ENABLE_LOGGING
-    }      // namespace impl
+            va_end(args);
+
+            psh_discard_value(fprintf(
+                stderr,
+                LOG_FMT,
+                LOG_LEVEL_STR[info.level],
+                info.file_name,
+                info.line,
+                info.function_name,
+                msg.buf));
+        }
+#endif  // PSH_ENABLE_LOGGING
+    }   // namespace impl
 
     void set_abort_function(AbortFunction* abort_function, void* abort_context) psh_no_except {
-        impl::assertion::abort_context  = abort_context;
-        impl::assertion::abort_function = abort_function;
+        impl::abort_context  = abort_context;
+        impl::abort_function = abort_function;
     }
 
     psh_api void abort_program() psh_no_except {
-        impl::assertion::abort_function(impl::assertion::abort_context);
+        impl::abort_function(impl::abort_context);
     }
 }  // namespace psh

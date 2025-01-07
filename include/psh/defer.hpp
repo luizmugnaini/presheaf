@@ -49,7 +49,7 @@
 // Implementation details, some type trickery.
 // -------------------------------------------------------------------------------------------------
 
-namespace psh::impl::defer {
+namespace psh::impl {
     template <typename T>
     struct RemoveRef {
         using Type = T;
@@ -77,7 +77,7 @@ namespace psh::impl::defer {
 
     template <typename Func>
     psh_api psh_inline Deferrer<Func> make_defer_fn(Func&& fn) psh_no_except { return Deferrer<Func>{cast_forward<Func>(fn)}; }
-}  // namespace psh::impl::defer
+}  // namespace psh::impl
 
 #define psh_impl_defer_lambda_name_2(prefix, suffix) prefix##suffix
 #define psh_impl_defer_lambda_name_1(prefix, suffix) psh_impl_defer_lambda_name_2(prefix, suffix)
@@ -87,7 +87,7 @@ namespace psh::impl::defer {
 // Defer interface.
 // -------------------------------------------------------------------------------------------------
 
-#define psh_defer(code)                                                                                                 \
-    [[maybe_unused]] auto psh_impl_defer_lambda_name_0(psh_deferred_) = psh::impl::defer::make_defer_fn([&]() -> void { \
-        code;                                                                                                           \
+#define psh_defer(code)                                                                                          \
+    [[maybe_unused]] auto psh_impl_defer_lambda_name_0(psh_deferred_) = psh::impl::make_defer_fn([&]() -> void { \
+        code;                                                                                                    \
     })

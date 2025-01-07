@@ -39,35 +39,35 @@
 // @TODO(luiz): Substitute the perror calls with psh_log_fmt taking the error strings via a
 //       thread safe alternative to strerror.
 
+namespace psh::impl {
+    constexpr cstring OPEN_FILE_FLAG_TO_STR_MAP[OPEN_FILE_FLAG_COUNT] = {
+        "r",    // OPEN_FILE_FLAG_READ_TEXT
+        "r+",   // OPEN_FILE_FLAG_READ_TEXT_EXTENDED
+        "rb",   // OPEN_FILE_FLAG_READ_BIN
+        "rb+",  // OPEN_FILE_FLAG_READ_BIN_EXTENDED
+        "w",    // OPEN_FILE_FLAG_WRITE
+        "w+",   // OPEN_FILE_FLAG_WRITE_EXTENDED
+        "a",    // OPEN_FILE_FLAG_APPEND
+    };
+
+    constexpr bool has_read_permission(OpenFileFlag flag) psh_no_except {
+        return (flag == OPEN_FILE_FLAG_READ_TEXT)
+               || (flag == OPEN_FILE_FLAG_READ_TEXT_EXTENDED)
+               || (flag == OPEN_FILE_FLAG_READ_BIN)
+               || (flag == OPEN_FILE_FLAG_READ_BIN_EXTENDED)
+               || (flag == OPEN_FILE_FLAG_WRITE_EXTENDED);
+    }
+}  // namespace psh::impl
+
 namespace psh {
-    namespace impl::streams {
-        constexpr cstring OPEN_FILE_FLAG_TO_STR_MAP[OPEN_FILE_FLAG_COUNT] = {
-            "r",    // OPEN_FILE_FLAG_READ_TEXT
-            "r+",   // OPEN_FILE_FLAG_READ_TEXT_EXTENDED
-            "rb",   // OPEN_FILE_FLAG_READ_BIN
-            "rb+",  // OPEN_FILE_FLAG_READ_BIN_EXTENDED
-            "w",    // OPEN_FILE_FLAG_WRITE
-            "w+",   // OPEN_FILE_FLAG_WRITE_EXTENDED
-            "a",    // OPEN_FILE_FLAG_APPEND
-        };
-
-        constexpr bool has_read_permission(OpenFileFlag flag) psh_no_except {
-            return (flag == OPEN_FILE_FLAG_READ_TEXT)
-                   || (flag == OPEN_FILE_FLAG_READ_TEXT_EXTENDED)
-                   || (flag == OPEN_FILE_FLAG_READ_BIN)
-                   || (flag == OPEN_FILE_FLAG_READ_BIN_EXTENDED)
-                   || (flag == OPEN_FILE_FLAG_WRITE_EXTENDED);
-        }
-    }  // namespace impl::streams
-
     FileReadResult read_file(Arena* arena, cstring path, OpenFileFlag flag) psh_no_except {
         psh_validate_usage({
             psh_assert_not_null(arena);
             psh_assert_not_null(path);
-            psh_assert_msg(impl::streams::has_read_permission(flag), "Cannot read file without opening with read permissions.");
+            psh_assert_msg(impl::has_read_permission(flag), "Cannot read file without opening with read permissions.");
         });
 
-        cstring mode = impl::streams::OPEN_FILE_FLAG_TO_STR_MAP[flag];
+        cstring mode = impl::OPEN_FILE_FLAG_TO_STR_MAP[flag];
         FILE*   fhandle;
 
 #if defined(PSH_OS_WINDOWS)
