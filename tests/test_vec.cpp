@@ -22,7 +22,6 @@
 /// Description: Tests for the linear algebra types.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/assert.hpp>
 #include <psh/vec.hpp>
 #include "utils.hpp"
 

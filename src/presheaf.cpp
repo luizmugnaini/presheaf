@@ -28,8 +28,7 @@
 
 #include "time.cpp"
 #include "vec.cpp"
-#include "log.cpp"
-#include "assert.cpp"
+#include "debug.cpp"
 #include "memory.cpp"
 #include "string.cpp"
 #include "streams.cpp"

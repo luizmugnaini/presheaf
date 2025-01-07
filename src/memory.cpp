@@ -25,9 +25,8 @@
 #include <psh/memory.hpp>
 
 #include <string.h>
-#include <psh/assert.hpp>
 #include <psh/core.hpp>
-#include <psh/log.hpp>
+#include <psh/debug.hpp>
 #include <psh/math.hpp>
 
 #if defined(PSH_OS_WINDOWS)

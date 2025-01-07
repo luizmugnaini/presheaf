@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include <psh/assert.hpp>
 #include <psh/core.hpp>
+#include <psh/debug.hpp>
 
 namespace psh {
     // -------------------------------------------------------------------------------------------------
@@ -637,8 +637,8 @@ namespace psh {
     template <typename T>
     psh_api psh_inline void dynamic_array_init(
         DynamicArray<T>* darray,
-        Arena*       arena,
-        usize        capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) psh_no_except {
+        Arena*           arena,
+        usize            capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) psh_no_except {
         psh_paranoid_validate_usage({
             psh_assert_not_null(darray);
             psh_assert_msg(darray->count == 0, "DynamicArray already initialized.");
@@ -653,7 +653,7 @@ namespace psh {
     template <typename T>
     psh_api Status dynamic_array_grow(
         DynamicArray<T>* darray,
-        u32          growth_factor = DYNARRAY_RESIZE_CAPACITY_GROWTH_FACTOR) psh_no_except {
+        u32              growth_factor = DYNARRAY_RESIZE_CAPACITY_GROWTH_FACTOR) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(darray));
 
         usize  new_capacity      = 0;

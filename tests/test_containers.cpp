@@ -22,8 +22,6 @@
 /// Description: Tests for the dynamic array.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/assert.hpp>
-#include <psh/core.hpp>
 #include <psh/memory.hpp>
 #include "utils.hpp"
 

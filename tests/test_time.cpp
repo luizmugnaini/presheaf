@@ -23,6 +23,7 @@
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
 #include <psh/time.hpp>
+#include "utils.hpp"
 
 namespace psh::test::time {
     psh_internal void fetch_system_time() {

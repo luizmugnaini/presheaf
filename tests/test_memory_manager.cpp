@@ -25,8 +25,6 @@
 /// This test should be ran with sanitizer flags on in order to detect possible memory leaks that
 /// may go unseen.
 
-#include <psh/assert.hpp>
-#include <psh/core.hpp>
 #include <psh/memory.hpp>
 #include "utils.hpp"
 

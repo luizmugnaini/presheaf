@@ -22,10 +22,7 @@
 /// Description: Tests for the stack memory allocator.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <psh/assert.hpp>
-#include <psh/core.hpp>
 #include <psh/memory.hpp>
 #include "utils.hpp"
 

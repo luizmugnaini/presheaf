@@ -1,7 +1,7 @@
 Rules
 =====
 
-- No STL (and no third-party code in general).
+- No STL.
 - No inclusion of C++ wrappers for libc headers.
 - No exceptions.
 - No RTTI.

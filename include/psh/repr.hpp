@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include <psh/assert.hpp>
 #include <psh/bit.hpp>
+#include <psh/debug.hpp>
 #include <psh/string.hpp>
 
 namespace psh {

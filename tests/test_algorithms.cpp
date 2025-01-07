@@ -24,7 +24,6 @@
 
 #include <stdlib.h>  // For rand.
 #include <psh/algorithms.hpp>
-#include <psh/assert.hpp>
 #include "utils.hpp"
 
 namespace psh::test::algorithms {

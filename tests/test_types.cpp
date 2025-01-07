@@ -22,8 +22,6 @@
 /// Description: Tests for the fundamental types.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/assert.hpp>
-#include <psh/core.hpp>
 #include "utils.hpp"
 
 namespace psh::test::types {

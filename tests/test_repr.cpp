@@ -22,8 +22,6 @@
 /// Description: Tests for number representation conversions utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/assert.hpp>
-#include <psh/core.hpp>
 #include <psh/repr.hpp>
 #include "utils.hpp"
 

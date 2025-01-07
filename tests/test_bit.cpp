@@ -22,10 +22,7 @@
 /// Description: Tests for the bit twiddling utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/assert.hpp>
 #include <psh/bit.hpp>
-#include <psh/core.hpp>
-#include <psh/log.hpp>
 #include "utils.hpp"
 
 namespace psh::test::bit {
