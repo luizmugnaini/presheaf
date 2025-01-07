@@ -19,7 +19,7 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Implementation of the system time interface.
+/// Description: Tests for the system time interface.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
 #include <psh/time.hpp>
@@ -33,22 +33,8 @@ namespace psh::test::time {
         report_test_successful();
     }
 
-    psh_internal void system_sleep() {
-        f64 milliseconds_to_sleep = 45.6;
-
-        f64 sleep_start = current_time_in_seconds();
-        sleep_milliseconds(milliseconds_to_sleep);
-        f64 sleep_end = current_time_in_seconds();
-
-        f64 sleep_duration_milliseconds = (sleep_end - sleep_start) * 1000;
-        psh_assert(sleep_duration_milliseconds >= milliseconds_to_sleep);
-
-        report_test_successful();
-    }
-
     psh_internal void run_all() {
         fetch_system_time();
-        system_sleep();
     }
 }  // namespace psh::test::time
 

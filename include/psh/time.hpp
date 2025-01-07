@@ -30,5 +30,9 @@ namespace psh {
     psh_api f64 current_time_in_seconds() psh_no_except;
 
     /// Suspend the current thread by a certain number of milliseconds.
+    ///
+    /// The timeout parameter is just a hint for the OS, there is no guarantee that the thread
+    /// will sleep for this exact amout of time. It may either sleep more or even less than the
+    /// given number of miliseconds.
     psh_api void sleep_milliseconds(f64 ms) psh_no_except;
 }  // namespace psh
