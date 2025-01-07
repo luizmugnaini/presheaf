@@ -19,101 +19,43 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Implementation of the IO stream utilities.
+/// Description: Implementation of debugging utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #include <psh/debug.hpp>
 
 #if PSH_ENABLE_LOGGING
+#    if !PSH_ENABLE_USE_LIBC_STRING_FORMATTING
+#        include <psh/sprintf.h>
+#    endif
 #    include <stdarg.h>
 #    include <stdio.h>
 #endif  // PSH_ENABLE_LOGGING
 
-namespace psh {
-    namespace impl {
-        psh_internal void default_abort_function(void* arg) psh_no_except {
-            psh_discard_value(arg);
+// -------------------------------------------------------------------------------------------------
+// Implementation of the abortion procedures
+// -------------------------------------------------------------------------------------------------
+
+// Implementation details.
+namespace psh::impl {
+    psh_internal void default_abort_function(void* arg) psh_no_except {
+        psh_discard_value(arg);
 
 #if defined(PSH_COMPILER_MSVC)
-            __debugbreak();
+        __debugbreak();
 #elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-            __builtin_trap();
+        __builtin_trap();
 #else
-            // Stall the program if we don't have a sane default.
-            for (;;) {}
+        // Stall the program if we don't have a sane default.
+        for (;;) {}
 #endif
-        };
+    };
 
-        psh_internal void*          abort_context  = nullptr;
-        psh_internal AbortFunction* abort_function = default_abort_function;
+    psh_internal void*          abort_context  = nullptr;
+    psh_internal AbortFunction* abort_function = default_abort_function;
+}  // namespace psh::impl
 
-        // @TODO:
-        // - Enable the user to set a different output stream for the logs.
-        // - Remove dependency on stdio.h for windows by using WriteFile.
-        // - Use stb_sprintf for formatting.
-#if PSH_ENABLE_LOGGING
-        constexpr cstring LOG_FMT = "%s [%s:%u:%s] %s\n";
-
-        constexpr Buffer<cstring, LOG_LEVEL_COUNT> LOG_LEVEL_STR = {
-#    if PSH_ENABLE_ANSI_COLOURS
-            "\x1b[1;41m[FATAL]\x1b[0m",
-            "\x1b[1;31m[ERROR]\x1b[0m",
-            "\x1b[1;33m[WARNING]\x1b[0m",
-            "\x1b[1;32m[INFO]\x1b[0m",
-            "\x1b[1;34m[DEBUG]\x1b[0m",
-#    else
-            "[FATAL]",
-            "[ERROR]",
-            "[WARNING]",
-            "[INFO]",
-            "[DEBUG]",
-#    endif
-        };
-
-        void log_msg(LogInfo info, cstring msg) psh_no_except {
-            psh_discard_value(fprintf(
-                stderr,
-                LOG_FMT,
-                LOG_LEVEL_STR[info.level],
-                info.file_name,
-                info.line,
-                info.function_name,
-                msg));
-        }
-
-        void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
-            constexpr usize           MAX_MSG_LEN = 8192;
-            Buffer<char, MAX_MSG_LEN> msg;
-
-            va_list args;
-            va_start(args, fmt);
-            {
-                // Format the message with the given arguments.
-                i32 res_len = vsnprintf(msg.buf, MAX_MSG_LEN, fmt, args);
-                if (res_len < 0) {
-                    psh_log_fatal("Failed to parse the format string and arguments");
-                    abort_program();
-                }
-
-                // Stamp the message with a null-terminator.
-                usize ures_len = static_cast<usize>(res_len);
-                usize msg_len  = psh_min_value(ures_len, MAX_MSG_LEN);
-                msg[msg_len]   = 0;
-            }
-            va_end(args);
-
-            psh_discard_value(fprintf(
-                stderr,
-                LOG_FMT,
-                LOG_LEVEL_STR[info.level],
-                info.file_name,
-                info.line,
-                info.function_name,
-                msg.buf));
-        }
-#endif  // PSH_ENABLE_LOGGING
-    }   // namespace impl
-
+namespace psh {
     void set_abort_function(AbortFunction* abort_function, void* abort_context) psh_no_except {
         impl::abort_context  = abort_context;
         impl::abort_function = abort_function;
@@ -123,3 +65,157 @@ namespace psh {
         impl::abort_function(impl::abort_context);
     }
 }  // namespace psh
+
+// -------------------------------------------------------------------------------------------------
+// Tweakable log message length parameters.
+//
+// If your logs are being truncated, you may have to tweak the parameters found in this section.
+// -------------------------------------------------------------------------------------------------
+
+#if !defined(PSH_LOG_MSG_MAX_LENGTH)
+#    define PSH_LOG_MSG_MAX_LENGTH 8192
+#endif
+
+/// The log header hast to have enough space to fit the log level string and the caller file name,
+/// line number, and function name.
+#if !defined(PSH_LOG_HEADER_MAX_LENGTH)
+#    define PSH_LOG_HEADER_MAX_LENGTH 128
+#endif
+
+// -------------------------------------------------------------------------------------------------
+// Logging implementation.
+// -------------------------------------------------------------------------------------------------
+
+#define PSH_LOG_HEADER_FMT "%s [%s:%u:%s]"
+
+#if PSH_ENABLE_LOGGING
+namespace psh::impl {
+    // @TODO:
+    // - Enable the user to set a different output stream for the logs.
+    // - Remove dependency on stdio.h for windows by using WriteFile.
+    // - Use stb_sprintf for formatting.
+    constexpr usize LOG_RESULT_MSG_MAX_LENGTH = PSH_LOG_HEADER_MAX_LENGTH + PSH_LOG_MSG_MAX_LENGTH;
+
+    constexpr Buffer<cstring, LOG_LEVEL_COUNT> LOG_LEVEL_CSTRING = {
+#    if PSH_ENABLE_ANSI_COLOURS
+        "\x1b[1;41m[FATAL]\x1b[0m",
+        "\x1b[1;31m[ERROR]\x1b[0m",
+        "\x1b[1;33m[WARNING]\x1b[0m",
+        "\x1b[1;32m[INFO]\x1b[0m",
+        "\x1b[1;34m[DEBUG]\x1b[0m",
+#    else
+        "[FATAL]",
+        "[ERROR]",
+        "[WARNING]",
+        "[INFO]",
+        "[DEBUG]",
+#    endif
+    };
+
+    void log_msg(LogInfo info, cstring msg) psh_no_except {
+#    if !PSH_ENABLE_USE_LIBC_STRING_FORMATTING
+        Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
+        {
+            int result_msg_length = stbsp_snprintf(
+                result_msg.buf,
+                result_msg.count,
+                PSH_LOG_HEADER_FMT " %s\n",
+                LOG_LEVEL_CSTRING[info.level],
+                info.file_name,
+                info.line,
+                info.function_name,
+                msg);
+            if (psh_unlikely(result_msg_length < 0)) {
+                fprintf(stderr, "[ERROR] Failed to format logging message.");
+                return;
+            }
+        }
+        psh_discard_value(fprintf(stderr, "%s", result_msg.buf));
+#    else
+        psh_discard_value(fprintf(
+            stderr,
+            PSH_LOG_HEADER_FMT " %s\n",
+            LOG_LEVEL_CSTRING[info.level],
+            info.file_name,
+            info.line,
+            info.function_name,
+            msg));
+#    endif
+    }
+
+    void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
+#    if !PSH_ENABLE_USE_LIBC_STRING_FORMATTING
+        Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
+        {
+            int header_length = stbsp_snprintf(
+                result_msg.buf,
+                PSH_LOG_HEADER_MAX_LENGTH,
+                PSH_LOG_HEADER_FMT,
+                LOG_LEVEL_CSTRING[info.level],
+                info.file_name,
+                info.line,
+                info.function_name);
+            if (psh_unlikely(header_length < 0)) {
+                psh_log_fatal("Failed to format the header of the logging message.");
+            }
+
+            // The resulting log message will have an additional space between the header and
+            // message, as well as a new-line escape sequence at the end of the end of the message
+            // and a null-terminator.
+            constexpr usize LOG_MSG_EFFECTIVE_LENGTH = PSH_LOG_MSG_MAX_LENGTH - 3;
+
+            result_msg.buf[header_length] = ' ';
+
+            char* msg_buf = result_msg.buf + (header_length + 1);
+
+            va_list args;
+            va_start(args, fmt);
+            {
+                i32 msg_length = stbsp_vsnprintf(
+                    msg_buf,
+                    LOG_MSG_EFFECTIVE_LENGTH,
+                    fmt,
+                    args);
+                if (psh_unlikely(msg_length < 0)) {
+                    psh_log_error("Failed to parse user the formatted message string.");
+                    return;
+                }
+
+                msg_buf[msg_length]     = '\n';
+                msg_buf[msg_length + 1] = 0;
+            }
+            va_end(args);
+        }
+
+        psh_discard_value(fprintf(stderr, "%s", result_msg.buf));
+#else
+            Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
+
+            va_list args;
+            va_start(args, fmt);
+            {
+                // Format the message with the given arguments.
+                i32 result_length = vsnprintf(result_msg.buf, result_msg.count, fmt, args);
+                if (result_length < 0) {
+                    psh_log_fatal("snptrintf unable to parse the format string and arguments");
+                    abort_program();
+                }
+
+                // Stamp the message with a null-terminator.
+                usize effective_msg_length  = psh_min_value(static_cast<usize>(result_length), result_msg.count);
+                result_msg[effective_msg_length]   = 0;
+            }
+            va_end(args);
+
+            psh_discard_value(fprintf(
+                stderr,
+                PSH_LOG_HEADER_FMT " %s\n",
+                LOG_LEVEL_CSTRING[info.level],
+                info.file_name,
+                info.line,
+                info.function_name,
+                result_msg.buf));
+#endif
+    }
+}  // namespace psh::impl
+#endif  // PSH_ENABLE_LOGGING
