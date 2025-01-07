@@ -288,11 +288,11 @@ local presheaf = {
     include_dir      = make_path({ root_dir, "include" }),
     dll_build_define = "PSH_BUILD_DLL",
     debug_defines    = { "PSH_ENABLE_DEBUG" },
-    test_defines     = { "PSH_ENABLE_DEBUG", "PSH_ENABLE_ANSI_COLOURS" },
+    test_defines     = { "PSH_ENABLE_DEBUG", "PSH_ENABLE_PARANOID_USAGE_VALIDATION", "PSH_ENABLE_ANSI_COLOURS" },
     lib              = "presheaf",
     test_exe         = "presheaf_tests",
     std              = "c++20",
-    out_dir          = make_path({ ".", "build" }),
+    out_dir          = make_path({ root_dir, "build" }),
 }
 
 -- -----------------------------------------------------------------------------
