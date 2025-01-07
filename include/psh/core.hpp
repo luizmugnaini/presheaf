@@ -134,14 +134,19 @@
 #    endif
 #endif
 
-// By default, disable the extra paranoid usage validation checks.
+/// By default, disable the extra paranoid usage validation checks.
 #if !defined(PSH_ENABLE_PARANOID_USAGE_VALIDATION) || !PSH_ENABLE_PARANOID_USAGE_VALIDATION
 #    define PSH_ENABLE_PARANOID_USAGE_VALIDATION 0
 #endif
 
-// By default, disable the use of ANSI colours for logging.
+/// By default, disable the use of ANSI colours for logging.
 #if !defined(PSH_ENABLE_ANSI_COLOURS) || !PSH_ENABLE_ANSI_COLOURS
 #    define PSH_ENABLE_ANSI_COLOURS 0
+#endif
+
+/// By default, we don't use functions like vsnprintf from libc for string formatting.
+#if !defined(PSH_ENABLE_USE_LIBC_STRING_FORMATTING) || !PSH_ENABLE_USE_LIBC_STRING_FORMATTING
+#    define PSH_ENABLE_USE_LIBC_STRING_FORMATTING 0
 #endif
 
 // -------------------------------------------------------------------------------------------------
@@ -238,18 +243,8 @@
 #        define PSH_COMPILER_MSVC_YEAR 2017
 #    elif _MSC_VER >= 1900
 #        define PSH_COMPILER_MSVC_YEAR 2015
-#    elif _MSC_VER >= 1800
-#        define PSH_COMPILER_MSVC_YEAR 2013
-#    elif _MSC_VER >= 1700
-#        define PSH_COMPILER_MSVC_YEAR 2012
-#    elif _MSC_VER >= 1600
-#        define PSH_COMPILER_MSVC_YEAR 2010
-#    elif _MSC_VER >= 1500
-#        define PSH_COMPILER_MSVC_YEAR 2008
-#    elif _MSC_VER >= 1400
-#        define PSH_COMPILER_MSVC_YEAR 2005
 #    else
-#        define PSH_COMPILER_MSVC_YEAR 0
+#        error "Only MSVC 2015 or later is supported."
 #    endif
 #    if defined(__clang_major__)
 #        define PSH_COMPILER_CLANG_CL
@@ -404,6 +399,26 @@
 #    define psh_attr_fmt(fmt_pos) __attribute__((__format__(__printf__, fmt_pos, fmt_pos + 1)))
 #else
 #    define psh_attr_fmt(fmt_pos)
+#endif
+
+/// Function attribute for locally disabling the address sanitizer.
+#if defined(PSH_COMPILER_MSVC)
+#    if defined(__SANITIZE_ADDRESS__)
+#        define psh_attr_disable_asan __declspec(no_sanitize_address)
+#    endif
+#elif defined(PSH_COMPILER_CLANG)
+#    if defined(__has_feature)
+#        if __has_feature(address_sanitizer)
+#            define psh_attr_disable_asan __attribute__((__no_sanitize__("address")))
+#        endif
+#    endif
+#elif defined(PSH_COMPILER_GCC)
+#    if defined(__SANITIZE_ADDRESS__) && __SANITIZE_ADDRESS__
+#        define psh_attr_disable_asan __attribute__((__no_sanitize_address__))
+#    endif
+#endif
+#if !defined(psh_attr_disable_asan)
+#    define psh_attr_disable_asan
 #endif
 
 // -------------------------------------------------------------------------------------------------

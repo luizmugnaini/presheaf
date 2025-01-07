@@ -26,6 +26,7 @@
 // clang-format off
 #include <psh/presheaf.hpp>
 
+#include "sprintf.cpp"
 #include "time.cpp"
 #include "vec.cpp"
 #include "debug.cpp"

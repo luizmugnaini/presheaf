@@ -51,6 +51,59 @@ namespace psh {
     struct Arena;
 
     // -------------------------------------------------------------------------------------------------
+    // Character properties.
+    // -------------------------------------------------------------------------------------------------
+
+    psh_api psh_inline bool char_is_utf8(char c) psh_no_except {
+        return ((0x1F < c) && (c < 0x7F));
+    }
+
+    psh_api psh_inline bool char_is_blank(char c) psh_no_except {
+        return (c == ' ')
+               || (c == '\t')
+               || (c == '\f')
+               || (c == '\v');
+    }
+
+    psh_api psh_inline bool char_is_end_of_line(char c) psh_no_except {
+        return (c == '\n') || (c == '\r');
+    }
+
+    psh_api psh_inline bool char_is_digit(char c) psh_no_except {
+        return ('0' <= c) && (c <= '9');
+    }
+
+    psh_api psh_inline bool char_is_alphabetic(char c) psh_no_except {
+        return (('A' <= c) && (c <= 'Z')) || ((c >= 'a') && (c <= 'z'));
+    }
+
+    psh_api psh_inline bool char_is_alphanumeric(char c) psh_no_except {
+        return (char_is_alphabetic(c) || char_is_digit(c));
+    }
+
+    psh_api psh_inline char char_to_lower(char c) psh_no_except {
+        return (('A' <= c) && (c <= 'Z')) ? ('a' + (c - 'A')) : c;
+    }
+
+    psh_api psh_inline char char_to_upper(char c) psh_no_except {
+        return (('A' <= c) && (c <= 'Z')) ? ('A' + (c - 'a')) : c;
+    }
+
+    psh_api psh_inline i32 char_to_digit(char c) psh_no_except {
+        psh_paranoid_validate_usage({
+            psh_assert_fmt(char_is_digit(c), "Expected character (%c) to be a digit (between '0' and '9').", c);
+        });
+        return static_cast<i32>(c - '0');
+    }
+
+    psh_api psh_inline char digit_to_char(i32 value) psh_no_except {
+        psh_paranoid_validate_usage({
+            psh_assert_fmt((0 <= value) && (value <= 9), "Expected value (%d) to be a digit (between 0 and 9).", value);
+        });
+        return '0' + static_cast<char>(value);
+    }
+
+    // -------------------------------------------------------------------------------------------------
     // String types.
     // -------------------------------------------------------------------------------------------------
 
@@ -130,7 +183,10 @@ namespace psh {
     /// assert(s.join(psh::make_const_fat_ptr(words), ", "));
     /// assert(string_equal(s.data.buf, "Hello, World, Earth, Terra"));
     ///
-    psh_api Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element = {}) psh_no_except;
+    psh_api Status join_strings(
+        String&                  target,
+        FatPtr<StringView const> join_strings,
+        StringView               join_element = {}) psh_no_except;
 
     // -------------------------------------------------------------------------------------------------
     // String comparison.
@@ -165,55 +221,29 @@ namespace psh {
     }
 
     // -------------------------------------------------------------------------------------------------
-    // Character properties.
+    // String formatting.
+    //
+    // @TODO: improve the integration with the Presheaf types.
     // -------------------------------------------------------------------------------------------------
 
-    psh_api psh_inline bool char_is_utf8(char c) psh_no_except {
-        return ((0x1F < c) && (c < 0x7F));
-    }
+    using StringFormatCallbackFunction = char*(cstring* buf, void* user, i32 len);
 
-    psh_api psh_inline bool char_is_blank(char c) psh_no_except {
-        return (c == ' ')
-               || (c == '\t')
-               || (c == '\f')
-               || (c == '\v');
-    }
+    i32 string_format_list(char* buf, i32 count, cstring fmt, va_list va) psh_no_except;
+    i32 string_format_list_with_callback(
+        StbspSprintfCallback* callback,
+        void*                 user,
+        char*                 buf,
+        cstring               fmt,
+        va_list               va) psh_no_except;
 
-    psh_api psh_inline bool char_is_end_of_line(char c) psh_no_except {
-        return (c == '\n') || (c == '\r');
-    }
-
-    psh_api psh_inline bool char_is_digit(char c) psh_no_except {
-        return ('0' <= c) && (c <= '9');
-    }
-
-    psh_api psh_inline bool char_is_alphabetic(char c) psh_no_except {
-        return (('A' <= c) && (c <= 'Z')) || ((c >= 'a') && (c <= 'z'));
-    }
-
-    psh_api psh_inline bool char_is_alphanumeric(char c) psh_no_except {
-        return (char_is_alphabetic(c) || char_is_digit(c));
-    }
-
-    psh_api psh_inline char char_to_lower(char c) psh_no_except {
-        return (('A' <= c) && (c <= 'Z')) ? ('a' + (c - 'A')) : c;
-    }
-
-    psh_api psh_inline char char_to_upper(char c) psh_no_except {
-        return (('A' <= c) && (c <= 'Z')) ? ('A' + (c - 'a')) : c;
-    }
-
-    psh_api psh_inline i32 char_to_digit(char c) psh_no_except {
-        psh_paranoid_validate_usage({
-            psh_assert_fmt(char_is_digit(c), "Expected character (%c) to be a digit (between '0' and '9').", c);
-        });
-        return static_cast<i32>(c - '0');
-    }
-
-    psh_api psh_inline char digit_to_char(i32 value) psh_no_except {
-        psh_paranoid_validate_usage({
-            psh_assert_fmt((0 <= value) && (value <= 9), "Expected value (%d) to be a digit (between 0 and 9).", value);
-        });
-        return '0' + static_cast<char>(value);
+    psh_attr_fmt(3) psh_inline i32 string_format(char* buf, i32 count, cstring fmt, ...) psh_no_except {
+        i32 result;
+        {
+            va_list args;
+            va_start(args, fmt);
+            result = string_format_list(buf, count, fmt, args);
+            va_end(args);
+        }
+        return result;
     }
 }  // namespace psh
