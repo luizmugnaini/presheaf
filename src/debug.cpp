@@ -90,8 +90,8 @@ namespace psh {
             {
                 // Format the message with the given arguments.
                 i32 res_len = vsnprintf(msg.buf, MAX_MSG_LEN, fmt, args);
-                if (res_len != -1) {
-                    psh_log_fatal("snptrintf unable to parse the format string and arguments");
+                if (res_len < 0) {
+                    psh_log_fatal("Failed to parse the format string and arguments");
                     abort_program();
                 }
 
