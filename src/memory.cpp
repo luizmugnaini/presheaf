@@ -196,13 +196,13 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     u8* Stack::top() psh_no_except {
-        psh_paranoid_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialized."));
+        psh_paranoid_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialised."));
 
         return this->buf + this->previous_offset;
     }
 
     StackHeader const* Stack::top_header() const psh_no_except {
-        psh_paranoid_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialized."));
+        psh_paranoid_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialised."));
 
         return reinterpret_cast<StackHeader const*>(pointer_add_bytes(this->buf, this->previous_offset - psh_usize_of(StackHeader)));
     }
@@ -219,7 +219,7 @@ namespace psh {
 
     StackHeader const* Stack::header_of(u8 const* block) const psh_no_except {
         psh_validate_usage(psh_assert_not_null(block));
-        psh_paranoid_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialized."));
+        psh_paranoid_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialised."));
 
         u8 const* memory_start = this->buf;
         u8 const* block_header = block + sizeof(StackHeader);
@@ -279,7 +279,7 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     void MemoryManager::init(usize capacity_bytes) psh_no_except {
-        psh_paranoid_validate_usage(psh_assert_msg(this->allocation_count == 0, "MemoryManager already initialized."));
+        psh_paranoid_validate_usage(psh_assert_msg(this->allocation_count == 0, "MemoryManager already initialised."));
 
         this->allocator.init(memory_virtual_alloc(capacity_bytes), capacity_bytes);
     }
@@ -508,7 +508,7 @@ namespace psh {
     u8* memory_realloc_align(Stack* stack, u8* block, usize new_size_bytes, u32 alignment) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(stack));
         psh_validate_usage({
-            psh_assert_msg(stack->buf != nullptr, "Stack uninitialized.");
+            psh_assert_msg(stack->buf != nullptr, "Stack uninitialised.");
             psh_assert_msg(block != nullptr, "Don't use realloc to allocate new memory.");
             psh_assert_msg(new_size_bytes != 0, "Don't use realloc to free existing memory blocks.");
         });

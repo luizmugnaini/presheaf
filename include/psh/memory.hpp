@@ -50,7 +50,7 @@ namespace psh {
 
     /// Reserve and commit a virtual block of memory.
     ///
-    /// The memory allocated is always initialized to zero.
+    /// The memory allocated is always initialised to zero.
     ///
     /// Directly calls the respective system call for allocating memory. Should be
     /// used for large allocations, if you want small allocations, malloc is the way to go.
@@ -151,7 +151,7 @@ namespace psh {
         };
     }
 
-    /// Initialize the arena with a given memory buffer and a capacity.
+    /// initialise the arena with a given memory buffer and a capacity.
     psh_inline void arena_init(Arena* arena, u8* buf, usize capacity) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(arena));
         arena->buf      = buf;
@@ -167,7 +167,7 @@ namespace psh {
     /// Make an arena that owns its memory.
     ///
     /// Since the arena is not aware of the ownership, this function call has to be paired
-    /// with free_owned_arena.
+    /// with destroy_owned_arena.
     psh_inline Arena make_owned_arena(usize capacity) psh_no_except {
         u8* buf = memory_virtual_alloc(capacity);
         return Arena{
@@ -180,7 +180,7 @@ namespace psh {
     /// Free the memory of an arena that owns its memory.
     ///
     /// This function should only be called for arenas that where created by make_owned_arena.
-    psh_inline void free_owned_arena(Arena* arena) psh_no_except {
+    psh_inline void destroy_owned_arena(Arena* arena) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(arena));
 
         usize capacity  = arena->capacity;
@@ -305,7 +305,7 @@ namespace psh {
         usize previous_offset = 0;
 
         psh_inline void init(u8* buf_, usize capacity_) psh_no_except {
-            psh_paranoid_validate_usage(psh_assert_msg(this->capacity == 0, "Stack already initialized."));
+            psh_paranoid_validate_usage(psh_assert_msg(this->capacity == 0, "Stack already initialised."));
             this->buf      = buf_;
             this->capacity = (buf_ != nullptr) ? capacity_ : 0;
         }
@@ -371,7 +371,7 @@ namespace psh {
         usize allocation_count = 0;
         Stack allocator        = {};
 
-        /// Allocate memory and initialize the underlying memory allocator.
+        /// Allocate memory and initialise the underlying memory allocator.
         void init(usize capacity) psh_no_except;
 
         /// Free all acquired memory.
@@ -474,19 +474,6 @@ namespace psh {
     }
 
     // -------------------------------------------------------------------------------------------------
-    // Plain old buffers.
-    // -------------------------------------------------------------------------------------------------
-
-    /// Buffer with a compile-time known size.
-    template <typename T, usize count_>
-    struct psh_api Buffer {
-        T                      buf[count_] = {};
-        static constexpr usize count       = count_;
-
-        psh_impl_generate_constexpr_container_boilerplate(T, this->buf, count_)
-    };
-
-    // -------------------------------------------------------------------------------------------------
     // Fat pointers.
     // -------------------------------------------------------------------------------------------------
 
@@ -499,6 +486,7 @@ namespace psh {
         psh_impl_generate_container_boilerplate(T, this->buf, this->count)
     };
 
+    /// Create a fat pointer with mutable access to a slice of a given Presheaf container.
     template <typename Container, typename T = Container::ValueType>
     psh_inline FatPtr<T> make_slice(Container* c, usize start_idx, usize slice_count) psh_no_except {
         psh_validate_usage(psh_static_assert_valid_const_container_type(Container, c));
@@ -507,16 +495,8 @@ namespace psh {
 
         return FatPtr<T>{c->buf + start_idx, slice_count};
     }
-    template <typename Container, typename T = Container::ValueType>
-    psh_inline FatPtr<T> make_slice(Container& c, usize start_idx, usize slice_count) psh_no_except {
-        psh_validate_usage({
-            psh_static_assert_valid_mutable_container_type(Container, &c);
-            psh_assert_bounds_check(slice_count, c.count + 1);
-        });
 
-        return FatPtr<T>{c.buf + start_idx, slice_count};
-    }
-
+    /// Create a fat pointer with immutable access to a slice of a given Presheaf container.
     template <typename Container, typename T = Container::ValueType>
     psh_inline FatPtr<T const> make_const_slice(Container const* c, usize start_idx, usize slice_count) psh_no_except {
         psh_validate_usage(psh_static_assert_valid_const_container_type(Container, c));
@@ -525,16 +505,8 @@ namespace psh {
 
         return FatPtr<T const>{c->buf + start_idx, slice_count};
     }
-    template <typename Container, typename T = Container::ValueType>
-    psh_inline FatPtr<T const> make_const_slice(Container const& c, usize start_idx, usize slice_count) psh_no_except {
-        psh_validate_usage({
-            psh_static_assert_valid_const_container_type(Container, &c);
-            psh_assert_bounds_check(start_idx + slice_count - 1, c.count + 1);
-        });
 
-        return FatPtr<T const>{c.buf + start_idx, slice_count};
-    }
-
+    /// Create a fat pointer with mutable access to a Presheaf container.
     template <typename Container, typename T = Container::ValueType>
     psh_inline FatPtr<T> make_fat_ptr(Container* c) psh_no_except {
         psh_validate_usage(psh_static_assert_valid_mutable_container_type(Container, c));
@@ -542,13 +514,8 @@ namespace psh {
 
         return FatPtr<T>{c->buf, c->count};
     }
-    template <typename Container, typename T = Container::ValueType>
-    psh_inline FatPtr<T> make_fat_ptr(Container& c) psh_no_except {
-        psh_validate_usage(psh_static_assert_valid_mutable_container_type(Container, &c));
 
-        return FatPtr<T>{c.buf, c.count};
-    }
-
+    /// Create a fat pointer with immutable access to a Presheaf container.
     template <typename Container, typename T = Container::ValueType>
     psh_inline FatPtr<T const> make_const_fat_ptr(Container const* c) psh_no_except {
         psh_validate_usage(psh_static_assert_valid_const_container_type(Container, c));
@@ -556,11 +523,74 @@ namespace psh {
 
         return FatPtr<T const>{reinterpret_cast<T const*>(c->buf), c->count};
     }
-    template <typename Container, typename T = Container::ValueType>
-    psh_inline FatPtr<T const> make_const_fat_ptr(Container const& c) psh_no_except {
-        psh_validate_usage(psh_static_assert_valid_const_container_type(Container, &c));
 
-        return FatPtr<T const>{reinterpret_cast<T const*>(c.buf), c.count};
+    /// Query the current size in bytes of a given Presheaf container.
+    template <typename Container, typename T = Container::ValueType>
+    psh_api usize size_bytes(Container const* c) psh_no_except {
+        psh_validate_usage(psh_static_assert_valid_const_container_type(Container, c));
+        psh_paranoid_validate_usage(psh_assert_not_null(c));
+
+        return sizeof(T) * c->count;
+    }
+
+    // -------------------------------------------------------------------------------------------------
+    // Plain old buffers.
+    // -------------------------------------------------------------------------------------------------
+
+    /// Buffer with a compile-time known size.
+    template <typename T, usize count_>
+    struct psh_api Buffer {
+        T                      buf[count_] = {};
+        static constexpr usize count       = count_;
+
+        psh_impl_generate_constexpr_container_boilerplate(T, this->buf, count_)
+    };
+
+    /// Growable buffer with limited a compile-time known maximum size.
+    template <typename T, usize max_count_>
+    struct psh_api PushBuffer {
+        T                      buf[max_count_] = {};
+        usize                  count           = 0;
+        static constexpr usize max_count       = max_count_;
+
+        psh_impl_generate_constexpr_container_boilerplate(T, this->buf, this->count)
+    };
+
+    template <typename T, usize max_count>
+    psh_api psh_inline void push_buffer_push(PushBuffer<T, max_count>* push_buffer, T element) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(push_buffer));
+
+        usize count = push_buffer->count;
+        psh_validate_usage(psh_assert_fmt(count < max_count, "The buffer of max count %zu is full.", max_count));
+
+        push_buffer->buf[count] = element;
+        push_buffer->count = count + 1;
+    }
+
+    template <typename T, usize max_count>
+    psh_api psh_inline void push_buffer_push_many(PushBuffer<T, max_count>* push_buffer, FatPtr<T const> elements) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(push_buffer));
+
+        usize count = push_buffer->count;
+        psh_validate_usage({
+            psh_assert_fmt(
+                count < max_count,
+                "The elements don't fit in the buffer of max count %zu: current count is %zu and you're trying to push %zu elements.",
+                max_count,
+                count,
+                elements.count);
+        });
+
+        memory_copy(reinterpret_cast<u8*>(push_buffer->buf + count), reinterpret_cast<u8 const*>(elements.buf), size_bytes(&elements));
+        push_buffer->count = count + elements.count;
+    }
+
+    template <typename T, usize max_count>
+    psh_api psh_inline void push_buffer_pop(PushBuffer<T, max_count>* push_buffer, usize pop_count = 1) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(push_buffer));
+        psh_validate_usage(psh_assert_fmt(pop_count <= push_buffer->count, "The buffer has %zu elements but tried to pop %zu elements.", push_buffer->count, pop_count));
+
+        push_buffer->count -= pop_count;
     }
 
     // -------------------------------------------------------------------------------------------------
@@ -592,12 +622,89 @@ namespace psh {
     psh_inline void array_init(Array<T>* array, Arena* arena, usize count) psh_no_except {
         psh_paranoid_validate_usage({
             psh_assert_not_null(array);
-            psh_assert_msg(array->count == 0, "Array already initialized.");
+            psh_assert_msg(array->count == 0, "Array already initialised.");
         });
 
-        T* buf       = memory_alloc<T>(arena, count);
-        array->buf   = buf;
-        array->count = (buf != nullptr) ? count : 0;
+        T* buf = memory_alloc<T>(arena, count);
+        *array = {
+            .buf   = buf,
+            .count = (buf != nullptr) ? count : 0,
+        };
+    }
+
+    /// Growable array with run-time known constant maximum capacity.
+    ///
+    /// The array lifetime is bound to the lifetime of the arena passed at initialization, being
+    /// responsible to allocate the memory referenced by the array.
+    template <typename T>
+    struct psh_api PushArray {
+        T*    buf;
+        usize count     = 0;
+        usize max_count = 0;
+
+        psh_impl_generate_container_boilerplate(T, this->buf, this->count)
+    };
+
+    template <typename T>
+    psh_inline PushArray<T> make_push_array(Arena* arena, usize max_count) psh_no_except {
+        T* buf = memory_alloc<T>(arena, max_count);
+        return PushArray<T>{
+            .buf       = buf,
+            .count     = 0,
+            .max_count = (buf != nullptr) ? max_count : 0,
+        };
+    }
+
+    template <typename T>
+    psh_inline void push_array_init(PushArray<T>* push_array, Arena* arena, usize max_count) psh_no_except {
+        psh_paranoid_validate_usage({
+            psh_assert_not_null(push_array);
+            psh_assert_msg(push_array->max_count == 0, "Already initialised.");
+        });
+
+        T* buf      = memory_alloc<T>(arena, max_count);
+        *push_array = {
+            .buf       = buf,
+            .count     = 0,
+            .max_count = (buf != nullptr) ? max_count : 0,
+        };
+    }
+
+    template <typename T>
+    psh_api psh_inline void push_array_push(PushArray<T>* push_array, T element) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(push_array));
+
+        usize count = push_array->count;
+        psh_validate_usage(psh_assert_fmt(count < push_array->max_count, "The array of max count %zu is full.", push_array->max_count));
+
+        push_array->buf[count] = element;
+        push_array->count = count + 1;
+    }
+
+    template <typename T>
+    psh_api psh_inline void push_array_push_many(PushArray<T>* push_array, FatPtr<T const> elements) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(push_array));
+
+        usize count = push_array->count;
+        psh_validate_usage({
+            psh_assert_fmt(
+                count < push_array->max_count,
+                "The elements don't fit in the array of max count %zu: current count is %zu and you're trying to push %zu elements.",
+                push_array->max_count,
+                count,
+                elements.count);
+        });
+
+        memory_copy(reinterpret_cast<u8*>(push_array->buf + count), reinterpret_cast<u8 const*>(elements.buf), size_bytes(&elements));
+        push_array->count = count + elements.count;
+    }
+
+    template <typename T>
+    psh_api psh_inline void push_array_pop(PushArray<T>* push_array, usize pop_count = 1) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(push_array));
+        psh_validate_usage(psh_assert_fmt(pop_count <= push_array->count, "The array has %zu elements but tried to pop %zu elements.", push_array->count, pop_count));
+
+        push_array->count -= pop_count;
     }
 
     // -------------------------------------------------------------------------------------------------
@@ -633,7 +740,7 @@ namespace psh {
         };
     }
 
-    /// Initialize the dynamic array with a given capacity.
+    /// initialise the dynamic array with a given capacity.
     template <typename T>
     psh_api psh_inline void dynamic_array_init(
         DynamicArray<T>* darray,
@@ -641,12 +748,16 @@ namespace psh {
         usize            capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) psh_no_except {
         psh_paranoid_validate_usage({
             psh_assert_not_null(darray);
-            psh_assert_msg(darray->count == 0, "DynamicArray already initialized.");
+            psh_assert_msg(darray->count == 0, "DynamicArray already initialised.");
         });
 
-        darray->buf      = memory_alloc<T>(arena, capacity);
-        darray->arena    = arena;
-        darray->capacity = (darray->buf != nullptr) ? capacity : 0;
+        T* buf  = memory_alloc<T>(arena, capacity);
+        *darray = {
+            .buf      = buf,
+            .arena    = arena,
+            .capacity = (buf != nullptr) ? capacity : 0,
+            .count    = 0,
+        };
     }
 
     /// Grow the capacity of the dynamic array underlying buffer.
@@ -771,15 +882,6 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
     // Memory manipulation procedures common to all containers.
     // -------------------------------------------------------------------------------------------------
-
-    /// Query the current size in bytes of a given container.
-    template <typename Container, typename T = Container::ValueType>
-    psh_api usize size_bytes(Container const* c) psh_no_except {
-        psh_validate_usage(psh_static_assert_valid_const_container_type(Container, c));
-        psh_paranoid_validate_usage(psh_assert_not_null(c));
-
-        return sizeof(T) * c->count;
-    }
 
     psh_api void raw_unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except;
     psh_api void raw_ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except;
