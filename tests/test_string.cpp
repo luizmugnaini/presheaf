@@ -64,7 +64,7 @@ namespace psh::test::string {
             psh_assert(s.capacity == s.count + 1u);
             psh_assert(s.buf[s.capacity - 1u] == 0);
         }
-        free_owned_arena(&arena);
+        destroy_owned_arena(&arena);
         report_test_successful();
     }
 
@@ -108,7 +108,7 @@ namespace psh::test::string {
             // Empty string.
             {
                 String estr = make_string(&arena, 20);
-                psh_assert(join_strings(estr, make_const_fat_ptr(views1), psh_comptime_make_string_view(", ")));
+                psh_assert(join_strings(estr, make_const_fat_ptr(&views1), psh_comptime_make_string_view(", ")));
 
                 psh_assert(string_equal(make_string_view(estr), check_str1.buf));
                 psh_assert(estr.count == check_str1.count);
@@ -133,11 +133,11 @@ namespace psh::test::string {
                 };
                 String s = make_string(&arena, make_string_view("One"));
 
-                psh_assert(join_strings(s, make_const_fat_ptr(words), psh_comptime_make_string_view(", ")));
+                psh_assert(join_strings(s, make_const_fat_ptr(&words), psh_comptime_make_string_view(", ")));
                 psh_assert(string_equal(make_string_view(s), "One, Ring, to, rule"));
             }
         }
-        free_owned_arena(&arena);
+        destroy_owned_arena(&arena);
 
         report_test_successful();
     }

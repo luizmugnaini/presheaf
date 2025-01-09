@@ -22,25 +22,48 @@
 /// Description: Tests for the system time interface.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
-#include <psh/time.hpp>
+#include <psh/debug.hpp>
 #include "utils.hpp"
 
-namespace psh::test::time {
-    psh_internal void fetch_system_time() {
-        f64 time = current_time_in_seconds();
-        psh_assert(time > 0.0);
+namespace psh::test::logging {
+    struct Foo {
+        cstring var_cstring;
+        f64     var_f64;
+        f32     var_f32;
+        i32     var_i32;
+        u32     var_u32;
+        char    var_char;
+    };
+
+    psh_internal void run_all() {
+        psh_log_debug("Message logging works! Gandalf war right this whole time!");
+        Foo f = {
+            .var_cstring = "test",
+            .var_f64     = 12903710293.1823719,
+            .var_f32     = 3.14f,
+            .var_i32     = -1234,
+            .var_u32     = 1234,
+            .var_char    = 'Z',
+        };
+        psh_log_debug_fmt(
+            "Formatted %s logging %s: %s (cstring) %f (f64) %f (f32) %d (i32) %u (u32) %c (char) %p (pointer)",
+            "message",
+            "works",
+            f.var_cstring,
+            f.var_f64,
+            static_cast<f64>(f.var_f32),
+            f.var_i32,
+            f.var_u32,
+            f.var_char,
+            reinterpret_cast<void*>(&f));
 
         report_test_successful();
     }
-
-    psh_internal void run_all() {
-        fetch_system_time();
-    }
-}  // namespace psh::test::time
+}  // namespace psh::test::logging
 
 #if !defined(PSH_TEST_NOMAIN)
 int main() {
-    psh::test::time::run_all();
+    psh::test::logging::run_all();
     return 0;
 }
 #endif

@@ -29,7 +29,7 @@
 #include <psh/math.hpp>
 #include <psh/time.hpp>
 #include <psh/vec.hpp>
-#include <psh/sprintf.h>
+#include <psh/sprintf.hpp>
 #include <psh/streams.hpp>
 #include <psh/debug.hpp>
 #include <psh/memory.hpp>

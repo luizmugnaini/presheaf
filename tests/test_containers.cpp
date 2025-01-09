@@ -41,6 +41,65 @@ namespace psh::test::containers {
         psh_assert(count_of("this is a string") == psh_usize_of("this is a string"));
     }
 
+    psh_internal void usage_push_buffer() {
+        PushBuffer<u32, 10> push_buffer;
+        constexpr Buffer<u32, 5> START = {1, 2, 3, 4, 5};
+        push_buffer_push_many(&push_buffer, psh::make_const_fat_ptr(&START));
+        {
+            psh_assert_constexpr(push_buffer.max_count == 10);
+            psh_assert(push_buffer.count == 5);
+            for (u32 n = 0; n < push_buffer.count; ++n) {
+                psh_assert(push_buffer[n] == n + 1);
+            }
+        }
+
+        push_buffer_push(&push_buffer, 6u);
+        {
+            psh_assert(push_buffer.count == 6);
+            psh_assert(push_buffer[push_buffer.count - 1] == 6);
+        }
+
+        Buffer<u32, 4> remainder = {7, 8, 9, 10};
+        push_buffer_push_many(&push_buffer, psh::make_const_fat_ptr(&remainder));
+        {
+            psh_assert(push_buffer.count == push_buffer.max_count);
+            for (u32 n = 0; n < push_buffer.count; ++n) {
+                psh_assert(push_buffer[n] == n + 1);
+            }
+        }
+    }
+
+    psh_internal void usage_push_array() {
+        Arena arena = make_owned_arena(124);
+        psh_defer(destroy_owned_arena(&arena));
+
+        PushArray<u32> push_array = make_push_array<u32>(&arena, 10);
+        constexpr Buffer<u32, 5> START = {1, 2, 3, 4, 5};
+        push_array_push_many(&push_array, psh::make_const_fat_ptr(&START));
+        {
+            psh_assert(push_array.max_count == 10);
+            psh_assert(push_array.count == 5);
+            for (u32 n = 0; n < push_array.count; ++n) {
+                psh_assert(push_array[n] == n + 1);
+            }
+        }
+
+        push_array_push(&push_array, 6u);
+        {
+            psh_assert(push_array.count == 6);
+            psh_assert(push_array[push_array.count - 1] == 6);
+        }
+
+        Buffer<u32, 4> remainder = {7, 8, 9, 10};
+        push_array_push_many(&push_array, psh::make_const_fat_ptr(&remainder));
+        {
+            psh_assert(push_array.count == push_array.max_count);
+            for (u32 n = 0; n < push_array.count; ++n) {
+                psh_assert(push_array[n] == n + 1);
+            }
+        }
+    }
+
     psh_internal void dynamic_array_push_elements(MemoryManager& memory_manager) {
         Arena arena;
         {
@@ -102,7 +161,7 @@ namespace psh::test::containers {
         DynamicArray<i32> v = make_dynamic_array<i32>(&arena, 3);
         {
             Buffer<i32, 2> elements = {4, 5};
-            psh_assert(dynamic_array_push_many(&v, make_const_fat_ptr(elements)));
+            psh_assert(dynamic_array_push_many(&v, make_const_fat_ptr(&elements)));
         }
         psh_assert(dynamic_array_push(&v, 6));
 
@@ -232,6 +291,8 @@ namespace psh::test::containers {
         memory_manager.init(10240);
 
         c_array_count();
+        usage_push_buffer();
+        usage_push_array();
         dynamic_array_push_elements(memory_manager);
         dynamic_array_count_and_capacity(memory_manager);
         dynamic_array_peek_and_pop(memory_manager);

@@ -28,128 +28,6 @@
 #include <stdint.h>
 
 // -------------------------------------------------------------------------------------------------
-// Presheaf library compile-time flags.
-//
-// All of the below flags are disabled by default.
-//
-// - PSH_ENABLE_ASSERTIONS: Enable the use of asserts.
-// - PSH_ENABLE_USAGE_VALIDATION: Insert checks to ensure that any given Presheaf function is given
-//   valid arguments. In other words, this will assert that the implicit contract between caller
-//   and callee is followed.
-// - PSH_ENABLE_PARANOID_USAGE_VALIDATION: Inserts even more validation checks (this option isn't
-//   enabled via PSH_ENABLE_DEBUG, you have to set it manually).
-// - PSH_ENABLE_ASSERT_NOT_NULL: Assert that arguments that shouldn't be null, aren't.
-// - PSH_ENABLE_ASSERT_NO_ALIAS: Assert that the no-aliasing rule is followed.
-// - PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE: Check at compile time if template based functions have
-//   arguments satisfying the procedure assumptions.
-// - PSH_ENABLE_ASSERT_BOUNDS_CHECK: For every container-like struct, check if the accessing index stays
-//   within the container memory region bounds.
-// - PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP: Before calling memcpy, assert that the memory regions being
-//   copied don't overlap.
-// - PSH_ENABLE_CHECKED_POINTER_ARITHMETIC: Consider if a pointer is null before applying an offset.
-// - PSH_ENABLE_ASSERT_NO_MEMORY_ERROR: When a memory acquisition function fails, abort the program.
-// - PSH_ENABLE_LOGGING: Enable logging calls to execute.
-// - PSH_ENABLE_DEBUG: Enables all of the above debug checks.
-// - PSH_ENABLE_ANSI_COLOURS: When logging, use ANSI colour codes for pretty printing. This may not
-//   be desired if you're printing to a log file, hence the option is disabled by default.
-// - PSH_DISABLE_FORCED_INLINING: Disable the use of forced inlining hints via psh_inline.
-// - PSH_DISABLE_NO_ALIAS: Disable the use of the no aliasing restriction hints in function
-//   arguments that use psh_no_alias.
-// -------------------------------------------------------------------------------------------------
-
-// Enable all debug checks when compiled in debug mode. Otherwise, disable all.
-#if defined(PSH_ENABLE_DEBUG) && PSH_ENABLE_DEBUG
-#    if !defined(PSH_ENABLE_ASSERTIONS)
-#        define PSH_ENABLE_ASSERTIONS 1
-#    endif
-#    if !defined(PSH_ENABLE_USAGE_VALIDATION)
-#        define PSH_ENABLE_USAGE_VALIDATION 1
-#    endif
-#    if !defined(PSH_ENABLE_ASSERT_NOT_NULL)
-#        define PSH_ENABLE_ASSERT_NOT_NULL 1
-#    endif
-#    if !defined(PSH_ENABLE_ASSERT_BOUNDS_CHECK)
-#        define PSH_ENABLE_ASSERT_BOUNDS_CHECK 1
-#    endif
-#    if !defined(PSH_ENABLE_ASSERT_NO_ALIAS)
-#        define PSH_ENABLE_ASSERT_NO_ALIAS 1
-#    endif
-#    if !defined(PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE)
-#        define PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE 1
-#    endif
-#    if !defined(PSH_ENABLE_ASSERT_NO_MEMORY_ERROR)
-#        define PSH_ENABLE_ASSERT_NO_MEMORY_ERROR 1
-#    endif
-#    if !defined(PSH_ENABLE_CHECKED_POINTER_ARITHMETIC)
-#        define PSH_ENABLE_CHECKED_POINTER_ARITHMETIC 1
-#    endif
-#    if !defined(PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP)
-#        define PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP 1
-#    endif
-#    if !defined(PSH_ENABLE_LOGGING)
-#        define PSH_ENABLE_LOGGING 1
-#    endif
-#    if !defined(PSH_DISABLE_FORCED_INLINING)
-#        define PSH_DISABLE_FORCED_INLINING 1
-#    endif
-#    if !defined(PSH_DISABLE_NO_ALIAS)
-#        define PSH_DISABLE_NO_ALIAS 1
-#    endif
-#else
-#    if !defined(PSH_ENABLE_ASSERTIONS)
-#        define PSH_ENABLE_ASSERTIONS 0
-#    endif
-#    if !defined(PSH_ENABLE_USAGE_VALIDATION)
-#        define PSH_ENABLE_USAGE_VALIDATION 0
-#    endif
-#    if !defined(PSH_ENABLE_ASSERT_NOT_NULL)
-#        define PSH_ENABLE_ASSERT_NOT_NULL 0
-#    endif
-#    if !defined(PSH_ENABLE_ASSERT_BOUNDS_CHECK)
-#        define PSH_ENABLE_ASSERT_BOUNDS_CHECK 0
-#    endif
-#    if !defined(PSH_ENABLE_ASSERT_NO_ALIAS)
-#        define PSH_ENABLE_ASSERT_NO_ALIAS 0
-#    endif
-#    if !defined(PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE)
-#        define PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE 0
-#    endif
-#    if !defined(PSH_ENABLE_ASSERT_NO_MEMORY_ERROR)
-#        define PSH_ENABLE_ASSERT_NO_MEMORY_ERROR 0
-#    endif
-#    if !defined(PSH_ENABLE_CHECKED_POINTER_ARITHMETIC)
-#        define PSH_ENABLE_CHECKED_POINTER_ARITHMETIC 0
-#    endif
-#    if !defined(PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP)
-#        define PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP 0
-#    endif
-#    if !defined(PSH_ENABLE_LOGGING)
-#        define PSH_ENABLE_LOGGING 0
-#    endif
-#    if !defined(PSH_DISABLE_FORCED_INLINING)
-#        define PSH_DISABLE_FORCED_INLINING 0
-#    endif
-#    if !defined(PSH_DISABLE_NO_ALIAS)
-#        define PSH_DISABLE_NO_ALIAS 0
-#    endif
-#endif
-
-/// By default, disable the extra paranoid usage validation checks.
-#if !defined(PSH_ENABLE_PARANOID_USAGE_VALIDATION) || !PSH_ENABLE_PARANOID_USAGE_VALIDATION
-#    define PSH_ENABLE_PARANOID_USAGE_VALIDATION 0
-#endif
-
-/// By default, disable the use of ANSI colours for logging.
-#if !defined(PSH_ENABLE_ANSI_COLOURS) || !PSH_ENABLE_ANSI_COLOURS
-#    define PSH_ENABLE_ANSI_COLOURS 0
-#endif
-
-/// By default, we don't use functions like vsnprintf from libc for string formatting.
-#if !defined(PSH_ENABLE_USE_LIBC_STRING_FORMATTING) || !PSH_ENABLE_USE_LIBC_STRING_FORMATTING
-#    define PSH_ENABLE_USE_LIBC_STRING_FORMATTING 0
-#endif
-
-// -------------------------------------------------------------------------------------------------
 // Macros for operating system and compiler detection.
 // -------------------------------------------------------------------------------------------------
 
@@ -259,7 +137,61 @@
 #endif
 
 // -------------------------------------------------------------------------------------------------
-// DLL support - importing/exporting function declarations
+// Compiler capabilities.
+// -------------------------------------------------------------------------------------------------
+
+#if defined(__has_feature)
+#    define PSH_COMPILER_CAPABILITY_HAS_FEATURE 1
+#else
+#    define PSH_COMPILER_CAPABILITY_HAS_FEATURE 0
+#endif
+
+#if defined(__has_include)
+#    define PSH_COMPILER_CAPABILITY_HAS_INCLUDE 1
+#else
+#    define PSH_COMPILER_CAPABILITY_HAS_INCLUDE 0
+#endif
+
+// -------------------------------------------------------------------------------------------------
+// Address sanitizer.
+// -------------------------------------------------------------------------------------------------
+
+/// Function attribute for locally disabling the address sanitizer.
+#if defined(PSH_COMPILER_MSVC)
+#    if defined(__SANITIZE_ADDRESS__) && __SANITIZE_ADDRESS__
+#        define PSH_ADDRESS_SANITIZER_ENABLED 1
+#        define psh_attribute_disable_asan    __declspec(no_sanitize_address)
+#    endif
+#elif defined(PSH_COMPILER_CLANG)
+#    if PSH_COMPILER_CAPABILITY_HAS_FEATURE
+#        if __has_feature(address_sanitizer)
+#            define PSH_ADDRESS_SANITIZER_ENABLED 1
+#            define psh_attribute_disable_asan    __attribute__((__no_sanitize__("address")))
+#        endif
+#    endif
+#elif defined(PSH_COMPILER_GCC)
+#    if defined(__SANITIZE_ADDRESS__) && __SANITIZE_ADDRESS__
+#        define PSH_ADDRESS_SANITIZER_ENABLED 1
+#        define psh_attribute_disable_asan    __attribute__((__no_sanitize_address__))
+#    endif
+#endif
+#if !defined(psh_attribute_disable_asan)
+#    define PSH_ADDRESS_SANITIZER_ENABLED 0
+#    define psh_attribute_disable_asan
+#endif
+
+/// Check if we can use the address sanitizer runtime interface.
+#if PSH_COMPILER_CAPABILITY_HAS_INCLUDE
+#    if __has_include(<sanitizer/asan_interface.h>)
+#        define PSH_RUNTIME_HAS_ASAN 1
+#    endif
+#endif
+#if !defined(PSH_RUNTIME_HAS_ASAN)
+#    define PSH_RUNTIME_HAS_ASAN 0
+#endif
+
+// -------------------------------------------------------------------------------------------------
+// DLL support - importing/exporting function declarations.
 // -------------------------------------------------------------------------------------------------
 
 #if defined(PSH_DLL) && defined(PSH_BUILD_DLL)
@@ -324,6 +256,129 @@
 /// SIMD availability in ARM processors.
 #if defined(PSH_ARCH_ARM) && defined(__ARM_NEON)
 #    define PSH_ARCH_SIMD_NEON
+#endif
+
+// -------------------------------------------------------------------------------------------------
+// Presheaf library compile-time flags.
+//
+// All of the below flags are disabled by default.
+//
+// - PSH_ENABLE_ASSERTIONS: Enable the use of asserts.
+// - PSH_ENABLE_USAGE_VALIDATION: Insert checks to ensure that any given Presheaf function is given
+//   valid arguments. In other words, this will assert that the implicit contract between caller
+//   and callee is followed.
+// - PSH_ENABLE_PARANOID_USAGE_VALIDATION: Inserts even more validation checks (this option isn't
+//   enabled via PSH_ENABLE_DEBUG, you have to set it manually).
+// - PSH_ENABLE_ASSERT_NOT_NULL: Assert that arguments that shouldn't be null, aren't.
+// - PSH_ENABLE_ASSERT_NO_ALIAS: Assert that the no-aliasing rule is followed.
+// - PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE: Check at compile time if template based functions have
+//   arguments satisfying the procedure assumptions.
+// - PSH_ENABLE_ASSERT_BOUNDS_CHECK: For every container-like struct, check if the accessing index stays
+//   within the container memory region bounds.
+// - PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP: Before calling memcpy, assert that the memory regions being
+//   copied don't overlap.
+// - PSH_ENABLE_CHECKED_POINTER_ARITHMETIC: Consider if a pointer is null before applying an offset.
+// - PSH_ENABLE_ASSERT_NO_MEMORY_ERROR: When a memory acquisition function fails, abort the program.
+// - PSH_ENABLE_LOGGING: Enable logging calls to execute.
+// - PSH_ENABLE_DEBUG: Enables all of the above debug checks.
+// - PSH_ENABLE_ANSI_COLOURS: When logging, use ANSI colour codes for pretty printing. This may not
+//   be desired if you're printing to a log file, hence the option is disabled by default.
+// - PSH_DISABLE_FORCED_INLINING: Disable the use of forced inlining hints via psh_inline.
+// - PSH_DISABLE_NO_ALIAS: Disable the use of the no aliasing restriction hints in function
+//   arguments that use psh_no_alias.
+// -------------------------------------------------------------------------------------------------
+
+// Enable all debug checks when compiled in debug mode. Otherwise, disable all.
+#if defined(PSH_ENABLE_DEBUG) && PSH_ENABLE_DEBUG
+#    if !defined(PSH_ENABLE_ASSERTIONS)
+#        define PSH_ENABLE_ASSERTIONS 1
+#    endif
+#    if !defined(PSH_ENABLE_USAGE_VALIDATION)
+#        define PSH_ENABLE_USAGE_VALIDATION 1
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_NOT_NULL)
+#        define PSH_ENABLE_ASSERT_NOT_NULL 1
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_BOUNDS_CHECK)
+#        define PSH_ENABLE_ASSERT_BOUNDS_CHECK 1
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_NO_ALIAS)
+#        define PSH_ENABLE_ASSERT_NO_ALIAS 1
+#    endif
+#    if !defined(PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE)
+#        define PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE 1
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_NO_MEMORY_ERROR)
+#        define PSH_ENABLE_ASSERT_NO_MEMORY_ERROR 1
+#    endif
+#    if !defined(PSH_ENABLE_CHECKED_POINTER_ARITHMETIC)
+#        define PSH_ENABLE_CHECKED_POINTER_ARITHMETIC 1
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP)
+#        define PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP 1
+#    endif
+#    if !defined(PSH_ENABLE_LOGGING)
+#        define PSH_ENABLE_LOGGING 1
+#    endif
+#    if !defined(PSH_DISABLE_FORCED_INLINING)
+#        define PSH_DISABLE_FORCED_INLINING 1
+#    endif
+#    if !defined(PSH_DISABLE_NO_ALIAS)
+#        define PSH_DISABLE_NO_ALIAS 1
+#    endif
+#else
+#    if !defined(PSH_ENABLE_ASSERTIONS)
+#        define PSH_ENABLE_ASSERTIONS 0
+#    endif
+#    if !defined(PSH_ENABLE_USAGE_VALIDATION)
+#        define PSH_ENABLE_USAGE_VALIDATION 0
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_NOT_NULL)
+#        define PSH_ENABLE_ASSERT_NOT_NULL 0
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_BOUNDS_CHECK)
+#        define PSH_ENABLE_ASSERT_BOUNDS_CHECK 0
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_NO_ALIAS)
+#        define PSH_ENABLE_ASSERT_NO_ALIAS 0
+#    endif
+#    if !defined(PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE)
+#        define PSH_ENABLE_STATIC_ASSERT_TEMPLATE_USAGE 0
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_NO_MEMORY_ERROR)
+#        define PSH_ENABLE_ASSERT_NO_MEMORY_ERROR 0
+#    endif
+#    if !defined(PSH_ENABLE_CHECKED_POINTER_ARITHMETIC)
+#        define PSH_ENABLE_CHECKED_POINTER_ARITHMETIC 0
+#    endif
+#    if !defined(PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP)
+#        define PSH_ENABLE_ASSERT_MEMCPY_NO_OVERLAP 0
+#    endif
+#    if !defined(PSH_ENABLE_LOGGING)
+#        define PSH_ENABLE_LOGGING 0
+#    endif
+#    if !defined(PSH_DISABLE_FORCED_INLINING)
+#        define PSH_DISABLE_FORCED_INLINING 0
+#    endif
+#    if !defined(PSH_DISABLE_NO_ALIAS)
+#        define PSH_DISABLE_NO_ALIAS 0
+#    endif
+#endif
+
+/// By default, disable the extra paranoid usage validation checks.
+#if !defined(PSH_ENABLE_PARANOID_USAGE_VALIDATION)
+#    define PSH_ENABLE_PARANOID_USAGE_VALIDATION 0
+#endif
+
+/// By default, disable the use of ANSI colours for logging.
+#if !defined(PSH_ENABLE_ANSI_COLOURS)
+#    define PSH_ENABLE_ANSI_COLOURS 0
+#endif
+
+/// Unless the address sanitizer is enabled, we don't use functions like vsnprintf from libc for
+/// string formatting.
+#if !defined(PSH_ENABLE_USE_STB_SPRINTF)
+#    define PSH_ENABLE_USE_STB_SPRINTF 1
 #endif
 
 // -------------------------------------------------------------------------------------------------
@@ -396,30 +451,11 @@
 ///     - fmt_pos: The position of the argument containing the formatting string (the first argument
 ///                of a function has position 1).
 #if defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
-#    define psh_attr_fmt(fmt_pos) __attribute__((__format__(__printf__, fmt_pos, fmt_pos + 1)))
+#    define psh_attribute_fmt(fmt_pos) __attribute__((__format__(__printf__, fmt_pos, fmt_pos + 1)))
 #else
-#    define psh_attr_fmt(fmt_pos)
+#    define psh_attribute_fmt(fmt_pos)
 #endif
 
-/// Function attribute for locally disabling the address sanitizer.
-#if defined(PSH_COMPILER_MSVC)
-#    if defined(__SANITIZE_ADDRESS__)
-#        define psh_attr_disable_asan __declspec(no_sanitize_address)
-#    endif
-#elif defined(PSH_COMPILER_CLANG)
-#    if defined(__has_feature)
-#        if __has_feature(address_sanitizer)
-#            define psh_attr_disable_asan __attribute__((__no_sanitize__("address")))
-#        endif
-#    endif
-#elif defined(PSH_COMPILER_GCC)
-#    if defined(__SANITIZE_ADDRESS__) && __SANITIZE_ADDRESS__
-#        define psh_attr_disable_asan __attribute__((__no_sanitize_address__))
-#    endif
-#endif
-#if !defined(psh_attr_disable_asan)
-#    define psh_attr_disable_asan
-#endif
 
 // -------------------------------------------------------------------------------------------------
 // Fundamental types.
@@ -462,7 +498,7 @@ namespace psh {
     ///
     /// This gives a better semantic meaning of the return of a failable function, while still
     /// preserving the use of booleans for simple use.
-    using Status                   = bool;
+    using Status                   = b32;
     constexpr Status STATUS_FAILED = false;
     constexpr Status STATUS_OK     = true;
 };  // namespace psh

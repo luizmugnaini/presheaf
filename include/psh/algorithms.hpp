@@ -161,7 +161,7 @@ namespace psh {
     template <typename T>
     void quick_sort_range(FatPtr<T> data, usize low, usize high) psh_no_except {
         if (high <= low + QUICK_SORT_CUTOFF_TO_INSERTION_SORT) {
-            insertion_sort(make_slice(data, low, (high + 1u) - low));
+            insertion_sort(make_slice(&data, low, (high + 1u) - low));
             return;
         }
 

@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <stdarg.h>
 #include <psh/core.hpp>
 #include <psh/memory.hpp>
 
@@ -224,19 +225,20 @@ namespace psh {
     // String formatting.
     //
     // @TODO: improve the integration with the Presheaf types.
+    // @TODO: implement functions by extracting stuff from stb_sprintf.
     // -------------------------------------------------------------------------------------------------
 
     using StringFormatCallbackFunction = char*(cstring* buf, void* user, i32 len);
 
     i32 string_format_list(char* buf, i32 count, cstring fmt, va_list va) psh_no_except;
     i32 string_format_list_with_callback(
-        StbspSprintfCallback* callback,
-        void*                 user,
-        char*                 buf,
-        cstring               fmt,
-        va_list               va) psh_no_except;
+        StringFormatCallbackFunction* callback,
+        void*                         user,
+        char*                         buf,
+        cstring                       fmt,
+        va_list                       va) psh_no_except;
 
-    psh_attr_fmt(3) psh_inline i32 string_format(char* buf, i32 count, cstring fmt, ...) psh_no_except {
+    psh_attribute_fmt(3) psh_inline i32 string_format(char* buf, i32 count, cstring fmt, ...) psh_no_except {
         i32 result;
         {
             va_list args;

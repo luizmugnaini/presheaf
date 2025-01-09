@@ -292,7 +292,7 @@ local presheaf = {
     lib              = "presheaf",
     test_exe         = "presheaf_tests",
     std              = "c++20",
-    out_dir          = make_path({ root_dir, "build" }),
+    out_dir          = make_path({ ".", "build" }),
 }
 
 -- -----------------------------------------------------------------------------
