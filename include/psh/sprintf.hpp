@@ -156,18 +156,13 @@
 
 #pragma once
 
-#include <stdarg.h>
-#include <psh/core.hpp>
+#if PSH_ENABLE_USE_STB_SPRINTF
+#    include <stdarg.h>
+#    include <psh/core.hpp>
 
-using StbspSprintfCallback = char*(const char* buf, void* user, i32 len);
+i32 psh_stbsp_vsprintf(char* buf, cstring fmt, va_list va);
+i32 psh_stbsp_vsnprintf(char* buf, i32 count, cstring fmt, va_list va);
+psh_attribute_fmt(2) i32 psh_stbsp_sprintf(char* buf, cstring fmt, ...);
+psh_attribute_fmt(3) i32 psh_stbsp_snprintf(char* buf, i32 count, cstring fmt, ...);
 
-#ifndef STB_SPRINTF_DECORATE
-#    define STB_SPRINTF_DECORATE(name) stbsp_##name  // define this before including if you want to change the names
-#endif
-
-extern "C" i32 STB_SPRINTF_DECORATE(vsprintf)(char* buf, cstring fmt, va_list va);
-extern "C" i32 STB_SPRINTF_DECORATE(vsnprintf)(char* buf, i32 count, cstring fmt, va_list va);
-extern "C" psh_attr_fmt(2) i32 STB_SPRINTF_DECORATE(sprintf)(char* buf, cstring fmt, ...);
-extern "C" psh_attr_fmt(3) i32 STB_SPRINTF_DECORATE(snprintf)(char* buf, i32 count, cstring fmt, ...);
-
-extern "C" i32  STB_SPRINTF_DECORATE(vsprintfcb)(StbspSprintfCallback* callback, void* user, char* buf, cstring fmt, va_list va);
+#endif  // PSH_ENABLE_USE_STB_SPRINTF

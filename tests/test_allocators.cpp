@@ -34,7 +34,7 @@ namespace psh::test::allocators {
 
     psh_internal void scratch_arena_basic() {
         Arena arena = make_owned_arena(1024);
-        psh_defer(free_owned_arena(&arena));
+        psh_defer(destroy_owned_arena(&arena));
 
         usize base_offset = 0;
 
@@ -220,7 +220,7 @@ namespace psh::test::allocators {
 
     psh_internal void scratch_arena_passed_as_reference() {
         Arena ar = make_owned_arena(1024);
-        psh_defer(free_owned_arena(&ar));
+        psh_defer(destroy_owned_arena(&ar));
 
         usize expected_offset = 0;
         psh_discard_value(memory_alloc<u8>(&ar, 32));

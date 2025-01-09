@@ -42,28 +42,24 @@
 /// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /// ------------------------------------------------------------------------------------------------
 
-#include <psh/sprintf.h>
-#include <psh/core.hpp>
+#if PSH_ENABLE_USE_STB_SPRINTF
 
-#if defined(PSH_COMPILER_CLANG)
-#    pragma clang diagnostic push
-#    pragma clang diagnostic ignored "-Wcast-align"
-#    pragma clang diagnostic ignored "-Wcast-qual"
-#    pragma clang diagnostic ignored "-Wold-style-cast"
-#    pragma clang diagnostic ignored "-Wsign-conversion"
-#    pragma clang diagnostic ignored "-Wdouble-promotion"
-#    pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
-#    pragma clang diagnostic ignored "-Wextra-semi-stmt"
-#    pragma clang diagnostic ignored "-Wlanguage-extension-token"
-#    pragma clang diagnostic ignored "-Wimplicit-fallthrough"
-#    pragma clang diagnostic ignored "-Wconditional-uninitialized"
-#    pragma clang diagnostic ignored "-Wreserved-identifier"
-#    pragma clang diagnostic ignored "-Wreserved-macro-identifier"
-#endif
+#    include <psh/core.hpp>
+#    include <psh/sprintf.hpp>
 
-#if !defined(STB_SPRINTF_MIN_LENGTH_PER_CALLBACK)
-#    define STB_SPRINTF_MIN_LENGTH_PER_CALLBACK 512  // how many characters per callback
-#endif
+#    if defined(PSH_COMPILER_CLANG)
+#        pragma clang diagnostic push
+#        pragma clang diagnostic ignored "-Wcast-align"
+#        pragma clang diagnostic ignored "-Wcast-qual"
+#        pragma clang diagnostic ignored "-Wold-style-cast"
+#        pragma clang diagnostic ignored "-Wsign-conversion"
+#        pragma clang diagnostic ignored "-Wdouble-promotion"
+#        pragma clang diagnostic ignored "-Wconditional-uninitialized"
+#    endif
+
+#    if !defined(STB_SPRINTF_MIN_LENGTH_PER_CALLBACK)
+#        define STB_SPRINTF_MIN_LENGTH_PER_CALLBACK 512  // how many characters per callback
+#    endif
 
 // internal f32 utility functions
 psh_internal i32 stbsp_impl_real_to_str(cstring* start, u32* len, char* out, i32* decimal_pos, f64 value, u32 frac_digits);
@@ -74,10 +70,10 @@ psh_internal constexpr i32 STBSP_IMPL_SPECIAL = 0x7000;
 psh_internal constexpr char STBSP_IMPL_PERIOD = '.';
 psh_internal constexpr char STBSP_IMPL_COMMA  = ',';
 
-psh_internal struct {
+psh_internal constexpr struct {
     i16  unused_16_bits;  // force next field to be 2-byte aligned
     char pair[201];
-} stbsp_impl_digitpair = {
+} STBSP_IMPL_DIGITPAIR = {
     0,
     "00010203040506070809101112131415161718192021222324"
     "25262728293031323334353637383940414243444546474849"
@@ -99,39 +95,6 @@ psh_internal constexpr u32 STBSP_IMPL_METRIC_NOSPACE = 1024;
 psh_internal constexpr u32 STBSP_IMPL_METRIC_1024    = 2048;
 psh_internal constexpr u32 STBSP_IMPL_METRIC_JEDEC   = 4096;
 
-// macros for the callback buffer stuff
-#define stbsp_impl_chk_cb_bufL(bytes)                                 \
-    do {                                                              \
-        i32 len = (i32)(bf - buf);                                    \
-        if ((len + (bytes)) >= STB_SPRINTF_MIN_LENGTH_PER_CALLBACK) { \
-            tlen += len;                                              \
-            if (0 == (bf = buf = callback(buf, user, len))) {         \
-                goto done;                                            \
-            }                                                         \
-        }                                                             \
-    } while (0)
-#define stbsp_impl_chk_cb_buf(bytes)       \
-    do {                                   \
-        if (callback) {                    \
-            stbsp_impl_chk_cb_bufL(bytes); \
-        }                                  \
-    } while (0)
-// flush if there is even one byte in the buffer
-#define stbsp_impl_flush_cb()                                            \
-    do {                                                                 \
-        stbsp_impl_chk_cb_bufL(STB_SPRINTF_MIN_LENGTH_PER_CALLBACK - 1); \
-    } while (0)
-#define stbsp_impl_cb_buf_clamp(cl, v)                                      \
-    do {                                                                    \
-        cl = v;                                                             \
-        if (callback) {                                                     \
-            i32 lg = STB_SPRINTF_MIN_LENGTH_PER_CALLBACK - (i32)(bf - buf); \
-            if (cl > lg) {                                                  \
-                cl = lg;                                                    \
-            }                                                               \
-        }                                                                   \
-    } while (0)
-
 psh_internal void stbsp_impl_lead_sign(u32 fl, char* sign) {
     sign[0] = 0;
     if (fl & STBSP_IMPL_NEGATIVE) {
@@ -146,56 +109,45 @@ psh_internal void stbsp_impl_lead_sign(u32 fl, char* sign) {
     }
 }
 
-psh_attr_disable_asan psh_internal u32 stbsp_impl_strlen_limited(cstring s, u32 limit) {
-    cstring sn = s;
+using StbspSprintfCallback = char*(cstring buf, void* user, i32 len);
 
-    // Get up to 4-byte alignment.
-    for (;;) {
-        if (((uptr)sn & 3) == 0) {
-            break;
-        }
+psh_internal psh_attribute_disable_asan i32 psh_stbsp_impl_vsprintfcb(StbspSprintfCallback* callback, void* user, char* buf, cstring fmt, va_list va) {
+    // macros for the callback buffer stuff
+#    define stbsp_impl_chk_cb_bufL(bytes)                                 \
+        do {                                                              \
+            i32 len = (i32)(bf - buf);                                    \
+            if ((len + (bytes)) >= STB_SPRINTF_MIN_LENGTH_PER_CALLBACK) { \
+                tlen += len;                                              \
+                if ((bf = buf = callback(buf, user, len)) == nullptr) {   \
+                    goto done;                                            \
+                }                                                         \
+            }                                                             \
+        } while (0)
+#    define stbsp_impl_chk_cb_buf(bytes)       \
+        do {                                   \
+            if (callback) {                    \
+                stbsp_impl_chk_cb_bufL(bytes); \
+            }                                  \
+        } while (0)
+// flush if there is even one byte in the buffer
+#    define stbsp_impl_flush_cb()                                            \
+        do {                                                                 \
+            stbsp_impl_chk_cb_bufL(STB_SPRINTF_MIN_LENGTH_PER_CALLBACK - 1); \
+        } while (0)
+#    define stbsp_impl_cb_buf_clamp(cl, v)                                      \
+        do {                                                                    \
+            cl = v;                                                             \
+            if (callback) {                                                     \
+                i32 lg = STB_SPRINTF_MIN_LENGTH_PER_CALLBACK - (i32)(bf - buf); \
+                if (cl > lg) {                                                  \
+                    cl = lg;                                                    \
+                }                                                               \
+            }                                                                   \
+        } while (0)
 
-        if (!limit || *sn == 0) {
-            return (u32)(sn - s);
-        }
-
-        ++sn;
-        --limit;
-    }
-
-    // @HACK: Scan over 4 bytes at a time to find terminating 0 this will intentionally scan up to
-    //        3 bytes past the end of buffers, but becase it works 4B aligned, it will never cross
-    //        page boundaries (hence the psh_attr_disable_asan markup; the over-read here is
-    //        intentional and harmless).
-    while (limit >= 4) {
-        u32 v = *(u32*)sn;
-        // bit hack to find if there's a 0 byte in there
-        if ((v - 0x01010101) & (~v) & 0x80808080UL) {
-            break;
-        }
-
-        sn += 4;
-        limit -= 4;
-    }
-
-    // Handle the last few characters to find actual size.
-    while (limit && *sn) {
-        ++sn;
-        --limit;
-    }
-
-    return (u32)(sn - s);
-}
-
-extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
-    StbspSprintfCallback* callback,
-    void*                 user,
-    char*                 buf,
-    cstring               fmt,
-    va_list               va) {
-    psh_internal char hex[]  = "0123456789abcdefxp";
-    psh_internal char hexu[] = "0123456789ABCDEFXP";
-    i32               tlen   = 0;
+    psh_internal constexpr char hex[]  = "0123456789abcdefxp";
+    psh_internal constexpr char hexu[] = "0123456789ABCDEFXP";
+    i32                         tlen   = 0;
 
     char*   bf = buf;
     cstring f  = fmt;
@@ -224,7 +176,7 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                 // Using the 'hasless' trick:
                 // https://graphics.stanford.edu/~seander/bithacks.html#HasLessInWord
 
-                // @NOTE: This can cause a buffer overflow, hence the need to use psh_attr_disable_asan.
+                // @NOTE: This can cause a buffer overflow, hence the need to use psh_attribute_disable_asan.
                 u32 v = *(u32*)f;
 
                 u32 c = (~v) & 0x80808080;
@@ -266,32 +218,37 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
         for (;;) {
             switch (f[0]) {
                 // if we have left justify
-                case '-':
+                case '-': {
                     fl |= STBSP_IMPL_LEFTJUST;
                     ++f;
                     continue;
+                }
                 // if we have leading plus
-                case '+':
+                case '+': {
                     fl |= STBSP_IMPL_LEADINGPLUS;
                     ++f;
                     continue;
+                }
                 // if we have leading space
-                case ' ':
+                case ' ': {
                     fl |= STBSP_IMPL_LEADINGSPACE;
                     ++f;
                     continue;
+                }
                 // if we have leading 0x
-                case '#':
+                case '#': {
                     fl |= STBSP_IMPL_LEADING_0X;
                     ++f;
                     continue;
+                }
                 // if we have thousand commas
-                case '\'':
+                case '\'': {
                     fl |= STBSP_IMPL_TRIPLET_COMMA;
                     ++f;
                     continue;
+                }
                 // if we have kilo marker (none->kilo->kibi->jedec)
-                case '$':
+                case '$': {
                     if (fl & STBSP_IMPL_METRIC_SUFFIX) {
                         if (fl & STBSP_IMPL_METRIC_1024) {
                             fl |= STBSP_IMPL_METRIC_JEDEC;
@@ -303,16 +260,19 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                     }
                     ++f;
                     continue;
+                }
                 // if we don't want space between metric suffix and number
-                case '_':
+                case '_': {
                     fl |= STBSP_IMPL_METRIC_NOSPACE;
                     ++f;
                     continue;
+                }
                 // if we have leading zero
-                case '0':
+                case '0': {
                     fl |= STBSP_IMPL_LEADINGZERO;
                     ++f;
                     goto flags_done;
+                }
                 default: goto flags_done;
             }
         }
@@ -346,15 +306,16 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
         // handle integer size overrides
         switch (f[0]) {
             // are we halfwidth?
-            case 'h':
+            case 'h': {
                 fl |= STBSP_IMPL_HALFWIDTH;
                 ++f;
                 if (f[0] == 'h') {
                     ++f;  // QUARTERWIDTH
                 }
                 break;
+            }
             // are we 64-bit (unix style)
-            case 'l':
+            case 'l': {
                 fl |= ((psh_usize_of(long) == 8) ? STBSP_IMPL_INTMAX : 0);
                 ++f;
                 if (f[0] == 'l') {
@@ -362,22 +323,26 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                     ++f;
                 }
                 break;
+            }
             // are we 64-bit on intmax? (c99)
-            case 'j':
-                fl |= (psh_usize_of(size_t) == 8) ? STBSP_IMPL_INTMAX : 0;
+            case 'j': {
+                fl |= (psh_usize_of(usize) == 8) ? STBSP_IMPL_INTMAX : 0;
                 ++f;
                 break;
+            }
             // are we 64-bit on size_t or ptrdiff_t? (c99)
-            case 'z':
-                fl |= (psh_usize_of(ptrdiff_t) == 8) ? STBSP_IMPL_INTMAX : 0;
+            case 'z': {
+                fl |= (psh_usize_of(isize) == 8) ? STBSP_IMPL_INTMAX : 0;
                 ++f;
                 break;
-            case 't':
-                fl |= (psh_usize_of(ptrdiff_t) == 8) ? STBSP_IMPL_INTMAX : 0;
+            }
+            case 't': {
+                fl |= (psh_usize_of(isize) == 8) ? STBSP_IMPL_INTMAX : 0;
                 ++f;
                 break;
+            }
             // are we 64-bit (msft style)
-            case 'I':
+            case 'I': {
                 if ((f[1] == '6') && (f[2] == '4')) {
                     fl |= STBSP_IMPL_INTMAX;
                     f += 3;
@@ -388,12 +353,13 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                     ++f;
                 }
                 break;
+            }
             default: break;
         }
 
         // handle each replacement
         switch (f[0]) {
-#define STBSP_IMPL_NUMSZ 512  // big enough for e308 (with commas) or e-307
+#    define STBSP_IMPL_NUMSZ 512  // big enough for e308 (with commas) or e-307
             char    num[STBSP_IMPL_NUMSZ];
             char    lead[8];
             char    tail[8];
@@ -405,16 +371,51 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
             i32     dp;
             cstring sn;
 
-            case 's':
+            case 's': {
                 // get the string
                 s = va_arg(va, char*);
-                if (s == 0) {
+                if (s == nullptr) {
                     s = (char*)"null";
                 }
 
+                // get the length
+                sn = s;
+                for (;;) {
+                    if ((((uptr)sn) & 3) == 0) {
+                        break;
+                    }
+                lchk:
+                    if (sn[0] == 0) {
+                        goto ld;
+                    }
+                    ++sn;
+                }
+                n = 0xffffffff;
+                if (pr >= 0) {
+                    n = (u32)(sn - s);
+                    if (n >= (u32)pr) {
+                        goto ld;
+                    }
+                    n = ((u32)(pr - n)) >> 2;
+                }
+                while (n) {
+                    u32 v = *(u32*)sn;
+                    if ((v - 0x01010101) & (~v) & 0x80808080UL) {
+                        goto lchk;
+                    }
+                    sn += 4;
+                    --n;
+                }
+                goto lchk;
+            ld:
+
                 // get the length, limited to desired precision
                 // always limit to ~0u chars since our counts are 32b
-                l       = stbsp_impl_strlen_limited(s, (pr >= 0) ? pr : ~0u);
+                l = (u32)(sn - s);
+                if (l > (u32)pr) {
+                    l = pr;
+                }
+
                 lead[0] = 0;
                 tail[0] = 0;
                 pr      = 0;
@@ -422,8 +423,29 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                 cs      = 0;
                 // copy the string in
                 goto scopy;
+            }
 
-            case 'c':  // char
+                // // @NOTE: Presheaf type addition.
+                // // psh::StringView
+                // case 'S': {
+                //     psh::StringView string = va_arg(va, psh::StringView);
+                //
+                //     // Get string length.
+                //     s  = (char*)string.buf;
+                //     sn = (char const*)(string.buf + string.count);
+                //     l  = string.count;
+                //
+                //     // Clamp to precision.
+                //     lead[0] = 0;
+                //     tail[0] = 0;
+                //     pr      = 0;
+                //     dp      = 0;
+                //     cs      = 0;
+                //
+                //     goto scopy;
+                //     }
+
+            case 'c': {  // char
                 // get the character
                 s       = num + STBSP_IMPL_NUMSZ - 1;
                 *s      = (char)va_arg(va, i32);
@@ -434,7 +456,7 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                 dp      = 0;
                 cs      = 0;
                 goto scopy;
-
+            }
             // weird write-bytes specifier
             case 'n': {
                 i32* d = va_arg(va, i32*);
@@ -442,8 +464,8 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                 break;
             }
 
-            case 'A':  // hex f32
-            case 'a':  // hex f32
+            case 'A': PSH_FALLTHROUGH;  // hex f32
+            case 'a': {                 // hex f32
                 h  = (f[0] == 'A') ? hexu : hex;
                 fv = va_arg(va, f64);
 
@@ -524,9 +546,9 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                 s  = num + 64;
                 cs = 1 + (3 << 24);
                 goto scopy;
-
-            case 'G':  // f32
-            case 'g':  // f32
+            }
+            case 'G': PSH_FALLTHROUGH;  // f32
+            case 'g': {                 // f32
                 h  = (f[0] == 'G') ? hexu : hex;
                 fv = va_arg(va, f64);
                 if (pr == -1) {
@@ -566,9 +588,9 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                     pr = -dp + ((pr > (i32)l) ? (i32)l : pr);
                 }
                 goto dof32fromg;
-
-            case 'E':  // f32
-            case 'e':  // f32
+            }
+            case 'E': PSH_FALLTHROUGH;  // f32
+            case 'e': {                 // f32
                 h  = (f[0] == 'E') ? hexu : hex;
                 fv = va_arg(va, f64);
 
@@ -635,8 +657,8 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                 }
                 cs = 1 + (3 << 24);  // how many tens
                 goto flt_lead;
-
-            case 'f':  // f32
+            }
+            case 'f': {  // f32
                 fv = va_arg(va, f64);
             doaf32:
                 // do kilos
@@ -832,16 +854,16 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                             tail[0] = idx;
                         }
                     }
-                };
+                }
 
             flt_lead:
                 // get the length that we copied
                 l = (u32)(s - (num + 64));
                 s = num + 64;
                 goto scopy;
-
-            case 'B':  // upper binary
-            case 'b':  // lower binary
+            }
+            case 'B': PSH_FALLTHROUGH;  // upper binary
+            case 'b': {                 // lower binary
                 h       = (f[0] == 'B') ? hexu : hex;
                 lead[0] = 0;
                 if (fl & STBSP_IMPL_LEADING_0X) {
@@ -851,8 +873,8 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                 }
                 l = (8 << 4) | (1 << 8);
                 goto radixnum;
-
-            case 'o':  // octal
+            }
+            case 'o': {  // octal
                 h       = hexu;
                 lead[0] = 0;
                 if (fl & STBSP_IMPL_LEADING_0X) {
@@ -861,15 +883,16 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                 }
                 l = (3 << 4) | (3 << 8);
                 goto radixnum;
-
-            case 'p':  // pointer
+            }
+            case 'p': {  // pointer
                 fl |= (psh_usize_of(void*) == 8) ? STBSP_IMPL_INTMAX : 0;
                 pr = psh_usize_of(void*) * 2;
                 fl &= ~STBSP_IMPL_LEADINGZERO;  // 'p' only prints the pointer with zeros
-                                                // fall through - to X
 
-            case 'X':                           // upper hex
-            case 'x':                           // lower hex
+                PSH_FALLTHROUGH;
+            }
+            case 'X': PSH_FALLTHROUGH;  // upper hex
+            case 'x': {                 // lower hex
                 h       = (f[0] == 'X') ? hexu : hex;
                 l       = (4 << 4) | (4 << 8);
                 lead[0] = 0;
@@ -914,17 +937,17 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                             *s = STBSP_IMPL_COMMA;
                         }
                     }
-                };
+                }
                 // get the tens and the comma pos
                 cs = (u32)((num + STBSP_IMPL_NUMSZ) - s) + ((((l >> 4) & 15)) << 24);
                 // get the length that we copied
                 l  = (u32)((num + STBSP_IMPL_NUMSZ) - s);
                 // copy it
                 goto scopy;
-
-            case 'u':  // unsigned
-            case 'i':
-            case 'd':  // integer
+            }
+            case 'u': PSH_FALLTHROUGH;  // unsigned integer
+            case 'i': PSH_FALLTHROUGH;  // signed integer
+            case 'd': {                 // signed integer
                 // get the integer and abs it
                 if (fl & STBSP_IMPL_INTMAX) {
                     i64 i = va_arg(va, i64);
@@ -969,7 +992,7 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                     if ((fl & STBSP_IMPL_TRIPLET_COMMA) == 0) {
                         do {
                             s -= 2;
-                            *(u16*)s = *(u16*)&stbsp_impl_digitpair.pair[(n % 100) * 2];
+                            *(u16*)s = *(u16*)&STBSP_IMPL_DIGITPAIR.pair[(n % 100) * 2];
                             n /= 100;
                         } while (n);
                     }
@@ -1044,10 +1067,9 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
 
                 // copy the spaces and/or zeros
                 if (fw + pr) {
+                    // copy leading spaces (or when doing %8.4d stuff)
                     i32 i;
                     u32 c;
-
-                    // copy leading spaces (or when doing %8.4d stuff)
                     if ((fl & STBSP_IMPL_LEFTJUST) == 0) {
                         while (fw > 0) {
                             stbsp_impl_cb_buf_clamp(i, fw);
@@ -1234,8 +1256,8 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                     }
                 }
                 break;
-
-            default:  // unknown, just copy code
+            }
+            default: {  // unknown, just copy code
                 s  = num + STBSP_IMPL_NUMSZ - 1;
                 *s = f[0];
                 l  = 1;
@@ -1246,6 +1268,7 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsprintfcb)(
                 dp      = 0;
                 cs      = 0;
                 goto scopy;
+            }
         }
         ++f;
     }
@@ -1265,11 +1288,11 @@ done:
 // Wrapper functions.
 // -------------------------------------------------------------------------------------------------
 
-extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(sprintf)(char* buf, cstring fmt, ...) {
+psh_attribute_disable_asan i32 psh_stbsp_sprintf(char* buf, cstring fmt, ...) {
     i32     result;
     va_list va;
     va_start(va, fmt);
-    result = STB_SPRINTF_DECORATE(vsprintfcb)(0, 0, buf, fmt, va);
+    result = psh_stbsp_impl_vsprintfcb(nullptr, nullptr, buf, fmt, va);
     va_end(va);
     return result;
 }
@@ -1320,26 +1343,22 @@ psh_internal char* stbsp_impl_count_clamp_callback(cstring buf, void* user, i32 
     return c->tmp;  // go direct into buffer if you can
 }
 
-extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsnprintf)(char* buf, i32 count, cstring fmt, va_list va) {
+psh_attribute_disable_asan i32 psh_stbsp_vsnprintf(char* buf, i32 count, cstring fmt, va_list va) {
     stbsp_impl_context c;
 
     if ((count == 0) && !buf) {
         c.length = 0;
 
-        STB_SPRINTF_DECORATE(vsprintfcb)
-        (stbsp_impl_count_clamp_callback, &c, c.tmp, fmt, va);
+        psh_stbsp_impl_vsprintfcb(stbsp_impl_count_clamp_callback, &c, c.tmp, fmt, va);
     } else {
-        i32 l;
-
         c.buf    = buf;
         c.count  = count;
         c.length = 0;
 
-        STB_SPRINTF_DECORATE(vsprintfcb)
-        (stbsp_impl_clamp_callback, &c, stbsp_impl_clamp_callback(0, &c, 0), fmt, va);
+        psh_stbsp_impl_vsprintfcb(stbsp_impl_clamp_callback, &c, stbsp_impl_clamp_callback(nullptr, &c, 0), fmt, va);
 
         // zero-terminate
-        l = (i32)(c.buf - buf);
+        i32 l = (i32)(c.buf - buf);
         if (l >= count) {
             // should never be greater, only equal (or less) than count
             l = count - 1;
@@ -1350,14 +1369,13 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(vsnprintf)(char* buf, 
     return c.length;
 }
 
-extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(snprintf)(char* buf, i32 count, cstring fmt, ...) {
-    i32     result;
+psh_attribute_disable_asan i32 psh_stbsp_snprintf(char* buf, i32 count, cstring fmt, ...) {
     va_list va;
     va_start(va, fmt);
 
-    result = STB_SPRINTF_DECORATE(vsnprintf)(buf, count, fmt, va);
-    va_end(va);
+    i32 result = psh_stbsp_vsnprintf(buf, count, fmt, va);
 
+    va_end(va);
     return result;
 }
 
@@ -1366,12 +1384,12 @@ extern "C" psh_attr_disable_asan i32 STB_SPRINTF_DECORATE(snprintf)(char* buf, i
 // -------------------------------------------------------------------------------------------------
 
 // copies d to bits w/ strict aliasing (this compiles to nothing on /Ox)
-#define STBSP_IMPL_COPYFP(dest, src)                \
-    {                                               \
-        for (i32 cn = 0; cn < 8; cn++) {            \
-            ((char*)&dest)[cn] = ((char*)&src)[cn]; \
-        }                                           \
-    }
+#    define STBSP_IMPL_COPYFP(dest, src)                \
+        do {                                            \
+            for (i32 cn = 0; cn < 8; ++cn) {            \
+                ((char*)&dest)[cn] = ((char*)&src)[cn]; \
+            }                                           \
+        } while (0)
 
 // get f32 info
 psh_internal i32 stbsp_impl_real_to_parts(i64* bits, i32* expo, f64 value) {
@@ -1540,53 +1558,53 @@ psh_internal constexpr u64 stbsp_impl_powten[20] = {
     10000000000000,
     100000000000000,
     1000000000000000,
-    10000000000000000,
-    100000000000000000,
-    1000000000000000000,
-    10000000000000000000,
+    10000000000000000ull,
+    100000000000000000ull,
+    1000000000000000000ull,
+    10000000000000000000ull,
 };
 psh_internal constexpr u64 stbsp_impl_tento19th = 1000000000000000000;
 
-#define stbsp_impl_ddmulthi(oh, ol, xh, yh)                           \
-    do {                                                              \
-        f64 ahi = 0, alo, bhi = 0, blo;                               \
-        i64 bt;                                                       \
-        oh = xh * yh;                                                 \
-        STBSP_IMPL_COPYFP(bt, xh);                                    \
-        bt &= ((~(u64)0) << 27);                                      \
-        STBSP_IMPL_COPYFP(ahi, bt);                                   \
-        alo = xh - ahi;                                               \
-        STBSP_IMPL_COPYFP(bt, yh);                                    \
-        bt &= ((~(u64)0) << 27);                                      \
-        STBSP_IMPL_COPYFP(bhi, bt);                                   \
-        blo = yh - bhi;                                               \
-        ol  = ((ahi * bhi - oh) + ahi * blo + alo * bhi) + alo * blo; \
-    } while (0)
-#define stbsp_impl_ddtoS64(ob, xh, xl)         \
-    do {                                       \
-        f64 ahi = 0, alo, vh, t;               \
-        ob      = (i64)xh;                     \
-        vh      = (f64)ob;                     \
-        ahi     = (xh - vh);                   \
-        t       = (ahi - xh);                  \
-        alo     = (xh - (ahi - t)) - (vh + t); \
-        ob += (i64)(ahi + alo + xl);           \
-    } while (0)
-#define stbsp_impl_ddrenorm(oh, ol) \
-    do {                            \
-        f64 s;                      \
-        s  = oh + ol;               \
-        ol = ol - (s - oh);         \
-        oh = s;                     \
-    } while (0)
-#define stbsp_impl_ddmultlo(oh, ol, xh, xl, yh, yl) \
-    do {                                            \
-        ol = ol + (xh * yl + xl * yh);              \
-    } while (0)
-#define stbsp_impl_ddmultlos(oh, ol, xh, yl) \
-    do {                                     \
-        ol = ol + (xh * yl);                 \
-    } while (0)
+#    define stbsp_impl_ddmulthi(oh, ol, xh, yh)                               \
+        do {                                                                  \
+            oh = xh * yh;                                                     \
+            i64 bt;                                                           \
+            STBSP_IMPL_COPYFP(bt, xh);                                        \
+            bt &= ((~(u64)0) << 27);                                          \
+            f64 ahi = 0;                                                      \
+            STBSP_IMPL_COPYFP(ahi, bt);                                       \
+            f64 alo = xh - ahi;                                               \
+            STBSP_IMPL_COPYFP(bt, yh);                                        \
+            bt &= ((~(u64)0) << 27);                                          \
+            f64 bhi = 0;                                                      \
+            STBSP_IMPL_COPYFP(bhi, bt);                                       \
+            f64 blo = yh - bhi;                                               \
+            ol      = ((ahi * bhi - oh) + ahi * blo + alo * bhi) + alo * blo; \
+        } while (0)
+#    define stbsp_impl_ddtoS64(ob, xh, xl)         \
+        do {                                       \
+            f64 ahi = 0;                           \
+            ob      = (i64)xh;                     \
+            f64 vh  = (f64)ob;                     \
+            ahi     = (xh - vh);                   \
+            f64 t   = (ahi - xh);                  \
+            f64 alo = (xh - (ahi - t)) - (vh + t); \
+            ob += (i64)(ahi + alo + xl);           \
+        } while (0)
+#    define stbsp_impl_ddrenorm(oh, ol) \
+        do {                            \
+            f64 s = oh + ol;            \
+            ol    = ol - (s - oh);      \
+            oh    = s;                  \
+        } while (0)
+#    define stbsp_impl_ddmultlo(oh, ol, xh, xl, yh, yl) \
+        do {                                            \
+            ol = ol + (xh * yl + xl * yh);              \
+        } while (0)
+#    define stbsp_impl_ddmultlos(oh, ol, xh, yl) \
+        do {                                     \
+            ol = ol + (xh * yl);                 \
+        } while (0)
 
 psh_internal void stbsp_impl_raise_to_power10(f64* ohi, f64* olo, f64 d, i32 power)  // power can be -323 to +350
 {
@@ -1601,7 +1619,7 @@ psh_internal void stbsp_impl_raise_to_power10(f64* ohi, f64* olo, f64 d, i32 pow
         if (power < 0) {
             e = -e;
         }
-        et = (e * 0x2c9) >> 14; /* %23 */
+        et = (e * 0x2c9) >> 14;  // %23
         if (et > 13) {
             et = 13;
         }
@@ -1665,14 +1683,11 @@ psh_internal i32 stbsp_impl_real_to_str(
     i32*     decimal_pos,
     f64      value,
     u32      frac_digits) {
-    f64 d;
+    f64 d    = value;
     i64 bits = 0;
-    i32 expo, e, ng, tens;
-
-    d = value;
     STBSP_IMPL_COPYFP(bits, d);
-    expo = (i32)((bits >> 52) & 2047);
-    ng   = (i32)((u64)bits >> 63);
+    i32 expo = (i32)((bits >> 52) & 2047);
+    i32 ng   = (i32)((u64)bits >> 63);
     if (ng) {
         d = -d;
     }
@@ -1706,15 +1721,14 @@ psh_internal i32 stbsp_impl_real_to_str(
     }
 
     // find the decimal exponent as well as the decimal bits of the value
+    i32 tens, e;
     {
-        f64 ph;
-        f64 pl;
-
         // log10 estimate - very specifically tweaked to hit or undershoot by no more than 1 of log10 of all expos 1..2046
         tens = expo - 1023;
         tens = (tens < 0) ? ((tens * 617) / 2048) : (((tens * 1233) / 4096) + 1);
 
         // move the significant bits into position and stick them into an int
+        f64 ph, pl;
         stbsp_impl_raise_to_power10(&ph, &pl, d, 18 - tens);
 
         // get full as much precision from f64-f64 as possible
@@ -1740,14 +1754,13 @@ psh_internal i32 stbsp_impl_real_to_str(
             }
         }
         if (frac_digits < dg) {
-            u64 r;
             // add 0.5 at the right position and round
             e = dg - frac_digits;
             if ((u32)e >= 24) {
                 goto noround;
             }
-            r    = stbsp_impl_powten[e];
-            bits = bits + (r / 2);
+            u64 r = stbsp_impl_powten[e];
+            bits  = bits + (r / 2);
             if ((u64)bits >= stbsp_impl_powten[dg]) {
                 ++tens;
             }
@@ -1792,7 +1805,7 @@ psh_internal i32 stbsp_impl_real_to_str(
         }
         while (n) {
             out -= 2;
-            *(u16*)out = *(u16*)&stbsp_impl_digitpair.pair[(n % 100) * 2];
+            *(u16*)out = *(u16*)&STBSP_IMPL_DIGITPAIR.pair[(n % 100) * 2];
             n /= 100;
             e += 2;
         }
@@ -1816,6 +1829,8 @@ psh_internal i32 stbsp_impl_real_to_str(
     return ng;
 }
 
-#if defined(PSH_COMPILER_CLANG)
-#    pragma clang diagnostic pop
-#endif
+#    if defined(PSH_COMPILER_CLANG)
+#        pragma clang diagnostic pop
+#    endif
+
+#endif  // PSH_ENABLE_USE_STB_SPRINTF

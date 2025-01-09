@@ -49,7 +49,7 @@ namespace psh::test::algorithms {
         // Already sorted.
         {
             Buffer<f32, 9> buf  = {1.0f, 1.2f, 3.0f, 3.3f, 3.3f, 99.04f, 100.0f, 155.56f, 779.189f};
-            FatPtr<f32>    fptr = psh::make_fat_ptr(buf);
+            FatPtr<f32>    fptr = psh::make_fat_ptr(&buf);
 
             psh::insertion_sort(fptr);
             psh_assert(test_sort(fptr));
@@ -58,7 +58,7 @@ namespace psh::test::algorithms {
         // Reverse sorted.
         {
             Buffer<f32, 12> buf  = {779.189f, 155.56f, 100.0f, 99.04f, 3.3f, 3.3f, 3.0f, 1.2f, 1.0f, -3.56f, -60.005f};
-            FatPtr<f32>     fptr = psh::make_fat_ptr(buf);
+            FatPtr<f32>     fptr = psh::make_fat_ptr(&buf);
 
             psh::insertion_sort(fptr);
             psh_assert(test_sort(fptr));
@@ -67,7 +67,7 @@ namespace psh::test::algorithms {
         // Random.
         {
             Buffer<int32_t, 256> buf;
-            FatPtr<i32>          fptr = psh::make_fat_ptr(buf);
+            FatPtr<i32>          fptr = psh::make_fat_ptr(&buf);
             for (u32 iter = 0; iter < 20u; ++iter) {
                 for (i32& v : buf) {
                     v = rand();
@@ -84,7 +84,7 @@ namespace psh::test::algorithms {
         // Already sorted.
         {
             Buffer<f32, 9> buf  = {1.0f, 1.2f, 3.0f, 3.3f, 3.3f, 99.04f, 100.0f, 155.56f, 779.189f};
-            FatPtr<f32>    fptr = psh::make_fat_ptr(buf);
+            FatPtr<f32>    fptr = psh::make_fat_ptr(&buf);
 
             psh::quick_sort(fptr);
             psh_assert(test_sort(fptr));
@@ -93,7 +93,7 @@ namespace psh::test::algorithms {
         // Reverse sorted.
         {
             Buffer<f32, 12> buf  = {779.189f, 155.56f, 100.0f, 99.04f, 3.3f, 3.3f, 3.0f, 1.2f, 1.0f, -3.56f, -60.005f};
-            FatPtr<f32>     fptr = psh::make_fat_ptr(buf);
+            FatPtr<f32>     fptr = psh::make_fat_ptr(&buf);
 
             psh::quick_sort(fptr);
             psh_assert(test_sort(fptr));
@@ -102,7 +102,7 @@ namespace psh::test::algorithms {
         // Random.
         {
             Buffer<int32_t, 256> buf;
-            FatPtr<i32>          fptr = psh::make_fat_ptr(buf);
+            FatPtr<i32>          fptr = psh::make_fat_ptr(&buf);
             for (u32 iter = 0; iter < 20u; ++iter) {
                 for (i32& v : buf) {
                     v = rand();
@@ -119,7 +119,7 @@ namespace psh::test::algorithms {
         // Default matcher.
         {
             Buffer<i64, 10>   buf  = {-192381, -281937123, 123, 0, 3, 90, 23198237, 127391723, 123769128, 5};
-            FatPtr<i64 const> fptr = make_const_fat_ptr(buf);
+            FatPtr<i64 const> fptr = make_const_fat_ptr(&buf);
 
             // Check exact buffer elements.
             psh_assert(psh::contains(fptr, static_cast<i64>(-192381)));
@@ -144,7 +144,7 @@ namespace psh::test::algorithms {
         // Custom function.
         {
             Buffer<Fraction, 4>    buf  = {Fraction{3, 3}, Fraction{12, 3}, Fraction{2, 4}, Fraction{60, 8}};
-            FatPtr<Fraction const> fptr = make_const_fat_ptr(buf);
+            FatPtr<Fraction const> fptr = make_const_fat_ptr(&buf);
 
             // Check the exact fractions in buf.
             psh_assert(psh::contains(fptr, Fraction{3, 3}, equal_fractions));
@@ -174,7 +174,7 @@ namespace psh::test::algorithms {
         // Default matcher.
         {
             Buffer<u64, 11>   buf  = {192381, 281937123, 123, 0, 0, 3, 90, 23198237, 127391723, 123769128, 5};
-            FatPtr<u64 const> fptr = make_const_fat_ptr(buf);
+            FatPtr<u64 const> fptr = make_const_fat_ptr(&buf);
 
             // Exact elements.
             psh_assert(psh::linear_search(fptr, static_cast<u64>(192381)) == 0);
@@ -198,7 +198,7 @@ namespace psh::test::algorithms {
         // Custom function.
         {
             Buffer<Fraction, 4>    buf  = {Fraction{3, 3}, Fraction{12, 3}, Fraction{2, 4}, Fraction{60, 8}};
-            FatPtr<Fraction const> fptr = make_const_fat_ptr(buf);
+            FatPtr<Fraction const> fptr = make_const_fat_ptr(&buf);
 
             // Check the exact fractions in buf.
             psh_assert(psh::linear_search(fptr, Fraction{3, 3}, equal_fractions) == 0);
@@ -227,7 +227,7 @@ namespace psh::test::algorithms {
         // Basic test.
         {
             Buffer<i64, 10>   buf  = {-12837, -123, -72, -1, 0, 0, 19, 192381, 281937123, 55518237198};
-            FatPtr<i64 const> fptr = make_const_fat_ptr(buf);
+            FatPtr<i64 const> fptr = make_const_fat_ptr(&buf);
 
             // Exact elements.
             psh_assert(psh::binary_search(fptr, static_cast<i64>(-12837)) == 0);
@@ -250,7 +250,7 @@ namespace psh::test::algorithms {
         // Basic test.
         {
             Buffer<i32, 6>    buf  = {3, 3, 3, 4, 5, 9};
-            FatPtr<i32 const> fptr = make_const_fat_ptr(buf);
+            FatPtr<i32 const> fptr = make_const_fat_ptr(&buf);
 
             // Exact elements.
             psh_assert(psh::binary_search(fptr, static_cast<i32>(4)) == 3);
@@ -263,10 +263,10 @@ namespace psh::test::algorithms {
                 for (i32& v : buf) {
                     v = rand();
                 }
-                psh::quick_sort(make_fat_ptr(buf));
+                psh::quick_sort(make_fat_ptr(&buf));
 
                 for (i32 v : buf) {
-                    psh_assert(psh::binary_search(make_const_fat_ptr(buf), v) != -1);
+                    psh_assert(psh::binary_search(make_const_fat_ptr(&buf), v) != -1);
                 }
             }
         }

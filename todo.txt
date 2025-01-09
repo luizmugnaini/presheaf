@@ -1,5 +1,6 @@
 TODO
 
+- Make the library 100% procedural. Remove all methods.
 - StringView -> String.
 - Use isize for counts and indices. Check if idx >= 0 in the bounds checking.
 - String -> DynString.
