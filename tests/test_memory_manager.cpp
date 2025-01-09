@@ -107,7 +107,7 @@ namespace psh::test::memory_manager {
         // where "hdr" stands for the associated StackAllocHeader instance.
 
         Arena arena;
-        arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_data_size), arena_data_size);
+        init_arena(&arena, memory_alloc<u8>(&memory_manager, arena_data_size), arena_data_size);
         usize used = memory_manager.allocator.offset;
         psh_assert(used == expected_arena);
         psh_assert(memory_manager.allocation_count == 1);
@@ -119,7 +119,7 @@ namespace psh::test::memory_manager {
         psh_assert(memory_manager.allocation_count == 2);
 
         DynamicArray<usize> b;
-        dynamic_array_init(&b, &arena, 33);
+        init_dynamic_array(&b, &arena, 33);
         psh_discard_value(b);
         constexpr usize b_size = sizeof(usize) * 33;
         // The manager shouldn't have a bump in its usage.
@@ -135,7 +135,7 @@ namespace psh::test::memory_manager {
         psh_assert(memory_manager.allocation_count == 3);
 
         DynamicArray<f32> d;
-        dynamic_array_init(&d, &arena, 45);
+        init_dynamic_array(&d, &arena, 45);
         psh_discard_value(d);
         constexpr usize d_size = sizeof(f32) * 45;
         // Expect no change in the manager.

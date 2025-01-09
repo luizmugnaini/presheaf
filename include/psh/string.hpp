@@ -160,7 +160,7 @@ namespace psh {
 
     psh_api psh_inline String make_string(Arena* arena, StringView sv) psh_no_except {
         String string;
-        dynamic_array_init(&string, arena, sv.count + 1u);
+        init_dynamic_array(&string, arena, sv.count + 1u);
         string.count = sv.count;
 
         memory_copy(reinterpret_cast<u8*>(string.buf), reinterpret_cast<u8 const*>(sv.buf), sizeof(char) * sv.count);
