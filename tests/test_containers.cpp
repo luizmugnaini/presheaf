@@ -104,7 +104,7 @@ namespace psh::test::containers {
         Arena arena;
         {
             usize arena_capacity = sizeof(i32) * 1024;
-            arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
+            init_arena(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
         DynamicArray<i32> v = make_dynamic_array<i32>(&arena);
@@ -124,7 +124,7 @@ namespace psh::test::containers {
         Arena arena;
         {
             usize arena_capacity = sizeof(Foo) * 100;
-            arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
+            init_arena(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
         DynamicArray<Foo> v = make_dynamic_array<Foo>(&arena);
@@ -155,7 +155,7 @@ namespace psh::test::containers {
         Arena arena;
         {
             usize arena_capacity = sizeof(i32) * 3;
-            arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
+            init_arena(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
         DynamicArray<i32> v = make_dynamic_array<i32>(&arena, 3);
@@ -196,7 +196,7 @@ namespace psh::test::containers {
         Arena arena;
         {
             usize arena_capacity = sizeof(i32) * 5;
-            arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
+            init_arena(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
         DynamicArray<i32> v = make_dynamic_array<i32>(&arena, 5);
@@ -267,7 +267,7 @@ namespace psh::test::containers {
         Arena arena;
         {
             usize arena_capacity = sizeof(f32) * 4;
-            arena_init(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
+            init_arena(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
         DynamicArray<f32> v = make_dynamic_array<f32>(&arena, 4);

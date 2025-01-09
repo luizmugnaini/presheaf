@@ -152,7 +152,7 @@ namespace psh {
     }
 
     /// initialise the arena with a given memory buffer and a capacity.
-    psh_inline void arena_init(Arena* arena, u8* buf, usize capacity) psh_no_except {
+    psh_inline void init_arena(Arena* arena, u8* buf, usize capacity) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(arena));
         arena->buf      = buf;
         arena->capacity = (buf != nullptr) ? capacity : 0;
@@ -619,7 +619,7 @@ namespace psh {
     }
 
     template <typename T>
-    psh_inline void array_init(Array<T>* array, Arena* arena, usize count) psh_no_except {
+    psh_inline void init_array(Array<T>* array, Arena* arena, usize count) psh_no_except {
         psh_paranoid_validate_usage({
             psh_assert_not_null(array);
             psh_assert_msg(array->count == 0, "Array already initialised.");
@@ -656,7 +656,7 @@ namespace psh {
     }
 
     template <typename T>
-    psh_inline void push_array_init(PushArray<T>* push_array, Arena* arena, usize max_count) psh_no_except {
+    psh_inline void init_push_array(PushArray<T>* push_array, Arena* arena, usize max_count) psh_no_except {
         psh_paranoid_validate_usage({
             psh_assert_not_null(push_array);
             psh_assert_msg(push_array->max_count == 0, "Already initialised.");
@@ -742,7 +742,7 @@ namespace psh {
 
     /// initialise the dynamic array with a given capacity.
     template <typename T>
-    psh_api psh_inline void dynamic_array_init(
+    psh_api psh_inline void init_dynamic_array(
         DynamicArray<T>* darray,
         Arena*           arena,
         usize            capacity = DYNARRAY_DEFAULT_INITIAL_CAPACITY) psh_no_except {

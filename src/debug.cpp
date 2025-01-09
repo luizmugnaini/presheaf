@@ -114,7 +114,7 @@ namespace psh::impl {
     void log_msg(LogInfo info, cstring msg) psh_no_except {
         Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
         {
-            int result_msg_length = psh_stbsp_snprintf(
+            i32 result_msg_length = psh_stbsp_snprintf(
                 result_msg.buf,
                 result_msg.count,
                 PSH_LOG_HEADER_FMT " %s\n",
@@ -128,13 +128,13 @@ namespace psh::impl {
                 return;
             }
         }
-        psh_discard_value(fprintf(stderr, "%s", result_msg.buf));
+        psh_discard_value(fprintf(stdout, "%s", result_msg.buf));
     }
 
     void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
         Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
         {
-            int header_length = psh_stbsp_snprintf(
+            i32 header_length = psh_stbsp_snprintf(
                 result_msg.buf,
                 PSH_LOG_HEADER_MAX_LENGTH,
                 PSH_LOG_HEADER_FMT,
@@ -174,7 +174,7 @@ namespace psh::impl {
             va_end(args);
         }
 
-        psh_discard_value(fprintf(stderr, "%s", result_msg.buf));
+        psh_discard_value(fprintf(stdout, "%s", result_msg.buf));
     }
 #    else   // PSH_ENABLE_USE_STB_SPRINTF
     void log_msg(LogInfo info, cstring msg) psh_no_except {
@@ -208,7 +208,7 @@ namespace psh::impl {
         va_end(args);
 
         psh_discard_value(fprintf(
-            stderr,
+            stdout,
             PSH_LOG_HEADER_FMT " %s\n",
             LOG_LEVEL_CSTRING[info.level],
             info.file_name,
