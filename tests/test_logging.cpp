@@ -25,6 +25,7 @@
 #include <psh/debug.hpp>
 #include "utils.hpp"
 
+// @TODO: can we programatically validate if the loggings are correct? Is it even worth it?
 namespace psh::test::logging {
     struct Foo {
         cstring var_cstring;
@@ -35,8 +36,12 @@ namespace psh::test::logging {
         char    var_char;
     };
 
-    psh_internal void run_all() {
+    psh_internal void printing_to_console() {
         psh_log_debug("Message logging works! Gandalf war right this whole time!");
+        report_test_successful();
+    }
+
+    psh_internal void formatted_printing() {
         Foo f = {
             .var_cstring = "test",
             .var_f64     = 12903710293.1823719,
@@ -58,6 +63,11 @@ namespace psh::test::logging {
             reinterpret_cast<void*>(&f));
 
         report_test_successful();
+    }
+
+    psh_internal void run_all() {
+        printing_to_console();
+        formatted_printing();
     }
 }  // namespace psh::test::logging
 

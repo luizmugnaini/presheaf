@@ -42,7 +42,7 @@ namespace psh::test::containers {
     }
 
     psh_internal void usage_push_buffer() {
-        PushBuffer<u32, 10> push_buffer;
+        PushBuffer<u32, 10>      push_buffer;
         constexpr Buffer<u32, 5> START = {1, 2, 3, 4, 5};
         push_buffer_push_many(&push_buffer, psh::make_const_fat_ptr(&START));
         {
@@ -73,8 +73,8 @@ namespace psh::test::containers {
         Arena arena = make_owned_arena(124);
         psh_defer(destroy_owned_arena(&arena));
 
-        PushArray<u32> push_array = make_push_array<u32>(&arena, 10);
-        constexpr Buffer<u32, 5> START = {1, 2, 3, 4, 5};
+        PushArray<u32>           push_array = make_push_array<u32>(&arena, 10);
+        constexpr Buffer<u32, 5> START      = {1, 2, 3, 4, 5};
         push_array_push_many(&push_array, psh::make_const_fat_ptr(&START));
         {
             psh_assert(push_array.max_count == 10);

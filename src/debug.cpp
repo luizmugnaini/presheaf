@@ -71,21 +71,21 @@ namespace psh {
 // If your logs are being truncated, you may have to tweak the parameters found in this section.
 // -------------------------------------------------------------------------------------------------
 
-#if !defined(PSH_LOG_MSG_MAX_LENGTH)
-#    define PSH_LOG_MSG_MAX_LENGTH 8192
-#endif
+#    if !defined(PSH_LOG_MSG_MAX_LENGTH)
+#        define PSH_LOG_MSG_MAX_LENGTH 8192
+#    endif
 
 /// The log header hast to have enough space to fit the log level string and the caller file name,
 /// line number, and function name.
-#if !defined(PSH_LOG_HEADER_MAX_LENGTH)
-#    define PSH_LOG_HEADER_MAX_LENGTH 128
-#endif
+#    if !defined(PSH_LOG_HEADER_MAX_LENGTH)
+#        define PSH_LOG_HEADER_MAX_LENGTH 128
+#    endif
 
 // -------------------------------------------------------------------------------------------------
 // Logging implementation.
 // -------------------------------------------------------------------------------------------------
 
-#define PSH_LOG_HEADER_FMT "%s [%s:%u:%s]"
+#    define PSH_LOG_HEADER_FMT "%s [%s:%u:%s]"
 
 namespace psh::impl {
     // @TODO:
