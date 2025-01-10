@@ -222,7 +222,7 @@ local compilers = {
         opt_no_link   = "-c",
         opt_out_obj   = "-o",
         opt_out_exe   = "-o",
-        flags_common  = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-pointer-arithmetic -Wnull-dereference -Wformat=2 -Wpointer-arith -Wno-unsafe-buffer-usage -Wno-switch-default -fno-rtti -fno-exceptions -Werror=implicit-function-declaration",
+        flags_common  = "-nostdlib++ -pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-pointer-arithmetic -Wnull-dereference -Wformat=2 -Wpointer-arith -Wno-unsafe-buffer-usage -Wno-switch-default -fno-rtti -fno-exceptions -Werror=implicit-function-declaration",
         flags_debug   = "-Werror -Wno-unused-variable -Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
         flags_release = "-Wunused -O2",
         ar            = "llvm-ar",
@@ -238,7 +238,7 @@ local compilers = {
         opt_no_link   = "-c",
         opt_out_obj   = "-o",
         opt_out_exe   = "-o",
-        flags_common  = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-dereference -Wformat=2 -fno-rtti -fno-exceptions",
+        flags_common  = "-nostdlib++ -pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-dereference -Wformat=2 -fno-rtti -fno-exceptions",
         flags_debug   = "-Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
         flags_release = "-O2",
         ar            = "ar",
@@ -281,6 +281,9 @@ local compilers = {
         ar_flags             = "/nologo",
     },
 }
+
+-- Linker flags for disabling linking against the C++ standard library.
+local linker_flags = os_info.windows and "/NODEFAULTLIB:libcpmt /NODEFAULTLIB:msvcprt" or "-nolibstd++"
 
 local presheaf = {
     src              = make_path({ root_dir, "src", "presheaf.cpp" }),
@@ -395,7 +398,13 @@ local function build_presheaf_lib(tc, custom_flags_)
 
         -- Archive objs into a library.
         local lib_out = make_path({ presheaf.out_dir, os_ext.lib_prefix .. presheaf.lib .. os_ext.lib })
-        exec(concat({ tc.ar, tc.ar_flags, tc.ar_out .. lib_out, obj_out }))
+        exec(concat({
+            tc.ar,
+            tc.ar_flags,
+            tc.ar_out .. lib_out,
+            obj_out,
+            linker_flags
+        }))
     end
 end
 
@@ -422,6 +431,8 @@ local function build_presheaf_tests(tc)
         out_obj_flag,
         tc.opt_out_exe .. test_exe_out,
         presheaf.test_src,
+        tc.opt_link_flags_start,
+        linker_flags,
     }))
     return test_exe_out
 end
