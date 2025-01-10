@@ -397,6 +397,10 @@ namespace psh {
         return new_block;
     }
 
+    //
+    // @TODO: When asan is available, poison the non-allocated memory regions!!
+    //
+
     u8* memory_alloc_align(Stack* stack, usize size_bytes, u32 alignment) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(stack));
 

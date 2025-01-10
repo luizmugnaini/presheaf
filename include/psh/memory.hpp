@@ -564,7 +564,7 @@ namespace psh {
         psh_validate_usage(psh_assert_fmt(count < max_count, "The buffer of max count %zu is full.", max_count));
 
         push_buffer->buf[count] = element;
-        push_buffer->count = count + 1;
+        push_buffer->count      = count + 1;
     }
 
     template <typename T, usize max_count>
@@ -576,7 +576,7 @@ namespace psh {
             psh_assert_fmt(
                 count < max_count,
                 "The elements don't fit in the buffer of max count %zu: current count is %zu and you're trying to push %zu elements.",
-                max_count,
+                push_buffer->max_count,
                 count,
                 elements.count);
         });
@@ -585,6 +585,53 @@ namespace psh {
         push_buffer->count = count + elements.count;
     }
 
+    /// Effectively bump the element count by one and return the offset to the first new empty element.
+    ///
+    /// Note: This procedure won't cleanup the previous values (if any) in these new elements.
+    template <typename T, usize max_count>
+    psh_api psh_inline usize push_buffer_push_empty(PushBuffer<T, max_count>* push_buffer, usize empty_count = 1) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(push_buffer));
+
+        usize count = push_buffer->count;
+        psh_validate_usage({
+            psh_assert_fmt(
+                count + empty_count <= max_count,
+                "The elements don't fit in the buffer of max count %zu: current count is %zu and you're trying to push %zu elements.",
+                max_count,
+                count,
+                empty_count);
+        });
+
+        push_buffer->count = count + empty_count;
+        return count;
+    }
+
+    /// Effectively bump the element count by one and return the offset to the first new empty element.
+    ///
+    /// Note: This procedure won't create the default values of the underlying type, it will literally
+    ///       zero-out a whole region of memory.
+    template <typename T, usize max_count>
+    psh_api psh_inline usize push_buffer_push_zero(PushBuffer<T, max_count>* push_buffer, usize zeros_count = 1) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(push_buffer));
+
+        usize count = push_buffer->count;
+        psh_validate_usage({
+            psh_assert_fmt(
+                count + zeros_count <= max_count,
+                "The elements don't fit in the buffer of max count %zu: current count is %zu and you're trying to push %zu elements.",
+                max_count,
+                count,
+                zeros_count);
+        });
+
+        memory_set(reinterpret_cast<u8*>(push_buffer->buf + count), zeros_count * sizeof(T), 0);
+        push_buffer->count = count + zeros_count;
+        return count;
+    }
+
+    /// Remove elements from the end of the buffer.
+    ///
+    /// Note: This procedure won't call any destructors.
     template <typename T, usize max_count>
     psh_api psh_inline void push_buffer_pop(PushBuffer<T, max_count>* push_buffer, usize pop_count = 1) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(push_buffer));
@@ -678,7 +725,7 @@ namespace psh {
         psh_validate_usage(psh_assert_fmt(count < push_array->max_count, "The array of max count %zu is full.", push_array->max_count));
 
         push_array->buf[count] = element;
-        push_array->count = count + 1;
+        push_array->count      = count + 1;
     }
 
     template <typename T>
@@ -697,6 +744,50 @@ namespace psh {
 
         memory_copy(reinterpret_cast<u8*>(push_array->buf + count), reinterpret_cast<u8 const*>(elements.buf), size_bytes(&elements));
         push_array->count = count + elements.count;
+    }
+
+    /// Effectively bump the element count by one and return the offset to the first new empty element.
+    ///
+    /// Note: This procedure won't cleanup the previous values (if any) in these new elements.
+    template <typename T>
+    psh_api psh_inline usize push_array_push_empty(PushArray<T>* push_array, usize empty_count = 1) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(push_array));
+
+        usize count = push_array->count;
+        psh_validate_usage({
+            psh_assert_fmt(
+                count + empty_count <= push_array->max_count,
+                "The elements don't fit in the array of max count %zu: current count is %zu and you're trying to push %zu elements.",
+                push_array->max_count,
+                count,
+                empty_count);
+        });
+
+        push_array->count = count + empty_count;
+        return count;
+    }
+
+    /// Effectively bump the element count by one and return the offset to the first new empty element.
+    ///
+    /// Note: This procedure won't create the default values of the underlying type, it will literally
+    ///       zero-out a whole region of memory.
+    template <typename T>
+    psh_api psh_inline usize push_array_push_zero(PushArray<T>* push_array, usize zeros_count = 1) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(push_array));
+
+        usize count = push_array->count;
+        psh_validate_usage({
+            psh_assert_fmt(
+                count + zeros_count <= push_array->max_count,
+                "The elements don't fit in the array of max count %zu: current count is %zu and you're trying to push %zu elements.",
+                push_array->max_count,
+                count,
+                zeros_count);
+        });
+
+        memory_set(reinterpret_cast<u8*>(push_array->buf + count), zeros_count * sizeof(T), 0);
+        push_array->count = count + zeros_count;
+        return count;
     }
 
     template <typename T>
