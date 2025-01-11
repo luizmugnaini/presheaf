@@ -288,7 +288,7 @@ local linker_flags = os_info.windows and "/NODEFAULTLIB:libcpmt /NODEFAULTLIB:li
 local presheaf = {
     src              = make_path({ root_dir, "src", "presheaf.cpp" }),
     test_src         = make_path({ root_dir, "tests", "test_presheaf.cpp" }),
-    include_dir      = make_path({ root_dir, "include" }),
+    include_dir      = make_path({ root_dir, "src" }),
     dll_build_define = "PSH_BUILD_DLL",
     debug_defines    = { "PSH_ENABLE_DEBUG" },
     test_defines     = { "PSH_ENABLE_DEBUG", "PSH_ENABLE_PARANOID_USAGE_VALIDATION", "PSH_ENABLE_ANSI_COLOURS" },
@@ -330,8 +330,8 @@ local function format_source_files()
     log_info("Formatting source files...")
     exec(concat({
         "clang-format -i",
-        make_path({ root_dir, "include", "psh", "*.hpp" }),
         make_path({ root_dir, "src", "*.cpp" }),
+        make_path({ root_dir, "src", "*.hpp" }),
         make_path({ root_dir, "tests", "*.hpp" }),
         make_path({ root_dir, "tests", "*.cpp" }),
     }))

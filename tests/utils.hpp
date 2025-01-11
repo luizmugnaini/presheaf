@@ -25,8 +25,8 @@
 #pragma once
 
 #include <stdio.h>
-#include <psh/core.hpp>
-#include <psh/debug.hpp>
+#include <psh_core.hpp>
+#include <psh_debug.hpp>
 
 #if PSH_ENABLE_ANSI_COLOURS
 #    define TEST_REPORT_HEADER "\x1b[1;32m[PASSED]\x1b[0m: "

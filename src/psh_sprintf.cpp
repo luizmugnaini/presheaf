@@ -44,10 +44,10 @@
 
 #if PSH_ENABLE_USE_STB_SPRINTF
 
-#    include <psh/core.hpp>
-#    include <psh/sprintf.hpp>
+#    include "psh_sprintf.hpp"
+#    include "psh_core.hpp"
 
-#    if defined(PSH_COMPILER_CLANG)
+#    if PSH_COMPILER_CLANG
 #        pragma clang diagnostic push
 #        pragma clang diagnostic ignored "-Wcast-align"
 #        pragma clang diagnostic ignored "-Wcast-qual"
@@ -1829,7 +1829,7 @@ psh_internal i32 stbsp_impl_real_to_str(
     return ng;
 }
 
-#    if defined(PSH_COMPILER_CLANG)
+#    if PSH_COMPILER_CLANG
 #        pragma clang diagnostic pop
 #    endif
 

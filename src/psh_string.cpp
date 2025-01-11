@@ -22,10 +22,10 @@
 /// Description: Implementation of the string related types and utility functions.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/string.hpp>
+#include "psh_string.hpp"
 
 #include <string.h>
-#include <psh/memory.hpp>
+#include "psh_memory.hpp"
 
 namespace psh {
     psh_proc usize cstring_length(cstring str) psh_no_except {

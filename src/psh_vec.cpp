@@ -22,7 +22,7 @@
 /// Description: Implementation of vector types.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/vec.hpp>
+#include "psh_vec.hpp"
 
 #include <math.h>
 

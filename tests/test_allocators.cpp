@@ -23,7 +23,7 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #include <stdlib.h>
-#include <psh/memory.hpp>
+#include <psh_memory.hpp>
 #include "utils.hpp"
 
 namespace psh::test::allocators {

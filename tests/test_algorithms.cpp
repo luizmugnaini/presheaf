@@ -23,7 +23,7 @@
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #include <stdlib.h>  // For rand.
-#include <psh/algorithms.hpp>
+#include <psh_algorithms.hpp>
 #include "utils.hpp"
 
 namespace psh::test::algorithms {

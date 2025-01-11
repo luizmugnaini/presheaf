@@ -26,8 +26,8 @@
 #pragma once
 
 #include <math.h>
-#include <psh/core.hpp>
-#include <psh/math.hpp>
+#include "psh_core.hpp"
+#include "psh_math.hpp"
 
 namespace psh {
     // @TODO: I should write all of the code below with SIMD support...

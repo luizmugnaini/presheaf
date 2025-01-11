@@ -19,20 +19,22 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: System time interface.
+/// Description: Single header containing all other library header files.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
 #pragma once
 
-#include <psh/core.hpp>
-
-namespace psh {
-    psh_proc f64 current_time_in_seconds() psh_no_except;
-
-    /// Suspend the current thread by a certain number of milliseconds.
-    ///
-    /// The timeout parameter is just a hint for the OS, there is no guarantee that the thread
-    /// will sleep for this exact amout of time. It may either sleep more or even less than the
-    /// given number of miliseconds.
-    psh_proc void sleep_milliseconds(f64 ms) psh_no_except;
-}  // namespace psh
+// clang-format off
+#include "psh_core.hpp"
+#include "psh_math.hpp"
+#include "psh_time.hpp"
+#include "psh_vec.hpp"
+#include "psh_sprintf.hpp"
+#include "psh_streams.hpp"
+#include "psh_debug.hpp"
+#include "psh_memory.hpp"
+#include "psh_string.hpp"
+#include "psh_repr.hpp"
+#include "psh_bit.hpp"
+#include "psh_defer.hpp"
+// clang-format on

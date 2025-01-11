@@ -24,8 +24,8 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <psh/memory.hpp>
-#include <psh/string.hpp>
+#include <psh_memory.hpp>
+#include <psh_string.hpp>
 #include "utils.hpp"
 
 namespace psh::test::string {

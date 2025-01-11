@@ -25,8 +25,8 @@
 #pragma once
 
 #include <stdarg.h>
-#include <psh/core.hpp>
-#include <psh/memory.hpp>
+#include "psh_core.hpp"
+#include "psh_memory.hpp"
 
 // -------------------------------------------------------------------------------------------------
 // Compile-time string type construction macros.

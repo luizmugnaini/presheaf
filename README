@@ -31,7 +31,7 @@ compile as a unity build. This can be as simple as, e.g.:
                            llvm-ar rc libpresheaf.a presheaf.o
 
 Yet another ad-hoc solution would be to directly embed the library into your codebase using both of
-the bundle files src/presheaf.cpp and include/psh/presheaf.hpp, feel free to do as you wish.
+the bundle files src/presheaf.cpp and src/presheaf.hpp, feel free to do as you wish.
 
 Custom Build System
 -------------------
@@ -64,7 +64,7 @@ Integrating with another project
 
 Integrating the Presheaf library to your project is trivial, as said above you have two main options:
 
-a. Using the files src/presheaf.cpp and include/psh/presheaf.hpp, embed the library directly into
+a. Using the files src/presheaf.cpp and src/presheaf.hpp, embed the library directly into
    your codebase.
 b. Compile the libary separately from your project, then link to it later.
 
@@ -76,7 +76,7 @@ Library compile-time options
 
 The Presheaf library has many compile-time flags that you can use to tweak the behaviour of the,
 implementation, and enable/disable features. You can find all of these flags documented in the
-psh/core.hpp header file.
+src/psh_core.hpp header file.
 
 Documentation
 =============

@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include <psh/core.hpp>
-#include <psh/debug.hpp>
+#include "psh_core.hpp"
+#include "psh_debug.hpp"
 
 namespace psh {
     // -------------------------------------------------------------------------------------------------

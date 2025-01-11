@@ -22,7 +22,7 @@
 /// Description: Tests for number representation conversions utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/repr.hpp>
+#include <psh_repr.hpp>
 #include "utils.hpp"
 
 #include <stdlib.h>

@@ -22,12 +22,12 @@
 /// Description: Implementation of the utilities for memory-related operations.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/memory.hpp>
+#include "psh_memory.hpp"
 
 #include <string.h>
-#include <psh/core.hpp>
-#include <psh/debug.hpp>
-#include <psh/math.hpp>
+#include "psh_core.hpp"
+#include "psh_debug.hpp"
+#include "psh_math.hpp"
 
 #if PSH_OS_WINDOWS
 #    include <Windows.h>

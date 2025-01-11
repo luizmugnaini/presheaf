@@ -24,13 +24,13 @@
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
 // clang-format off
-#include <psh/presheaf.hpp>
+#include "presheaf.hpp"
 
-#include "sprintf.cpp"
-#include "time.cpp"
-#include "vec.cpp"
-#include "debug.cpp"
-#include "memory.cpp"
-#include "string.cpp"
-#include "streams.cpp"
+#include "psh_time.cpp"
+#include "psh_vec.cpp"
+#include "psh_sprintf.cpp"
+#include "psh_debug.cpp"
+#include "psh_memory.cpp"
+#include "psh_string.cpp"
+#include "psh_streams.cpp"
 // clang-format on
