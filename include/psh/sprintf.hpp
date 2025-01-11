@@ -160,9 +160,13 @@
 #    include <stdarg.h>
 #    include <psh/core.hpp>
 
-i32 psh_stbsp_vsprintf(char* buf, cstring fmt, va_list va);
-i32 psh_stbsp_vsnprintf(char* buf, i32 count, cstring fmt, va_list va);
-psh_attribute_fmt(2) i32 psh_stbsp_sprintf(char* buf, cstring fmt, ...);
-psh_attribute_fmt(3) i32 psh_stbsp_snprintf(char* buf, i32 count, cstring fmt, ...);
+// @TODO: 
+// - Put a psh_no_except in the stb_sprintf functions
+// - Put them in the psh namespace.
+
+psh_proc i32 psh_stbsp_vsprintf(char* buf, cstring fmt, va_list va);
+psh_proc i32 psh_stbsp_vsnprintf(char* buf, i32 count, cstring fmt, va_list va);
+psh_proc psh_attribute_fmt(2) i32 psh_stbsp_sprintf(char* buf, cstring fmt, ...);
+psh_proc psh_attribute_fmt(3) i32 psh_stbsp_snprintf(char* buf, i32 count, cstring fmt, ...);
 
 #endif  // PSH_ENABLE_USE_STB_SPRINTF

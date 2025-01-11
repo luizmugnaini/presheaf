@@ -27,10 +27,10 @@
 #include <stdio.h>
 #include <psh/core.hpp>
 
-#if defined(PSH_OS_WINDOWS)
+#if PSH_OS_WINDOWS
 #    include <Windows.h>
 #    define PSH_IMPL_PATH_MAX_CHAR_COUNT MAX_PATH
-#else
+#elif PSH_OS_UNIX
 #    include <limits.h>
 #    include <unistd.h>
 #    define PSH_IMPL_PATH_MAX_CHAR_COUNT PATH_MAX
@@ -40,7 +40,7 @@
 //       thread safe alternative to strerror.
 
 namespace psh::impl {
-    constexpr cstring OPEN_FILE_FLAG_TO_STR_MAP[OPEN_FILE_FLAG_COUNT] = {
+    psh_internal constexpr cstring OPEN_FILE_FLAG_TO_STR_MAP[OPEN_FILE_FLAG_COUNT] = {
         "r",    // OPEN_FILE_FLAG_READ_TEXT
         "r+",   // OPEN_FILE_FLAG_READ_TEXT_EXTENDED
         "rb",   // OPEN_FILE_FLAG_READ_BIN
@@ -50,7 +50,7 @@ namespace psh::impl {
         "a",    // OPEN_FILE_FLAG_APPEND
     };
 
-    constexpr bool has_read_permission(OpenFileFlag flag) psh_no_except {
+    psh_internal constexpr bool has_read_permission(OpenFileFlag flag) psh_no_except {
         return (flag == OPEN_FILE_FLAG_READ_TEXT)
                || (flag == OPEN_FILE_FLAG_READ_TEXT_EXTENDED)
                || (flag == OPEN_FILE_FLAG_READ_BIN)
@@ -60,7 +60,7 @@ namespace psh::impl {
 }  // namespace psh::impl
 
 namespace psh {
-    FileReadResult read_file(Arena* arena, cstring path, OpenFileFlag flag) psh_no_except {
+    psh_proc FileReadResult read_file(Arena* arena, cstring path, OpenFileFlag flag) psh_no_except {
         psh_validate_usage({
             psh_assert_not_null(arena);
             psh_assert_not_null(path);
@@ -70,9 +70,9 @@ namespace psh {
         cstring mode = impl::OPEN_FILE_FLAG_TO_STR_MAP[flag];
         FILE*   fhandle;
 
-#if defined(PSH_OS_WINDOWS)
+#if PSH_OS_WINDOWS
         fopen_s(&fhandle, path, mode);
-#else
+#elif PSH_OS_UNIX
         fhandle = fopen(path, mode);
 #endif
 
@@ -122,13 +122,13 @@ namespace psh {
         };
     }
 
-    String read_stdin(Arena* arena, u32 initial_buf_size, u32 read_chunk_size) psh_no_except {
+    psh_proc String read_stdin(Arena* arena, u32 initial_buf_size, u32 read_chunk_size) psh_no_except {
         psh_validate_usage(psh_assert_not_null(arena));
 
         ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
         String          content          = make_string(arena, initial_buf_size);
 
-#if defined(PSH_OS_WINDOWS)
+#if PSH_OS_WINDOWS
         HANDLE handle_stdin = GetStdHandle(STD_INPUT_HANDLE);
         if (handle_stdin == INVALID_HANDLE_VALUE) {
             psh_log_error("Unable to acquire the handle to the stdin stream.");
@@ -156,7 +156,7 @@ namespace psh {
                 break;
             }
         }
-#else
+#elif PSH_OS_UNIX
         for (;;) {
             if (content.count + read_chunk_size > content.capacity) {
                 dynamic_array_reserve(&content, content.count + read_chunk_size);
@@ -187,7 +187,7 @@ namespace psh {
         return content;
     }
 
-    String absolute_path(Arena* arena, cstring file_path) psh_no_except {
+    psh_proc String absolute_path(Arena* arena, cstring file_path) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(file_path));
         psh_validate_usage(psh_assert_not_null(arena));
 
@@ -195,7 +195,7 @@ namespace psh {
 
         String abs_path = make_string(arena, PSH_IMPL_PATH_MAX_CHAR_COUNT);
 
-#if defined(PSH_OS_WINDOWS)
+#if PSH_OS_WINDOWS
         DWORD result = GetFullPathName(file_path, PSH_IMPL_PATH_MAX_CHAR_COUNT, abs_path.buf, nullptr);
         if (result == 0) {
             psh_log_error_fmt(
@@ -206,7 +206,7 @@ namespace psh {
             arena_checkpoint_restore(arena_checkpoint);
             return String{};
         }
-#else
+#elif PSH_OS_UNIX
         char const* result = realpath(file_path, abs_path.buf);
         if (result == nullptr) {
             psh_log_error_fmt("Unable to obtain the full path of %s due to the error:", file_path);

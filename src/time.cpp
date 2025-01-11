@@ -24,19 +24,19 @@
 
 #include <psh/time.hpp>
 
-#if defined(PSH_OS_WINDOWS)
+#if PSH_OS_WINDOWS
 #    include <Windows.h>
-#elif defined(PSH_OS_UNIX)
+#elif PSH_OS_UNIX
 #    include <errno.h>
 #    include <string.h>
 #    include <time.h>
 #endif
 
 namespace psh {
-    f64 current_time_in_seconds() psh_no_except {
+    psh_proc f64 current_time_in_seconds() psh_no_except {
         f64 curr_time = -1.0;
 
-#if defined(PSH_OS_WINDOWS)
+#if PSH_OS_WINDOWS
         LARGE_INTEGER frequency;
         LARGE_INTEGER counter;
 
@@ -46,7 +46,7 @@ namespace psh {
         if (psh_likely(success)) {
             curr_time = static_cast<f64>(counter.QuadPart) / static_cast<f64>(frequency.QuadPart);
         }
-#elif defined(PSH_OS_UNIX)
+#elif PSH_OS_UNIX
         timespec time_spec;
 
         bool success = (clock_gettime(CLOCK_MONOTONIC, &time_spec) == 0);
@@ -59,11 +59,11 @@ namespace psh {
         return curr_time;
     }
 
-    void sleep_milliseconds(f64 ms) psh_no_except {
-#if defined(PSH_OS_WINDOWS)
+    psh_proc void sleep_milliseconds(f64 ms) psh_no_except {
+#if PSH_OS_WINDOWS
         u32 ms_count = ((0.0 < ms) && (ms < 1.0)) ? 1 : static_cast<u32>(ms);
         Sleep(ms_count);
-#elif defined(PSH_OS_UNIX)
+#elif PSH_OS_UNIX
         timespec request_sleep;
         request_sleep.tv_sec     = static_cast<time_t>(ms / 1000);
         request_sleep.tv_nsec    = (static_cast<long>(ms) - static_cast<long>(request_sleep.tv_sec) * 1000) * 1'000'000;

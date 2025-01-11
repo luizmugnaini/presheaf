@@ -28,7 +28,7 @@
 #include <psh/memory.hpp>
 
 namespace psh {
-    usize cstring_length(cstring str) psh_no_except {
+    psh_proc usize cstring_length(cstring str) psh_no_except {
         usize length = 0;
         if (psh_likely(str != nullptr)) {
             length = strlen(str);
@@ -36,7 +36,7 @@ namespace psh {
         return length;
     }
 
-    StringCompareResult string_compare(StringView lhs, StringView rhs) psh_no_except {
+    psh_proc StringCompareResult string_compare(StringView lhs, StringView rhs) psh_no_except {
         i32                 cmp = memcmp(lhs.buf, rhs.buf, psh_min_value(lhs.count, rhs.count));
         StringCompareResult result;
         if (cmp == 0) {
@@ -49,7 +49,7 @@ namespace psh {
         return result;
     }
 
-    bool string_equal(StringView lhs, StringView rhs) psh_no_except {
+    psh_proc bool string_equal(StringView lhs, StringView rhs) psh_no_except {
         usize length    = lhs.count;
         bool  are_equal = true;
 
@@ -61,7 +61,7 @@ namespace psh {
         return are_equal;
     }
 
-    Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element) psh_no_except {
+    psh_proc Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element) psh_no_except {
         bool previously_empty = (target.count == 0);
 
         // Resize the string ahead of time.

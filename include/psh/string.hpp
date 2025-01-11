@@ -55,49 +55,49 @@ namespace psh {
     // Character properties.
     // -------------------------------------------------------------------------------------------------
 
-    psh_api psh_inline bool char_is_utf8(char c) psh_no_except {
+    psh_proc psh_inline bool char_is_utf8(char c) psh_no_except {
         return ((0x1F < c) && (c < 0x7F));
     }
 
-    psh_api psh_inline bool char_is_blank(char c) psh_no_except {
+    psh_proc psh_inline bool char_is_blank(char c) psh_no_except {
         return (c == ' ')
                || (c == '\t')
                || (c == '\f')
                || (c == '\v');
     }
 
-    psh_api psh_inline bool char_is_end_of_line(char c) psh_no_except {
+    psh_proc psh_inline bool char_is_end_of_line(char c) psh_no_except {
         return (c == '\n') || (c == '\r');
     }
 
-    psh_api psh_inline bool char_is_digit(char c) psh_no_except {
+    psh_proc psh_inline bool char_is_digit(char c) psh_no_except {
         return ('0' <= c) && (c <= '9');
     }
 
-    psh_api psh_inline bool char_is_alphabetic(char c) psh_no_except {
+    psh_proc psh_inline bool char_is_alphabetic(char c) psh_no_except {
         return (('A' <= c) && (c <= 'Z')) || ((c >= 'a') && (c <= 'z'));
     }
 
-    psh_api psh_inline bool char_is_alphanumeric(char c) psh_no_except {
+    psh_proc psh_inline bool char_is_alphanumeric(char c) psh_no_except {
         return (char_is_alphabetic(c) || char_is_digit(c));
     }
 
-    psh_api psh_inline char char_to_lower(char c) psh_no_except {
+    psh_proc psh_inline char char_to_lower(char c) psh_no_except {
         return (('A' <= c) && (c <= 'Z')) ? ('a' + (c - 'A')) : c;
     }
 
-    psh_api psh_inline char char_to_upper(char c) psh_no_except {
+    psh_proc psh_inline char char_to_upper(char c) psh_no_except {
         return (('A' <= c) && (c <= 'Z')) ? ('A' + (c - 'a')) : c;
     }
 
-    psh_api psh_inline i32 char_to_digit(char c) psh_no_except {
+    psh_proc psh_inline i32 char_to_digit(char c) psh_no_except {
         psh_paranoid_validate_usage({
             psh_assert_fmt(char_is_digit(c), "Expected character (%c) to be a digit (between '0' and '9').", c);
         });
         return static_cast<i32>(c - '0');
     }
 
-    psh_api psh_inline char digit_to_char(i32 value) psh_no_except {
+    psh_proc psh_inline char digit_to_char(i32 value) psh_no_except {
         psh_paranoid_validate_usage({
             psh_assert_fmt((0 <= value) && (value <= 9), "Expected value (%d) to be a digit (between 0 and 9).", value);
         });
@@ -109,7 +109,7 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     // Computes the length of a zero-terminated string.
-    psh_api usize cstring_length(cstring str) psh_no_except;
+    psh_proc usize cstring_length(cstring str) psh_no_except;
 
     /// A string with guaranteed compile-time known size.
     ///
@@ -121,7 +121,7 @@ namespace psh {
     /// auto my_str = psh_make_str("hey this is a compile time array of constant characters");
     ///
     template <usize count_>
-    struct psh_api Str {
+    struct Str {
         using ValueType = char const;
 
         char const buf[count_];
@@ -141,24 +141,24 @@ namespace psh {
     using StringView = FatPtr<char const>;
 
     template <usize count>
-    psh_api constexpr StringView make_string_view(Str<count> str) psh_no_except {
+    psh_proc psh_inline constexpr StringView make_string_view(Str<count> str) psh_no_except {
         return StringView{str.buf, str.count};
     }
 
     template <usize STR_LENGTH>
-    psh_api constexpr StringView make_string_view(char (&str)[STR_LENGTH]) psh_no_except {
+    psh_proc psh_inline constexpr StringView make_string_view(char (&str)[STR_LENGTH]) psh_no_except {
         return StringView{str, STR_LENGTH - 1};
     }
 
-    psh_api psh_inline StringView make_string_view(cstring str) psh_no_except {
+    psh_proc psh_inline StringView make_string_view(cstring str) psh_no_except {
         return StringView{str, cstring_length(str)};
     }
 
-    psh_api psh_inline String make_string(Arena* arena, usize initial_capacity) psh_no_except {
+    psh_proc psh_inline String make_string(Arena* arena, usize initial_capacity) psh_no_except {
         return make_dynamic_array<char>(arena, initial_capacity);
     }
 
-    psh_api psh_inline String make_string(Arena* arena, StringView sv) psh_no_except {
+    psh_proc psh_inline String make_string(Arena* arena, StringView sv) psh_no_except {
         String string;
         init_dynamic_array(&string, arena, sv.count + 1u);
         string.count = sv.count;
@@ -168,7 +168,7 @@ namespace psh {
         return string;
     }
 
-    psh_api psh_inline StringView make_string_view(String const& string) psh_no_except {
+    psh_proc psh_inline StringView make_string_view(String const& string) psh_no_except {
         return StringView{reinterpret_cast<char const*>(string.buf), string.count};
     }
 
@@ -184,7 +184,7 @@ namespace psh {
     /// assert(s.join(psh::make_const_fat_ptr(words), ", "));
     /// assert(string_equal(s.data.buf, "Hello, World, Earth, Terra"));
     ///
-    psh_api Status join_strings(
+    psh_proc Status join_strings(
         String&                  target,
         FatPtr<StringView const> join_strings,
         StringView               join_element = {}) psh_no_except;
@@ -199,25 +199,25 @@ namespace psh {
         GREATER_THAN,
     };
 
-    psh_api StringCompareResult string_compare(StringView lhs, StringView rhs) psh_no_except;
+    psh_proc StringCompareResult string_compare(StringView lhs, StringView rhs) psh_no_except;
     template <usize RHS_LENGTH>
-    psh_api psh_inline StringCompareResult string_compare(StringView lhs, char (&rhs)[RHS_LENGTH]) psh_no_except {
+    psh_proc psh_inline StringCompareResult string_compare(StringView lhs, char (&rhs)[RHS_LENGTH]) psh_no_except {
         return string_compare(lhs, StringView{rhs, RHS_LENGTH - 1u});
     }
     template <usize RHS_LENGTH>
-    psh_api psh_inline StringCompareResult string_compare(StringView lhs, char rhs[RHS_LENGTH]) psh_no_except {
+    psh_proc psh_inline StringCompareResult string_compare(StringView lhs, char rhs[RHS_LENGTH]) psh_no_except {
         return string_compare(lhs, StringView{rhs, RHS_LENGTH - 1u});
     }
 
-    psh_api bool string_equal(StringView lhs, StringView rhs) psh_no_except;
+    psh_proc bool string_equal(StringView lhs, StringView rhs) psh_no_except;
     template <usize RHS_LENGTH>
-    psh_api psh_inline bool string_equal(StringView lhs, char const (&rhs)[RHS_LENGTH]) psh_no_except {
+    psh_proc psh_inline bool string_equal(StringView lhs, char const (&rhs)[RHS_LENGTH]) psh_no_except {
         usize len = RHS_LENGTH;
         psh_discard_value(len);
         return string_equal(lhs, StringView{rhs, RHS_LENGTH - 1u});
     }
     template <usize RHS_LENGTH>
-    psh_api psh_inline bool string_equal(StringView lhs, char const rhs[RHS_LENGTH]) psh_no_except {
+    psh_proc psh_inline bool string_equal(StringView lhs, char const rhs[RHS_LENGTH]) psh_no_except {
         return string_equal(lhs, StringView{rhs, RHS_LENGTH - 1u});
     }
 
@@ -230,8 +230,8 @@ namespace psh {
 
     using StringFormatCallbackFunction = char*(cstring* buf, void* user, i32 len);
 
-    i32 string_format_list(char* buf, i32 count, cstring fmt, va_list va) psh_no_except;
-    i32 string_format_list_with_callback(
+    psh_proc i32 string_format_list(char* buf, i32 count, cstring fmt, va_list va) psh_no_except;
+    psh_proc i32 string_format_list_with_callback(
         StringFormatCallbackFunction* callback,
         void*                         user,
         char*                         buf,

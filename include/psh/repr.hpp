@@ -33,14 +33,14 @@ namespace psh {
     struct Arena;
 
     /// Convert a digit to its corresponding character.
-    psh_api psh_inline char digit_to_char(u8 digit) psh_no_except {
+    psh_proc psh_inline char digit_to_char(u8 digit) psh_no_except {
         psh_assert_msg(digit < 10, "Expected digit to be between 0 and 9.");
         return '0' + static_cast<char>(digit);
     }
 
     /// Get the binary representation of a number
     template <typename T>
-    psh_api String binary_repr(Arena* arena, T val) psh_no_except {
+    psh_proc String binary_repr(Arena* arena, T val) psh_no_except {
         if (val == 0) {
             return make_string(arena, psh_comptime_make_string_view("0b0"));
         }

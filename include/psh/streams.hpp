@@ -85,7 +85,7 @@ namespace psh {
         FILE_STATUS_OK,
     };
 
-    psh_inline StringView file_status_to_string(FileStatus status) psh_no_except {
+    psh_proc psh_inline StringView file_status_to_string(FileStatus status) psh_no_except {
         StringView string = {};
         switch (status) {
             case FILE_STATUS_FAILED_TO_OPEN: string = psh::make_string_view("psh::FILE_STATUS_FAILED_TO_OPEN"); break;
@@ -97,7 +97,7 @@ namespace psh {
         return string;
     }
 
-    struct psh_api FileReadResult {
+    struct FileReadResult {
         Array<u8>  content = {};
         FileStatus status  = {};
     };
@@ -108,10 +108,10 @@ namespace psh {
     ///     - arena: The arena allocator that will carry the contents of the resulting string.
     ///     - path: A zero-terminated string containing the path to the file to be read.
     ///     - flag: Can be any flag with read permission.
-    psh_api FileReadResult read_file(Arena* arena, cstring path, OpenFileFlag flag = OPEN_FILE_FLAG_READ_BIN) psh_no_except;
+    psh_proc FileReadResult read_file(Arena* arena, cstring path, OpenFileFlag flag = OPEN_FILE_FLAG_READ_BIN) psh_no_except;
 
     /// Read the standard input stream bytes to a string.
-    psh_api String read_stdin(Arena* arena, u32 initial_buf_size = 128, u32 read_chunk_size = 64) psh_no_except;
+    psh_proc String read_stdin(Arena* arena, u32 initial_buf_size = 128, u32 read_chunk_size = 64) psh_no_except;
 
-    psh_api String absolute_path(Arena* arena, cstring file_path) psh_no_except;
+    psh_proc String absolute_path(Arena* arena, cstring file_path) psh_no_except;
 }  // namespace psh

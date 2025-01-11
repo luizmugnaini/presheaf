@@ -37,7 +37,7 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     /// 2-dimensional vector in floating-point space.
-    struct psh_api Vec2 {
+    struct Vec2 {
         f32 x = 0.0f;
         f32 y = 0.0f;
 
@@ -96,7 +96,7 @@ namespace psh {
     };
 
     /// 3-dimensional vector in floating-point space.
-    struct psh_api Vec3 {
+    struct Vec3 {
         f32 x = 0.0f;
         f32 y = 0.0f;
         f32 z = 0.0f;
@@ -163,7 +163,7 @@ namespace psh {
     };
 
     /// 4-dimensional vector in floating-point space.
-    struct psh_api Vec4 {
+    struct Vec4 {
         f32 x = 0.0f;
         f32 y = 0.0f;
         f32 z = 0.0f;
@@ -177,7 +177,7 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     /// 2-dimensional vector in integer space.
-    struct psh_api IVec2 {
+    struct IVec2 {
         i32 x = 0;
         i32 y = 0;
 
@@ -231,7 +231,7 @@ namespace psh {
     };
 
     /// 3-dimensional vector in integer space.
-    struct psh_api IVec3 {
+    struct IVec3 {
         i32 x = 0;
         i32 y = 0;
         i32 z = 0;
@@ -307,12 +307,12 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     // @TODO: implement Mat2 methods.
-    struct psh_api Mat2 {
+    struct Mat2 {
         f32 buf[4] = {0.0f};
     };
 
     /// Row-major 3-dimensional square matrix in floating-point space.
-    struct psh_api Mat3 {
+    struct Mat3 {
         f32 buf[9] = {0.0f};
 
         /// Get a reference to the matrix component whose row is r and column is c.
@@ -358,7 +358,7 @@ namespace psh {
     };
 
     /// Column-major 3-dimensional square matrix in floating-point space.
-    struct psh_api ColMat3 {
+    struct ColMat3 {
         f32 buf[9] = {0.0f};
 
         /// Get a reference to the matrix component whose row is r and column is c.
@@ -382,7 +382,7 @@ namespace psh {
     };
 
     /// Column-major 4-dimensional square matrix in floating-point space.
-    struct psh_api ColMat4 {
+    struct ColMat4 {
         f32 buf[16] = {0.0f};
 
         /// Get the matrix component whose row is r and column is c.
@@ -517,17 +517,17 @@ namespace psh {
     };
 
     /// Left-multiply a 2D vector by a 2D square matrix.
-    psh_api Vec2 mat_mul(Mat2 m, Vec2 v) psh_no_except;
+    psh_proc Vec2 mat_mul(Mat2 m, Vec2 v) psh_no_except;
 
     /// Left-multiply a 3D vector by a 3D square matrix.
-    psh_api Vec3 mat_mul(Mat3 m, Vec3 v) psh_no_except;
+    psh_proc Vec3 mat_mul(Mat3 m, Vec3 v) psh_no_except;
 
     /// Multiply a pair of 3D square matrices.
-    psh_api Mat3 mat_mul(Mat3 lhs, Mat3 rhs) psh_no_except;
+    psh_proc Mat3 mat_mul(Mat3 lhs, Mat3 rhs) psh_no_except;
 
     /// Left-multiply a 4D vector by a 4D square column-major matrix.
-    psh_api Vec4 mat_mul(ColMat4 m, Vec4 v) psh_no_except;
+    psh_proc Vec4 mat_mul(ColMat4 m, Vec4 v) psh_no_except;
 
     /// Multiply a pair of 4D square column-major matrices.
-    psh_api ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) psh_no_except;
+    psh_proc ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) psh_no_except;
 }  // namespace psh

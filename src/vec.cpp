@@ -26,6 +26,8 @@
 
 #include <math.h>
 
+// @TODO: improve matrix operations by using SIMD.
+
 namespace psh {
     // -------------------------------------------------------------------------------------------------
     // Row-major 3-dimensional square matrix in floating-point space.
@@ -52,14 +54,14 @@ namespace psh {
     // Implementation of the matrix multiplication operations.
     // -------------------------------------------------------------------------------------------------
 
-    Vec2 mat_mul(Mat2 m, Vec2 v) psh_no_except {
+    psh_proc Vec2 mat_mul(Mat2 m, Vec2 v) psh_no_except {
         return Vec2{
             (m.buf[0] * v.x) + (m.buf[1] * v.y),
             (m.buf[2] * v.x) + (m.buf[3] * v.y),
         };
     }
 
-    Vec3 mat_mul(Mat3 m, Vec3 v) psh_no_except {
+    psh_proc Vec3 mat_mul(Mat3 m, Vec3 v) psh_no_except {
         return Vec3{
             (m.buf[0] * v.x) + (m.buf[1] * v.y) + (m.buf[2] * v.z),
             (m.buf[3] * v.x) + (m.buf[4] * v.y) + (m.buf[5] * v.z),
@@ -67,7 +69,7 @@ namespace psh {
         };
     }
 
-    Mat3 mat_mul(Mat3 lhs, Mat3 rhs) psh_no_except {
+    psh_proc Mat3 mat_mul(Mat3 lhs, Mat3 rhs) psh_no_except {
         return Mat3{
             // Row 1.
             (lhs.buf[0] * rhs.buf[0]) + (lhs.buf[1] * rhs.buf[3]) + (lhs.buf[2] * rhs.buf[6]),
@@ -84,7 +86,7 @@ namespace psh {
         };
     }
 
-    Vec4 mat_mul(ColMat4 m, Vec4 v) psh_no_except {
+    psh_proc Vec4 mat_mul(ColMat4 m, Vec4 v) psh_no_except {
         return Vec4{
             (m.buf[0] * v.x) + (m.buf[4] * v.y) + (m.buf[8] * v.z) + (m.buf[12] * v.w),
             (m.buf[1] * v.x) + (m.buf[5] * v.y) + (m.buf[9] * v.z) + (m.buf[13] * v.w),
@@ -93,7 +95,7 @@ namespace psh {
         };
     }
 
-    ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) psh_no_except {
+    psh_proc ColMat4 mat_mul(ColMat4 lhs, ColMat4 rhs) psh_no_except {
         // clang-format off
         return ColMat4{
             // Row 1.

@@ -64,19 +64,19 @@ namespace psh::impl {
     };
 
     template <typename T>
-    psh_inline T&& cast_forward(typename RemoveRef<T>::Type& x) psh_no_except { return static_cast<T&&>(x); }
+    psh_internal psh_inline T&& cast_forward(typename RemoveRef<T>::Type& x) psh_no_except { return static_cast<T&&>(x); }
     template <typename T>
-    psh_inline T&& cast_forward(typename RemoveRef<T>::Type&& x) psh_no_except { return static_cast<T&&>(x); }
+    psh_internal psh_inline T&& cast_forward(typename RemoveRef<T>::Type&& x) psh_no_except { return static_cast<T&&>(x); }
 
     template <typename Func>
-    struct psh_api Deferrer {
+    struct Deferrer {
         Func       deferred_function;
         psh_inline Deferrer(Func&& fn) psh_no_except : deferred_function{cast_forward<Func>(fn)} {}
         psh_inline ~Deferrer() psh_no_except { deferred_function(); }
     };
 
     template <typename Func>
-    psh_api psh_inline Deferrer<Func> make_defer_fn(Func&& fn) psh_no_except { return Deferrer<Func>{cast_forward<Func>(fn)}; }
+    psh_internal psh_inline Deferrer<Func> make_defer_fn(Func&& fn) psh_no_except { return Deferrer<Func>{cast_forward<Func>(fn)}; }
 }  // namespace psh::impl
 
 #define psh_impl_defer_lambda_name_2(prefix, suffix) prefix##suffix
