@@ -22,7 +22,7 @@
 /// Description: Tests for the system time interface.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
-#include <psh/time.hpp>
+#include <psh_time.hpp>
 #include "utils.hpp"
 
 namespace psh::test::time {

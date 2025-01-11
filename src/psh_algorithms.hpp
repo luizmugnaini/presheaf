@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include <psh/core.hpp>
+#include "psh_core.hpp"
 
 /// Range size threshold for the quick sort algorithm to fallback to the insertion sort algorithm.
 #ifndef QUICK_SORT_CUTOFF_TO_INSERTION_SORT

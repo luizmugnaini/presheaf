@@ -22,7 +22,7 @@
 /// Description: Tests for the system time interface.
 /// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
-#include <psh/debug.hpp>
+#include <psh_debug.hpp>
 #include "utils.hpp"
 
 // @TODO: can we programatically validate if the loggings are correct? Is it even worth it?

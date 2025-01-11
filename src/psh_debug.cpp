@@ -22,10 +22,10 @@
 /// Description: Implementation of debugging utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/debug.hpp>
+#include "psh_debug.hpp"
 
 #if PSH_ENABLE_USE_STB_SPRINTF
-#    include <psh/sprintf.hpp>
+#    include "psh_sprintf.hpp"
 #endif
 #include <stdarg.h>
 #include <stdio.h>

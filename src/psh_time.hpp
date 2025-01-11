@@ -19,38 +19,20 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Mathematical utilities.
-/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
+/// Description: System time interface.
+/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
 
 #pragma once
 
-#include <limits.h>
-#include <psh/core.hpp>
-#include <psh/debug.hpp>
+#include "psh_core.hpp"
 
 namespace psh {
-    psh_global constexpr f32 PI                = 3.14159265359f;
-    psh_global constexpr f32 F32_IS_ZERO_RANGE = 1e-6f;
+    psh_proc f64 current_time_in_seconds() psh_no_except;
 
-    psh_proc constexpr bool approx_equal(f32 a, f32 b, f32 zero_range = F32_IS_ZERO_RANGE) psh_no_except {
-        psh_paranoid_validate_usage({
-            psh_assert_msg(zero_range > 0.0f, "Expected the 'within zero range' value to be positive.");
-        });
-        f32 sub = a - b;
-        return (-zero_range < sub) && (sub < zero_range);
-    }
-
-    psh_proc constexpr f32 as_radians(f32 deg) psh_no_except {
-        return deg * PI / 180.0f;
-    }
-
-    psh_proc constexpr u32 no_wrap_sub(u32 a, u32 b) psh_no_except {
-        u32 c = a - b;
-        return (c <= a) ? c : 0;
-    }
-
-    psh_proc constexpr u64 no_wrap_sub(u64 a, u64 b) psh_no_except {
-        u64 c = a - b;
-        return (c <= a) ? c : 0;
-    }
+    /// Suspend the current thread by a certain number of milliseconds.
+    ///
+    /// The timeout parameter is just a hint for the OS, there is no guarantee that the thread
+    /// will sleep for this exact amout of time. It may either sleep more or even less than the
+    /// given number of miliseconds.
+    psh_proc void sleep_milliseconds(f64 ms) psh_no_except;
 }  // namespace psh

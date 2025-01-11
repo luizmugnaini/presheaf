@@ -19,22 +19,38 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 ///
-/// Description: Single header containing all other library header files.
-/// Author: Luiz G. Mugnaini A. <luizmuganini@gmail.com>
+/// Description: Mathematical utilities.
+/// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
 #pragma once
 
-// clang-format off
-#include <psh/core.hpp>
-#include <psh/math.hpp>
-#include <psh/time.hpp>
-#include <psh/vec.hpp>
-#include <psh/sprintf.hpp>
-#include <psh/streams.hpp>
-#include <psh/debug.hpp>
-#include <psh/memory.hpp>
-#include <psh/string.hpp>
-#include <psh/repr.hpp>
-#include <psh/bit.hpp>
-#include <psh/defer.hpp>
-// clang-format on
+#include <limits.h>
+#include "psh_core.hpp"
+#include "psh_debug.hpp"
+
+namespace psh {
+    psh_global constexpr f32 PI                = 3.14159265359f;
+    psh_global constexpr f32 F32_IS_ZERO_RANGE = 1e-6f;
+
+    psh_proc constexpr bool approx_equal(f32 a, f32 b, f32 zero_range = F32_IS_ZERO_RANGE) psh_no_except {
+        psh_paranoid_validate_usage({
+            psh_assert_msg(zero_range > 0.0f, "Expected the 'within zero range' value to be positive.");
+        });
+        f32 sub = a - b;
+        return (-zero_range < sub) && (sub < zero_range);
+    }
+
+    psh_proc constexpr f32 as_radians(f32 deg) psh_no_except {
+        return deg * PI / 180.0f;
+    }
+
+    psh_proc constexpr u32 no_wrap_sub(u32 a, u32 b) psh_no_except {
+        u32 c = a - b;
+        return (c <= a) ? c : 0;
+    }
+
+    psh_proc constexpr u64 no_wrap_sub(u64 a, u64 b) psh_no_except {
+        u64 c = a - b;
+        return (c <= a) ? c : 0;
+    }
+}  // namespace psh

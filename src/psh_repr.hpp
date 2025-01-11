@@ -24,9 +24,9 @@
 
 #pragma once
 
-#include <psh/bit.hpp>
-#include <psh/debug.hpp>
-#include <psh/string.hpp>
+#include "psh_bit.hpp"
+#include "psh_debug.hpp"
+#include "psh_string.hpp"
 
 namespace psh {
     // Forward declaration.

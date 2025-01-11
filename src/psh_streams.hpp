@@ -24,9 +24,9 @@
 
 #pragma once
 
-#include <psh/core.hpp>
-#include <psh/memory.hpp>
-#include <psh/string.hpp>
+#include "psh_core.hpp"
+#include "psh_memory.hpp"
+#include "psh_string.hpp"
 
 namespace psh {
     enum OpenFileFlag : u32 {

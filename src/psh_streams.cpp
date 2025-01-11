@@ -22,10 +22,10 @@
 /// Description: Implementation of the file system management utilities.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/streams.hpp>
+#include "psh_streams.hpp"
 
 #include <stdio.h>
-#include <psh/core.hpp>
+#include "psh_core.hpp"
 
 #if PSH_OS_WINDOWS
 #    include <Windows.h>

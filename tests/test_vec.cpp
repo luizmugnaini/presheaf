@@ -22,7 +22,7 @@
 /// Description: Tests for the linear algebra types.
 /// Author: Luiz G. Mugnaini A. <luizmugnaini@gmail.com>
 
-#include <psh/vec.hpp>
+#include <psh_vec.hpp>
 #include "utils.hpp"
 
 namespace psh::test::vec {

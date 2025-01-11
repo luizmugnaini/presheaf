@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <psh/core.hpp>
+#include "psh_core.hpp"
 
 // -------------------------------------------------------------------------------------------------
 // Implementation details.

@@ -25,7 +25,7 @@
 /// This test should be ran with sanitizer flags on in order to detect possible memory leaks that
 /// may go unseen.
 
-#include <psh/memory.hpp>
+#include <psh_memory.hpp>
 #include "utils.hpp"
 
 namespace psh::test::memory_manager {

@@ -156,7 +156,6 @@
 #    define PSH_ENABLE_NO_ALIAS 1
 #endif
 
-
 // -------------------------------------------------------------------------------------------------
 // Macros for operating system and compiler detection.
 // -------------------------------------------------------------------------------------------------
@@ -209,7 +208,7 @@
 /// Windows-specific tweaks.
 ///
 /// Disable most of the useless stuff that comes bundled with the Windows header files.
-#if defined(PSH_OS_WINDOWS_32) || defined(PSH_OS_WINDOWS_64)
+#if PSH_OS_WINDOWS
 #    if !defined(WIN32_LEAN_AND_MEAN)
 #        define WIN32_LEAN_AND_MEAN
 #    endif
@@ -343,7 +342,7 @@
 #        undef psh_attribute_disable_asan
 #        define psh_attribute_disable_asan __declspec(no_sanitize_address)
 #    endif
-#elif defined(PSH_COMPILER_CLANG)
+#elif PSH_COMPILER_CLANG
 #    if PSH_COMPILER_CAPABILITY_HAS_FEATURE
 #        if __has_feature(address_sanitizer)
 #            undef PSH_ADDRESS_SANITIZER_ENABLED
@@ -352,7 +351,7 @@
 #            define psh_attribute_disable_asan __attribute__((__no_sanitize__("address")))
 #        endif
 #    endif
-#elif defined(PSH_COMPILER_GCC)
+#elif PSH_COMPILER_GCC
 #    if defined(__SANITIZE_ADDRESS__) && __SANITIZE_ADDRESS__
 #        undef PSH_ADDRESS_SANITIZER_ENABLED
 #        define PSH_ADDRESS_SANITIZER_ENABLED 1
@@ -392,7 +391,7 @@
 #endif
 
 // Detect SIMD availability in x64 processors.
-#if defined(PSH_ARCH_X64)
+#if PSH_ARCH_X64
 #    if PSH_COMPILER_MSVC
 #        if defined(_M_AMD64)
 #            undef PSH_ARCH_SIMD_SSE
@@ -409,7 +408,7 @@
 #            undef PSH_ARCH_SIMD_AVX
 #            define PSH_ARCH_SIMD_AVX 1
 #        endif
-#    elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#    elif PSH_COMPILER_CLANG || PSH_COMPILER_GCC
 #        if defined(__SSE__)
 #            undef PSH_ARCH_SIMD_SSE
 #            define PSH_ARCH_SIMD_SSE 1
@@ -430,7 +429,7 @@
 #endif
 
 // Detect SIMD availability in ARM processors.
-#if defined(PSH_ARCH_ARM) && defined(__ARM_NEON)
+#if PSH_ARCH_ARM && defined(__ARM_NEON)
 #    undef PSH_ARCH_SIMD_NEON
 #    define PSH_ARCH_SIMD_NEON 1
 #endif
