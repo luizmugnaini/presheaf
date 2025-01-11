@@ -39,9 +39,9 @@ namespace psh::impl {
     psh_internal void default_abort_function(void* arg) psh_no_except {
         psh_discard_value(arg);
 
-#if defined(PSH_COMPILER_MSVC)
+#if PSH_COMPILER_MSVC
         __debugbreak();
-#elif defined(PSH_COMPILER_CLANG) || defined(PSH_COMPILER_GCC)
+#elif PSH_COMPILER_CLANG || PSH_COMPILER_GCC
         __builtin_trap();
 #else
         // Stall the program if we don't have a sane default.
@@ -59,7 +59,7 @@ namespace psh {
         impl::abort_function = abort_function;
     }
 
-    psh_api void abort_program() psh_no_except {
+    psh_proc void abort_program() psh_no_except {
         impl::abort_function(impl::abort_context);
     }
 }  // namespace psh
@@ -111,7 +111,7 @@ namespace psh::impl {
     };
 
 #    if PSH_ENABLE_USE_STB_SPRINTF
-    void log_msg(LogInfo info, cstring msg) psh_no_except {
+    psh_internal void log_msg(LogInfo info, cstring msg) psh_no_except {
         Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
         {
             i32 result_msg_length = psh_stbsp_snprintf(
@@ -131,7 +131,7 @@ namespace psh::impl {
         psh_discard_value(fprintf(stdout, "%s", result_msg.buf));
     }
 
-    void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
+    psh_internal void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
         Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
         {
             i32 header_length = psh_stbsp_snprintf(
@@ -176,8 +176,8 @@ namespace psh::impl {
 
         psh_discard_value(fprintf(stdout, "%s", result_msg.buf));
     }
-#    else   // PSH_ENABLE_USE_STB_SPRINTF
-    void log_msg(LogInfo info, cstring msg) psh_no_except {
+#    else   // !PSH_ENABLE_USE_STB_SPRINTF - use libc functions.
+    psh_internal void log_msg(LogInfo info, cstring msg) psh_no_except {
         psh_discard_value(fprintf(
             stderr,
             PSH_LOG_HEADER_FMT " %s\n",
@@ -188,7 +188,7 @@ namespace psh::impl {
             msg));
     }
 
-    void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
+    psh_internal void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
         Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
 
         va_list args;

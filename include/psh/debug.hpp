@@ -49,7 +49,7 @@ namespace psh::impl {
         LOG_LEVEL_COUNT,
     };
 
-    struct psh_api LogInfo {
+    struct LogInfo {
         cstring  file_name;
         cstring  function_name;
         u32      line;
@@ -57,10 +57,10 @@ namespace psh::impl {
     };
 
     /// Log a message to the standard error stream.
-    psh_api void log_msg(LogInfo info, cstring msg) psh_no_except;
+    psh_internal void log_msg(LogInfo info, cstring msg) psh_no_except;
 
     /// Log a formatted message to the standard error stream.
-    psh_api psh_attribute_fmt(2) void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except;
+    psh_internal psh_attribute_fmt(2) void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except;
 }  // namespace psh::impl
 
 // -------------------------------------------------------------------------------------------------
@@ -70,9 +70,9 @@ namespace psh::impl {
 namespace psh {
     using AbortFunction = void(void* arg);
 
-    psh_api void set_abort_function(AbortFunction* func, void* abort_context = nullptr) psh_no_except;
+    psh_proc void set_abort_function(AbortFunction* func, void* abort_context = nullptr) psh_no_except;
 
-    psh_api void abort_program() psh_no_except;
+    psh_proc void abort_program() psh_no_except;
 }  // namespace psh
 
 // -------------------------------------------------------------------------------------------------
@@ -96,7 +96,7 @@ namespace psh {
 #    define psh_log_error_fmt(fmt, ...)   psh::impl::log_fmt(psh_impl_make_log_info(psh::impl::LOG_LEVEL_ERROR), fmt, __VA_ARGS__)
 #    define psh_log_warning_fmt(fmt, ...) psh::impl::log_fmt(psh_impl_make_log_info(psh::impl::LOG_LEVEL_WARNING), fmt, __VA_ARGS__)
 #    define psh_log_info_fmt(fmt, ...)    psh::impl::log_fmt(psh_impl_make_log_info(psh::impl::LOG_LEVEL_INFO), fmt, __VA_ARGS__)
-#    if defined(PSH_ENABLE_DEBUG)
+#    if PSH_ENABLE_DEBUG
 #        define psh_log_debug(msg)          psh::impl::log_msg(psh_impl_make_log_info(psh::impl::LOG_LEVEL_DEBUG), msg)
 #        define psh_log_debug_fmt(fmt, ...) psh::impl::log_fmt(psh_impl_make_log_info(psh::impl::LOG_LEVEL_DEBUG), fmt, __VA_ARGS__)
 #    else

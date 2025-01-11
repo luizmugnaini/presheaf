@@ -222,7 +222,7 @@ local compilers = {
         opt_no_link   = "-c",
         opt_out_obj   = "-o",
         opt_out_exe   = "-o",
-        flags_common  = "-nostdlib++ -pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-pointer-arithmetic -Wnull-dereference -Wformat=2 -Wpointer-arith -Wno-unsafe-buffer-usage -Wno-switch-default -fno-rtti -fno-exceptions -Werror=implicit-function-declaration",
+        flags_common  = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-pointer-arithmetic -Wnull-dereference -Wformat=2 -Wpointer-arith -Wno-unsafe-buffer-usage -Wno-switch-default -fno-rtti -fno-exceptions -Werror=implicit-function-declaration",
         flags_debug   = "-Werror -Wno-unused-variable -Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
         flags_release = "-Wunused -O2",
         ar            = "llvm-ar",
@@ -238,7 +238,7 @@ local compilers = {
         opt_no_link   = "-c",
         opt_out_obj   = "-o",
         opt_out_exe   = "-o",
-        flags_common  = "-nostdlib++ -pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-dereference -Wformat=2 -fno-rtti -fno-exceptions",
+        flags_common  = "-pedantic -Wall -Wextra -Wpedantic -Wuninitialized -Wcast-align -Wconversion -Wnull-dereference -Wformat=2 -fno-rtti -fno-exceptions",
         flags_debug   = "-Werror -g -O0 -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=undefined -fstack-protector-strong -fsanitize=leak",
         flags_release = "-O2",
         ar            = "ar",
@@ -283,7 +283,7 @@ local compilers = {
 }
 
 -- Linker flags for disabling linking against the C++ standard library.
-local linker_flags = os_info.windows and "/NODEFAULTLIB:libcpmt /NODEFAULTLIB:msvcprt" or "-nolibstd++"
+local linker_flags = os_info.windows and "/NODEFAULTLIB:libcpmt /NODEFAULTLIB:libcpmtd /NODEFAULTLIB:msvcprt /NODEFAULTLIB:msvcprtd" or "-nolibstd++"
 
 local presheaf = {
     src              = make_path({ root_dir, "src", "presheaf.cpp" }),

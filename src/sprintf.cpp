@@ -1288,7 +1288,7 @@ done:
 // Wrapper functions.
 // -------------------------------------------------------------------------------------------------
 
-psh_attribute_disable_asan i32 psh_stbsp_sprintf(char* buf, cstring fmt, ...) {
+psh_proc psh_attribute_disable_asan i32 psh_stbsp_sprintf(char* buf, cstring fmt, ...) {
     i32     result;
     va_list va;
     va_start(va, fmt);
@@ -1297,12 +1297,12 @@ psh_attribute_disable_asan i32 psh_stbsp_sprintf(char* buf, cstring fmt, ...) {
     return result;
 }
 
-typedef struct stbsp_impl_context {
+struct stbsp_impl_context {
     char* buf;
     i32   count;
     i32   length;
     char  tmp[STB_SPRINTF_MIN_LENGTH_PER_CALLBACK];
-} stbsp_impl_context;
+};
 
 psh_internal char* stbsp_impl_clamp_callback(cstring buf, void* user, i32 len) {
     stbsp_impl_context* c = (stbsp_impl_context*)user;
@@ -1343,7 +1343,7 @@ psh_internal char* stbsp_impl_count_clamp_callback(cstring buf, void* user, i32 
     return c->tmp;  // go direct into buffer if you can
 }
 
-psh_attribute_disable_asan i32 psh_stbsp_vsnprintf(char* buf, i32 count, cstring fmt, va_list va) {
+psh_proc psh_attribute_disable_asan i32 psh_stbsp_vsnprintf(char* buf, i32 count, cstring fmt, va_list va) {
     stbsp_impl_context c;
 
     if ((count == 0) && !buf) {
@@ -1369,7 +1369,7 @@ psh_attribute_disable_asan i32 psh_stbsp_vsnprintf(char* buf, i32 count, cstring
     return c.length;
 }
 
-psh_attribute_disable_asan i32 psh_stbsp_snprintf(char* buf, i32 count, cstring fmt, ...) {
+psh_proc psh_attribute_disable_asan i32 psh_stbsp_snprintf(char* buf, i32 count, cstring fmt, ...) {
     va_list va;
     va_start(va, fmt);
 

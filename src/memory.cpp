@@ -29,13 +29,13 @@
 #include <psh/debug.hpp>
 #include <psh/math.hpp>
 
-#if defined(PSH_OS_WINDOWS)
+#if PSH_OS_WINDOWS
 #    include <Windows.h>
-#elif defined(PSH_OS_UNIX)
+#elif PSH_OS_UNIX
 #    include <sys/mman.h>
 #endif
 
-#if defined(PSH_ENABLE_ASSERT_NO_MEMORY_ERROR)
+#if PSH_ENABLE_ASSERT_NO_MEMORY_ERROR
 #    define psh_impl_return_from_memory_error()                                                 \
         do {                                                                                    \
             psh_log_fatal("PSH_ENABLE_ASSERT_NO_MEMORY_ERROR active, aborting the program..."); \
@@ -52,15 +52,15 @@ namespace psh {
     // -------------------------------------------------------------------------------------------------
 
     // @TODO: We should round this up to a multiple of a page-size.
-    u8* memory_virtual_alloc(usize size_bytes) psh_no_except {
+    psh_proc u8* memory_virtual_alloc(usize size_bytes) psh_no_except {
         u8* buf;
-#if defined(PSH_OS_WINDOWS)
+#if PSH_OS_WINDOWS
         buf = reinterpret_cast<u8*>(VirtualAlloc(nullptr, size_bytes, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
 
 #    if PSH_ENABLE_ASSERT_NO_MEMORY_ERROR
         psh_assert_fmt(buf != nullptr, "OS failed to allocate memory with error code: %lu", GetLastError());
 #    endif
-#elif defined(PSH_OS_UNIX)
+#elif PSH_OS_UNIX
         buf = reinterpret_cast<u8*>(mmap(nullptr, size_bytes, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
 
 #    if PSH_ENABLE_ASSERT_NO_MEMORY_ERROR
@@ -70,8 +70,8 @@ namespace psh {
         return buf;
     }
 
-    void memory_virtual_free(u8* memory, usize size_bytes) psh_no_except {
-#if defined(PSH_OS_WINDOWS)
+    psh_proc void memory_virtual_free(u8* memory, usize size_bytes) psh_no_except {
+#if PSH_OS_WINDOWS
         psh_paranoid_validate_usage(psh_assert_not_null(memory));
         psh_discard_value(size_bytes);
 
@@ -79,7 +79,7 @@ namespace psh {
         if (psh_unlikely(result == FALSE)) {
             psh_log_error_fmt("Failed free memory with error code: %lu", GetLastError());
         }
-#elif defined(PSH_OS_UNIX)
+#elif PSH_OS_UNIX
         psh_paranoid_validate_usage({
             psh_assert_not_null(memory);
             psh_assert(size_bytes > 0);
@@ -96,7 +96,7 @@ namespace psh {
     // Memory moves.
     // -------------------------------------------------------------------------------------------------
 
-    void memory_set(u8* memory, usize size_bytes, i32 fill) psh_no_except {
+    psh_proc void memory_set(u8* memory, usize size_bytes, i32 fill) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(memory));
 
         if (psh_unlikely(size_bytes == 0)) {
@@ -106,7 +106,7 @@ namespace psh {
         psh_discard_value(memset(memory, fill, size_bytes));
     }
 
-    void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except {
+    psh_proc void memory_copy(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except {
         psh_paranoid_validate_usage({
             psh_assert_not_null(dst);
             psh_assert_not_null(src);
@@ -126,7 +126,7 @@ namespace psh {
         psh_discard_value(memcpy(dst, src, size_bytes));
     }
 
-    void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except {
+    psh_proc void memory_move(u8* psh_no_alias dst, u8 const* psh_no_alias src, usize size_bytes) psh_no_except {
         psh_paranoid_validate_usage({
             psh_assert_not_null(dst);
             psh_assert_not_null(src);
@@ -144,7 +144,7 @@ namespace psh {
     // Memory alignment.
     // -------------------------------------------------------------------------------------------------
 
-    usize padding_with_header(
+    psh_proc usize padding_with_header(
         uptr  ptr_addr,
         usize alignment,
         usize header_size,
@@ -180,7 +180,7 @@ namespace psh {
         return padding;
     }
 
-    usize align_forward(uptr ptr_addr, usize alignment) psh_no_except {
+    psh_proc usize align_forward(uptr ptr_addr, usize alignment) psh_no_except {
         psh_validate_usage(psh_assert_fmt(psh_is_pow_of_two(alignment), "Expected alignment (%zu) to be a power of two.", alignment));
 
         usize mod_align = ptr_addr & (alignment - 1u);
@@ -339,7 +339,7 @@ namespace psh {
     // Memory manipulation procedures.
     // -------------------------------------------------------------------------------------------------
 
-    void raw_unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
+    psh_proc void raw_unordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
         u8 const* buf_end = pointer_const_add_bytes(fptr.buf, fptr.count);
         psh_validate_usage(psh_assert_bounds_check(reinterpret_cast<uptr>(element_ptr), reinterpret_cast<uptr>(buf_end)));
 
@@ -350,7 +350,7 @@ namespace psh {
         }
     }
 
-    void raw_ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
+    psh_proc void raw_ordered_remove(FatPtr<u8> fptr, u8* element_ptr, usize element_size) psh_no_except {
         u8 const* buf_end = pointer_const_add_bytes(fptr.buf, fptr.count);
         psh_validate_usage(psh_assert_bounds_check(reinterpret_cast<uptr>(element_ptr), reinterpret_cast<uptr>(buf_end)));
 
@@ -362,6 +362,7 @@ namespace psh {
         }
     }
 
+    // @TODO: integrate this with the PSH_ENABLE_ASSERT_NO_MEMORY_ERROR
 #define psh_impl_arena_report_out_of_memory(arena, requested_size, requested_alignment)  \
     do {                                                                                 \
         psh_log_error_fmt(                                                               \
@@ -372,9 +373,10 @@ namespace psh {
             arena->capacity - arena->offset);                                            \
     } while (0)
 
+    // @TODO: should we really do this? kinda cringe
 #define psh_impl_arena_is_empty(arena) (((arena)->capacity == 0) || ((arena)->buf == nullptr))
 
-    u8* memory_alloc_align(Arena* arena, usize size_bytes, u32 alignment) psh_no_except {
+    psh_proc u8* memory_alloc_align(Arena* arena, usize size_bytes, u32 alignment) psh_no_except {
         psh_validate_usage(psh_assert_not_null(arena));
 
         if (psh_unlikely(size_bytes == 0)) {
@@ -401,7 +403,7 @@ namespace psh {
     // @TODO: When asan is available, poison the non-allocated memory regions!!
     //
 
-    u8* memory_alloc_align(Stack* stack, usize size_bytes, u32 alignment) psh_no_except {
+    psh_proc u8* memory_alloc_align(Stack* stack, usize size_bytes, u32 alignment) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(stack));
 
         if (psh_unlikely(size_bytes == 0)) {
@@ -446,7 +448,7 @@ namespace psh {
         return new_block;
     }
 
-    u8* memory_realloc_align(
+    psh_proc u8* memory_realloc_align(
         Arena* arena,
         u8*    block,
         usize  current_size_bytes,
@@ -509,7 +511,7 @@ namespace psh {
         return new_block;
     }
 
-    u8* memory_realloc_align(Stack* stack, u8* block, usize new_size_bytes, u32 alignment) psh_no_except {
+    psh_proc u8* memory_realloc_align(Stack* stack, u8* block, usize new_size_bytes, u32 alignment) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(stack));
         psh_validate_usage({
             psh_assert_msg(stack->buf != nullptr, "Stack uninitialised.");
