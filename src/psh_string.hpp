@@ -172,7 +172,6 @@ namespace psh {
         .count = sizeof(cstr_literal) - 1u,         \
     }
 
-
     /// Join an array of string views to a target string data. You can also provide a join element to be
     /// attached to the end of each join.
     ///
@@ -228,25 +227,12 @@ namespace psh {
     // @TODO: improve the integration with the Presheaf types.
     // @TODO: implement functions by extracting stuff from stb_sprintf.
     // -------------------------------------------------------------------------------------------------
-    //
-    // using StringFormatCallbackFunction = char*(cstring* buf, void* user, i32 len);
-    //
-    // psh_proc i32 string_format_list(char* buf, i32 count, cstring fmt, va_list va) psh_no_except;
-    // psh_proc i32 string_format_list_with_callback(
-    //     StringFormatCallbackFunction* callback,
-    //     void*                         user,
-    //     char*                         buf,
-    //     cstring                       fmt,
-    //     va_list                       va) psh_no_except;
-    //
-    // psh_attribute_fmt(3) psh_inline i32 string_format(char* buf, i32 count, cstring fmt, ...) psh_no_except {
-    //     i32 result;
-    //     {
-    //         va_list args;
-    //         va_start(args, fmt);
-    //         result = string_format_list(buf, count, fmt, args);
-    //         va_end(args);
-    //     }
-    //     return result;
-    // }
+
+    /// Convert a va_list arg list into a buffer. This function always returns a zero-terminated
+    /// string (unlike regular vsnprintf).
+    psh_proc i32 string_format_list(char* buf, i32 count, cstring fmt, va_list va) psh_no_except;
+
+    /// Convert an arg list into a buffer. This function always returns a zero-terminated string
+    /// (unlike regular snprintf).
+    psh_attribute_fmt(3) psh_proc i32 string_format(char* buf, i32 count, cstring fmt, ...) psh_no_except;
 }  // namespace psh

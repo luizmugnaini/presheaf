@@ -31,7 +31,6 @@
 #include "psh_math.hpp"
 #include "psh_time.hpp"
 #include "psh_vec.hpp"
-#include "psh_sprintf.hpp"
 #include "psh_streams.hpp"
 #include "psh_debug.hpp"
 #include "psh_memory.hpp"

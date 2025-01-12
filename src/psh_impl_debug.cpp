@@ -27,7 +27,7 @@
 #include "psh_platform.hpp"
 
 #if PSH_ENABLE_USE_STB_SPRINTF
-#    include "psh_sprintf.hpp"
+#    include "psh_string.hpp"
 #endif
 #include <stdarg.h>
 #include <stdio.h>
@@ -115,7 +115,7 @@ namespace psh::impl {
     psh_proc void log_msg(LogInfo info, cstring msg) psh_no_except {
         Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
         {
-            i32 result_msg_length = psh_stbsp_snprintf(
+            i32 result_msg_length = string_format(
                 result_msg.buf,
                 result_msg.count,
                 PSH_LOG_HEADER_FMT " %s\n",
@@ -135,7 +135,7 @@ namespace psh::impl {
     psh_proc void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
         Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
         {
-            i32 header_length = psh_stbsp_snprintf(
+            i32 header_length = string_format(
                 result_msg.buf,
                 PSH_LOG_HEADER_MAX_LENGTH,
                 PSH_LOG_HEADER_FMT,
@@ -159,7 +159,7 @@ namespace psh::impl {
             va_list args;
             va_start(args, fmt);
             {
-                i32 msg_length = psh_stbsp_vsnprintf(
+                i32 msg_length = string_format_list(
                     msg_buf,
                     LOG_MSG_MAX_EFFECTIVE_LENGTH,
                     fmt,

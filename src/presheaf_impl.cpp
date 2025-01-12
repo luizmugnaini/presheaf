@@ -26,11 +26,10 @@
 // clang-format off
 #include "presheaf.hpp"
 
-#include "psh_time.cpp"
-#include "psh_vec.cpp"
-#include "psh_sprintf.cpp"
-#include "psh_debug.cpp"
-#include "psh_memory.cpp"
-#include "psh_string.cpp"
-#include "psh_streams.cpp"
+#include "psh_impl_time.cpp"
+#include "psh_impl_vec.cpp"
+#include "psh_impl_string.cpp"
+#include "psh_impl_debug.cpp"
+#include "psh_impl_memory.cpp"
+#include "psh_impl_streams.cpp"
 // clang-format on
