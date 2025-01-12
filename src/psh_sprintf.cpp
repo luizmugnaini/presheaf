@@ -46,6 +46,7 @@
 
 #    include "psh_sprintf.hpp"
 #    include "psh_core.hpp"
+#    include "psh_platform.hpp"
 
 #    if PSH_COMPILER_CLANG
 #        pragma clang diagnostic push

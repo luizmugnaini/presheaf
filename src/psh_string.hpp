@@ -28,25 +28,6 @@
 #include "psh_core.hpp"
 #include "psh_memory.hpp"
 
-// -------------------------------------------------------------------------------------------------
-// Compile-time string type construction macros.
-// -------------------------------------------------------------------------------------------------
-
-/// Create a string literal and a string view at compile time from a given c-string literal.
-///
-/// Note: Use this macro with care, you should only use it with literal strings. Otherwise the
-///       length of the string won't be computed corrected by the compiler and you may obtain the
-///       size of a pointer instead the length of the string.
-#define psh_comptime_make_str(cstr_literal) \
-    psh::Str<sizeof((cstr_literal))> {      \
-        (cstr_literal)                      \
-    }
-#define psh_comptime_make_string_view(cstr_literal) \
-    psh::StringView {                               \
-        .buf   = cstr_literal,                      \
-        .count = sizeof(cstr_literal) - 1u,         \
-    }
-
 namespace psh {
     // Forward declaration.
     struct Arena;
@@ -154,6 +135,10 @@ namespace psh {
         return StringView{str, cstring_length(str)};
     }
 
+    psh_proc psh_inline StringView make_string_view(String const& string) psh_no_except {
+        return StringView{reinterpret_cast<char const*>(string.buf), string.count};
+    }
+
     psh_proc psh_inline String make_string(Arena* arena, usize initial_capacity) psh_no_except {
         return make_dynamic_array<char>(arena, initial_capacity);
     }
@@ -163,14 +148,30 @@ namespace psh {
         init_dynamic_array(&string, arena, sv.count + 1u);
         string.count = sv.count;
 
-        memory_copy(reinterpret_cast<u8*>(string.buf), reinterpret_cast<u8 const*>(sv.buf), sizeof(char) * sv.count);
+        memory_copy(reinterpret_cast<u8*>(string.buf), reinterpret_cast<u8 const*>(sv.buf), psh_usize_of(char) * sv.count);
 
         return string;
     }
 
-    psh_proc psh_inline StringView make_string_view(String const& string) psh_no_except {
-        return StringView{reinterpret_cast<char const*>(string.buf), string.count};
+    // -------------------------------------------------------------------------------------------------
+    // Compile-time string type construction macros.
+    // -------------------------------------------------------------------------------------------------
+
+/// Create a string literal and a string view at compile time from a given c-string literal.
+///
+/// Note: Use this macro with care, you should only use it with literal strings. Otherwise the
+///       length of the string won't be computed corrected by the compiler and you may obtain the
+///       size of a pointer instead the length of the string.
+#define psh_comptime_make_str(cstr_literal) \
+    psh::Str<sizeof((cstr_literal))> {      \
+        (cstr_literal)                      \
     }
+#define psh_comptime_make_string_view(cstr_literal) \
+    psh::StringView {                               \
+        .buf   = cstr_literal,                      \
+        .count = sizeof(cstr_literal) - 1u,         \
+    }
+
 
     /// Join an array of string views to a target string data. You can also provide a join element to be
     /// attached to the end of each join.
@@ -227,25 +228,25 @@ namespace psh {
     // @TODO: improve the integration with the Presheaf types.
     // @TODO: implement functions by extracting stuff from stb_sprintf.
     // -------------------------------------------------------------------------------------------------
-
-    using StringFormatCallbackFunction = char*(cstring* buf, void* user, i32 len);
-
-    psh_proc i32 string_format_list(char* buf, i32 count, cstring fmt, va_list va) psh_no_except;
-    psh_proc i32 string_format_list_with_callback(
-        StringFormatCallbackFunction* callback,
-        void*                         user,
-        char*                         buf,
-        cstring                       fmt,
-        va_list                       va) psh_no_except;
-
-    psh_attribute_fmt(3) psh_inline i32 string_format(char* buf, i32 count, cstring fmt, ...) psh_no_except {
-        i32 result;
-        {
-            va_list args;
-            va_start(args, fmt);
-            result = string_format_list(buf, count, fmt, args);
-            va_end(args);
-        }
-        return result;
-    }
+    //
+    // using StringFormatCallbackFunction = char*(cstring* buf, void* user, i32 len);
+    //
+    // psh_proc i32 string_format_list(char* buf, i32 count, cstring fmt, va_list va) psh_no_except;
+    // psh_proc i32 string_format_list_with_callback(
+    //     StringFormatCallbackFunction* callback,
+    //     void*                         user,
+    //     char*                         buf,
+    //     cstring                       fmt,
+    //     va_list                       va) psh_no_except;
+    //
+    // psh_attribute_fmt(3) psh_inline i32 string_format(char* buf, i32 count, cstring fmt, ...) psh_no_except {
+    //     i32 result;
+    //     {
+    //         va_list args;
+    //         va_start(args, fmt);
+    //         result = string_format_list(buf, count, fmt, args);
+    //         va_end(args);
+    //     }
+    //     return result;
+    // }
 }  // namespace psh

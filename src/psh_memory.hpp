@@ -168,25 +168,12 @@ namespace psh {
     ///
     /// Since the arena is not aware of the ownership, this function call has to be paired
     /// with destroy_owned_arena.
-    psh_proc psh_inline Arena make_owned_arena(usize capacity) psh_no_except {
-        u8* buf = memory_virtual_alloc(capacity);
-        return Arena{
-            .buf      = buf,
-            .capacity = (buf != nullptr) ? capacity : 0,
-            .offset   = 0,
-        };
-    }
+    psh_proc Arena make_owned_arena(usize capacity) psh_no_except;
 
     /// Free the memory of an arena that owns its memory.
     ///
     /// This function should only be called for arenas that where created by make_owned_arena.
-    psh_proc psh_inline void destroy_owned_arena(Arena* arena) psh_no_except {
-        psh_paranoid_validate_usage(psh_assert_not_null(arena));
-
-        usize capacity  = arena->capacity;
-        arena->capacity = 0;
-        memory_virtual_free(arena->buf, capacity);
-    }
+    psh_proc void destroy_owned_arena(Arena* arena) psh_no_except;
 
     /// Create a restorable checkpoint for the arena. This is a more flexible alternative to the
     /// ScratchArena construct since you can manually restore the arena, not relying on destructors.
@@ -472,6 +459,43 @@ namespace psh {
         memory_manager->allocation_count += static_cast<usize>(new_block != block);
         return new_block;
     }
+
+    // -------------------------------------------------------------------------------------------------
+    // Common code-generation for index-based/iterator access to Presheaf containers.
+    //
+    // Also defines the inner type ValueType, which is used for functions that are polymorphic on any of
+    // the Presheaf containers.
+    // -------------------------------------------------------------------------------------------------
+
+#define psh_impl_generate_container_boilerplate(InnerType, this_buf, this_count)      \
+    using ValueType = InnerType;                                                      \
+    psh_inline InnerType& operator[](usize idx) psh_no_except {                       \
+        psh_assert_bounds_check(idx, this_count);                                     \
+        return this_buf[idx];                                                         \
+    }                                                                                 \
+    psh_inline InnerType const& operator[](usize idx) const psh_no_except {           \
+        psh_assert_bounds_check(idx, this_count);                                     \
+        return this_buf[idx];                                                         \
+    }                                                                                 \
+    psh_inline InnerType*       begin() psh_no_except { return this_buf; }            \
+    psh_inline InnerType*       end() psh_no_except { return this_buf + this_count; } \
+    psh_inline InnerType const* begin() const psh_no_except { return this_buf; }      \
+    psh_inline InnerType const* end() const psh_no_except { return this_buf + this_count; }
+
+#define psh_impl_generate_constexpr_container_boilerplate(InnerType, this_buf, this_count)      \
+    using ValueType = InnerType;                                                                \
+    psh_inline constexpr InnerType& operator[](usize idx) psh_no_except {                       \
+        psh_assert_bounds_check(idx, this_count);                                               \
+        return this_buf[idx];                                                                   \
+    }                                                                                           \
+    psh_inline constexpr InnerType const& operator[](usize idx) const psh_no_except {           \
+        psh_assert_bounds_check(idx, this_count);                                               \
+        return this_buf[idx];                                                                   \
+    }                                                                                           \
+    psh_inline constexpr InnerType*       begin() psh_no_except { return this_buf; }            \
+    psh_inline constexpr InnerType*       end() psh_no_except { return this_buf + this_count; } \
+    psh_inline constexpr InnerType const* begin() const psh_no_except { return this_buf; }      \
+    psh_inline constexpr InnerType const* end() const psh_no_except { return this_buf + this_count; }
 
     // -------------------------------------------------------------------------------------------------
     // Fat pointers.
@@ -880,8 +904,10 @@ namespace psh {
         return status;
     }
 
-    /// @NOTE: If T is a struct with a pointer to itself, the pointer address will be invalidated
-    ///        by this procedure. DO NOT use this array structure with types having this property.
+    /// Adjust the capacity of the dynamic array.
+    ///
+    /// Note: If T is a struct with a pointer to itself, the pointer address will be invalidated
+    ///       by this procedure. DO NOT use this array structure with types having this property.
     template <typename T>
     psh_proc Status dynamic_array_reserve(DynamicArray<T>* darray, usize new_capacity) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(darray));
@@ -984,7 +1010,7 @@ namespace psh {
     ///
 
     template <typename T>
-    psh_proc void fat_ptr_unordered_remove(FatPtr<T>* fptr, usize idx) psh_no_except {
+    psh_proc psh_inline void fat_ptr_unordered_remove(FatPtr<T>* fptr, usize idx) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(fptr));
         psh_validate_usage(psh_assert_bounds_check(idx, fptr->count));
 
@@ -999,7 +1025,7 @@ namespace psh {
     }
 
     template <typename T>
-    psh_proc void dynamic_array_unordered_remove(DynamicArray<T>* darray, usize idx) psh_no_except {
+    psh_proc psh_inline void dynamic_array_unordered_remove(DynamicArray<T>* darray, usize idx) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(darray));
         psh_validate_usage(psh_assert_bounds_check(idx, darray->count));
 

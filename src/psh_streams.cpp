@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include "psh_core.hpp"
+#include "psh_platform.hpp"
 
 #if PSH_OS_WINDOWS
 #    include <Windows.h>

@@ -25,6 +25,8 @@
 #pragma once
 
 // clang-format off
+#include "psh_platform.hpp"
+#include "psh_config.hpp"
 #include "psh_core.hpp"
 #include "psh_math.hpp"
 #include "psh_time.hpp"

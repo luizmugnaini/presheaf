@@ -28,6 +28,7 @@
 #include "psh_core.hpp"
 #include "psh_debug.hpp"
 #include "psh_math.hpp"
+#include "psh_platform.hpp"
 
 #if PSH_OS_WINDOWS
 #    include <Windows.h>
@@ -189,6 +190,27 @@ namespace psh {
         }
 
         return ptr_addr;
+    }
+
+    // -------------------------------------------------------------------------------------------------
+    // Arena allocator implementation.
+    // -------------------------------------------------------------------------------------------------
+
+    psh_proc Arena make_owned_arena(usize capacity) psh_no_except {
+        u8* buf = memory_virtual_alloc(capacity);
+        return Arena{
+            .buf      = buf,
+            .capacity = (buf != nullptr) ? capacity : 0,
+            .offset   = 0,
+        };
+    }
+
+    psh_proc void destroy_owned_arena(Arena* arena) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(arena));
+
+        usize capacity  = arena->capacity;
+        arena->capacity = 0;
+        memory_virtual_free(arena->buf, capacity);
     }
 
     // -------------------------------------------------------------------------------------------------
