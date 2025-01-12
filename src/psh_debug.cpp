@@ -24,6 +24,8 @@
 
 #include "psh_debug.hpp"
 
+#include "psh_platform.hpp"
+
 #if PSH_ENABLE_USE_STB_SPRINTF
 #    include "psh_sprintf.hpp"
 #endif
@@ -64,28 +66,27 @@ namespace psh {
     }
 }  // namespace psh
 
-#if PSH_ENABLE_LOGGING
 // -------------------------------------------------------------------------------------------------
 // Tweakable log message length parameters.
 //
 // If your logs are being truncated, you may have to tweak the parameters found in this section.
 // -------------------------------------------------------------------------------------------------
 
-#    if !defined(PSH_LOG_MSG_MAX_LENGTH)
-#        define PSH_LOG_MSG_MAX_LENGTH 8192
-#    endif
+#if !defined(PSH_LOG_MSG_MAX_LENGTH)
+#    define PSH_LOG_MSG_MAX_LENGTH 8192
+#endif
 
 /// The log header hast to have enough space to fit the log level string and the caller file name,
 /// line number, and function name.
-#    if !defined(PSH_LOG_HEADER_MAX_LENGTH)
-#        define PSH_LOG_HEADER_MAX_LENGTH 128
-#    endif
+#if !defined(PSH_LOG_HEADER_MAX_LENGTH)
+#    define PSH_LOG_HEADER_MAX_LENGTH 128
+#endif
 
 // -------------------------------------------------------------------------------------------------
 // Logging implementation.
 // -------------------------------------------------------------------------------------------------
 
-#    define PSH_LOG_HEADER_FMT "%s [%s:%u:%s]"
+#define PSH_LOG_HEADER_FMT "%s [%s:%u:%s]"
 
 namespace psh::impl {
     // @TODO:
@@ -95,23 +96,23 @@ namespace psh::impl {
     constexpr usize LOG_RESULT_MSG_MAX_LENGTH = PSH_LOG_HEADER_MAX_LENGTH + PSH_LOG_MSG_MAX_LENGTH;
 
     constexpr Buffer<cstring, LOG_LEVEL_COUNT> LOG_LEVEL_CSTRING = {
-#    if PSH_ENABLE_ANSI_COLOURS
+#if PSH_ENABLE_ANSI_COLOURS
         "\x1b[1;41m[FATAL]\x1b[0m",
         "\x1b[1;31m[ERROR]\x1b[0m",
         "\x1b[1;33m[WARNING]\x1b[0m",
         "\x1b[1;32m[INFO]\x1b[0m",
         "\x1b[1;34m[DEBUG]\x1b[0m",
-#    else
+#else
         "[FATAL]",
         "[ERROR]",
         "[WARNING]",
         "[INFO]",
         "[DEBUG]",
-#    endif
+#endif
     };
 
-#    if PSH_ENABLE_USE_STB_SPRINTF
-    psh_internal void log_msg(LogInfo info, cstring msg) psh_no_except {
+#if PSH_ENABLE_USE_STB_SPRINTF
+    psh_proc void log_msg(LogInfo info, cstring msg) psh_no_except {
         Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
         {
             i32 result_msg_length = psh_stbsp_snprintf(
@@ -131,7 +132,7 @@ namespace psh::impl {
         psh_discard_value(fprintf(stdout, "%s", result_msg.buf));
     }
 
-    psh_internal void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
+    psh_proc void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
         Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
         {
             i32 header_length = psh_stbsp_snprintf(
@@ -176,8 +177,8 @@ namespace psh::impl {
 
         psh_discard_value(fprintf(stdout, "%s", result_msg.buf));
     }
-#    else   // !PSH_ENABLE_USE_STB_SPRINTF - use libc functions.
-    psh_internal void log_msg(LogInfo info, cstring msg) psh_no_except {
+#else   // !PSH_ENABLE_USE_STB_SPRINTF - use libc functions.
+    psh_proc void log_msg(LogInfo info, cstring msg) psh_no_except {
         psh_discard_value(fprintf(
             stderr,
             PSH_LOG_HEADER_FMT " %s\n",
@@ -188,7 +189,7 @@ namespace psh::impl {
             msg));
     }
 
-    psh_internal void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
+    psh_internal ph_attribute_fmt(2) void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
         Buffer<char, LOG_RESULT_MSG_MAX_LENGTH> result_msg;
 
         va_list args;
@@ -216,6 +217,5 @@ namespace psh::impl {
             info.function_name,
             result_msg.buf));
     }
-#    endif  // PSH_ENABLE_USE_STB_SPRINTF
+#endif  // PSH_ENABLE_USE_STB_SPRINTF
 }  // namespace psh::impl
-#endif  // PSH_ENABLE_LOGGING

@@ -24,6 +24,8 @@
 
 #include "psh_time.hpp"
 
+#include "psh_platform.hpp"
+
 #if PSH_OS_WINDOWS
 #    include <Windows.h>
 #elif PSH_OS_UNIX

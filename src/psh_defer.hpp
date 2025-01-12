@@ -64,9 +64,9 @@ namespace psh::impl {
     };
 
     template <typename T>
-    psh_internal psh_inline T&& cast_forward(typename RemoveRef<T>::Type& x) psh_no_except { return static_cast<T&&>(x); }
+    psh_proc psh_inline T&& cast_forward(typename RemoveRef<T>::Type& x) psh_no_except { return static_cast<T&&>(x); }
     template <typename T>
-    psh_internal psh_inline T&& cast_forward(typename RemoveRef<T>::Type&& x) psh_no_except { return static_cast<T&&>(x); }
+    psh_proc psh_inline T&& cast_forward(typename RemoveRef<T>::Type&& x) psh_no_except { return static_cast<T&&>(x); }
 
     template <typename Func>
     struct Deferrer {
@@ -76,7 +76,7 @@ namespace psh::impl {
     };
 
     template <typename Func>
-    psh_internal psh_inline Deferrer<Func> make_defer_fn(Func&& fn) psh_no_except { return Deferrer<Func>{cast_forward<Func>(fn)}; }
+    psh_proc psh_inline Deferrer<Func> make_defer_fn(Func&& fn) psh_no_except { return Deferrer<Func>{cast_forward<Func>(fn)}; }
 }  // namespace psh::impl
 
 #define psh_impl_defer_lambda_name_2(prefix, suffix) prefix##suffix

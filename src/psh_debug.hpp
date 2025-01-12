@@ -25,6 +25,19 @@
 #pragma once
 
 #include "psh_core.hpp"
+#include "psh_platform.hpp"
+
+// -------------------------------------------------------------------------------------------------
+// Procedures for program abortion.
+// -------------------------------------------------------------------------------------------------
+
+namespace psh {
+    using AbortFunction = void(void* arg);
+
+    psh_proc void set_abort_function(AbortFunction* func, void* abort_context = nullptr) psh_no_except;
+
+    psh_proc void abort_program() psh_no_except;
+}  // namespace psh
 
 // -------------------------------------------------------------------------------------------------
 // Implementation details.
@@ -57,28 +70,17 @@ namespace psh::impl {
     };
 
     /// Log a message to the standard error stream.
-    psh_internal void log_msg(LogInfo info, cstring msg) psh_no_except;
+    psh_proc void log_msg(LogInfo info, cstring msg) psh_no_except;
 
     /// Log a formatted message to the standard error stream.
-    psh_internal psh_attribute_fmt(2) void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except;
+    psh_proc psh_attribute_fmt(2) void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except;
 }  // namespace psh::impl
-
-// -------------------------------------------------------------------------------------------------
-// Procedures for program abortion.
-// -------------------------------------------------------------------------------------------------
-
-namespace psh {
-    using AbortFunction = void(void* arg);
-
-    psh_proc void set_abort_function(AbortFunction* func, void* abort_context = nullptr) psh_no_except;
-
-    psh_proc void abort_program() psh_no_except;
-}  // namespace psh
 
 // -------------------------------------------------------------------------------------------------
 // Logging macros.
 // -------------------------------------------------------------------------------------------------
 
+/// Generate the associated log info at the call site.
 #define psh_impl_make_log_info(log_level)            \
     psh::impl::LogInfo {                             \
         .file_name     = psh_source_file_name(),     \

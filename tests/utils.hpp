@@ -25,7 +25,7 @@
 #pragma once
 
 #include <stdio.h>
-#include <psh_core.hpp>
+#include <psh_config.hpp>
 #include <psh_debug.hpp>
 
 #if PSH_ENABLE_ANSI_COLOURS
