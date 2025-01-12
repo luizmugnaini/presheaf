@@ -29,7 +29,7 @@
 // Single compilation unit comprising the whole library implementation.
 // -------------------------------------------------------------------------------------------------
 
-#include "../src/presheaf.cpp"
+#include "../src/presheaf_impl.cpp"
 
 // -------------------------------------------------------------------------------------------------
 // Invoke all test.

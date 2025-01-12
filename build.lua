@@ -286,7 +286,7 @@ local compilers = {
 local linker_flags = os_info.windows and "/NODEFAULTLIB:libcpmt /NODEFAULTLIB:libcpmtd /NODEFAULTLIB:msvcprt /NODEFAULTLIB:msvcprtd" or "-nolibstd++"
 
 local presheaf = {
-    src              = make_path({ root_dir, "src", "presheaf.cpp" }),
+    src              = make_path({ root_dir, "src", "presheaf_impl.cpp" }),
     test_src         = make_path({ root_dir, "tests", "test_presheaf.cpp" }),
     include_dir      = make_path({ root_dir, "src" }),
     dll_build_define = "PSH_BUILD_DLL",

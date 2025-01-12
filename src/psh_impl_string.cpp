@@ -27,6 +27,9 @@
 #include <string.h>
 #include "psh_memory.hpp"
 
+// Due to STB code being public domain, we separate its implementation from the psh_string module.
+#include "psh_impl_stb_sprintf.cpp"
+
 namespace psh {
     psh_proc usize cstring_length(cstring str) psh_no_except {
         usize length = 0;
@@ -126,5 +129,45 @@ namespace psh {
         target.count                  = new_string_length;
 
         return STATUS_OK;
+    }
+
+    // -------------------------------------------------------------------------------------------------
+    // String formatting wrapper functions.
+    // -------------------------------------------------------------------------------------------------
+
+    psh_proc psh_attribute_disable_asan i32 string_format_list(char* buf, i32 count, cstring fmt, va_list va) psh_no_except {
+        impl::SprintfContext c;
+
+        if ((count == 0) && !buf) {
+            c.length = 0;
+
+            impl::string_format_list_with_callback(impl::count_clamp_callback, &c, c.tmp, fmt, va);
+        } else {
+            c.buf    = buf;
+            c.count  = count;
+            c.length = 0;
+
+            impl::string_format_list_with_callback(impl::clamp_callback, &c, impl::clamp_callback(nullptr, &c, 0), fmt, va);
+
+            // zero-terminate
+            i32 l = static_cast<i32>(c.buf - buf);
+            if (l >= count) {
+                // should never be greater, only equal (or less) than count
+                l = count - 1;
+            }
+            buf[l] = 0;
+        }
+
+        return c.length;
+    }
+
+    psh_proc psh_attribute_disable_asan i32 string_format(char* buf, i32 count, cstring fmt, ...) psh_no_except {
+        va_list va;
+        va_start(va, fmt);
+
+        i32 result = string_format_list(buf, count, fmt, va);
+
+        va_end(va);
+        return result;
     }
 }  // namespace psh
