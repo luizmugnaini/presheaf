@@ -145,24 +145,24 @@ namespace psh {
     // Memory alignment.
     // -------------------------------------------------------------------------------------------------
 
-    psh_proc usize padding_with_header(
-        uptr  ptr_addr,
-        usize alignment,
-        usize header_size,
-        usize header_alignment) psh_no_except {
+    psh_proc u32 padding_with_header(
+        uptr ptr_addr,
+        u32  alignment,
+        u32  header_size,
+        u32  header_alignment) psh_no_except {
         psh_validate_usage({
             psh_assert_fmt(
                 psh_is_pow_of_two(alignment),
-                "Expected the element alignment to be a power of two (got %zu).",
+                "Expected the element alignment to be a power of two (got %u).",
                 alignment);
             psh_assert_fmt(
                 psh_is_pow_of_two(header_alignment),
-                "Expected the header alignment to be a power of two (got %zu).",
+                "Expected the header alignment to be a power of two (got %u).",
                 header_alignment);
         });
 
         // Calculate the padding necessary for the alignment of the new block of memory.
-        usize padding   = 0;
+        u32   padding   = 0;
         usize mod_align = ptr_addr & (alignment - 1u);  // Same as ptr_addr % alignment.
         if (mod_align != 0) {
             padding += alignment - mod_align;
@@ -170,7 +170,7 @@ namespace psh {
         ptr_addr += padding;
 
         // Padding necessary for the header alignment.
-        usize mod_header = ptr_addr & (header_alignment - 1u);  // Same as ptr_addr % header_alignment.
+        usize mod_header = ptr_addr & (header_alignment - 1u);  // @NOTE: Same as ptr_addr % header_alignment.
         if (mod_header != 0) {
             padding += header_alignment - mod_header;
         }
@@ -181,10 +181,10 @@ namespace psh {
         return padding;
     }
 
-    psh_proc usize align_forward(uptr ptr_addr, usize alignment) psh_no_except {
-        psh_validate_usage(psh_assert_fmt(psh_is_pow_of_two(alignment), "Expected alignment (%zu) to be a power of two.", alignment));
+    psh_proc uptr align_forward(uptr ptr_addr, u32 alignment) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_fmt(psh_is_pow_of_two(alignment), "Expected alignment (%u) to be a power of two.", alignment));
 
-        usize mod_align = ptr_addr & (alignment - 1u);
+        usize mod_align = ptr_addr & (alignment - 1u);  // @NOTE: Same as ptr_addr % alignment.
         if (mod_align != 0) {
             ptr_addr += alignment - mod_align;
         }
