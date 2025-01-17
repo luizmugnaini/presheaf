@@ -96,11 +96,11 @@ namespace psh {
     ///
     /// Return: The resulting padding with respect to ptr that should satisfy the alignment
     ///         requirements, as well as accommodating the associated header.
-    psh_proc usize padding_with_header(
+    psh_proc u32 padding_with_header(
         uptr  ptr,
-        usize alignment,
-        usize header_size,
-        usize header_alignment) psh_no_except;
+        u32 alignment,
+        u32 header_size,
+        u32 header_alignment) psh_no_except;
 
     /// Compute the next address that satisfies a given alignment.
     ///
@@ -112,7 +112,7 @@ namespace psh {
     ///
     /// Return: The next address, relative to ptr that satisfies the alignment requirement imposed
     ///         by alignment.
-    psh_proc usize align_forward(uptr ptr, usize alignment) psh_no_except;
+    psh_proc uptr align_forward(uptr ptr, u32 alignment) psh_no_except;
 
     // -------------------------------------------------------------------------------------------------
     // Arena memory allocator.
@@ -639,6 +639,7 @@ namespace psh {
         psh_paranoid_validate_usage(psh_assert_not_null(push_buffer));
 
         usize count = push_buffer->count;
+
         psh_validate_usage({
             psh_assert_fmt(
                 count + zeros_count <= max_count,
@@ -662,6 +663,12 @@ namespace psh {
         psh_validate_usage(psh_assert_fmt(pop_count <= push_buffer->count, "The buffer has %zu elements but tried to pop %zu elements.", push_buffer->count, pop_count));
 
         push_buffer->count -= pop_count;
+    }
+
+    template <typename T, usize max_count>
+    psh_proc psh_inline void push_buffer_clear(PushBuffer<T, max_count>* push_buffer) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(push_buffer));
+        push_buffer->count = 0;
     }
 
     // -------------------------------------------------------------------------------------------------
@@ -820,6 +827,12 @@ namespace psh {
         psh_validate_usage(psh_assert_fmt(pop_count <= push_array->count, "The array has %zu elements but tried to pop %zu elements.", push_array->count, pop_count));
 
         push_array->count -= pop_count;
+    }
+
+    template <typename T>
+    psh_proc psh_inline void push_array_clear(PushArray<T>* push_array) psh_no_except {
+        psh_paranoid_validate_usage(psh_assert_not_null(push_array));
+        push_array->count = 0;
     }
 
     // -------------------------------------------------------------------------------------------------
