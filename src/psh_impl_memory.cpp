@@ -162,15 +162,15 @@ namespace psh {
         });
 
         // Calculate the padding necessary for the alignment of the new block of memory.
-        u32   padding   = 0;
-        usize mod_align = ptr_addr & (alignment - 1u);  // Same as ptr_addr % alignment.
+        u32 padding   = 0;
+        u32 mod_align = static_cast<u32>(ptr_addr & (static_cast<usize>(alignment) - 1u));  // @NOTE: Same as ptr_addr % alignment.
         if (mod_align != 0) {
             padding += alignment - mod_align;
         }
         ptr_addr += padding;
 
         // Padding necessary for the header alignment.
-        usize mod_header = ptr_addr & (header_alignment - 1u);  // @NOTE: Same as ptr_addr % header_alignment.
+        u32 mod_header = static_cast<u32>(ptr_addr & (static_cast<usize>(header_alignment) - 1u));  // @NOTE: Same as ptr_addr % header_alignment.
         if (mod_header != 0) {
             padding += header_alignment - mod_header;
         }
@@ -184,7 +184,7 @@ namespace psh {
     psh_proc uptr align_forward(uptr ptr_addr, u32 alignment) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_fmt(psh_is_pow_of_two(alignment), "Expected alignment (%u) to be a power of two.", alignment));
 
-        usize mod_align = ptr_addr & (alignment - 1u);  // @NOTE: Same as ptr_addr % alignment.
+        usize mod_align = ptr_addr & (static_cast<usize>(alignment) - 1u);  // @NOTE: Same as ptr_addr % alignment.
         if (mod_align != 0) {
             ptr_addr += alignment - mod_align;
         }
