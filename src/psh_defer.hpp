@@ -87,7 +87,7 @@ namespace psh::impl {
 // Defer interface.
 // -------------------------------------------------------------------------------------------------
 
-#define psh_defer(code)                                                                                          \
-    [[maybe_unused]] auto psh_impl_defer_lambda_name_0(psh_deferred_) = psh::impl::make_defer_fn([&]() -> void { \
-        code;                                                                                                    \
+#define psh_defer(code)                                                                                                        \
+    [[maybe_unused]] auto psh_impl_defer_lambda_name_0(psh_deferred_) = psh::impl::make_defer_fn([&]() psh_no_except -> void { \
+        code;                                                                                                                  \
     })
