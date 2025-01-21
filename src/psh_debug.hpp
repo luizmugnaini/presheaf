@@ -36,7 +36,7 @@ namespace psh {
 
     psh_proc void set_abort_function(AbortFunction* func, void* abort_context = nullptr) psh_no_except;
 
-    psh_proc void abort_program() psh_no_except;
+    psh_proc psh_no_inline void abort_program() psh_no_except;
 }  // namespace psh
 
 // -------------------------------------------------------------------------------------------------
@@ -179,7 +179,7 @@ namespace psh::impl {
 #if PSH_ENABLE_ASSERT_NOT_NULL
 #    define psh_assert_not_null(ptr) psh_assert_msg((ptr) != nullptr, "Invalid pointer.")
 #else
-#    define psh_assert_not_null(ptr) psh_discard_value(ptr)
+#    define psh_assert_not_null(ptr) 0
 #endif
 
 #if PSH_ENABLE_ASSERT_NO_ALIAS

@@ -109,6 +109,18 @@ namespace psh {
 #    define psh_inline inline
 #endif
 
+/// Hint for forced non-inlining of a function.
+#if !PSH_ENABLE_FORCED_INLINING
+#    if defined(_MSC_VER)
+#        define psh_no_inline __declspec(noinline)
+#    elif defined(__clang__) || defined(__GNUC__)
+#        define psh_inline __attribute__((noinline))
+#    endif
+#endif
+#if !defined(psh_no_inline)
+#    define psh_no_inline
+#endif
+
 #define psh_no_return [[noreturn]]
 
 /// Hints that the current switch branch should fallthrough the next.
@@ -125,6 +137,15 @@ namespace psh {
 #    define psh_unreachable() __builtin_unreachable()
 #else
 #    define psh_unreachable() 0
+#endif
+
+/// Break the code execution when in a debugger.
+#if defined(_MSC_VER)
+#    define psh_debug_break() __debugbreak()
+#elif defined(__clang__) || defined(__GNUC__)
+#    define psh_debug_break() __builtin_trap()
+#else
+#    define psh_debug_break() do { for (;;) {} } while (0)
 #endif
 
 /// Hints for pointer aliasing rules.

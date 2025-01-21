@@ -40,15 +40,7 @@
 namespace psh::impl {
     psh_internal void default_abort_function(void* arg) psh_no_except {
         psh_discard_value(arg);
-
-#if PSH_COMPILER_MSVC
-        __debugbreak();
-#elif PSH_COMPILER_CLANG || PSH_COMPILER_GCC
-        __builtin_trap();
-#else
-        // Stall the program if we don't have a sane default.
-        for (;;) {}
-#endif
+        psh_debug_break();
     };
 
     psh_internal void*          abort_context  = nullptr;
