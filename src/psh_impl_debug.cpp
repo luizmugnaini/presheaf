@@ -121,7 +121,7 @@ namespace psh::impl {
                 return;
             }
         }
-        psh_discard_value(fprintf(stdout, "%s", result_msg.buf));
+        psh_discard_value(fprintf(stderr, "%s", result_msg.buf));
     }
 
     psh_proc void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except {
@@ -167,7 +167,7 @@ namespace psh::impl {
             va_end(args);
         }
 
-        psh_discard_value(fprintf(stdout, "%s", result_msg.buf));
+        psh_discard_value(fprintf(stderr, "%s", result_msg.buf));
     }
 #else   // !PSH_ENABLE_USE_STB_SPRINTF - use libc functions.
     psh_proc void log_msg(LogInfo info, cstring msg) psh_no_except {
@@ -201,7 +201,7 @@ namespace psh::impl {
         va_end(args);
 
         psh_discard_value(fprintf(
-            stdout,
+            stderr,
             PSH_LOG_HEADER_FMT " %s\n",
             LOG_LEVEL_CSTRING[info.level],
             info.file_name,
