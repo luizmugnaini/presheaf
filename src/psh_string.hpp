@@ -44,7 +44,9 @@ namespace psh {
         return (c == ' ')
                || (c == '\t')
                || (c == '\f')
-               || (c == '\v');
+               || (c == '\v')
+	       || (c == '\n')
+	       || (c == '\r');
     }
 
     psh_proc psh_inline bool char_is_end_of_line(char c) psh_no_except {
