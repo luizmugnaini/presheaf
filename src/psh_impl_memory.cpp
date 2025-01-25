@@ -244,7 +244,7 @@ namespace psh {
         psh_paranoid_validate_usage(psh_assert_msg(this->buf != nullptr, "Stack uninitialised."));
 
         u8 const* memory_start = this->buf;
-        u8 const* block_header = block + sizeof(StackHeader);
+        u8 const* block_header = block + psh_usize_of(StackHeader);
 
         bool valid = (block >= memory_start)
                      && (block <= memory_start + this->capacity)

@@ -39,7 +39,7 @@ namespace psh {
         return length;
     }
 
-    psh_proc StringCompareResult string_compare(StringView lhs, StringView rhs) psh_no_except {
+    psh_proc StringCompareResult string_compare(String lhs, String rhs) psh_no_except {
         i32                 cmp = memcmp(lhs.buf, rhs.buf, psh_min_value(lhs.count, rhs.count));
         StringCompareResult result;
         if (cmp == 0) {
@@ -52,7 +52,7 @@ namespace psh {
         return result;
     }
 
-    psh_proc bool string_equal(StringView lhs, StringView rhs) psh_no_except {
+    psh_proc bool string_equal(String lhs, String rhs) psh_no_except {
         usize length    = lhs.count;
         bool  are_equal = true;
 
@@ -64,7 +64,7 @@ namespace psh {
         return are_equal;
     }
 
-    psh_proc Status join_strings(String& target, FatPtr<StringView const> join_strings, StringView join_element) psh_no_except {
+    psh_proc Status join_strings(DynamicString& target, FatPtr<String const> join_strings, String join_element) psh_no_except {
         bool previously_empty = (target.count == 0);
 
         // Resize the string ahead of time.
@@ -79,7 +79,7 @@ namespace psh {
                 }
 
                 // Account for the size of each of the joining strings.
-                for (StringView const& s : join_strings) {
+                for (String const& s : join_strings) {
                     additional_length += s.count;
                 }
             }
@@ -99,7 +99,7 @@ namespace psh {
 
             // If the string was empty, join the first string without accounting for the joining element.
             if (previously_empty) {
-                StringView const& first_js = join_strings[0];
+                String const& first_js = join_strings[0];
 
                 memory_copy(string_buf + new_string_length, reinterpret_cast<u8 const*>(first_js.buf), first_js.count);
                 new_string_length += first_js.count;
@@ -109,7 +109,7 @@ namespace psh {
 
             // Join remaining strings.
             for (usize idx = first_idx; idx < join_strings.count; ++idx) {
-                StringView const& js = join_strings[idx];
+                String const& js = join_strings[idx];
 
                 usize previous_size = new_string_length;
                 memory_copy(string_buf + previous_size, reinterpret_cast<u8 const*>(join_element.buf), join_element.count);
@@ -119,7 +119,7 @@ namespace psh {
 
             target.count = new_string_length;
         } else {
-            for (StringView const& js : join_strings) {
+            for (String const& js : join_strings) {
                 memory_copy(string_buf + new_string_length, reinterpret_cast<u8 const*>(js.buf), js.count);
                 new_string_length += js.count;
             }

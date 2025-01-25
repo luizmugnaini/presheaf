@@ -145,7 +145,10 @@ namespace psh {
 #elif defined(__clang__) || defined(__GNUC__)
 #    define psh_debug_break() __builtin_trap()
 #else
-#    define psh_debug_break() do { for (;;) {} } while (0)
+#    define psh_debug_break() \
+        do {                  \
+            for (;;) {}       \
+        } while (0)
 #endif
 
 /// Hints for pointer aliasing rules.

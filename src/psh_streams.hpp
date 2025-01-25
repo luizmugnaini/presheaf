@@ -85,14 +85,14 @@ namespace psh {
         FILE_STATUS_OK,
     };
 
-    psh_proc psh_inline StringView file_status_to_string(FileStatus status) psh_no_except {
-        StringView string = {};
+    psh_proc psh_inline String file_status_to_string(FileStatus status) psh_no_except {
+        String string = {};
         switch (status) {
-            case FILE_STATUS_FAILED_TO_OPEN: string = psh::make_string_view("psh::FILE_STATUS_FAILED_TO_OPEN"); break;
-            case FILE_STATUS_FAILED_TO_READ: string = psh::make_string_view("psh::FILE_STATUS_FAILED_TO_READ"); break;
-            case FILE_STATUS_OUT_OF_MEMORY:  string = psh::make_string_view("psh::FILE_STATUS_OUT_OF_MEMORY"); break;
-            case FILE_STATUS_SIZE_UNKNOWN:   string = psh::make_string_view("psh::FILE_STATUS_SIZE_UNKNOWN"); break;
-            case FILE_STATUS_OK:             string = psh::make_string_view("psh::FILE_STATUS_OK"); break;
+            case FILE_STATUS_FAILED_TO_OPEN: string = psh::make_string("psh::FILE_STATUS_FAILED_TO_OPEN"); break;
+            case FILE_STATUS_FAILED_TO_READ: string = psh::make_string("psh::FILE_STATUS_FAILED_TO_READ"); break;
+            case FILE_STATUS_OUT_OF_MEMORY:  string = psh::make_string("psh::FILE_STATUS_OUT_OF_MEMORY"); break;
+            case FILE_STATUS_SIZE_UNKNOWN:   string = psh::make_string("psh::FILE_STATUS_SIZE_UNKNOWN"); break;
+            case FILE_STATUS_OK:             string = psh::make_string("psh::FILE_STATUS_OK"); break;
         }
         return string;
     }
@@ -111,7 +111,7 @@ namespace psh {
     psh_proc FileReadResult read_file(Arena* arena, cstring path, OpenFileFlag flag = OPEN_FILE_FLAG_READ_BIN) psh_no_except;
 
     /// Read the standard input stream bytes to a string.
-    psh_proc String read_stdin(Arena* arena, u32 initial_buf_size = 128, u32 read_chunk_size = 64) psh_no_except;
+    psh_proc DynamicString read_stdin(Arena* arena, u32 initial_buf_size = 128, u32 read_chunk_size = 64) psh_no_except;
 
-    psh_proc String absolute_path(Arena* arena, cstring file_path) psh_no_except;
+    psh_proc DynamicString absolute_path(Arena* arena, cstring file_path) psh_no_except;
 }  // namespace psh

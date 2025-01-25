@@ -40,16 +40,16 @@ namespace psh {
 
     /// Get the binary representation of a number
     template <typename T>
-    psh_proc String binary_repr(Arena* arena, T val) psh_no_except {
+    psh_proc DynamicString binary_repr(Arena* arena, T val) psh_no_except {
         if (val == 0) {
-            return make_string(arena, psh_comptime_make_string_view("0b0"));
+            return make_dynamic_string(arena, psh_comptime_make_string("0b0"));
         }
 
         // @TODO: First construct a local char[BIT_COUNT] buffer then copy everything to
         //        the resulting representaiton string.
         constexpr i32 BIT_COUNT = psh_type_bit_count(T);
 
-        String repr = make_string(arena, 2 + BIT_COUNT + 1);
+        DynamicString repr = make_dynamic_string(arena, 2 + BIT_COUNT + 1);
 
         repr.buf[0] = '0';
         repr.buf[1] = 'b';

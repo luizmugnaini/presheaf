@@ -103,7 +103,7 @@ namespace psh::test::containers {
     psh_internal void dynamic_array_push_elements(MemoryManager& memory_manager) {
         Arena arena;
         {
-            usize arena_capacity = sizeof(i32) * 1024;
+            usize arena_capacity = psh_usize_of(i32) * 1024;
             init_arena(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
@@ -123,7 +123,7 @@ namespace psh::test::containers {
     psh_internal void dynamic_array_count_and_capacity(MemoryManager& memory_manager) {
         Arena arena;
         {
-            usize arena_capacity = sizeof(Foo) * 100;
+            usize arena_capacity = psh_usize_of(Foo) * 100;
             init_arena(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
@@ -154,7 +154,7 @@ namespace psh::test::containers {
     psh_internal void dynamic_array_peek_and_pop(MemoryManager& memory_manager) {
         Arena arena;
         {
-            usize arena_capacity = sizeof(i32) * 3;
+            usize arena_capacity = psh_usize_of(i32) * 3;
             init_arena(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
@@ -195,7 +195,7 @@ namespace psh::test::containers {
     psh_internal void dynamic_array_remove(MemoryManager& memory_manager) {
         Arena arena;
         {
-            usize arena_capacity = sizeof(i32) * 5;
+            usize arena_capacity = psh_usize_of(i32) * 5;
             init_arena(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 
@@ -266,7 +266,7 @@ namespace psh::test::containers {
     psh_internal void dynamic_array_clear(MemoryManager& memory_manager) {
         Arena arena;
         {
-            usize arena_capacity = sizeof(f32) * 4;
+            usize arena_capacity = psh_usize_of(f32) * 4;
             init_arena(&arena, memory_alloc<u8>(&memory_manager, arena_capacity), arena_capacity);
         }
 

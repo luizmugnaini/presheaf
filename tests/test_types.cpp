@@ -26,19 +26,19 @@
 
 namespace psh::test::types {
     psh_internal void sizes() {
-        psh_assert_constexpr(sizeof(u8) == 1);
-        psh_assert_constexpr(sizeof(u16) == 2);
-        psh_assert_constexpr(sizeof(u32) == 4);
-        psh_assert_constexpr(sizeof(u64) == 8);
-        psh_assert_constexpr(sizeof(usize) == 8);
-        psh_assert_constexpr(sizeof(i8) == 1);
-        psh_assert_constexpr(sizeof(i16) == 2);
-        psh_assert_constexpr(sizeof(i32) == 4);
-        psh_assert_constexpr(sizeof(i64) == 8);
-        psh_assert_constexpr(sizeof(f32) == 4);
-        psh_assert_constexpr(sizeof(f64) == 8);
-        psh_assert_constexpr(sizeof(uptr) == 8);
-        psh_assert_constexpr(sizeof(iptr) == 8);
+        psh_assert_constexpr(psh_usize_of(u8) == 1);
+        psh_assert_constexpr(psh_usize_of(u16) == 2);
+        psh_assert_constexpr(psh_usize_of(u32) == 4);
+        psh_assert_constexpr(psh_usize_of(u64) == 8);
+        psh_assert_constexpr(psh_usize_of(usize) == 8);
+        psh_assert_constexpr(psh_usize_of(i8) == 1);
+        psh_assert_constexpr(psh_usize_of(i16) == 2);
+        psh_assert_constexpr(psh_usize_of(i32) == 4);
+        psh_assert_constexpr(psh_usize_of(i64) == 8);
+        psh_assert_constexpr(psh_usize_of(f32) == 4);
+        psh_assert_constexpr(psh_usize_of(f64) == 8);
+        psh_assert_constexpr(psh_usize_of(uptr) == 8);
+        psh_assert_constexpr(psh_usize_of(iptr) == 8);
 
         report_test_successful();
     }

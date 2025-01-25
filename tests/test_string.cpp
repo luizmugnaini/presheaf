@@ -29,37 +29,29 @@
 #include "utils.hpp"
 
 namespace psh::test::string {
-    psh_internal void str_type() {
-        constexpr auto s = psh_comptime_make_str("Frodo Baggins");
-        psh_assert(string_equal(make_string_view(s), "Frodo Baggins"));
-        psh_assert(s.count == cstring_length("Frodo Baggins"));
-        psh_assert(s.buf[s.count] == 0);
-        report_test_successful();
-    }
-
-    psh_internal void string_view_type() {
-        StringView v1 = make_string_view("Nine for the Elven-kings under moon and star");
+    psh_internal void string_type() {
+        String v1 = make_string("Nine for the Elven-kings under moon and star");
         psh_assert(string_equal(v1, "Nine for the Elven-kings under moon and star"));
         psh_assert(v1.count == cstring_length("Nine for the Elven-kings under moon and star"));
         psh_assert(v1.buf[v1.count] == 0);
 
-        constexpr StringView v2 = psh_comptime_make_string_view("Nine for the Elven-kings under moon and star");
+        constexpr String v2 = psh_comptime_make_string("Nine for the Elven-kings under moon and star");
         psh_assert(string_equal(v2, "Nine for the Elven-kings under moon and star"));
         psh_assert(v2.count == cstring_length("Nine for the Elven-kings under moon and star"));
         psh_assert(v2.buf[v1.count] == 0);
 
-        StringView v3 = make_string_view("Nine for the Elven-kings under moon and star");
+        String v3 = make_string("Nine for the Elven-kings under moon and star");
         psh_assert(string_equal(v3, "Nine for the Elven-kings under moon and star"));
         psh_assert(v3.count == cstring_length("Nine for the Elven-kings under moon and star"));
         psh_assert(v3.buf[v1.count] == 0);
         report_test_successful();
     }
 
-    psh_internal void string_type() {
+    psh_internal void dynamic_string_type() {
         Arena arena = make_owned_arena(512);
         {
-            String s = make_string(&arena, psh_comptime_make_string_view("Seven for the Dwarf-lords in their halls of stone"));
-            psh_assert(string_equal(make_string_view(s), "Seven for the Dwarf-lords in their halls of stone"));
+            DynamicString s = make_dynamic_string(&arena, psh_comptime_make_string("Seven for the Dwarf-lords in their halls of stone"));
+            psh_assert(string_equal(make_string(s), "Seven for the Dwarf-lords in their halls of stone"));
             psh_assert(s.count == strlen("Seven for the Dwarf-lords in their halls of stone"));
             psh_assert(s.capacity == s.count + 1u);
             psh_assert(s.buf[s.capacity - 1u] == 0);
@@ -68,21 +60,21 @@ namespace psh::test::string {
         report_test_successful();
     }
 
-    psh_internal void string_join() {
-        constexpr auto check_str1 = psh_comptime_make_str(
+    psh_internal void string_joining_operation() {
+        constexpr String check_str1 = psh_comptime_make_string(
             "One ring to rule them all, "
             "One ring to find them, "
             "One ring to bring them all, "
             "and in the darkness bind them.");
 
-        constexpr Buffer<StringView, 4> views1 = {
-            psh_comptime_make_string_view("One ring to rule them all"),
-            psh_comptime_make_string_view("One ring to find them"),
-            psh_comptime_make_string_view("One ring to bring them all"),
-            psh_comptime_make_string_view("and in the darkness bind them."),
+        constexpr Buffer<String, 4> views1 = {
+            psh_comptime_make_string("One ring to rule them all"),
+            psh_comptime_make_string("One ring to find them"),
+            psh_comptime_make_string("One ring to bring them all"),
+            psh_comptime_make_string("and in the darkness bind them."),
         };
 
-        constexpr auto check_str2 = psh_comptime_make_str(
+        constexpr String check_str2 = psh_comptime_make_string(
             "Three Rings for the Elven-kings under the sky,\n"
             "Seven for the Dwarf-lords in their halls of stone,\n"
             "Nine for Mortal Men doomed to die,\n"
@@ -92,49 +84,50 @@ namespace psh::test::string {
             "One Ring to bring them all, and in the darkness bind them\n"
             "In the Land of Mordor where the Shadows lie.\n");
 
-        constexpr Buffer<StringView, 8> views2 = {
-            psh_comptime_make_string_view("Three Rings for the Elven-kings under the sky,\n"),
-            psh_comptime_make_string_view("Seven for the Dwarf-lords in their halls of stone,\n"),
-            psh_comptime_make_string_view("Nine for Mortal Men doomed to die,\n"),
-            psh_comptime_make_string_view("One for the Dark Lord on his dark throne\n"),
-            psh_comptime_make_string_view("In the Land of Mordor where the Shadows lie.\n"),
-            psh_comptime_make_string_view("One Ring to rule them all, One Ring to find them,\n"),
-            psh_comptime_make_string_view("One Ring to bring them all, and in the darkness bind them\n"),
-            psh_comptime_make_string_view("In the Land of Mordor where the Shadows lie.\n"),
+        constexpr Buffer<String, 8> views2 = {
+            psh_comptime_make_string("Three Rings for the Elven-kings under the sky,\n"),
+            psh_comptime_make_string("Seven for the Dwarf-lords in their halls of stone,\n"),
+            psh_comptime_make_string("Nine for Mortal Men doomed to die,\n"),
+            psh_comptime_make_string("One for the Dark Lord on his dark throne\n"),
+            psh_comptime_make_string("In the Land of Mordor where the Shadows lie.\n"),
+            psh_comptime_make_string("One Ring to rule them all, One Ring to find them,\n"),
+            psh_comptime_make_string("One Ring to bring them all, and in the darkness bind them\n"),
+            psh_comptime_make_string("In the Land of Mordor where the Shadows lie.\n"),
         };
 
         Arena arena = make_owned_arena(psh_kibibytes(5));
         {
-            // Empty string.
+            // Join into an empty string.
             {
-                String estr = make_string(&arena, 20);
-                psh_assert(join_strings(estr, make_const_fat_ptr(&views1), psh_comptime_make_string_view(", ")));
+                DynamicString estr = make_dynamic_string(&arena, 20);
+                psh_assert(join_strings(estr, make_const_fat_ptr(&views1), psh_comptime_make_string(", ")));
 
-                psh_assert(string_equal(make_string_view(estr), check_str1.buf));
+                psh_assert(string_equal(make_string(estr), check_str1));
                 psh_assert(estr.count == check_str1.count);
                 psh_assert(estr.capacity == estr.count + 1u);
                 psh_assert(estr.buf[estr.count] == 0);
             }
 
-            // Non-empty string.
+            // Join into a non-empty string 1.
             {
-                String nestr = make_string(&arena, views2[0]);
-                psh_assert(join_strings(nestr, FatPtr{&views2[1u], views2.count - 1u}));
-                psh_assert(string_equal(make_string_view(nestr), check_str2.buf));
-                psh_assert(nestr.capacity == nestr.count + 1u);
+                DynamicString nestr = make_dynamic_string(&arena, views2[0]);
+                psh_assert(join_strings(nestr, FatPtr{&views2[1], views2.count - 1u}));
+                psh_assert(string_equal(make_string(nestr), check_str2));
+                psh_assert(nestr.capacity == nestr.count + 1);
                 psh_assert(nestr.buf[nestr.count] == 0);
             }
 
+            // Join into a non-empty string 2.
             {
-                Buffer<StringView, 3> words = {
-                    make_string_view("Ring"),
-                    make_string_view("to"),
-                    make_string_view("rule"),
+                Buffer<String, 3> words = {
+                    make_string("Ring"),
+                    make_string("to"),
+                    make_string("rule"),
                 };
-                String s = make_string(&arena, make_string_view("One"));
+                DynamicString s = make_dynamic_string(&arena, make_string("One"));
 
-                psh_assert(join_strings(s, make_const_fat_ptr(&words), psh_comptime_make_string_view(", ")));
-                psh_assert(string_equal(make_string_view(s), "One, Ring, to, rule"));
+                psh_assert(join_strings(s, make_const_fat_ptr(&words), psh_comptime_make_string(", ")));
+                psh_assert(string_equal(make_string(s), "One, Ring, to, rule"));
             }
         }
         destroy_owned_arena(&arena);
@@ -143,10 +136,9 @@ namespace psh::test::string {
     }
 
     psh_internal void run_all() {
-        str_type();
-        string_view_type();
         string_type();
-        string_join();
+        dynamic_string_type();
+        string_joining_operation();
     }
 }  // namespace psh::test::string
 

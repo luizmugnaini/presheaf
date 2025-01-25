@@ -69,7 +69,7 @@ namespace psh {
     /// Zero-out all of the members of a given structure.
     template <typename T>
     psh_proc psh_inline void zero_struct(T* s) psh_no_except {
-        memory_set(reinterpret_cast<u8*>(s), sizeof(T), 0);
+        memory_set(reinterpret_cast<u8*>(s), psh_usize_of(T), 0);
     }
 
     /// Copy non-overlapping memory regions.
@@ -97,10 +97,10 @@ namespace psh {
     /// Return: The resulting padding with respect to ptr that should satisfy the alignment
     ///         requirements, as well as accommodating the associated header.
     psh_proc u32 padding_with_header(
-        uptr  ptr,
-        u32 alignment,
-        u32 header_size,
-        u32 header_alignment) psh_no_except;
+        uptr ptr,
+        u32  alignment,
+        u32  header_size,
+        u32  header_alignment) psh_no_except;
 
     /// Compute the next address that satisfies a given alignment.
     ///
@@ -399,11 +399,11 @@ namespace psh {
     /// given type.
     template <typename T>
     psh_proc psh_inline T* memory_alloc(Arena* arena, usize count) psh_no_except {
-        return reinterpret_cast<T*>(memory_alloc_align(arena, sizeof(T) * count, alignof(T)));
+        return reinterpret_cast<T*>(memory_alloc_align(arena, psh_usize_of(T) * count, alignof(T)));
     }
     template <typename T>
     psh_proc psh_inline T* memory_alloc(Stack* stack, usize count) psh_no_except {
-        return reinterpret_cast<T*>(memory_alloc_align(stack, sizeof(T) * count, alignof(T)));
+        return reinterpret_cast<T*>(memory_alloc_align(stack, psh_usize_of(T) * count, alignof(T)));
     }
     template <typename T>
     psh_proc psh_inline T* memory_alloc(MemoryManager* memory_manager, usize count) psh_no_except {
@@ -441,13 +441,13 @@ namespace psh {
         return reinterpret_cast<T*>(memory_realloc_align(
             arena,
             reinterpret_cast<u8*>(block),
-            sizeof(T) * current_count,
-            sizeof(T) * new_count,
+            psh_usize_of(T) * current_count,
+            psh_usize_of(T) * new_count,
             alignof(T)));
     }
     template <typename T>
     psh_proc psh_inline T* memory_realloc(Stack* stack, T* block, usize new_count) psh_no_except {
-        return reinterpret_cast<T*>(memory_realloc_align(stack, block, sizeof(T) * new_count));
+        return reinterpret_cast<T*>(memory_realloc_align(stack, block, psh_usize_of(T) * new_count));
     }
     template <typename T>
     psh_proc psh_inline T* memory_realloc(MemoryManager* memory_manager, T* block, usize new_count) psh_no_except {
@@ -554,7 +554,7 @@ namespace psh {
         psh_validate_usage(psh_static_assert_valid_const_container_type(Container, c));
         psh_paranoid_validate_usage(psh_assert_not_null(c));
 
-        return sizeof(T) * c->count;
+        return psh_usize_of(T) * c->count;
     }
 
     // -------------------------------------------------------------------------------------------------
@@ -649,7 +649,7 @@ namespace psh {
                 zeros_count);
         });
 
-        memory_set(reinterpret_cast<u8*>(push_buffer->buf + count), zeros_count * sizeof(T), 0);
+        memory_set(reinterpret_cast<u8*>(push_buffer->buf + count), zeros_count * psh_usize_of(T), 0);
         push_buffer->count = count + zeros_count;
         return count;
     }
@@ -816,7 +816,7 @@ namespace psh {
                 zeros_count);
         });
 
-        memory_set(reinterpret_cast<u8*>(push_array->buf + count), zeros_count * sizeof(T), 0);
+        memory_set(reinterpret_cast<u8*>(push_array->buf + count), zeros_count * psh_usize_of(T), 0);
         push_array->count = count + zeros_count;
         return count;
     }
@@ -980,7 +980,7 @@ namespace psh {
             memory_copy(
                 reinterpret_cast<u8*>(darray->buf + previous_count),
                 reinterpret_cast<u8 const*>(new_elements.buf),
-                sizeof(T) * new_elements.count);
+                psh_usize_of(T) * new_elements.count);
             darray->count = previous_count + new_elements.count;
         }
 
@@ -1032,9 +1032,9 @@ namespace psh {
 
         --fptr->count;
         raw_unordered_remove(
-            FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
+            FatPtr{reinterpret_cast<u8*>(buf), count * psh_usize_of(T)},
             reinterpret_cast<u8*>(buf + idx),
-            sizeof(T));
+            psh_usize_of(T));
     }
 
     template <typename T>
@@ -1047,9 +1047,9 @@ namespace psh {
 
         --darray->count;
         raw_unordered_remove(
-            FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
+            FatPtr{reinterpret_cast<u8*>(buf), count * psh_usize_of(T)},
             reinterpret_cast<u8*>(buf + idx),
-            sizeof(T));
+            psh_usize_of(T));
     }
 
     ///
@@ -1068,9 +1068,9 @@ namespace psh {
 
         --fptr->count;
         raw_ordered_remove(
-            FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
+            FatPtr{reinterpret_cast<u8*>(buf), count * psh_usize_of(T)},
             reinterpret_cast<u8*>(buf + idx),
-            sizeof(T));
+            psh_usize_of(T));
     }
 
     template <typename T>
@@ -1083,8 +1083,8 @@ namespace psh {
 
         --darray->count;
         raw_ordered_remove(
-            FatPtr{reinterpret_cast<u8*>(buf), count * sizeof(T)},
+            FatPtr{reinterpret_cast<u8*>(buf), count * psh_usize_of(T)},
             reinterpret_cast<u8*>(buf + idx),
-            sizeof(T));
+            psh_usize_of(T));
     }
 }  // namespace psh

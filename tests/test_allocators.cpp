@@ -244,25 +244,25 @@ namespace psh::test::allocators {
         Stack stack{.buf = buf, .capacity = expected_alloc_size};
 
         u8    expected_u8_vec[5]   = {51, 102, 153, 204, 255};
-        usize expected_u8_vec_size = 5 * sizeof(u8);  // 5 bytes
+        usize expected_u8_vec_size = 5 * psh_usize_of(u8);  // 5 bytes
         u8*   test_vec_u8          = memory_alloc<u8>(&stack, expected_u8_vec_size);
         psh_assert_not_null(test_vec_u8);
         for (usize i = 0; i < 5; ++i) {
             test_vec_u8[i] = expected_u8_vec[i];
         }
-        stack_min_expected_size += sizeof(StackHeader) + expected_u8_vec_size;
+        stack_min_expected_size += psh_usize_of(StackHeader) + expected_u8_vec_size;
 
         // The first allocation has a zero alignment so we can check for equality.
         psh_assert(stack.offset == stack_min_expected_size);
 
         u32   expected_u32_vec[3]   = {1, 1024, 1073741824};
-        usize expected_u32_vec_size = 3 * sizeof(u32);  // 12 bytes
+        usize expected_u32_vec_size = 3 * psh_usize_of(u32);  // 12 bytes
         u32*  test_vec_u32          = memory_alloc<u32>(&stack, 3);
         psh_assert_not_null(test_vec_u32);
         for (usize i = 0; i < 3; ++i) {
             test_vec_u32[i] = expected_u32_vec[i];
         }
-        stack_min_expected_size += sizeof(StackHeader) + expected_u32_vec_size;
+        stack_min_expected_size += psh_usize_of(StackHeader) + expected_u32_vec_size;
 
         psh_assert(stack.offset >= stack_min_expected_size);
 
@@ -316,8 +316,8 @@ namespace psh::test::allocators {
 
         // Create an array of uint64_t.
         usize array1_len       = 70;
-        usize array1_size      = array1_len * sizeof(u64);
-        usize array1_alignment = sizeof(u64);
+        usize array1_size      = array1_len * psh_usize_of(u64);
+        usize array1_alignment = psh_usize_of(u64);
         u64*  array1           = memory_alloc<u64>(&stack, array1_len);
         psh_assert_not_null(array1);
 
@@ -327,14 +327,14 @@ namespace psh::test::allocators {
         }
 
         // Check correctness of the array1 offset.
-        usize array1_expected_padding = sizeof(StackHeader);
+        usize array1_expected_padding = psh_usize_of(StackHeader);
         usize array1_expected_offset  = array1_expected_padding;
         psh_assert(stack.previous_offset == array1_expected_offset);
 
         u8* array1_addr = buf_start + array1_expected_offset;
 
         // Check the correctness of the array1 header.
-        StackHeader const* array1_header                 = reinterpret_cast<StackHeader const*>(array1_addr - sizeof(StackHeader));
+        StackHeader const* array1_header                 = reinterpret_cast<StackHeader const*>(array1_addr - psh_usize_of(StackHeader));
         usize              array1_actual_padding         = array1_header->padding;
         usize              array1_actual_previous_offset = array1_header->previous_offset;
         psh_assert(array1_actual_padding == array1_expected_padding);
@@ -354,8 +354,8 @@ namespace psh::test::allocators {
 
         // Create an array of strings.
         usize array2_len       = 30;
-        usize array2_size      = array2_len * sizeof(i32);
-        usize array2_alignment = sizeof(i32);
+        usize array2_size      = array2_len * psh_usize_of(i32);
+        usize array2_alignment = psh_usize_of(i32);
         i32*  array2           = memory_alloc<i32>(&stack, array2_len);
         psh_assert_not_null(array2);
 
@@ -368,15 +368,15 @@ namespace psh::test::allocators {
         // Check correctness of the array2 offset.
         usize array2_alignment_modifier = after_array1_expected_offset % array2_alignment;
         usize array2_expected_padding   = (array2_alignment_modifier == 0)
-                                              ? sizeof(StackHeader)
-                                              : array2_alignment - array2_alignment_modifier + sizeof(StackHeader);
+                                              ? psh_usize_of(StackHeader)
+                                              : array2_alignment - array2_alignment_modifier + psh_usize_of(StackHeader);
         usize array2_expected_offset    = after_array1_expected_offset + array2_expected_padding;
         psh_assert(stack.previous_offset == array2_expected_offset);
 
         u8* array2_addr = buf_start + array2_expected_offset;
 
         // Check the correctness of the array2 header.
-        StackHeader const* array2_header         = reinterpret_cast<StackHeader const*>(array2_addr - sizeof(StackHeader));
+        StackHeader const* array2_header         = reinterpret_cast<StackHeader const*>(array2_addr - psh_usize_of(StackHeader));
         usize              array2_actual_padding = array2_header->padding;
         psh_assert(array2_actual_padding == array2_expected_padding);
         usize array2_expected_previous_offset = static_cast<usize>(array1_addr - buf_start);
@@ -406,45 +406,45 @@ namespace psh::test::allocators {
         iptr  stack_buf_diff = reinterpret_cast<iptr>(stack.buf);
         usize zero           = 0;
 
-        usize   a1_alignment = sizeof(cstring);
+        usize   a1_alignment = psh_usize_of(cstring);
         cstring a1           = memory_alloc<char>(&stack, 50);
         psh_assert_not_null(a1);
-        psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+        psh_assert((stack.previous_offset - psh_usize_of(StackHeader)) % alignof(StackHeader) == zero);
         psh_assert(stack.previous_offset % a1_alignment == zero);
         psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a1) - stack_buf_diff);
 
-        usize a2_alignment = sizeof(i32);
+        usize a2_alignment = psh_usize_of(i32);
         i32*  a2           = memory_alloc<i32>(&stack, 100);
         psh_assert_not_null(a2);
-        psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+        psh_assert((stack.previous_offset - psh_usize_of(StackHeader)) % alignof(StackHeader) == zero);
         psh_assert(stack.previous_offset % a2_alignment == zero);
         psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a2) - stack_buf_diff);
 
-        usize a3_alignment = sizeof(u64);
+        usize a3_alignment = psh_usize_of(u64);
         u64*  a3           = memory_alloc<u64>(&stack, 33);
         psh_assert_not_null(a3);
-        psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+        psh_assert((stack.previous_offset - psh_usize_of(StackHeader)) % alignof(StackHeader) == zero);
         psh_assert(stack.previous_offset % a3_alignment == zero);
         psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a3) - stack_buf_diff);
 
-        usize a4_alignment = sizeof(u8);
+        usize a4_alignment = psh_usize_of(u8);
         u8*   a4           = memory_alloc<u8>(&stack, 49);
         psh_assert_not_null(a4);
-        psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+        psh_assert((stack.previous_offset - psh_usize_of(StackHeader)) % alignof(StackHeader) == zero);
         psh_assert(stack.previous_offset % a4_alignment == zero);
         psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a4) - stack_buf_diff);
 
-        usize a5_alignment = sizeof(u32);
+        usize a5_alignment = psh_usize_of(u32);
         u32*  a5           = memory_alloc<u32>(&stack, 8);
         psh_assert_not_null(a5);
-        psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+        psh_assert((stack.previous_offset - psh_usize_of(StackHeader)) % alignof(StackHeader) == zero);
         psh_assert(stack.previous_offset % a5_alignment == zero);
         psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a5) - stack_buf_diff);
 
-        usize   a6_alignment = sizeof(cstring);
+        usize   a6_alignment = psh_usize_of(cstring);
         cstring a6           = memory_alloc<char>(&stack, 14);
         psh_assert_not_null(a6);
-        psh_assert((stack.previous_offset - sizeof(StackHeader)) % alignof(StackHeader) == zero);
+        psh_assert((stack.previous_offset - psh_usize_of(StackHeader)) % alignof(StackHeader) == zero);
         psh_assert(stack.previous_offset % a6_alignment == zero);
         psh_assert(static_cast<iptr>(stack.previous_offset) == reinterpret_cast<iptr>(a6) - stack_buf_diff);
 
@@ -479,7 +479,7 @@ namespace psh::test::allocators {
 
         usize expected_min_size = 0;
 
-        usize fib_size  = 30 * sizeof(u64);
+        usize fib_size  = 30 * psh_usize_of(u64);
         u64*  fibonacci = memory_alloc<u64>(&stack, 30);
         psh_assert_not_null(fibonacci);
         expected_min_size += fib_size;
@@ -491,7 +491,7 @@ namespace psh::test::allocators {
 
         psh_assert(stack.offset >= expected_min_size);
 
-        usize   foos_size = 10 * sizeof(FooBar);
+        usize   foos_size = 10 * psh_usize_of(FooBar);
         FooBar* foos      = memory_alloc<FooBar>(&stack, 10);
         psh_assert_not_null(foos);
         expected_min_size += foos_size;

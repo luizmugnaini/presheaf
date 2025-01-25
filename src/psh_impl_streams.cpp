@@ -83,7 +83,7 @@ namespace psh {
 
         if (psh_unlikely(fseek(fhandle, 0, SEEK_END) == -1)) {
             perror("Couldn't seek end of file.\n");
-            return FileReadResult{.status = FILE_STATUS_FAILED_TO_READ};
+            return FileReadResult{.status = FILE_STATUS_SIZE_UNKNOWN};
         }
 
         isize file_size = ftell(fhandle);
@@ -95,14 +95,14 @@ namespace psh {
 
         if (psh_unlikely(fseek(fhandle, 0, SEEK_SET) == -1)) {
             perror("Couldn't seek start of file.\n");
-            return FileReadResult{.status = FILE_STATUS_FAILED_TO_READ};
+            return FileReadResult{.status = FILE_STATUS_SIZE_UNKNOWN};
         }
 
         ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
 
         Array<u8> content = make_array<u8>(arena, size);
 
-        usize read_count = fread(content.buf, sizeof(u8), content.count, fhandle);
+        usize read_count = fread(content.buf, psh_usize_of(u8), content.count, fhandle);
         psh_discard_value(read_count);  // @TODO: Maybe we should check this.
 
         if (psh_unlikely(ferror(fhandle) != 0)) {
@@ -123,19 +123,18 @@ namespace psh {
         };
     }
 
-    psh_proc String read_stdin(Arena* arena, u32 initial_buf_size, u32 read_chunk_size) psh_no_except {
+    psh_proc DynamicString read_stdin(Arena* arena, u32 initial_buf_size, u32 read_chunk_size) psh_no_except {
         psh_validate_usage(psh_assert_not_null(arena));
 
         ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
-        String          content          = make_string(arena, initial_buf_size);
+        DynamicString   content          = make_dynamic_string(arena, initial_buf_size);
 
 #if PSH_OS_WINDOWS
         HANDLE handle_stdin = GetStdHandle(STD_INPUT_HANDLE);
         if (handle_stdin == INVALID_HANDLE_VALUE) {
             psh_log_error("Unable to acquire the handle to the stdin stream.");
 
-            arena_checkpoint_restore(arena_checkpoint);
-            return String{};
+            goto return_from_error;
         }
 
         for (;;) {
@@ -149,8 +148,7 @@ namespace psh {
             if (psh_unlikely(!success)) {
                 psh_log_error("Unable to read from the stdin stream.");
 
-                arena_checkpoint_restore(arena_checkpoint);
-                return String{};
+                goto return_from_error;
             }
 
             if (bytes_read < read_chunk_size) {
@@ -168,8 +166,7 @@ namespace psh {
             if (psh_unlikely(bytes_read == -1)) {
                 psh_log_error("Unable to read from the stdin stream.");
 
-                arena_checkpoint_restore(arena_checkpoint);
-                return String{};
+                goto return_from_error;
             }
 
             content.count += static_cast<usize>(bytes_read);
@@ -186,38 +183,44 @@ namespace psh {
         content.buf[content.count] = 0;
 
         return content;
+
+    return_from_error:
+        arena_checkpoint_restore(arena_checkpoint);
+        return DynamicString{};
     }
 
-    psh_proc String absolute_path(Arena* arena, cstring file_path) psh_no_except {
+    psh_proc DynamicString absolute_path(Arena* arena, cstring file_path) psh_no_except {
         psh_paranoid_validate_usage(psh_assert_not_null(file_path));
         psh_validate_usage(psh_assert_not_null(arena));
 
         ArenaCheckpoint arena_checkpoint = make_arena_checkpoint(arena);
 
-        String abs_path = make_string(arena, PSH_IMPL_PATH_MAX_CHAR_COUNT);
+        DynamicString absolute_path = make_dynamic_string(arena, PSH_IMPL_PATH_MAX_CHAR_COUNT);
 
 #if PSH_OS_WINDOWS
-        DWORD result = GetFullPathName(file_path, PSH_IMPL_PATH_MAX_CHAR_COUNT, abs_path.buf, nullptr);
+        DWORD result = GetFullPathName(file_path, PSH_IMPL_PATH_MAX_CHAR_COUNT, absolute_path.buf, nullptr);
         if (result == 0) {
             psh_log_error_fmt(
                 "Unable to obtain the full path of %s due to the error: %lu",
                 file_path,
                 GetLastError());
 
-            arena_checkpoint_restore(arena_checkpoint);
-            return String{};
+            goto return_from_error;
         }
 #elif PSH_OS_UNIX
-        char const* result = realpath(file_path, abs_path.buf);
+        char const* result = realpath(file_path, absolute_path.buf);
         if (result == nullptr) {
             psh_log_error_fmt("Unable to obtain the full path of %s due to the error:", file_path);
             perror(nullptr);
 
-            arena_checkpoint_restore(arena_checkpoint);
-            return String{};
+            goto return_from_error;
         }
 #endif
 
-        return abs_path;
+        return absolute_path;
+
+    return_from_error:
+        arena_checkpoint_restore(arena_checkpoint);
+        return DynamicString{};
     }
 }  // namespace psh

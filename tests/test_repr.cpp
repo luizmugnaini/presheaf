@@ -28,29 +28,28 @@
 #include <stdlib.h>
 
 namespace psh::test::repr {
-    psh_internal void binary_representation() {
-        u8*   memory = reinterpret_cast<u8*>(malloc(256));
-        Arena arena{memory, 256};
+    psh_internal void number_to_string_binary_representation() {
+        Arena arena = make_owned_arena(256);
         {
-            String repr0 = binary_repr(&arena, 0b0);
-            psh_assert(string_equal(make_string_view(repr0), "0b0"));
+            DynamicString repr0 = binary_repr(&arena, 0b0);
+            psh_assert(string_equal(make_string(repr0), "0b0"));
 
-            String repr1 = binary_repr(&arena, 0b010);
-            psh_assert(string_equal(make_string_view(repr1), "0b10"));
+            DynamicString repr1 = binary_repr(&arena, 0b010);
+            psh_assert(string_equal(make_string(repr1), "0b10"));
 
-            String repr2 = binary_repr(&arena, 0b11010);
-            psh_assert(string_equal(make_string_view(repr2), "0b11010"));
+            DynamicString repr2 = binary_repr(&arena, 0b11010);
+            psh_assert(string_equal(make_string(repr2), "0b11010"));
 
-            String repr3 = binary_repr(&arena, 0b000111110101010101011);
-            psh_assert(string_equal(make_string_view(repr3), "0b111110101010101011"));
+            DynamicString repr3 = binary_repr(&arena, 0b000111110101010101011);
+            psh_assert(string_equal(make_string(repr3), "0b111110101010101011"));
         }
-        free(memory);
+        destroy_owned_arena(&arena);
 
         report_test_successful();
     }
 
     psh_internal void run_all() {
-        binary_representation();
+        number_to_string_binary_representation();
     }
 }  // namespace psh::test::repr
 

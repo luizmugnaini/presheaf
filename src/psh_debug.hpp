@@ -73,7 +73,7 @@ namespace psh::impl {
     psh_proc void log_msg(LogInfo info, cstring msg) psh_no_except;
 
     /// Log a formatted message to the standard error stream.
-    psh_proc void log_fmt(LogInfo const& info, cstring fmt, ...) psh_attribute_fmt(2) psh_no_except;
+    psh_proc psh_attribute_fmt(2) void log_fmt(LogInfo const& info, cstring fmt, ...) psh_no_except;
 }  // namespace psh::impl
 
 // -------------------------------------------------------------------------------------------------

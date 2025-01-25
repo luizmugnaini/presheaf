@@ -67,7 +67,7 @@ namespace psh::test::memory_manager {
         }
 
         // Ensure the addresses where correctly calculated.
-        u64 const* block_expected_addr = reinterpret_cast<u64 const*>(mem_sys_alloc_mem_actual_addr + sizeof(StackHeader));
+        u64 const* block_expected_addr = reinterpret_cast<u64 const*>(mem_sys_alloc_mem_actual_addr + psh_usize_of(StackHeader));
         psh_assert(block == block_expected_addr);
         u64 const* block_via_allocator_actual_addr = reinterpret_cast<u64 const*>(mem_sys_alloc_mem_actual_addr + memory_manager.allocator.previous_offset);
         psh_assert(block_via_allocator_actual_addr == block_expected_addr);
@@ -75,7 +75,7 @@ namespace psh::test::memory_manager {
         psh_assert_msg(memory_manager.allocation_count == 1, "Expected memory stats to account for a single memory allocation count.");
 
         // Manually read each address to check if the data of block got written to the right location.
-        usize block_stride = sizeof(u64);
+        usize block_stride = psh_usize_of(u64);
         for (usize idx = 0; idx < block_length; ++idx) {
             u64        expected = idx * start_value;
             u64 const* actual   = reinterpret_cast<u64 const*>(reinterpret_cast<u8 const*>(block_expected_addr) + idx * block_stride);
@@ -86,10 +86,10 @@ namespace psh::test::memory_manager {
     }
 
     psh_internal void memory_statistics() {
-        constexpr usize expected_string_at_least  = sizeof(char) * (40 + 34 + 55) + 3 * sizeof(StackHeader);
-        constexpr usize expected_misc_at_least    = sizeof(char) * 90 + sizeof(u64) * 72 + 2 * sizeof(StackHeader);
-        constexpr usize arena_data_size           = sizeof(usize) * 33 + sizeof(f32) * 45;
-        constexpr usize expected_arena            = sizeof(StackHeader) + arena_data_size;
+        constexpr usize expected_string_at_least  = psh_usize_of(char) * (40 + 34 + 55) + 3 * psh_usize_of(StackHeader);
+        constexpr usize expected_misc_at_least    = psh_usize_of(char) * 90 + psh_usize_of(u64) * 72 + 2 * psh_usize_of(StackHeader);
+        constexpr usize arena_data_size           = psh_usize_of(usize) * 33 + psh_usize_of(f32) * 45;
+        constexpr usize expected_arena            = psh_usize_of(StackHeader) + arena_data_size;
         constexpr usize expected_allocation_count = 6;  // NOTE: 3 strings, 1 arena, 2 misc.
         constexpr usize expected_total_at_least   = expected_arena + expected_string_at_least + expected_misc_at_least;
 
@@ -121,7 +121,7 @@ namespace psh::test::memory_manager {
         DynamicArray<usize> b;
         init_dynamic_array(&b, &arena, 33);
         psh_discard_value(b);
-        constexpr usize b_size = sizeof(usize) * 33;
+        constexpr usize b_size = psh_usize_of(usize) * 33;
         // The manager shouldn't have a bump in its usage.
         psh_assert(memory_manager.allocator.offset == used);
         // Expect no alignment from first allocation
@@ -137,7 +137,7 @@ namespace psh::test::memory_manager {
         DynamicArray<f32> d;
         init_dynamic_array(&d, &arena, 45);
         psh_discard_value(d);
-        constexpr usize d_size = sizeof(f32) * 45;
+        constexpr usize d_size = psh_usize_of(f32) * 45;
         // Expect no change in the manager.
         psh_assert(memory_manager.allocator.offset == used);
         // Alignment may have happened

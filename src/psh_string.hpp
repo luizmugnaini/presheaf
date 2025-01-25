@@ -45,8 +45,8 @@ namespace psh {
                || (c == '\t')
                || (c == '\f')
                || (c == '\v')
-	       || (c == '\n')
-	       || (c == '\r');
+               || (c == '\n')
+               || (c == '\r');
     }
 
     psh_proc psh_inline bool char_is_end_of_line(char c) psh_no_except {
@@ -94,59 +94,53 @@ namespace psh {
     // Computes the length of a zero-terminated string.
     psh_proc usize cstring_length(cstring str) psh_no_except;
 
-    /// A string with guaranteed compile-time known size.
-    ///
-    /// Note: It is way more ergonomic to use the macro psh_make_str than specifying the length of the
-    ///       string, which is silly.
-    ///
-    /// Example:
-    ///
-    /// auto my_str = psh_make_str("hey this is a compile time array of constant characters");
-    ///
-    template <usize count_>
-    struct Str {
+    /// Dynamically sized string.
+    using DynamicString = DynamicArray<char>;
+
+    /// Immutable string type with an associated length.
+    struct String {
+        cstring buf;
+        usize   count = 0;
+
         using ValueType = char const;
-
-        char const buf[count_];
-
-        static constexpr usize count = count_ - 1;
-
-        char operator[](usize index) const psh_no_except {
-            psh_validate_usage(psh_assert_bounds_check(index, count_));
-            return this->buf[index];
+        psh_inline char operator[](usize idx) const psh_no_except {
+            psh_assert_bounds_check(idx, this->count);
+            return this->buf[idx];
         }
+        psh_inline char const* begin() const psh_no_except { return this->buf; }
+        psh_inline char const* end() const psh_no_except { return this->buf + this->count; }
     };
 
-    /// Dynamically sized string.
-    using String = DynamicArray<char>;
-
-    /// Immutable view of a string.
-    using StringView = FatPtr<char const>;
-
-    template <usize count>
-    psh_proc psh_inline constexpr StringView make_string_view(Str<count> str) psh_no_except {
-        return StringView{str.buf, str.count};
+/// Create a string with compile-time known length from a given c-string literal.
+///
+/// Note: Use this macro with care, you should only use it with literal strings. Otherwise the
+///       length of the string won't be computed corrected by the compiler and you may obtain the
+///       size of a pointer instead the length of the string.
+#define psh_comptime_make_string(cstr_literal)    \
+    psh::String {                                 \
+        .buf   = cstr_literal,                    \
+        .count = psh_usize_of(cstr_literal) - 1u, \
     }
 
     template <usize STR_LENGTH>
-    psh_proc psh_inline constexpr StringView make_string_view(char (&str)[STR_LENGTH]) psh_no_except {
-        return StringView{str, STR_LENGTH - 1};
+    psh_proc psh_inline constexpr String make_string(char (&str)[STR_LENGTH]) psh_no_except {
+        return String{str, STR_LENGTH - 1};
     }
 
-    psh_proc psh_inline StringView make_string_view(cstring str) psh_no_except {
-        return StringView{str, cstring_length(str)};
+    psh_proc psh_inline String make_string(cstring str) psh_no_except {
+        return String{str, cstring_length(str)};
     }
 
-    psh_proc psh_inline StringView make_string_view(String const& string) psh_no_except {
-        return StringView{reinterpret_cast<char const*>(string.buf), string.count};
+    psh_proc psh_inline String make_string(DynamicString& string) psh_no_except {
+        return String{string.buf, string.count};
     }
 
-    psh_proc psh_inline String make_string(Arena* arena, usize initial_capacity) psh_no_except {
+    psh_proc psh_inline DynamicString make_dynamic_string(Arena* arena, usize initial_capacity) psh_no_except {
         return make_dynamic_array<char>(arena, initial_capacity);
     }
 
-    psh_proc psh_inline String make_string(Arena* arena, StringView sv) psh_no_except {
-        String string;
+    psh_proc psh_inline DynamicString make_dynamic_string(Arena* arena, String sv) psh_no_except {
+        DynamicString string;
         init_dynamic_array(&string, arena, sv.count + 1u);
         string.count = sv.count;
 
@@ -155,41 +149,22 @@ namespace psh {
         return string;
     }
 
-    // -------------------------------------------------------------------------------------------------
-    // Compile-time string type construction macros.
-    // -------------------------------------------------------------------------------------------------
-
-/// Create a string literal and a string view at compile time from a given c-string literal.
-///
-/// Note: Use this macro with care, you should only use it with literal strings. Otherwise the
-///       length of the string won't be computed corrected by the compiler and you may obtain the
-///       size of a pointer instead the length of the string.
-#define psh_comptime_make_str(cstr_literal) \
-    psh::Str<sizeof((cstr_literal))> {      \
-        (cstr_literal)                      \
-    }
-#define psh_comptime_make_string_view(cstr_literal) \
-    psh::StringView {                               \
-        .buf   = cstr_literal,                      \
-        .count = sizeof(cstr_literal) - 1u,         \
-    }
-
     /// Join an array of string views to a target string data. You can also provide a join element to be
     /// attached to the end of each join.
     ///
     /// Example:
     ///
     /// Arena arena{...};
-    /// String s = make_string(&arena, "Hello");
-    /// Buffer<StringView, 3> words = {"World", "Earth", "Terra"};
+    /// DynamicString s = make_dynamic_string(&arena, "Hello");
+    /// Buffer<String, 3> words = {"World", "Earth", "Terra"};
     ///
-    /// assert(s.join(psh::make_const_fat_ptr(words), ", "));
+    /// assert(string_join(s, make_const_fat_ptr(words), ", ");
     /// assert(string_equal(s.data.buf, "Hello, World, Earth, Terra"));
     ///
     psh_proc Status join_strings(
-        String&                  target,
-        FatPtr<StringView const> join_strings,
-        StringView               join_element = {}) psh_no_except;
+        DynamicString&       target,
+        FatPtr<String const> join_strings,
+        String               join_element = {}) psh_no_except;
 
     // -------------------------------------------------------------------------------------------------
     // String comparison.
@@ -201,26 +176,26 @@ namespace psh {
         GREATER_THAN,
     };
 
-    psh_proc StringCompareResult string_compare(StringView lhs, StringView rhs) psh_no_except;
+    psh_proc StringCompareResult string_compare(String lhs, String rhs) psh_no_except;
     template <usize RHS_LENGTH>
-    psh_proc psh_inline StringCompareResult string_compare(StringView lhs, char (&rhs)[RHS_LENGTH]) psh_no_except {
-        return string_compare(lhs, StringView{rhs, RHS_LENGTH - 1u});
+    psh_proc psh_inline StringCompareResult string_compare(String lhs, char (&rhs)[RHS_LENGTH]) psh_no_except {
+        return string_compare(lhs, String{rhs, RHS_LENGTH - 1u});
     }
     template <usize RHS_LENGTH>
-    psh_proc psh_inline StringCompareResult string_compare(StringView lhs, char rhs[RHS_LENGTH]) psh_no_except {
-        return string_compare(lhs, StringView{rhs, RHS_LENGTH - 1u});
+    psh_proc psh_inline StringCompareResult string_compare(String lhs, char rhs[RHS_LENGTH]) psh_no_except {
+        return string_compare(lhs, String{rhs, RHS_LENGTH - 1u});
     }
 
-    psh_proc bool string_equal(StringView lhs, StringView rhs) psh_no_except;
+    psh_proc bool string_equal(String lhs, String rhs) psh_no_except;
     template <usize RHS_LENGTH>
-    psh_proc psh_inline bool string_equal(StringView lhs, char const (&rhs)[RHS_LENGTH]) psh_no_except {
+    psh_proc psh_inline bool string_equal(String lhs, char const (&rhs)[RHS_LENGTH]) psh_no_except {
         usize len = RHS_LENGTH;
         psh_discard_value(len);
-        return string_equal(lhs, StringView{rhs, RHS_LENGTH - 1u});
+        return string_equal(lhs, String{rhs, RHS_LENGTH - 1u});
     }
     template <usize RHS_LENGTH>
-    psh_proc psh_inline bool string_equal(StringView lhs, char const rhs[RHS_LENGTH]) psh_no_except {
-        return string_equal(lhs, StringView{rhs, RHS_LENGTH - 1u});
+    psh_proc psh_inline bool string_equal(String lhs, char const rhs[RHS_LENGTH]) psh_no_except {
+        return string_equal(lhs, String{rhs, RHS_LENGTH - 1u});
     }
 
     // -------------------------------------------------------------------------------------------------
@@ -236,5 +211,5 @@ namespace psh {
 
     /// Convert an arg list into a buffer. This function always returns a zero-terminated string
     /// (unlike regular snprintf).
-    psh_attribute_fmt(3) psh_proc i32 string_format(char* buf, i32 count, cstring fmt, ...) psh_no_except;
+    psh_proc psh_attribute_fmt(3) i32 string_format(char* buf, i32 count, cstring fmt, ...) psh_no_except;
 }  // namespace psh
